@@ -6,7 +6,11 @@ import { FaLinkedin } from "react-icons/fa";
 
 export default function LinkedInButton() {
   return (
-    <Tooltip label={`@${PersonalData.linkedIn.username}`} hasArrow>
+    <Tooltip
+      label={`@${PersonalData.linkedIn.username}`}
+      hasArrow
+      closeOnScroll
+    >
       <Link href={PersonalData.linkedIn.url} target="_blank">
         <PrimaryActionButton icon={FaLinkedin}>LinkedIn</PrimaryActionButton>
       </Link>
@@ -16,7 +20,11 @@ export default function LinkedInButton() {
 
 export function LinkedInButtonSmall() {
   return (
-    <Tooltip label={`@${PersonalData.linkedIn.username}`} hasArrow>
+    <Tooltip
+      label={`@${PersonalData.linkedIn.username}`}
+      hasArrow
+      closeOnScroll
+    >
       <Link href={PersonalData.linkedIn.url} target="_blank" rounded={"full"}>
         <IconButton
           as={"a"}

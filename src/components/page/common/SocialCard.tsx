@@ -23,7 +23,7 @@ function SocialIconButton({
   url?: string;
 }) {
   return (
-    <Tooltip label={label}>
+    <Tooltip label={label} closeOnScroll>
       <Link href={url ?? ""} target={"_blank"} rounded={"full"}>
         <IconButton
           as={"a"}

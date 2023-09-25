@@ -15,7 +15,12 @@ export default function CopyEmailButton() {
   }
 
   return (
-    <Tooltip label={PersonalData.email} hasArrow shouldWrapChildren>
+    <Tooltip
+      label={PersonalData.email}
+      hasArrow
+      shouldWrapChildren
+      closeOnScroll
+    >
       <SecondaryActionButton
         icon={clicked ? FiCheck : FiCopy}
         onClick={changeIconAndCopy}
