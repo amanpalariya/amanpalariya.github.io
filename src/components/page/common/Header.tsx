@@ -30,7 +30,7 @@ function ColorModeToggleIconButton() {
   const isDark = colorMode === "dark";
 
   return (
-    <Tooltip label={"Toggle theme"}>
+    <Tooltip label={"Toggle theme"} closeOnScroll>
       <IconButton
         onClick={toggleColorMode}
         borderRadius={"50%"}
@@ -57,7 +57,7 @@ function HeaderIconButton({
   const unSelectedColor = useColorModeValue("gray.500", "gray.500");
 
   return (
-    <Tooltip label={label}>
+    <Tooltip label={label} closeOnScroll>
       <Link href={url ?? ""} rounded={"full"}>
         <IconButton
           as={"a"}

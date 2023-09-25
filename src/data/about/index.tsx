@@ -14,7 +14,7 @@ const AboutArticle = {
         LinkedIn
       </art.link>{" "}
       {` or send me an `}
-      <Tooltip label={PersonalData.email}>
+      <Tooltip label={PersonalData.email} closeOnScroll>
         <span>
           <art.link url={`mailto:${PersonalData.email}`} isExternal>
             email
