@@ -35,7 +35,7 @@ export function trimPathnameToDepth(pathname: string, depth: number) {
     pathname
       .split(sep)
       .slice(0, isPathnameAbsolute(pathname) ? depth + 1 : depth)
-      .join(sep)
+      .join(sep),
   );
 }
 

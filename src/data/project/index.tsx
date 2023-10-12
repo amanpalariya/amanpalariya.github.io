@@ -15,6 +15,7 @@ const allProjects: Project[] = [
     description:
       "App that helps CDPOs and 1200+ Anganwadi workers collect data",
     url: "https://sites.google.com/view/goyalpuneet/sampan",
+    content: [],
   },
   {
     id: "os-components",

@@ -85,7 +85,7 @@ export default function Header() {
 
   const parentTabPathname = pathnameUtil.trimPathnameToDepth(
     currentPathname,
-    1
+    1,
   );
 
   return (
@@ -123,7 +123,7 @@ export default function Header() {
                   icon={FiGrid}
                   label={homepageTabs.project.name}
                   isSelected={isSelectedBasedOnUrl(
-                    homepageTabs.project.pathname
+                    homepageTabs.project.pathname,
                   )}
                   url={homepageTabs.project.pathname}
                 />
