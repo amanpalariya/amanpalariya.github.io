@@ -47,8 +47,12 @@ function Projects() {
             key={project.id}
             title={project.title}
             description={project.description}
-            url={project.url}
-            isUrlExternal
+            url={
+              project.content
+                ? homepageTabs.project.getSubpagePathname(project.id)
+                : project.url
+            }
+            isUrlExternal={project.content ? false : true}
           />
         ))}
       </VStack>
