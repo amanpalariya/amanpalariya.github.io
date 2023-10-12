@@ -10,6 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { Link } from "@chakra-ui/next-js";
 import {
+  FiBookOpen,
   FiChevronLeft,
   FiGrid,
   FiHome,
@@ -85,7 +86,7 @@ export default function Header() {
 
   const parentTabPathname = pathnameUtil.trimPathnameToDepth(
     currentPathname,
-    1,
+    1
   );
 
   return (
@@ -123,9 +124,15 @@ export default function Header() {
                   icon={FiGrid}
                   label={homepageTabs.project.name}
                   isSelected={isSelectedBasedOnUrl(
-                    homepageTabs.project.pathname,
+                    homepageTabs.project.pathname
                   )}
                   url={homepageTabs.project.pathname}
+                />
+                <HeaderIconButton
+                  icon={FiBookOpen}
+                  label={homepageTabs.blog.name}
+                  isSelected={isSelectedBasedOnUrl(homepageTabs.blog.pathname)}
+                  url={homepageTabs.blog.pathname}
                 />
               </HStack>
             )}
