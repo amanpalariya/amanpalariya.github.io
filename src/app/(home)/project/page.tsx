@@ -5,6 +5,7 @@ import { Heading1, SectionText, SubtitleText } from "@components/core/Texts";
 import { TitleDescriptionAvatarTile } from "@components/core/Tiles";
 import BottomMessage from "@components/page/common/BottomMessage";
 import HighlightedSection from "@components/page/common/HighlightedSection";
+import { homepageTabs } from "app/route-info";
 import ProjectsData from "data/project";
 
 function Main() {
@@ -29,7 +30,11 @@ function Projects() {
             key={project.id}
             title={project.title}
             description={project.description}
-            url={project.content ? project.id : project.url}
+            url={
+              project.content
+                ? homepageTabs.project.getSubpagePathname(project.id)
+                : project.url
+            }
             isUrlExternal={project.content ? false : true}
           />
         ))}
