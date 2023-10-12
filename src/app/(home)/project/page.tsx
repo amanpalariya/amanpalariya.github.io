@@ -1,12 +1,13 @@
 "use client";
 
-import { VStack, Spacer, Box } from "@chakra-ui/react";
+import { VStack, Spacer, Box, Icon } from "@chakra-ui/react";
 import { Heading1, SectionText, SubtitleText } from "@components/core/Texts";
 import { TitleDescriptionAvatarTile } from "@components/core/Tiles";
 import BottomMessage from "@components/page/common/BottomMessage";
 import HighlightedSection from "@components/page/common/HighlightedSection";
 import { homepageTabs } from "app/route-info";
 import ProjectsData from "data/project";
+import { FiTool } from "react-icons/fi";
 
 function Main() {
   return (
@@ -21,7 +22,18 @@ function Main() {
   );
 }
 
-function Projects() {
+function NoProjectsElement() {
+  return (
+    <HighlightedSection>
+      <VStack align={"center"} spacing={4} py={16}>
+        <Icon as={FiTool} boxSize={20} color={"gray.500"} />
+        <SubtitleText>{"There are no projects yet!"}</SubtitleText>
+      </VStack>
+    </HighlightedSection>
+  );
+}
+
+function ProjectsListElement() {
   return (
     <HighlightedSection>
       <VStack align={"stretch"} spacing={4}>
@@ -43,8 +55,10 @@ function Projects() {
   );
 }
 
-function ExtraInfo() {
-  return <BottomMessage />;
+function Projects() {
+  return ProjectsData.allProjects.length != 0
+    ? ProjectsListElement()
+    : NoProjectsElement();
 }
 
 export default function Home() {

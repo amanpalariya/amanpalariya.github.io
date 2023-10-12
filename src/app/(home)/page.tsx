@@ -29,7 +29,7 @@ function Main() {
 }
 
 function Projects() {
-  return (
+  return ProjectsData.allProjects.length == 0 ? null : (
     <HighlightedSection
       title="Projects"
       titleActionElement={
