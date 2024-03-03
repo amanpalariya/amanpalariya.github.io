@@ -3,23 +3,16 @@
 import { VStack, Spacer, Box, Icon } from "@chakra-ui/react";
 import { Heading1, SectionText, SubtitleText } from "@components/core/Texts";
 import { TitleDescriptionAvatarTile } from "@components/core/Tiles";
-import BottomMessage from "@components/page/common/BottomMessage";
 import HighlightedSection from "@components/page/common/HighlightedSection";
 import { homepageTabs } from "app/route-info";
 import BlogsData from "data/blog";
-import {
-  FiBookmark,
-  FiOctagon,
-  FiPenTool,
-  FiPhoneOff,
-  FiStopCircle,
-} from "react-icons/fi";
+import { FiBookmark } from "react-icons/fi";
 
 function Main() {
   return (
     <Box m={[4, 6]} letterSpacing={"wide"} lineHeight={"7"}>
       <VStack align={"stretch"} spacing={5}>
-        <SectionText>Blogs</SectionText>
+        <SectionText>{homepageTabs.blog.name}</SectionText>
         <Spacer h={4} />
         <Heading1>{BlogsData.blogsPage.title}</Heading1>
         <SubtitleText>{BlogsData.blogsPage.subtitle}</SubtitleText>

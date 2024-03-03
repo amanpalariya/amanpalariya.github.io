@@ -3,7 +3,6 @@
 import { VStack, Spacer, Box, Icon } from "@chakra-ui/react";
 import { Heading1, SectionText, SubtitleText } from "@components/core/Texts";
 import { TitleDescriptionAvatarTile } from "@components/core/Tiles";
-import BottomMessage from "@components/page/common/BottomMessage";
 import HighlightedSection from "@components/page/common/HighlightedSection";
 import { homepageTabs } from "app/route-info";
 import ProjectsData from "data/project";
@@ -13,7 +12,7 @@ function Main() {
   return (
     <Box m={[4, 6]} letterSpacing={"wide"} lineHeight={"7"}>
       <VStack align={"stretch"} spacing={5}>
-        <SectionText>Projects</SectionText>
+        <SectionText>{homepageTabs.project.name}</SectionText>
         <Spacer h={4} />
         <Heading1>{ProjectsData.projectsPage.title}</Heading1>
         <SubtitleText>{ProjectsData.projectsPage.subtitle}</SubtitleText>
