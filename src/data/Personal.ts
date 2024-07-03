@@ -9,7 +9,7 @@ const PersonalData = {
       "Software Developer at Oracle & a CS grad from IIT Ropar with specialization in AI",
   },
   avatar: {
-    url: "/images/personal/self-portrait.jpg",
+    url: "https://drive.google.com/thumbnail?id=1iQCju1QGnV1umzB1yzNcCEr0Y6gUla3y&sz=w1000",
   },
   location: {
     city: "Haldwani",
