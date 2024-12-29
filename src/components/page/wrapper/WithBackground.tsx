@@ -1,6 +1,6 @@
 import { useColorModeValue, Container, Spacer, Box } from "@chakra-ui/react";
 
-export default function Background({
+export default function WithBackground({
   children,
 }: {
   children: JSX.Element | JSX.Element[];
