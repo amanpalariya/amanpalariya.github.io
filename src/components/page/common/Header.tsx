@@ -7,6 +7,7 @@ import {
   useColorMode,
   useColorModeValue,
   Tooltip,
+  Show,
 } from "@chakra-ui/react";
 import { Link } from "@chakra-ui/next-js";
 import {
@@ -25,6 +26,8 @@ import { getHomepageTabByPathname, homepageTabs } from "app/route-info";
 import { Heading2 } from "@components/core/Texts";
 import * as pathnameUtil from "utils/pathname";
 import LinkedInButton, { LinkedInButtonSmall } from "./LinkedInPrimaryButton";
+import { useFeatureFlag } from "utils/features";
+import FeatureFlagsData from "data/features";
 
 function ColorModeToggleIconButton() {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -77,6 +80,9 @@ function HeaderIconButton({
 export default function Header() {
   const showActionButton = useBreakpointValue({ base: false, sm: true });
   const currentPathname = usePathname() ?? "";
+  const [, isBlogsFeatureEnabled, ,] = useFeatureFlag(
+    FeatureFlagsData.featuresIds.BLOGS
+  );
 
   function isSelectedBasedOnUrl(relativeUrl) {
     return pathnameUtil.doPathnamesMatch(relativeUrl, currentPathname);
