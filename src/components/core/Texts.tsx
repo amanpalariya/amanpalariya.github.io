@@ -1,14 +1,8 @@
 "use client";
 
-import { Link } from "@chakra-ui/next-js";
-import {
-  HStack,
-  Icon,
-  useColorModeValue,
-  Text,
-  TextProps,
-} from "@chakra-ui/react";
+import { HStack, Icon, Link, Text, TextProps } from "@chakra-ui/react";
 import { FaCircle } from "react-icons/fa";
+import { useColorModeValue } from "@components/ui/color-mode";
 
 const useDefaultTextColor = () =>
   useColorModeValue("gray.800", "whiteAlpha.900");
@@ -23,7 +17,11 @@ export function SectionText({
   const iconColor = useColorModeValue("gray.400", "gray.500");
   return (
     <HStack>
-      {hideDot ? null : <Icon as={FaCircle} color={iconColor} boxSize={2} />}
+      {hideDot ? null : (
+        <Icon color={iconColor} boxSize={2}>
+          <FaCircle />
+        </Icon>
+      )}
       <Text color={useDefaultTextColor()} fontSize={"lg"} fontWeight={"medium"}>
         {children}
       </Text>
@@ -93,7 +91,7 @@ export function ParagraphText({
       color={useColorModeValue("gray.700", "gray.200")}
       fontSize={"md"}
       fontWeight={"normal"}
-      lineHeight={7}
+      lineHeight={"tall"}
       textAlign={justifyText ? "justify" : "left"}
     >
       {children}
@@ -133,6 +131,7 @@ export function LinkText({
       href={href}
       borderBottom={"thin"}
       borderStyle={"dotted"}
+      lineHeight={"normal"}
       target={isExternal ? "_blank" : "_self"}
     >
       {children}

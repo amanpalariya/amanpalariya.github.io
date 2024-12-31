@@ -10,8 +10,8 @@ import { FiTool } from "react-icons/fi";
 
 function Main() {
   return (
-    <Box m={[4, 6]} letterSpacing={"wide"} lineHeight={"7"}>
-      <VStack align={"stretch"} spacing={5}>
+    <Box m={[4, 6]} letterSpacing={"wide"} lineHeight={"tall"}>
+      <VStack align={"stretch"} gap={"5"}>
         <SectionText>{homepageTabs.project.name}</SectionText>
         <Spacer h={4} />
         <Heading1>{ProjectsData.projectsPage.title}</Heading1>
@@ -24,8 +24,10 @@ function Main() {
 function NoProjectsElement() {
   return (
     <HighlightedSection>
-      <VStack align={"center"} spacing={4} py={16}>
-        <Icon as={FiTool} boxSize={20} color={"gray.500"} />
+      <VStack align={"center"} gap={4} py={16}>
+        <Icon boxSize={20} color={"gray.500"}>
+          <FiTool />
+        </Icon>
         <SubtitleText>{"There are no projects yet!"}</SubtitleText>
       </VStack>
     </HighlightedSection>
@@ -35,7 +37,7 @@ function NoProjectsElement() {
 function ProjectsListElement() {
   return (
     <HighlightedSection>
-      <VStack align={"stretch"} spacing={4}>
+      <VStack align={"stretch"} gap={4}>
         {ProjectsData.allProjects.map((project) => (
           <TitleDescriptionAvatarTile
             key={project.id}

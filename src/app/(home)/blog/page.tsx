@@ -10,8 +10,8 @@ import { FiBookmark } from "react-icons/fi";
 
 function Main() {
   return (
-    <Box m={[4, 6]} letterSpacing={"wide"} lineHeight={"7"}>
-      <VStack align={"stretch"} spacing={5}>
+    <Box m={[4, 6]} letterSpacing={"wide"} lineHeight={"tall"}>
+      <VStack align={"stretch"} gap={5}>
         <SectionText>{homepageTabs.blog.name}</SectionText>
         <Spacer h={4} />
         <Heading1>{BlogsData.blogsPage.title}</Heading1>
@@ -24,8 +24,10 @@ function Main() {
 function NoBlogsElement() {
   return (
     <HighlightedSection>
-      <VStack align={"center"} spacing={4} py={16}>
-        <Icon as={FiBookmark} boxSize={20} color={"gray.500"} />
+      <VStack align={"center"} gap={4} py={16}>
+        <Icon boxSize={20} color={"gray.500"}>
+          <FiBookmark />
+        </Icon>
         <SubtitleText>{"There are no blogs yet!"}</SubtitleText>
       </VStack>
     </HighlightedSection>
@@ -35,7 +37,7 @@ function NoBlogsElement() {
 function BlogsListElement() {
   return (
     <HighlightedSection>
-      <VStack align={"stretch"} spacing={4}>
+      <VStack align={"stretch"} gap={4}>
         {BlogsData.allBlogs.map((blog) => (
           <TitleDescriptionAvatarTile
             key={blog.id}

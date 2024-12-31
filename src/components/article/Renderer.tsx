@@ -9,11 +9,10 @@ export default function ArticleRenderer({
   title: string;
 }) {
   return (
-    <Box m={[4, 6]} letterSpacing={"wide"} lineHeight={7}>
-      <VStack align={"stretch"} spacing={6}>
+    <Box m={[4, 6]} letterSpacing={"wide"}>
+      <VStack align={"stretch"} gap={"5"}>
         <SectionText>{title}</SectionText>
         <Spacer h={2} />
-
         {...content}
       </VStack>
     </Box>

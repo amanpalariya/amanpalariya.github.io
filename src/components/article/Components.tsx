@@ -23,7 +23,7 @@ function ArticleHeading3({ children }: { children: any }) {
 }
 
 function ArticleParagraph({ children }: { children: any }) {
-  return <ParagraphText>{children}</ParagraphText>;
+  return <ParagraphText justifyText>{children}</ParagraphText>;
 }
 
 function ArticleBold({ children }: { children: any }) {
@@ -66,7 +66,11 @@ function ArticleLink({
   return (
     <LinkText href={url} isExternal={isExternal}>
       {children ?? url}
-      {isExternal ? <Icon as={FiArrowUpRight} boxSize={2.5} /> : null}
+      {isExternal ? (
+        <Icon boxSize={2.5}>
+          <FiArrowUpRight />
+        </Icon>
+      ) : null}
     </LinkText>
   );
 }

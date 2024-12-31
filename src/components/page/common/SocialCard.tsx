@@ -3,15 +3,16 @@ import {
   Stack,
   HStack,
   IconButton,
-  useColorModeValue,
   Icon,
-  Tooltip,
+  Link,
 } from "@chakra-ui/react";
-import { Link } from "@chakra-ui/next-js";
 import { FiTwitter, FiInstagram, FiLinkedin, FiGithub } from "react-icons/fi";
 import { InnerBgCard } from "../../core/Cards";
 import { SectionText } from "../../core/Texts";
 import { PersonalData } from "data";
+import { Tooltip } from "@components/ui/tooltip";
+import { useColorModeValue } from "@components/ui/color-mode";
+import React from "react";
 
 function SocialIconButton({
   icon,
@@ -23,7 +24,7 @@ function SocialIconButton({
   url?: string;
 }) {
   return (
-    <Tooltip label={label} closeOnScroll>
+    <Tooltip content={label} closeOnScroll>
       <Link href={url ?? ""} target={"_blank"} rounded={"full"}>
         <IconButton
           as={"a"}
@@ -32,9 +33,10 @@ function SocialIconButton({
           shadow={"md"}
           background={useColorModeValue("white", "gray.700")}
           color={useColorModeValue("gray.600", "gray.400")}
-          icon={<Icon as={icon} boxSize={5} />}
           aria-label={label}
-        />
+        >
+          <Icon boxSize={5}>{React.createElement(icon)}</Icon>
+        </IconButton>
       </Link>
     </Tooltip>
   );
@@ -77,11 +79,11 @@ export default function SocialCard() {
       <Stack
         direction={smallLayout ? "column" : "row"}
         align={"center"}
-        spacing={4}
+        gap={4}
         justify={"space-between"}
       >
         <SectionText hideDot={smallLayout}>Follow me</SectionText>
-        <HStack spacing={4}>
+        <HStack gap={4}>
           <LinkedinIcon />
           <GithubIcon />
           <InstagramIcon />

@@ -1,8 +1,8 @@
-import { Box, Tooltip } from "@chakra-ui/react";
 import { SecondaryActionButton } from "@components/core/Buttons";
 import { PersonalData } from "data";
 import { useState } from "react";
 import { FiCheck, FiCopy } from "react-icons/fi";
+import { Tooltip } from "@components/ui/tooltip";
 
 export default function CopyEmailButton() {
   const [clicked, setClicked] = useState(false);
@@ -16,7 +16,7 @@ export default function CopyEmailButton() {
 
   return (
     <Tooltip
-      label={PersonalData.email}
+      content={PersonalData.email}
       hasArrow
       shouldWrapChildren
       closeOnScroll

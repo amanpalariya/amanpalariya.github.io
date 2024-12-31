@@ -4,11 +4,8 @@ import {
   Icon,
   IconButton,
   useBreakpointValue,
-  useColorMode,
-  useColorModeValue,
-  Tooltip,
+  Link,
 } from "@chakra-ui/react";
-import { Link } from "@chakra-ui/next-js";
 import {
   FiBookOpen,
   FiChevronLeft,
@@ -18,27 +15,31 @@ import {
   FiSun,
   FiUser,
 } from "react-icons/fi";
-import { PrimaryActionButton } from "../../core/Buttons";
 import { HeaderCard } from "../../core/Cards";
 import { usePathname } from "next/navigation";
 import { getHomepageTabByPathname, homepageTabs } from "app/route-info";
 import { Heading2 } from "@components/core/Texts";
 import * as pathnameUtil from "utils/pathname";
 import LinkedInButton, { LinkedInButtonSmall } from "./LinkedInPrimaryButton";
+import { useColorMode, useColorModeValue } from "@components/ui/color-mode";
+import { Tooltip } from "@components/ui/tooltip";
+import React from "react";
+import NextLink from "next/link";
 
 function ColorModeToggleIconButton() {
   const { colorMode, toggleColorMode } = useColorMode();
   const isDark = colorMode === "dark";
 
   return (
-    <Tooltip label={"Toggle theme"} closeOnScroll>
+    <Tooltip content={"Toggle theme"} closeOnScroll>
       <IconButton
         onClick={toggleColorMode}
-        borderRadius={"50%"}
-        variant={"outline"}
-        icon={<Icon as={isDark ? FiSun : FiMoon} boxSize={6} />}
+        borderRadius={"full"}
+        variant={"surface"}
         aria-label={"Change color mode (dark/light)"}
-      />
+      >
+        <Icon boxSize={6}>{isDark ? <FiSun /> : <FiMoon />}</Icon>
+      </IconButton>
     </Tooltip>
   );
 }
@@ -55,20 +56,23 @@ function HeaderIconButton({
   isSelected?: boolean;
 }) {
   const selectedColor = useColorModeValue("gray.900", "gray.50");
-  const unSelectedColor = useColorModeValue("gray.500", "gray.500");
+  const unSelectedColor = useColorModeValue("gray.500", "gray.300");
 
   return (
-    <Tooltip label={label} closeOnScroll>
-      <Link href={url ?? ""} rounded={"full"}>
-        <IconButton
-          as={"a"}
-          borderRadius={"full"}
-          borderWidth={isSelected ? "thin" : "none"}
-          variant={isSelected ? "solid" : "ghost"}
-          color={isSelected ? selectedColor : unSelectedColor}
-          icon={<Icon as={icon} boxSize={6} />}
-          aria-label={label}
-        />
+    <Tooltip content={label} closeOnScroll>
+      <Link rounded={"full"} asChild>
+        <NextLink href={url ?? ""}>
+          <IconButton
+            as={"a"}
+            borderRadius={"full"}
+            borderWidth={"thick"}
+            variant={isSelected ? "surface" : "ghost"}
+            color={isSelected ? selectedColor : unSelectedColor}
+            aria-label={label}
+          >
+            <Icon boxSize={6}>{React.createElement(icon)}</Icon>
+          </IconButton>
+        </NextLink>
       </Link>
     </Tooltip>
   );
@@ -86,16 +90,16 @@ export default function Header() {
 
   const parentTabPathname = pathnameUtil.trimPathnameToDepth(
     currentPathname,
-    1
+    1,
   );
 
   return (
-    <Box position={"fixed"} width={"full"} maxW={"container.md"} zIndex={10}>
+    <Box position={"fixed"} width={"100%"} maxW={"3xl"} zIndex={10}>
       <Box p={[2, 4]}>
         <HeaderCard>
           <HStack justify={"space-between"}>
             {isPathnameDeep ? (
-              <HStack spacing={4}>
+              <HStack gap={4}>
                 <HeaderIconButton
                   icon={FiChevronLeft}
                   label="Back"
@@ -107,7 +111,7 @@ export default function Header() {
                 </Heading2>
               </HStack>
             ) : (
-              <HStack spacing={4}>
+              <HStack gap={4}>
                 <HeaderIconButton
                   icon={FiHome}
                   label={homepageTabs.home.name}
@@ -124,7 +128,7 @@ export default function Header() {
                   icon={FiGrid}
                   label={homepageTabs.project.name}
                   isSelected={isSelectedBasedOnUrl(
-                    homepageTabs.project.pathname
+                    homepageTabs.project.pathname,
                   )}
                   url={homepageTabs.project.pathname}
                 />
@@ -137,7 +141,7 @@ export default function Header() {
               </HStack>
             )}
 
-            <HStack spacing={4}>
+            <HStack gap={4}>
               <ColorModeToggleIconButton />
               {showActionButton ? <LinkedInButton /> : <LinkedInButtonSmall />}
             </HStack>
