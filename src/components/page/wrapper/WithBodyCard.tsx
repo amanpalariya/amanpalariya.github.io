@@ -4,7 +4,7 @@ import { MainCard } from "../../core/Cards";
 export default function WithBodyCard({
   children,
 }: {
-  children: JSX.Element | JSX.Element[];
+  children: React.ReactNode;
 }) {
   return (
     <Box p={[2, 4]}>

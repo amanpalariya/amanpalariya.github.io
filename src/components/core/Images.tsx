@@ -1,13 +1,7 @@
 "use client";
 
-import {
-  Box,
-  Center,
-  useColorModeValue,
-  Image,
-  Text,
-  VStack,
-} from "@chakra-ui/react";
+import { Center, Image, Text, VStack } from "@chakra-ui/react";
+import { useColorModeValue } from "@components/ui/color-mode";
 
 export function ImageBlock({
   src,

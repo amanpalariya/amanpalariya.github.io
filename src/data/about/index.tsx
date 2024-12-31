@@ -1,6 +1,6 @@
-import { Tooltip } from "@chakra-ui/react";
 import * as art from "@components/article/Components";
 import { PersonalData } from "data";
+import { Tooltip } from "@components/ui/tooltip";
 
 const AboutArticle = {
   content: [
@@ -14,7 +14,7 @@ const AboutArticle = {
         LinkedIn
       </art.link>{" "}
       {` or send me an `}
-      <Tooltip label={PersonalData.email} closeOnScroll>
+      <Tooltip content={PersonalData.email} closeOnScroll>
         <span>
           <art.link url={`mailto:${PersonalData.email}`} isExternal>
             email

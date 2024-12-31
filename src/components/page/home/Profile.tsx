@@ -19,10 +19,10 @@ export default function Profile() {
       direction={showVerticalProfile ? "column-reverse" : "row"}
       align={"center"}
       justify={"space-between"}
-      spacing={showVerticalProfile ? 6 : 9}
+      gap={showVerticalProfile ? 6 : 9}
     >
-      <VStack align={showVerticalProfile ? "center" : "start"} spacing={6}>
-        <VStack align={showVerticalProfile ? "center" : "start"} spacing={3}>
+      <VStack align={showVerticalProfile ? "center" : "start"} gap={6}>
+        <VStack align={showVerticalProfile ? "center" : "start"} gap={3}>
           <Heading1
             centerAlign={showVerticalProfile}
           >{`I'm ${PersonalData.name.full}`}</Heading1>
@@ -35,7 +35,7 @@ export default function Profile() {
           <CopyEmailButton />
         </HStack>
       </VStack>
-      <Box p={2} w="min-content">
+      <Box p={2}>
         <HomepageAvatar
           src={PersonalData.avatar.url}
           name={PersonalData.name.full}

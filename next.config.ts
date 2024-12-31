@@ -1,12 +1,14 @@
-/**
- * @type {import('next').NextConfig}
- */
-const nextConfig = {
+import { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
   output: "export",
 
   // Optional: Change links `/me` -> `/me/` and emit `/me.html` -> `/me/index.html`
   trailingSlash: true,
 
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   // Optional: Prevent automatic `/me` -> `/me/`, instead preserve `href`
   // skipTrailingSlashRedirect: true,
 

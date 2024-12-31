@@ -1,29 +1,35 @@
-import { Button, ButtonProps, Icon } from "@chakra-ui/react";
+import { Icon } from "@chakra-ui/react";
+import React from "react";
+import { Button, ButtonProps } from "@components/ui/button";
 
 const buttonProps: ButtonProps = {
   fontSize: "sm",
   px: 2.5,
-  shadow: "md",
+  shadow: "xs",
   rounded: "xl",
 };
 
 export function PrimaryActionButton({
   children,
   icon,
+  backgroundColor,
   onClick,
 }: {
   children: string;
   icon?: any;
+  backgroundColor?: any;
   onClick?: () => any;
 }) {
   return (
     <Button
       {...buttonProps}
-      colorScheme={"telegram"}
+      background={backgroundColor ? backgroundColor : "dodgerblue"}
       variant={"solid"}
-      leftIcon={icon ? <Icon as={icon} /> : undefined}
       onClick={onClick}
     >
+      {icon ? (
+        <Icon fontSize={buttonProps.fontSize}>{React.createElement(icon)}</Icon>
+      ) : undefined}{" "}
       {children}
     </Button>
   );
@@ -39,13 +45,10 @@ export function SecondaryActionButton({
   onClick?: () => any;
 }) {
   return (
-    <Button
-      {...buttonProps}
-      colorScheme={"gray"}
-      variant={"solid"}
-      leftIcon={icon ? <Icon as={icon} /> : undefined}
-      onClick={onClick}
-    >
+    <Button {...buttonProps} variant={"subtle"} onClick={onClick}>
+      {icon ? (
+        <Icon fontSize={buttonProps.fontSize}>{React.createElement(icon)}</Icon>
+      ) : undefined}
       {children}
     </Button>
   );

@@ -1,5 +1,6 @@
-import { Badge, useColorModeValue, HStack, Icon, Text } from "@chakra-ui/react";
+import { Badge, HStack, Icon, Text } from "@chakra-ui/react";
 import { FaCircle } from "react-icons/fa";
+import { useColorModeValue } from "@components/ui/color-mode";
 
 export function StatusBadge({
   children,
@@ -14,15 +15,22 @@ export function StatusBadge({
 
   return (
     <Badge
-      background={useColorModeValue(`${color}.100`, `${color}.800`)}
-      color={`${color}.500`}
+      colorPalette={color}
+      background={useColorModeValue(`colorPalette.100`, `colorPalette.800`)}
+      color={useColorModeValue(`colorPalette.600`, `colorPalette.500`)}
       px={2}
       py={compact ? 2 : 1}
       rounded={"full"}
     >
-      <HStack spacing={1.5}>
-        <Icon as={FaCircle} boxSize={1.5} />
-        {compact ? null : <Text as={"pre"}>{children?.toUpperCase()}</Text>}
+      <HStack gap={1.5}>
+        <Icon boxSize={1.5}>
+          <FaCircle />
+        </Icon>
+        {compact ? null : (
+          <Text as={"pre"} fontWeight={"bold"}>
+            {children?.toUpperCase()}
+          </Text>
+        )}
       </HStack>
     </Badge>
   );
@@ -37,8 +45,9 @@ export function CategoryBadge({
 }) {
   return (
     <Badge
-      background={useColorModeValue(`${color}.100`, `${color}.800`)}
-      color={`${color}.500`}
+      colorPalette={color}
+      background={useColorModeValue(`colorPalette.100`, `colorPalette.800`)}
+      color={`colorPalette.500`}
       px={2}
       py={1}
       rounded={"full"}

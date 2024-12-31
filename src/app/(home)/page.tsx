@@ -17,7 +17,7 @@ import TimeBasedOnlineStatusBadge from "@components/page/home/TimeBasedOnlineSta
 function Main() {
   return (
     <Box m={[4, 6]}>
-      <VStack align={"stretch"} spacing={8}>
+      <VStack align={"stretch"} gap={8}>
         <HStack justify={"space-between"}>
           <SectionText>{WorkData.current.role}</SectionText>
           <TimeBasedOnlineStatusBadge />
@@ -41,7 +41,7 @@ function Projects() {
         </SectionActionLink>
       }
     >
-      <VStack align={"stretch"} spacing={4}>
+      <VStack align={"stretch"} gap={4}>
         {ProjectsData.allProjects.slice(0, 3).map((project) => (
           <TitleDescriptionAvatarTile
             key={project.id}
@@ -84,7 +84,7 @@ function getTimeStringFromExp(exp) {
 function WorkExperience() {
   return (
     <HighlightedSection title="Work Experience">
-      <VStack align={"stretch"} spacing={4}>
+      <VStack align={"stretch"} gap={4}>
         {WorkData.experience.map((exp, index) => (
           <TitleDescriptionAvatarTile
             key={index}

@@ -1,13 +1,10 @@
-import {
-  VStack,
-  HStack,
-  useColorModeValue,
-  Icon,
-  Button,
-} from "@chakra-ui/react";
+import { VStack, HStack, Icon, Link } from "@chakra-ui/react";
 import { InnerBgCard } from "../../core/Cards";
 import { SectionText } from "../../core/Texts";
-import { Link } from "@chakra-ui/next-js";
+import { Button } from "@components/ui/button";
+import { useColorModeValue } from "@components/ui/color-mode";
+import React, { JSX } from "react";
+import NextLink from "next/link";
 
 export default function HighlightedSection({
   title,
@@ -22,7 +19,7 @@ export default function HighlightedSection({
 
   return (
     <InnerBgCard>
-      <VStack align={"stretch"} spacing={4}>
+      <VStack align={"stretch"} gap={4}>
         {noHeader ? null : (
           <HStack justify={"space-between"}>
             {title ? <SectionText>{title}</SectionText> : <div />}
@@ -47,15 +44,16 @@ export function SectionActionLink({
   url?: string;
 }) {
   return (
-    <Link href={url ?? ""}>
-      <Button
-        variant={"link"}
-        color={useColorModeValue("gray.500", "gray.500")}
-        rightIcon={icon ? <Icon as={icon} /> : undefined}
-        onClick={onClick}
-      >
-        {children}
-      </Button>
+    <Link asChild>
+      <NextLink href={url ?? ""}>
+        <Button
+          variant={"ghost"}
+          color={useColorModeValue("gray.500", "gray.500")}
+          onClick={onClick}
+        >
+          {children} <Icon>{React.createElement(icon)}</Icon>
+        </Button>
+      </NextLink>
     </Link>
   );
 }
