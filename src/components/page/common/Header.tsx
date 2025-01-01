@@ -5,6 +5,7 @@ import {
   IconButton,
   useBreakpointValue,
   Link,
+  Show,
 } from "@chakra-ui/react";
 import {
   FiBookOpen,
@@ -25,6 +26,8 @@ import { useColorMode, useColorModeValue } from "@components/ui/color-mode";
 import { Tooltip } from "@components/ui/tooltip";
 import React from "react";
 import NextLink from "next/link";
+import { useFeatureFlag } from "utils/features";
+import FeatureFlagsData from "data/features";
 
 function ColorModeToggleIconButton() {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -81,6 +84,9 @@ function HeaderIconButton({
 export default function Header() {
   const showActionButton = useBreakpointValue({ base: false, sm: true });
   const currentPathname = usePathname() ?? "";
+  const [, isBlogsFeatureEnabled, ,] = useFeatureFlag(
+    FeatureFlagsData.featuresIds.BLOGS,
+  );
 
   function isSelectedBasedOnUrl(relativeUrl) {
     return pathnameUtil.doPathnamesMatch(relativeUrl, currentPathname);
@@ -132,12 +138,16 @@ export default function Header() {
                   )}
                   url={homepageTabs.project.pathname}
                 />
-                <HeaderIconButton
-                  icon={FiBookOpen}
-                  label={homepageTabs.blog.name}
-                  isSelected={isSelectedBasedOnUrl(homepageTabs.blog.pathname)}
-                  url={homepageTabs.blog.pathname}
-                />
+                <Show when={isBlogsFeatureEnabled}>
+                  <HeaderIconButton
+                    icon={FiBookOpen}
+                    label={homepageTabs.blog.name}
+                    isSelected={isSelectedBasedOnUrl(
+                      homepageTabs.blog.pathname,
+                    )}
+                    url={homepageTabs.blog.pathname}
+                  />
+                </Show>
               </HStack>
             )}
 
