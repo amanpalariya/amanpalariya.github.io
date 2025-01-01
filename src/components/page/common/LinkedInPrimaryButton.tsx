@@ -1,18 +1,24 @@
-import { Link } from "@chakra-ui/next-js";
-import { Icon, IconButton, Tooltip } from "@chakra-ui/react";
+import { Icon, IconButton, Link } from "@chakra-ui/react";
 import { PrimaryActionButton } from "@components/core/Buttons";
 import { PersonalData } from "data";
 import { FaLinkedin } from "react-icons/fa";
+import { Tooltip } from "@components/ui/tooltip";
+import { useColorModeValue } from "@components/ui/color-mode";
 
 export default function LinkedInButton() {
   return (
     <Tooltip
-      label={`@${PersonalData.linkedIn.username}`}
+      content={`@${PersonalData.linkedIn.username}`}
       hasArrow
       closeOnScroll
     >
       <Link href={PersonalData.linkedIn.url} target="_blank">
-        <PrimaryActionButton icon={FaLinkedin}>LinkedIn</PrimaryActionButton>
+        <PrimaryActionButton
+          icon={FaLinkedin}
+          backgroundColor={useColorModeValue("#0077B5", "#70C0EC")}
+        >
+          LinkedIn
+        </PrimaryActionButton>
       </Link>
     </Tooltip>
   );
@@ -21,7 +27,7 @@ export default function LinkedInButton() {
 export function LinkedInButtonSmall() {
   return (
     <Tooltip
-      label={`@${PersonalData.linkedIn.username}`}
+      content={`@${PersonalData.linkedIn.username}`}
       hasArrow
       closeOnScroll
     >
@@ -29,10 +35,13 @@ export function LinkedInButtonSmall() {
         <IconButton
           as={"a"}
           rounded={"full"}
-          icon={<Icon as={FaLinkedin} />}
           colorScheme="blue"
           aria-label={"LinkedIn"}
-        />
+        >
+          <Icon>
+            <FaLinkedin />
+          </Icon>
+        </IconButton>
       </Link>
     </Tooltip>
   );

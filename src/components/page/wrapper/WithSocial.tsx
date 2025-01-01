@@ -4,7 +4,7 @@ import Social from "../common/SocialCard";
 export default function WithSocial({
   children,
 }: {
-  children: JSX.Element | JSX.Element[];
+  children: React.ReactNode;
 }) {
   return (
     <VStack align={"stretch"}>

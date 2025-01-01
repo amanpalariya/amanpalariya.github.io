@@ -1,4 +1,3 @@
-import { ColorModeScript, SlideFade } from "@chakra-ui/react";
 import { Providers } from "./providers";
 import { Metadata } from "next";
 import { PersonalData } from "data";
@@ -13,14 +12,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html>
+    <html lang={"en"} suppressHydrationWarning>
       <head />
       <body>
-        <Providers>
-          {/* Make Color mode to persists when you refresh the page. */}
-          <ColorModeScript />
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

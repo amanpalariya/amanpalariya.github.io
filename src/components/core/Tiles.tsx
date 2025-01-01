@@ -1,7 +1,5 @@
 import {
   HStack,
-  useColorModeValue,
-  Avatar,
   VStack,
   Icon,
   useBreakpointValue,
@@ -15,6 +13,8 @@ import NextLink from "next/link";
 import { FiChevronRight, FiArrowUpRight } from "react-icons/fi";
 import { InnerCard } from "./Cards";
 import { CategoryBadge } from "./Badges";
+import { useColorModeValue } from "@components/ui/color-mode";
+import { Avatar } from "@components/ui/avatar";
 
 function LinkOverlayIfUrlPresent({
   children,
@@ -27,12 +27,8 @@ function LinkOverlayIfUrlPresent({
 }) {
   return url ? (
     <LinkBox>
-      <LinkOverlay
-        as={NextLink}
-        href={url ?? ""}
-        target={isUrlExternal ? "_blank" : "_self"}
-      >
-        {children}
+      <LinkOverlay target={isUrlExternal ? "_blank" : "_self"} asChild>
+        <NextLink href={url ?? ""}>{children}</NextLink>
       </LinkOverlay>
     </LinkBox>
   ) : (
@@ -42,11 +38,9 @@ function LinkOverlayIfUrlPresent({
 
 function LinkHelperIcon({ isExternal }) {
   return (
-    <Icon
-      as={isExternal ? FiArrowUpRight : FiChevronRight}
-      color="gray.400"
-      boxSize={5}
-    />
+    <Icon color="gray.400" boxSize={5}>
+      {isExternal ? <FiArrowUpRight /> : <FiChevronRight />}
+    </Icon>
   );
 }
 
@@ -72,7 +66,7 @@ export function TitleDescriptionAvatarTile({
       <InnerCard>
         <VStack align={"stretch"}>
           <HStack justify={"space-between"}>
-            <HStack spacing={4}>
+            <HStack gap={4}>
               <Box
                 rounded={"full"}
                 p={1.5}
@@ -123,7 +117,7 @@ export function TitleCategoryAvatarTile({
       <InnerCard>
         <VStack align={"stretch"}>
           <HStack justify={"space-between"}>
-            <HStack spacing={4}>
+            <HStack gap={4}>
               <Box
                 rounded={"full"}
                 p={1.5}
@@ -136,7 +130,7 @@ export function TitleCategoryAvatarTile({
                 <Text fontSize={"lg"}>{title}</Text>
               </VStack>
             </HStack>
-            <HStack spacing={4}>
+            <HStack gap={4}>
               {showBadgeBelow ? null : categoryRow}
               {url ? <LinkHelperIcon isExternal={isUrlExternal} /> : null}
             </HStack>

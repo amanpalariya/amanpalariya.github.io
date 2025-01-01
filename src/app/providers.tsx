@@ -1,16 +1,15 @@
 "use client";
 
-import { CacheProvider } from "@chakra-ui/next-js";
+import { ThemeProvider } from "next-themes";
+import { system } from "../chakra-config";
 import { ChakraProvider } from "@chakra-ui/react";
-
-import "@fontsource/lexend";
-
-import theme from "../theme";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <CacheProvider>
-      <ChakraProvider theme={theme}>{children}</ChakraProvider>
-    </CacheProvider>
+    <ChakraProvider value={system}>
+      <ThemeProvider attribute="class" disableTransitionOnChange>
+        {children}
+      </ThemeProvider>
+    </ChakraProvider>
   );
 }

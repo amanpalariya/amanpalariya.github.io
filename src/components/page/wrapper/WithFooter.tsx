@@ -4,7 +4,7 @@ import Footer from "../common/Footer";
 export default function WithFooter({
   children,
 }: {
-  children: JSX.Element | JSX.Element[];
+  children: React.ReactNode;
 }) {
   return (
     <VStack align={"stretch"}>

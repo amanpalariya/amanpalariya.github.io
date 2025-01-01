@@ -1,6 +1,7 @@
 "use client";
 
-import { Box, Center, useColorModeValue, Image, Code } from "@chakra-ui/react";
+import { Box, Center, Code } from "@chakra-ui/react";
+import { useColorModeValue } from "@components/ui/color-mode";
 
 export function CodeBlock({ children }: { children: any }) {
   return (

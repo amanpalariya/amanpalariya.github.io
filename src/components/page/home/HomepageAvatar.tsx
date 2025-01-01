@@ -1,4 +1,6 @@
-import { useColorModeValue, Avatar, Box } from "@chakra-ui/react";
+import { Box, Image } from "@chakra-ui/react";
+import { useColorModeValue } from "@components/ui/color-mode";
+import { Avatar } from "@components/ui/avatar";
 
 export default function HomepageAvatar({
   src,
@@ -14,7 +16,7 @@ export default function HomepageAvatar({
       borderWidth={"thick"}
       borderColor={useColorModeValue("gray.200", "gray.600")}
     >
-      <Avatar src={src} name={name} size={"2xl"} />
+      <Avatar src={src} name={name} boxSize={"48"} />
     </Box>
   );
 }

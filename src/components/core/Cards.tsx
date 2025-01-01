@@ -1,4 +1,5 @@
-import { Box, Card, useColorModeValue } from "@chakra-ui/react";
+import { Box, Card } from "@chakra-ui/react";
+import {useColorModeValue} from "@components/ui/color-mode";
 
 export function HeaderCard({ children }) {
   return (
