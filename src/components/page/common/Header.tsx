@@ -5,6 +5,7 @@ import {
   IconButton,
   useBreakpointValue,
   Link,
+  Show,
 } from "@chakra-ui/react";
 import {
   FiBookOpen,
@@ -84,7 +85,7 @@ export default function Header() {
   const showActionButton = useBreakpointValue({ base: false, sm: true });
   const currentPathname = usePathname() ?? "";
   const [, isBlogsFeatureEnabled, ,] = useFeatureFlag(
-    FeatureFlagsData.featuresIds.BLOGS
+    FeatureFlagsData.featuresIds.BLOGS,
   );
 
   function isSelectedBasedOnUrl(relativeUrl) {
@@ -137,12 +138,16 @@ export default function Header() {
                   )}
                   url={homepageTabs.project.pathname}
                 />
-                <HeaderIconButton
-                  icon={FiBookOpen}
-                  label={homepageTabs.blog.name}
-                  isSelected={isSelectedBasedOnUrl(homepageTabs.blog.pathname)}
-                  url={homepageTabs.blog.pathname}
-                />
+                <Show when={isBlogsFeatureEnabled}>
+                  <HeaderIconButton
+                    icon={FiBookOpen}
+                    label={homepageTabs.blog.name}
+                    isSelected={isSelectedBasedOnUrl(
+                      homepageTabs.blog.pathname,
+                    )}
+                    url={homepageTabs.blog.pathname}
+                  />
+                </Show>
               </HStack>
             )}
 

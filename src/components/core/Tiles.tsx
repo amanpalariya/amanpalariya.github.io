@@ -7,7 +7,6 @@ import {
   Text,
   LinkBox,
   LinkOverlay,
-  Switch,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { FiChevronRight, FiArrowUpRight } from "react-icons/fi";
@@ -15,6 +14,7 @@ import { InnerCard } from "./Cards";
 import { CategoryBadge } from "./Badges";
 import { useColorModeValue } from "@components/ui/color-mode";
 import { Avatar } from "@components/ui/avatar";
+import { Switch } from "@components/ui/switch";
 
 function LinkOverlayIfUrlPresent({
   children,
@@ -148,13 +148,15 @@ export function TitleDescriptionAvatarToggleTile({
   avatarSrc,
   url,
   toggleValue,
+  onToggle,
   isUrlExternal = false,
 }: {
   title: string;
   description: string;
   avatarSrc?: string;
   url?: string;
-  toggleValue: boolean;
+  toggleValue?: boolean;
+  onToggle?: (checked: boolean) => void;
   isUrlExternal?: boolean;
 }) {
   const showDescriptionBelow = useBreakpointValue([true, false]);
@@ -166,7 +168,7 @@ export function TitleDescriptionAvatarToggleTile({
       <InnerCard>
         <VStack align={"stretch"}>
           <HStack justify={"space-between"}>
-            <HStack spacing={4}>
+            <HStack gap={4}>
               <Box
                 rounded={"full"}
                 p={1.5}
@@ -180,7 +182,10 @@ export function TitleDescriptionAvatarToggleTile({
                 {showDescriptionBelow ? null : descriptionJsx}
               </VStack>
             </HStack>
-            <Switch checked={true} />
+            <Switch
+              checked={toggleValue}
+              onCheckedChange={(details) => onToggle(details.checked)}
+            />
           </HStack>
           <Box mx={2}>{showDescriptionBelow ? descriptionJsx : null}</Box>
         </VStack>

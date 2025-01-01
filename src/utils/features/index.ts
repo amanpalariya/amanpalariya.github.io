@@ -8,9 +8,9 @@ class FeatureFlagsManager {
     return `ff.${featureFlagId}`;
   }
 
-  private getFeatureById(featureFlagId: string) {
+  getFeatureById(featureFlagId: string) {
     const featureFlag = FeatureFlagsData.flags.find(
-      (value, _, __) => value.id == featureFlagId
+      (value, _, __) => value.id == featureFlagId,
     );
     if (featureFlag) {
       return featureFlag;
@@ -22,7 +22,7 @@ class FeatureFlagsManager {
   getFeatureFlagValue(featureFlagId: string) {
     const featureFlag = this.getFeatureById(featureFlagId);
     const ffValueString = localStorage.getItem(
-      this.getLocalStorageKeyFromFeatureFlagId(featureFlagId)
+      this.getLocalStorageKeyFromFeatureFlagId(featureFlagId),
     );
     if (ffValueString === null) {
       return featureFlag.defaultValue;
@@ -30,6 +30,8 @@ class FeatureFlagsManager {
       return true;
     } else if (ffValueString.toLowerCase() === "false") {
       return false;
+    } else {
+      return featureFlag.defaultValue;
     }
   }
 
@@ -43,14 +45,14 @@ class FeatureFlagsManager {
 
   resetFeatureFlagValue(featureFlagId: string) {
     localStorage.removeItem(
-      this.getLocalStorageKeyFromFeatureFlagId(featureFlagId)
+      this.getLocalStorageKeyFromFeatureFlagId(featureFlagId),
     );
   }
 
   setFeatureFlagValue(featureFlagId: string, value: boolean) {
     localStorage.setItem(
       this.getLocalStorageKeyFromFeatureFlagId(featureFlagId),
-      value ? "true" : "false"
+      value ? "true" : "false",
     );
   }
 
@@ -59,14 +61,17 @@ class FeatureFlagsManager {
   }
 
   disableFeatureFlag(featureFlagId: string) {
-    this.setFeatureFlagValue(featureFlagId, true);
+    this.setFeatureFlagValue(featureFlagId, false);
   }
 }
 
 const featureFlagsManager = new FeatureFlagsManager();
 
-export function useFeatureFlag(featureFlagId: string) {
+export function useFeatureFlag(
+  featureFlagId: string,
+): [boolean, boolean, (newValue: boolean) => void, () => void] {
   const [isLoading, setIsLoading] = useState(true);
+  const [refresh, setRefresh] = useState<boolean>(false);
 
   useEffect(() => {
     if (localStorage != undefined) {
@@ -75,14 +80,24 @@ export function useFeatureFlag(featureFlagId: string) {
   }, []);
 
   if (isLoading) {
-    return [isLoading, undefined, undefined, undefined];
+    return [
+      isLoading,
+      featureFlagsManager.getFeatureById(featureFlagId).defaultValue,
+      (_) => {},
+      () => {},
+    ];
   } else {
     return [
       isLoading,
       featureFlagsManager.getFeatureFlagValue(featureFlagId),
-      (newValue: boolean) =>
-        featureFlagsManager.setFeatureFlagValue(featureFlagId, newValue),
-      () => featureFlagsManager.resetFeatureFlagValue(featureFlagId),
+      (newValue: boolean) => {
+        featureFlagsManager.setFeatureFlagValue(featureFlagId, newValue);
+        setRefresh(!refresh);
+      },
+      () => {
+        featureFlagsManager.resetFeatureFlagValue(featureFlagId);
+        setRefresh(!refresh);
+      },
     ];
   }
 }

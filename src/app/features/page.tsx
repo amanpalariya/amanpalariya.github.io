@@ -13,8 +13,8 @@ import { useFeatureFlag } from "utils/features";
 
 function Main() {
   return (
-    <Box m={[4, 6]} letterSpacing={"wide"} lineHeight={"7"}>
-      <VStack align={"stretch"} spacing={5}>
+    <Box m={[4, 6]} letterSpacing={"wide"} lineHeight={"tall"}>
+      <VStack align={"stretch"} gap={5}>
         <SectionText>{FeatureFlagsData.featuresPage.title}</SectionText>
         <Spacer h={4} />
         <Heading1>{FeatureFlagsData.featuresPage.title}</Heading1>
@@ -27,7 +27,7 @@ function Main() {
 function NoFeatureFlagsElement() {
   return (
     <HighlightedSection>
-      <VStack align={"center"} spacing={4} py={16}>
+      <VStack align={"center"} gap={4} py={16}>
         <Icon as={FiTool} boxSize={20} color={"gray.500"} />
         <SubtitleText>{"There are no feature flags!"}</SubtitleText>
       </VStack>
@@ -36,16 +36,18 @@ function NoFeatureFlagsElement() {
 }
 
 function FeatureFlagTile({ featureFlag }: { featureFlag: FeatureFlagEntry }) {
-  const [isLoading, featureFlagValue, setFeatureFlag, resetFeatureFlag] =
-    useFeatureFlag(featureFlag.id);
+  const [isLoading, featureFlagValue, setFeatureFlag] = useFeatureFlag(
+    featureFlag.id,
+  );
 
   return isLoading ? (
-    <Skeleton />
+    <Skeleton w={"full"} h={"24"} rounded={"2xl"} />
   ) : (
     <TitleDescriptionAvatarToggleTile
       title={featureFlag.name}
       description={featureFlag.desc}
-      toggleValue={featureFlag.defaultValue}
+      toggleValue={featureFlagValue}
+      onToggle={setFeatureFlag}
     />
   );
 }
@@ -53,7 +55,7 @@ function FeatureFlagTile({ featureFlag }: { featureFlag: FeatureFlagEntry }) {
 function FeatureFlagsListElement() {
   return (
     <HighlightedSection>
-      <VStack align={"stretch"} spacing={4}>
+      <VStack align={"stretch"} gap={4}>
         {FeatureFlagsData.flags.map((flag) => (
           <FeatureFlagTile key={flag.id} featureFlag={flag} />
         ))}
