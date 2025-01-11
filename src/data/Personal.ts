@@ -19,7 +19,7 @@ const PersonalData = {
     countryShort: "IN",
     timeZone: "Asia/Kolkata",
   },
-  email: "amanpalariya@gmail.com",
+  email: "aman.palariya@gmail.com",
   linkedIn: {
     username: "amanpalariya",
     url: "https://linkedin.com/in/amanpalariya",

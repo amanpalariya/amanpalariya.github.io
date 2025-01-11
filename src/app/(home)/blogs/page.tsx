@@ -5,7 +5,7 @@ import { Heading1, SectionText, SubtitleText } from "@components/core/Texts";
 import { TitleDescriptionAvatarTile } from "@components/core/Tiles";
 import HighlightedSection from "@components/page/common/HighlightedSection";
 import { homepageTabs } from "app/route-info";
-import BlogsData from "data/blog";
+import BlogsData from "data/blogs";
 import { FiBookmark } from "react-icons/fi";
 import { useFeatureFlag } from "../../../utils/features";
 import FeatureFlagsData from "../../../data/features";
@@ -15,7 +15,7 @@ function Main() {
   return (
     <Box m={[4, 6]} letterSpacing={"wide"} lineHeight={"tall"}>
       <VStack align={"stretch"} gap={5}>
-        <SectionText>{homepageTabs.blog.name}</SectionText>
+        <SectionText>{homepageTabs.blogs.name}</SectionText>
         <Spacer h={4} />
         <Heading1>{BlogsData.blogsPage.title}</Heading1>
         <SubtitleText>{BlogsData.blogsPage.subtitle}</SubtitleText>
@@ -48,7 +48,7 @@ function BlogsListElement() {
             description={blog.description}
             url={
               blog.content
-                ? homepageTabs.blog.getSubpagePathname(blog.id)
+                ? homepageTabs.blogs.getSubpagePathname(blog.id)
                 : blog.url
             }
             isUrlExternal={blog.content ? false : true}

@@ -3,9 +3,9 @@ import {
   HStack,
   Icon,
   IconButton,
-  useBreakpointValue,
   Link,
   Show,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import {
   FiBookOpen,
@@ -132,20 +132,20 @@ export default function Header() {
                 />
                 <HeaderIconButton
                   icon={FiGrid}
-                  label={homepageTabs.project.name}
+                  label={homepageTabs.projects.name}
                   isSelected={isSelectedBasedOnUrl(
-                    homepageTabs.project.pathname,
+                    homepageTabs.projects.pathname,
                   )}
-                  url={homepageTabs.project.pathname}
+                  url={homepageTabs.projects.pathname}
                 />
                 <Show when={isBlogsFeatureEnabled}>
                   <HeaderIconButton
                     icon={FiBookOpen}
-                    label={homepageTabs.blog.name}
+                    label={homepageTabs.blogs.name}
                     isSelected={isSelectedBasedOnUrl(
-                      homepageTabs.blog.pathname,
+                      homepageTabs.blogs.pathname,
                     )}
-                    url={homepageTabs.blog.pathname}
+                    url={homepageTabs.blogs.pathname}
                   />
                 </Show>
               </HStack>
