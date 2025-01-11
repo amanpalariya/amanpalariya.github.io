@@ -5,14 +5,14 @@ import { Heading1, SectionText, SubtitleText } from "@components/core/Texts";
 import { TitleDescriptionAvatarTile } from "@components/core/Tiles";
 import HighlightedSection from "@components/page/common/HighlightedSection";
 import { homepageTabs } from "app/route-info";
-import ProjectsData from "data/project";
+import ProjectsData from "data/projects";
 import { FiTool } from "react-icons/fi";
 
 function Main() {
   return (
     <Box m={[4, 6]} letterSpacing={"wide"} lineHeight={"tall"}>
       <VStack align={"stretch"} gap={"5"}>
-        <SectionText>{homepageTabs.project.name}</SectionText>
+        <SectionText>{homepageTabs.projects.name}</SectionText>
         <Spacer h={4} />
         <Heading1>{ProjectsData.projectsPage.title}</Heading1>
         <SubtitleText>{ProjectsData.projectsPage.subtitle}</SubtitleText>
@@ -45,7 +45,7 @@ function ProjectsListElement() {
             description={project.description}
             url={
               project.content
-                ? homepageTabs.project.getSubpagePathname(project.id)
+                ? homepageTabs.projects.getSubpagePathname(project.id)
                 : project.url
             }
             isUrlExternal={project.content ? false : true}

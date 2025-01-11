@@ -9,7 +9,7 @@ import HighlightedSection, {
   SectionActionLink,
 } from "@components/page/common/HighlightedSection";
 import Profile from "@components/page/home/Profile";
-import ProjectsData from "data/project";
+import ProjectsData from "data/projects";
 import { homepageTabs } from "app/route-info";
 import { WorkData } from "data";
 import TimeBasedOnlineStatusBadge from "@components/page/home/TimeBasedOnlineStatusBadge";
@@ -35,7 +35,7 @@ function Projects() {
       titleActionElement={
         <SectionActionLink
           icon={FiChevronRight}
-          url={homepageTabs.project.pathname}
+          url={homepageTabs.projects.pathname}
         >
           View All
         </SectionActionLink>
@@ -49,7 +49,7 @@ function Projects() {
             description={project.description}
             url={
               project.content
-                ? homepageTabs.project.getSubpagePathname(project.id)
+                ? homepageTabs.projects.getSubpagePathname(project.id)
                 : project.url
             }
             isUrlExternal={project.content ? false : true}

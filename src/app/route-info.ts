@@ -13,13 +13,13 @@ export const homepageTabs = {
     pathname: "/about/",
     name: "About",
   },
-  project: {
-    pathname: "/project/",
+  projects: {
+    pathname: "/projects/",
     name: "Projects",
     getSubpagePathname,
   },
-  blog: {
-    pathname: "/blog/",
+  blogs: {
+    pathname: "/blogs/",
     name: "Blogs",
     getSubpagePathname,
   },

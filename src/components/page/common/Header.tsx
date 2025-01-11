@@ -126,17 +126,17 @@ export default function Header() {
                 />
                 <HeaderIconButton
                   icon={FiGrid}
-                  label={homepageTabs.project.name}
+                  label={homepageTabs.projects.name}
                   isSelected={isSelectedBasedOnUrl(
-                    homepageTabs.project.pathname,
+                    homepageTabs.projects.pathname,
                   )}
-                  url={homepageTabs.project.pathname}
+                  url={homepageTabs.projects.pathname}
                 />
                 <HeaderIconButton
                   icon={FiBookOpen}
-                  label={homepageTabs.blog.name}
-                  isSelected={isSelectedBasedOnUrl(homepageTabs.blog.pathname)}
-                  url={homepageTabs.blog.pathname}
+                  label={homepageTabs.blogs.name}
+                  isSelected={isSelectedBasedOnUrl(homepageTabs.blogs.pathname)}
+                  url={homepageTabs.blogs.pathname}
                 />
               </HStack>
             )}
