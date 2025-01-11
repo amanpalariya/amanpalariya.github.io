@@ -14,6 +14,7 @@ import { InnerCard } from "./Cards";
 import { CategoryBadge } from "./Badges";
 import { useColorModeValue } from "@components/ui/color-mode";
 import { Avatar } from "@components/ui/avatar";
+import { Switch } from "@components/ui/switch";
 
 function LinkOverlayIfUrlPresent({
   children,
@@ -135,6 +136,58 @@ export function TitleCategoryAvatarTile({
             </HStack>
           </HStack>
           <Box>{showBadgeBelow ? categoryRow : null}</Box>
+        </VStack>
+      </InnerCard>
+    </LinkOverlayIfUrlPresent>
+  );
+}
+
+export function TitleDescriptionAvatarToggleTile({
+  title,
+  description,
+  avatarSrc,
+  url,
+  toggleValue,
+  onToggle,
+  isUrlExternal = false,
+}: {
+  title: string;
+  description: string;
+  avatarSrc?: string;
+  url?: string;
+  toggleValue?: boolean;
+  onToggle?: (checked: boolean) => void;
+  isUrlExternal?: boolean;
+}) {
+  const showDescriptionBelow = useBreakpointValue([true, false]);
+
+  const descriptionJsx = <Text color={"gray.500"}>{description}</Text>;
+
+  return (
+    <LinkOverlayIfUrlPresent url={url} isUrlExternal={isUrlExternal}>
+      <InnerCard>
+        <VStack align={"stretch"}>
+          <HStack justify={"space-between"}>
+            <HStack gap={4}>
+              <Box
+                rounded={"full"}
+                p={1.5}
+                borderWidth={"medium"}
+                borderColor={useColorModeValue("gray.200", "gray.600")}
+              >
+                <Avatar size={"md"} name={title} src={avatarSrc} />
+              </Box>
+              <VStack align={"start"}>
+                <Text fontSize={"lg"}>{title}</Text>
+                {showDescriptionBelow ? null : descriptionJsx}
+              </VStack>
+            </HStack>
+            <Switch
+              checked={toggleValue}
+              onCheckedChange={(details) => onToggle(details.checked)}
+            />
+          </HStack>
+          <Box mx={2}>{showDescriptionBelow ? descriptionJsx : null}</Box>
         </VStack>
       </InnerCard>
     </LinkOverlayIfUrlPresent>

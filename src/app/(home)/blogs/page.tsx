@@ -7,6 +7,9 @@ import HighlightedSection from "@components/page/common/HighlightedSection";
 import { homepageTabs } from "app/route-info";
 import BlogsData from "data/blogs";
 import { FiBookmark } from "react-icons/fi";
+import { useFeatureFlag } from "../../../utils/features";
+import FeatureFlagsData from "../../../data/features";
+import { notFound } from "next/navigation";
 
 function Main() {
   return (
@@ -61,10 +64,20 @@ function Blogs() {
 }
 
 export default function Home() {
-  return (
-    <VStack align={"stretch"}>
-      <Main />
-      <Blogs />
-    </VStack>
+  const [isLoading, isBlogsFeatureEnabled, ,] = useFeatureFlag(
+    FeatureFlagsData.featuresIds.BLOGS,
   );
+
+  if (isLoading) {
+    return;
+  } else if (!isBlogsFeatureEnabled) {
+    return notFound();
+  } else {
+    return (
+      <VStack align={"stretch"}>
+        <Main />
+        <Blogs />
+      </VStack>
+    );
+  }
 }
