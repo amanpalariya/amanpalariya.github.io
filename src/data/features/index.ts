@@ -7,12 +7,6 @@ export interface FeatureFlagEntry {
 
 const allFeatureFlags: FeatureFlagEntry[] = [
   {
-    name: "Goal Keeper",
-    desc: "View and manage goals",
-    id: "goal.keeper",
-    defaultValue: false,
-  },
-  {
     name: "Blogs",
     desc: "View blogs",
     id: "blogs",
