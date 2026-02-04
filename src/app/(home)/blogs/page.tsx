@@ -7,8 +7,8 @@ import HighlightedSection from "@components/page/common/HighlightedSection";
 import { homepageTabs } from "app/route-info";
 import BlogsData from "data/blogs";
 import { FiBookmark } from "react-icons/fi";
-import { useFeatureFlag } from "../../../utils/features";
-import FeatureFlagsData from "../../../data/features";
+import { useFeatureFlag } from "utils/features";
+import FeatureFlagsData from "data/features";
 import { notFound } from "next/navigation";
 
 function Main() {

@@ -1,5 +1,3 @@
-import * as art from "@components/article/Components";
-
 interface Project {
   id: string;
   title: string;
