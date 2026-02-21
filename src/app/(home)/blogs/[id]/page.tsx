@@ -33,5 +33,8 @@ export default async function BlogDetailPage({
 }
 
 export function generateStaticParams() {
+  if (blogIds.length === 0) {
+    return [{ id: "__no_blogs__" }];
+  }
   return blogIds.map((id) => ({ id }));
 }
