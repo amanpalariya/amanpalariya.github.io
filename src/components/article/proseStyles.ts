@@ -95,6 +95,9 @@ export function useProseStyles() {
     "& li": {
       marginBottom: 2,
     },
+    "& li::marker": {
+      color: useColorModeValue("gray.400", "gray.500"),
+    },
     "& li > p": {
       marginBottom: 2,
     },
