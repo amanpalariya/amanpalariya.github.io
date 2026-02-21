@@ -23,6 +23,8 @@ export function useProseStyles() {
     letterSpacing: "0.01em",
     maxWidth: "720px",
     marginInline: "auto",
+    wordBreak: "break-word",
+    overflowWrap: "anywhere",
     "& > *": {
       marginTop: 0,
       marginBottom: 7,
@@ -73,6 +75,7 @@ export function useProseStyles() {
       textUnderlineOffset: "3px",
       textDecorationThickness: "from-font",
       textDecorationStyle: "dotted",
+      overflowWrap: "anywhere",
     },
     "& a:hover": {
       color: useColorModeValue("teal.700", "teal.200"),
@@ -112,14 +115,14 @@ export function useProseStyles() {
     "& pre": {
       background: preBg,
       color: preTextColor,
-      padding: [4, 6],
-      borderRadius: "lg",
-      overflowX: "auto",
+      padding: [4, 5],
+      borderRadius: "2xl",
+      overflowX: "hidden",
       border: "1px solid",
       borderColor: preBorder,
       fontSize: "sm",
       marginY: 6,
-      boxShadow: useColorModeValue("md", "dark-lg"),
+      marginX: [-2, -3],
     },
     "& pre code": {
       background: "transparent",
@@ -127,6 +130,10 @@ export function useProseStyles() {
       fontSize: "inherit",
       color: "inherit",
       fontFamily: "mono",
+      whiteSpace: "pre-wrap",
+      wordBreak: "break-word",
+      border: "none",
+      boxShadow: "none",
     },
     "& pre .hljs-comment, & pre .hljs-quote": {
       color: useColorModeValue("gray.500", "gray.400"),
