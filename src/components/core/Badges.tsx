@@ -49,10 +49,12 @@ export function CategoryBadge({
       background={useColorModeValue(`colorPalette.100`, `colorPalette.800`)}
       color={`colorPalette.500`}
       px={2}
-      py={1}
+      py={0.5}
       rounded={"full"}
     >
-      <Text as={"pre"}>{children?.toUpperCase()}</Text>
+      <Text as={"pre"} fontSize={"xs"} letterSpacing={"wide"}>
+        {children?.toUpperCase()}
+      </Text>
     </Badge>
   );
 }

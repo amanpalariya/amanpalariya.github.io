@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Heading1,
   Heading2,
@@ -6,9 +8,12 @@ import {
   ParagraphText,
 } from "@components/core/Texts";
 
-import { Icon, Text } from "@chakra-ui/react";
+import { HStack, Icon, Text, VStack } from "@chakra-ui/react";
 import { ImageBlock } from "@components/core/Images";
 import { FiArrowUpRight } from "react-icons/fi";
+import { CodeBlock } from "@components/core/Blocks";
+import { useState } from "react";
+import { PrimaryActionButton } from "@components/core/Buttons";
 
 function ArticleHeading1({ children }: { children: any }) {
   return <Heading1>{children}</Heading1>;
@@ -75,6 +80,25 @@ function ArticleLink({
   );
 }
 
+function ArticleCodeBlock({ children }: { children: any }) {
+  return <CodeBlock>{children}</CodeBlock>;
+}
+
+function InteractiveCounter() {
+  const [count, setCount] = useState(0);
+  return (
+    <VStack align={"start"} gap={3}>
+      <HStack>
+        <Text as="b">Interactive Counter:</Text>
+        <Text>{count}</Text>
+      </HStack>
+      <PrimaryActionButton onClick={() => setCount((c) => c + 1)}>
+        Increment
+      </PrimaryActionButton>
+    </VStack>
+  );
+}
+
 export const h1 = ArticleHeading1;
 export const h2 = ArticleHeading2;
 export const h3 = ArticleHeading3;
@@ -83,3 +107,5 @@ export const link = ArticleLink;
 export const para = ArticleParagraph;
 export const b = ArticleBold;
 export const i = ArticleItalic;
+export const code = ArticleCodeBlock;
+export const interactive = InteractiveCounter;

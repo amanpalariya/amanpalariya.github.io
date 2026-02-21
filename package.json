@@ -9,11 +9,17 @@
     "@chakra-ui/react": "^3.2.4",
     "@emotion/react": "^11.14.0",
     "@fontsource/lexend": "^5.0.12",
+    "gray-matter": "^4.0.3",
     "next": "^15.1.3",
     "next-themes": "^0.4.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-icons": "^5.4.0"
+    "react-icons": "^5.4.0",
+    "rehype-highlight": "^7.0.2",
+    "rehype-stringify": "^10.0.1",
+    "remark": "^15.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-rehype": "^11.1.2"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
