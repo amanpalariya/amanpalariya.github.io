@@ -1,6 +1,6 @@
 "use client";
 
-import { SecondaryActionButton } from "@components/core/Buttons";
+import { HStack, Icon } from "@chakra-ui/react";
 import { useState } from "react";
 import { FiCheck, FiLink } from "react-icons/fi";
 import { Tooltip } from "@components/ui/tooltip";
@@ -19,12 +19,18 @@ export default function CopyLinkSecondaryButton() {
 
   return (
     <Tooltip content={"Copy link"} hasArrow shouldWrapChildren closeOnScroll>
-      <SecondaryActionButton
-        icon={clicked ? FiCheck : FiLink}
+      <HStack
+        as="button"
+        type="button"
+        gap={2}
         onClick={changeIconAndCopy}
+        fontSize="sm"
+        color="gray.500"
+        _hover={{ color: "gray.700" }}
       >
-        Copy link
-      </SecondaryActionButton>
+        <Icon boxSize={4}>{clicked ? <FiCheck /> : <FiLink />}</Icon>
+        <span>Share</span>
+      </HStack>
     </Tooltip>
   );
 }

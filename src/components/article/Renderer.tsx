@@ -85,3 +85,56 @@ export default function ArticleRenderer({
     </Box>
   );
 }
+
+export function HtmlArticleRenderer({
+  html,
+  title,
+  showTitle = true,
+}: {
+  html: string;
+  title: string;
+  showTitle?: boolean;
+}) {
+  return (
+    <Box m={[4, 6]} letterSpacing={"wide"}>
+      <VStack align={"stretch"} gap={"5"}>
+        {showTitle ? (
+          <>
+            <SectionText>{title}</SectionText>
+            <Spacer h={2} />
+          </>
+        ) : null}
+        <Box
+          sx={{
+            "h1": { fontSize: "2xl", fontWeight: "bold" },
+            "h2": { fontSize: "xl", fontWeight: "bold" },
+            "h3": { fontSize: "lg", fontWeight: "bold" },
+            "p": { lineHeight: "tall", marginBottom: 4 },
+            "p:last-of-type": { marginBottom: 0 },
+            "ul, ol": { paddingLeft: 6 },
+            "li": { marginBottom: 2 },
+            "blockquote": {
+              borderLeft: "4px solid",
+              borderColor: "gray.200",
+              paddingLeft: 4,
+              color: "gray.600",
+            },
+            "pre": {
+              background: "gray.900",
+              color: "white",
+              padding: 4,
+              borderRadius: "md",
+              overflowX: "auto",
+            },
+            "code": {
+              fontFamily: "mono",
+            },
+            "img": { maxWidth: "100%", borderRadius: "md" },
+            "a": { color: "teal.500", textDecoration: "underline" },
+          }}
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      </VStack>
+    </Box>
+  );
+}
