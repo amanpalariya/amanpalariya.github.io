@@ -1,22 +1,33 @@
-"use client";
-
-import ArticleRenderer from "@components/article/Renderer";
+import { HtmlArticleRenderer } from "@components/article/Renderer";
 import { homepageTabs } from "app/route-info";
 import AboutArticle from "data/about";
+import { remark } from "remark";
+import remarkGfm from "remark-gfm";
+import remarkRehype from "remark-rehype";
+import rehypeStringify from "rehype-stringify";
+import rehypeHighlight from "rehype-highlight";
 
-function Main() {
+async function getHtmlFromMarkdown(markdown: string) {
+  const result = await remark()
+    .use(remarkGfm)
+    .use(remarkRehype)
+    .use(rehypeHighlight)
+    .use(rehypeStringify)
+    .process(markdown);
+  return result.toString();
+}
+
+async function Main() {
+  const html = await getHtmlFromMarkdown(AboutArticle);
   return (
-    <ArticleRenderer
+    <HtmlArticleRenderer
       title={homepageTabs.about.name}
-      content={AboutArticle.content}
+      html={html}
+      showTitle
     />
   );
 }
 
 export default function About() {
-  return (
-    <>
-      <Main />
-    </>
-  );
+  return <Main />;
 }

@@ -89,9 +89,10 @@ export function ParagraphText({
   return (
     <Text
       color={useColorModeValue("gray.700", "gray.200")}
-      fontSize={"md"}
+      fontSize={["md", "lg"]}
       fontWeight={"normal"}
-      lineHeight={"tall"}
+      lineHeight={"1.42"}
+      letterSpacing={"0.01em"}
       textAlign={justifyText ? "justify" : "left"}
     >
       {children}
