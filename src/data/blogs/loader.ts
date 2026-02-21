@@ -32,7 +32,8 @@ export function getBlogIds(): string[] {
 }
 
 export function getAllBlogs(): BlogMeta[] {
-  return getBlogIds().map((id) => {
+  return getBlogIds()
+    .map((id) => {
     const fullPath = path.join(markdownDirectory, `${id}.md`);
     const fileContents = fs.readFileSync(fullPath, "utf8");
     const { data } = matter(fileContents);
@@ -44,7 +45,12 @@ export function getAllBlogs(): BlogMeta[] {
       published: data.published ? String(data.published) : undefined,
       updated: data.updated ? String(data.updated) : undefined,
     };
-  });
+    })
+    .sort((a, b) => {
+      const aDate = a.published ? Date.parse(a.published) : 0;
+      const bDate = b.published ? Date.parse(b.published) : 0;
+      return bDate - aDate;
+    });
 }
 
 export function getBlogById(id: string): BlogPost | null {
