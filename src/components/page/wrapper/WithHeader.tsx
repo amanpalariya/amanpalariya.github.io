@@ -9,7 +9,7 @@ export default function WithHeader({
   return (
     <>
       <Header />
-      <Spacer h={24} />
+      <Spacer h={[20, 24]} />
       {children}
     </>
   );
