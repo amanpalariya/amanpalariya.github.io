@@ -9,6 +9,7 @@ import remarkToc from "remark-toc";
 import rehypeRaw from "rehype-raw";
 import rehypeKatex from "rehype-katex";
 import rehypeSlug from "rehype-slug";
+import rehypeExternalLinks from "rehype-external-links";
 import rehypeStringify from "rehype-stringify";
 import rehypeHighlight from "rehype-highlight";
 import { notFound } from "next/navigation";
@@ -21,6 +22,11 @@ async function getHtmlFromMarkdown(markdown: string) {
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeRaw)
     .use(rehypeSlug)
+    .use(rehypeExternalLinks, {
+      target: "_blank",
+      rel: ["noopener", "noreferrer"],
+      properties: { className: ["external-link"] },
+    })
     .use(rehypeKatex)
     .use(rehypeHighlight)
     .use(rehypeStringify, { allowDangerousHtml: true })
