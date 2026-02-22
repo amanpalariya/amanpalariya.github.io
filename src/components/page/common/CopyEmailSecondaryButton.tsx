@@ -17,8 +17,7 @@ export default function CopyEmailButton() {
   return (
     <Tooltip
       content={PersonalData.email}
-      hasArrow
-      shouldWrapChildren
+      showArrow
       closeOnScroll
     >
       <SecondaryActionButton

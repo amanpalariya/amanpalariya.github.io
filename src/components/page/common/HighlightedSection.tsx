@@ -44,16 +44,14 @@ export function SectionActionLink({
   url?: string;
 }) {
   return (
-    <Link asChild>
-      <NextLink href={url ?? ""}>
-        <Button
-          variant={"ghost"}
-          color={useColorModeValue("gray.500", "gray.500")}
-          onClick={onClick}
-        >
-          {children} <Icon>{React.createElement(icon)}</Icon>
-        </Button>
-      </NextLink>
-    </Link>
+    <Button
+      as={NextLink}
+      href={url ?? ""}
+      variant={"ghost"}
+      color={useColorModeValue("gray.500", "gray.500")}
+      onClick={onClick}
+    >
+      {children} <Icon>{React.createElement(icon)}</Icon>
+    </Button>
   );
 }

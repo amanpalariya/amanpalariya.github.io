@@ -63,19 +63,16 @@ function HeaderIconButton({
 
   return (
     <Tooltip content={label} closeOnScroll>
-      <Link rounded={"full"} asChild>
-        <NextLink href={url ?? ""}>
-          <IconButton
-            as={"a"}
-            borderRadius={"full"}
-            borderWidth={"thick"}
-            variant={isSelected ? "surface" : "ghost"}
-            color={isSelected ? selectedColor : unSelectedColor}
-            aria-label={label}
-          >
-            <Icon boxSize={6}>{React.createElement(icon)}</Icon>
-          </IconButton>
-        </NextLink>
+      <Link rounded={"full"} as={NextLink} href={url ?? ""}>
+        <IconButton
+          borderRadius={"full"}
+          borderWidth={"thick"}
+          variant={isSelected ? "surface" : "ghost"}
+          color={isSelected ? selectedColor : unSelectedColor}
+          aria-label={label}
+        >
+          <Icon boxSize={6}>{React.createElement(icon)}</Icon>
+        </IconButton>
       </Link>
     </Tooltip>
   );

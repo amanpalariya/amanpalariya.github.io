@@ -18,7 +18,7 @@ export default function CopyLinkSecondaryButton() {
   }
 
   return (
-    <Tooltip content={"Copy link"} hasArrow shouldWrapChildren closeOnScroll>
+    <Tooltip content={"Copy link"} showArrow closeOnScroll>
       <HStack
         as="button"
         type="button"
