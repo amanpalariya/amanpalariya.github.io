@@ -8,10 +8,9 @@ import {
   ParagraphText,
 } from "@components/core/Texts";
 
-import { HStack, Icon, Text, VStack } from "@chakra-ui/react";
+import { CodeBlock, HStack, Icon, Text, VStack } from "@chakra-ui/react";
 import { ImageBlock } from "@components/core/Images";
 import { FiArrowUpRight } from "react-icons/fi";
-import { CodeBlock } from "@components/core/Blocks";
 import { useState } from "react";
 import { PrimaryActionButton } from "@components/core/Buttons";
 
@@ -81,7 +80,15 @@ function ArticleLink({
 }
 
 function ArticleCodeBlock({ children }: { children: any }) {
-  return <CodeBlock>{children}</CodeBlock>;
+  return (
+    <CodeBlock.Root code={String(children)} language="plaintext">
+      <CodeBlock.Content>
+        <CodeBlock.Code>
+          <CodeBlock.CodeText />
+        </CodeBlock.Code>
+      </CodeBlock.Content>
+    </CodeBlock.Root>
+  );
 }
 
 function InteractiveCounter() {
