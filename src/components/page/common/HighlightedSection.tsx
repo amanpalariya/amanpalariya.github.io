@@ -1,7 +1,6 @@
-import { VStack, HStack, Icon, Link } from "@chakra-ui/react";
+import { Button, VStack, HStack, Icon, Link } from "@chakra-ui/react";
 import { InnerBgCard } from "../../core/Cards";
 import { SectionText } from "../../core/Texts";
-import { Button } from "@components/ui/button";
 import { useColorModeValue } from "@components/ui/color-mode";
 import React, { JSX } from "react";
 import NextLink from "next/link";
