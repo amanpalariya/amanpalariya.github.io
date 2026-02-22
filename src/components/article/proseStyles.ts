@@ -168,9 +168,18 @@ export function useProseStyles() {
     },
     "& img": {
       maxWidth: "100%",
+      height: "auto",
+      display: "block",
+      marginInline: "auto",
       borderRadius: "lg",
       marginY: 6,
       boxShadow: useColorModeValue("md", "dark-lg"),
+    },
+    "& figure": {
+      marginY: 6,
+      marginInline: "auto",
+      width: "fit-content",
+      maxWidth: "100%",
     },
     "& figcaption": {
       fontSize: "sm",

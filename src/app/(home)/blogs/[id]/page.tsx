@@ -4,6 +4,7 @@ import { getBlogById } from "data/blogs/loader";
 import { remark } from "remark";
 import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
+import rehypeRaw from "rehype-raw";
 import rehypeStringify from "rehype-stringify";
 import rehypeHighlight from "rehype-highlight";
 import { notFound } from "next/navigation";
@@ -11,9 +12,10 @@ import { notFound } from "next/navigation";
 async function getHtmlFromMarkdown(markdown: string) {
   const result = await remark()
     .use(remarkGfm)
-    .use(remarkRehype)
+    .use(remarkRehype, { allowDangerousHtml: true })
+    .use(rehypeRaw)
     .use(rehypeHighlight)
-    .use(rehypeStringify)
+    .use(rehypeStringify, { allowDangerousHtml: true })
     .process(markdown);
   return result.toString();
 }
