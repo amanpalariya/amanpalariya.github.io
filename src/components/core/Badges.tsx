@@ -16,8 +16,8 @@ export function StatusBadge({
   return (
     <Badge
       colorPalette={color}
-      background={useColorModeValue(`colorPalette.100`, `colorPalette.800`)}
-      color={useColorModeValue(`colorPalette.600`, `colorPalette.500`)}
+      background={useColorModeValue(`colorPalette.100`, `colorPalette.700`)}
+      color={useColorModeValue(`colorPalette.600`, `colorPalette.200`)}
       px={2}
       py={compact ? 2 : 1}
       rounded={"full"}
@@ -46,8 +46,8 @@ export function CategoryBadge({
   return (
     <Badge
       colorPalette={color}
-      background={useColorModeValue(`colorPalette.100`, `colorPalette.800`)}
-      color={`colorPalette.500`}
+      background={useColorModeValue(`colorPalette.100`, `colorPalette.700`)}
+      color={useColorModeValue(`colorPalette.500`, `colorPalette.200`)}
       px={2}
       py={0.5}
       rounded={"full"}
