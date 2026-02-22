@@ -20,12 +20,14 @@ export default function CopyEmailButton() {
       showArrow
       closeOnScroll
     >
-      <SecondaryActionButton
-        icon={clicked ? FiCheck : FiCopy}
-        onClick={changeIconAndCopy}
-      >
-        Copy Email
-      </SecondaryActionButton>
+      <span>
+        <SecondaryActionButton
+          icon={clicked ? FiCheck : FiCopy}
+          onClick={changeIconAndCopy}
+        >
+          Copy Email
+        </SecondaryActionButton>
+      </span>
     </Tooltip>
   );
 }
