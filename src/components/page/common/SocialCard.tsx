@@ -25,19 +25,20 @@ function SocialIconButton({
 }) {
   return (
     <Tooltip content={label} closeOnScroll>
-      <Link href={url ?? ""} target={"_blank"} rounded={"full"}>
-        <IconButton
-          as={"a"}
-          borderRadius={"50%"}
-          variant={"solid"}
-          shadow={"md"}
-          background={useColorModeValue("white", "gray.700")}
-          color={useColorModeValue("gray.600", "gray.400")}
-          aria-label={label}
-        >
-          <Icon boxSize={5}>{React.createElement(icon)}</Icon>
-        </IconButton>
-      </Link>
+      <IconButton
+        as={"a"}
+        href={url ?? ""}
+        target="_blank"
+        rel="noreferrer"
+        borderRadius={"50%"}
+        variant={"solid"}
+        shadow={"md"}
+        background={useColorModeValue("white", "gray.700")}
+        color={useColorModeValue("gray.600", "gray.400")}
+        aria-label={label}
+      >
+        <Icon boxSize={5}>{React.createElement(icon)}</Icon>
+      </IconButton>
     </Tooltip>
   );
 }

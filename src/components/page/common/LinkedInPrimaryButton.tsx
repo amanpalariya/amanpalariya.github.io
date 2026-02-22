@@ -9,10 +9,10 @@ export default function LinkedInButton() {
   return (
     <Tooltip
       content={`@${PersonalData.linkedIn.username}`}
-      hasArrow
+      showArrow
       closeOnScroll
     >
-      <Link href={PersonalData.linkedIn.url} target="_blank">
+      <Link href={PersonalData.linkedIn.url} target="_blank" rel="noreferrer">
         <PrimaryActionButton
           icon={FaLinkedin}
           backgroundColor={useColorModeValue("#0077B5", "#70C0EC")}
@@ -28,21 +28,22 @@ export function LinkedInButtonSmall() {
   return (
     <Tooltip
       content={`@${PersonalData.linkedIn.username}`}
-      hasArrow
+      showArrow
       closeOnScroll
     >
-      <Link href={PersonalData.linkedIn.url} target="_blank" rounded={"full"}>
-        <IconButton
-          as={"a"}
-          rounded={"full"}
-          colorScheme="blue"
-          aria-label={"LinkedIn"}
-        >
-          <Icon>
-            <FaLinkedin />
-          </Icon>
-        </IconButton>
-      </Link>
+      <IconButton
+        as={"a"}
+        href={PersonalData.linkedIn.url}
+        target="_blank"
+        rel="noreferrer"
+        rounded={"full"}
+        colorScheme="blue"
+        aria-label={"LinkedIn"}
+      >
+        <Icon>
+          <FaLinkedin />
+        </Icon>
+      </IconButton>
     </Tooltip>
   );
 }

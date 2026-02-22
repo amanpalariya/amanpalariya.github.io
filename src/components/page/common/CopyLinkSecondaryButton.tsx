@@ -18,18 +18,18 @@ export default function CopyLinkSecondaryButton() {
   }
 
   return (
-    <Tooltip content={"Copy link"} hasArrow shouldWrapChildren closeOnScroll>
+    <Tooltip content={"Copy link"} showArrow closeOnScroll>
       <HStack
         as="button"
-        type="button"
         gap={2}
         onClick={changeIconAndCopy}
         fontSize="sm"
         color="gray.500"
+        cursor="pointer"
         _hover={{ color: "gray.700" }}
       >
         <Icon boxSize={4}>{clicked ? <FiCheck /> : <FiLink />}</Icon>
-        <span>Share</span>
+        <span>{"Copy link"}</span>
       </HStack>
     </Tooltip>
   );

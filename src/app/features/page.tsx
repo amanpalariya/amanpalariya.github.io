@@ -1,6 +1,6 @@
 "use client";
 
-import { VStack, Spacer, Box, Icon, Skeleton } from "@chakra-ui/react";
+import { EmptyState, VStack, Spacer, Box, Icon, Skeleton } from "@chakra-ui/react";
 import { Heading1, SectionText, SubtitleText } from "@components/core/Texts";
 import { TitleDescriptionAvatarToggleTile } from "@components/core/Tiles";
 import HighlightedSection from "@components/page/common/HighlightedSection";
@@ -27,10 +27,14 @@ function Main() {
 function NoFeatureFlagsElement() {
   return (
     <HighlightedSection>
-      <VStack align={"center"} gap={4} py={16}>
-        <Icon as={FiTool} boxSize={20} color={"gray.500"} />
-        <SubtitleText>{"There are no feature flags!"}</SubtitleText>
-      </VStack>
+      <EmptyState.Root>
+        <EmptyState.Content>
+          <EmptyState.Indicator>
+            <Icon as={FiTool} boxSize={12} color={"gray.500"} />
+          </EmptyState.Indicator>
+          <EmptyState.Title>{"There are no feature flags!"}</EmptyState.Title>
+        </EmptyState.Content>
+      </EmptyState.Root>
     </HighlightedSection>
   );
 }

@@ -17,16 +17,17 @@ export default function CopyEmailButton() {
   return (
     <Tooltip
       content={PersonalData.email}
-      hasArrow
-      shouldWrapChildren
+      showArrow
       closeOnScroll
     >
-      <SecondaryActionButton
-        icon={clicked ? FiCheck : FiCopy}
-        onClick={changeIconAndCopy}
-      >
-        Copy Email
-      </SecondaryActionButton>
+      <span>
+        <SecondaryActionButton
+          icon={clicked ? FiCheck : FiCopy}
+          onClick={changeIconAndCopy}
+        >
+          Copy Email
+        </SecondaryActionButton>
+      </span>
     </Tooltip>
   );
 }

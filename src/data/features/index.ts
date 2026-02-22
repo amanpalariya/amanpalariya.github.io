@@ -12,6 +12,12 @@ const allFeatureFlags: FeatureFlagEntry[] = [
     id: "blogs",
     defaultValue: true,
   },
+  {
+    name: "Force empty states",
+    desc: "Show empty states for projects, work experience, and blogs",
+    id: "dev.force-empty-states",
+    defaultValue: false,
+  },
 ];
 
 const FeatureFlagsData = {
@@ -22,6 +28,7 @@ const FeatureFlagsData = {
   featuresIds: {
     GOAL_KEEPER: "goal.keeper",
     BLOGS: "blogs",
+    FORCE_EMPTY_STATES: "dev.force-empty-states",
   },
   flags: allFeatureFlags,
 };

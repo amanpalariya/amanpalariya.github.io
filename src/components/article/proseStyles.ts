@@ -21,7 +21,7 @@ export function useProseStyles() {
     lineHeight: "1.42",
     fontSize: ["md", "lg"],
     letterSpacing: "0.01em",
-    maxWidth: "720px",
+    width: "100%",
     marginInline: "auto",
     wordBreak: "break-word",
     overflowWrap: "anywhere",

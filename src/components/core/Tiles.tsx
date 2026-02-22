@@ -27,7 +27,11 @@ function LinkOverlayIfUrlPresent({
 }) {
   return url ? (
     <LinkBox>
-      <LinkOverlay target={isUrlExternal ? "_blank" : "_self"} asChild>
+      <LinkOverlay
+        target={isUrlExternal ? "_blank" : undefined}
+        rel={isUrlExternal ? "noreferrer" : undefined}
+        asChild
+      >
         <NextLink href={url ?? ""}>{children}</NextLink>
       </LinkOverlay>
     </LinkBox>

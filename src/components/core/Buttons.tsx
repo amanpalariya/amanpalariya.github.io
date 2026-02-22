@@ -1,6 +1,5 @@
-import { Icon } from "@chakra-ui/react";
+import { Button, ButtonProps, Icon } from "@chakra-ui/react";
 import React from "react";
-import { Button, ButtonProps } from "@components/ui/button";
 
 const buttonProps: ButtonProps = {
   fontSize: "sm",
