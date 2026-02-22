@@ -1,6 +1,6 @@
 "use client";
 
-import { VStack, Spacer, Box, Icon } from "@chakra-ui/react";
+import { EmptyState, VStack, Spacer, Box, Icon } from "@chakra-ui/react";
 import { Heading1, SectionText, SubtitleText } from "@components/core/Texts";
 import { TitleDescriptionAvatarTile } from "@components/core/Tiles";
 import HighlightedSection from "@components/page/common/HighlightedSection";
@@ -28,12 +28,16 @@ function Main() {
 function NoBlogsElement() {
   return (
     <HighlightedSection>
-      <VStack align={"center"} gap={4} py={16}>
-        <Icon boxSize={20} color={"gray.500"}>
-          <FiBookmark />
-        </Icon>
-        <SubtitleText>{"There are no blogs yet!"}</SubtitleText>
-      </VStack>
+      <EmptyState.Root>
+        <EmptyState.Content>
+          <EmptyState.Indicator>
+            <Icon boxSize={12} color={"gray.500"}>
+              <FiBookmark />
+            </Icon>
+          </EmptyState.Indicator>
+          <EmptyState.Title>{"There are no blogs yet!"}</EmptyState.Title>
+        </EmptyState.Content>
+      </EmptyState.Root>
     </HighlightedSection>
   );
 }
@@ -57,7 +61,11 @@ function BlogsListElement({ blogs }: { blogs: BlogMeta[] }) {
 }
 
 function Blogs({ blogs }: { blogs: BlogMeta[] }) {
-  return blogs.length != 0 ? (
+  const [, forceEmptyStates] = useFeatureFlag(
+    FeatureFlagsData.featuresIds.FORCE_EMPTY_STATES,
+  );
+
+  return blogs.length != 0 && !forceEmptyStates ? (
     <BlogsListElement blogs={blogs} />
   ) : (
     NoBlogsElement()

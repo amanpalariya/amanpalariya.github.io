@@ -1,6 +1,6 @@
 "use client";
 
-import { VStack, HStack, Box } from "@chakra-ui/react";
+import { EmptyState, VStack, HStack, Box, Icon } from "@chakra-ui/react";
 import { FiChevronRight } from "react-icons/fi";
 import { SectionText } from "@components/core/Texts";
 import { TitleDescriptionAvatarTile } from "@components/core/Tiles";
@@ -13,6 +13,9 @@ import ProjectsData from "data/projects";
 import { homepageTabs } from "app/route-info";
 import { WorkData } from "data";
 import TimeBasedOnlineStatusBadge from "@components/page/home/TimeBasedOnlineStatusBadge";
+import { useFeatureFlag } from "utils/features";
+import FeatureFlagsData from "data/features";
+import { FiBriefcase, FiTool } from "react-icons/fi";
 
 function Main() {
   return (
@@ -29,7 +32,26 @@ function Main() {
 }
 
 function Projects() {
-  return ProjectsData.allProjects.length == 0 ? null : (
+  const [, forceEmptyStates] = useFeatureFlag(
+    FeatureFlagsData.featuresIds.FORCE_EMPTY_STATES,
+  );
+
+  if (forceEmptyStates || ProjectsData.allProjects.length == 0) {
+    return (
+      <HighlightedSection title="Projects">
+        <EmptyState.Root>
+          <EmptyState.Content>
+            <EmptyState.Indicator>
+              <Icon as={FiTool} boxSize={12} color={"gray.500"} />
+            </EmptyState.Indicator>
+            <EmptyState.Title>{"There are no projects yet!"}</EmptyState.Title>
+          </EmptyState.Content>
+        </EmptyState.Root>
+      </HighlightedSection>
+    );
+  }
+
+  return (
     <HighlightedSection
       title="Projects"
       titleActionElement={
@@ -82,6 +104,25 @@ function getTimeStringFromExp(exp) {
 }
 
 function WorkExperience() {
+  const [, forceEmptyStates] = useFeatureFlag(
+    FeatureFlagsData.featuresIds.FORCE_EMPTY_STATES,
+  );
+
+  if (forceEmptyStates) {
+    return (
+      <HighlightedSection title="Work Experience">
+        <EmptyState.Root>
+          <EmptyState.Content>
+            <EmptyState.Indicator>
+              <Icon as={FiBriefcase} boxSize={12} color={"gray.500"} />
+            </EmptyState.Indicator>
+            <EmptyState.Title>{"There is no work experience yet!"}</EmptyState.Title>
+          </EmptyState.Content>
+        </EmptyState.Root>
+      </HighlightedSection>
+    );
+  }
+
   return (
     <HighlightedSection title="Work Experience">
       <VStack align={"stretch"} gap={4}>

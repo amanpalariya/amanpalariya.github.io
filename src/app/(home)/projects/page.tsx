@@ -1,12 +1,14 @@
 "use client";
 
-import { VStack, Spacer, Box, Icon } from "@chakra-ui/react";
+import { EmptyState, VStack, Spacer, Box, Icon } from "@chakra-ui/react";
 import { Heading1, SectionText, SubtitleText } from "@components/core/Texts";
 import { TitleDescriptionAvatarTile } from "@components/core/Tiles";
 import HighlightedSection from "@components/page/common/HighlightedSection";
 import { homepageTabs } from "app/route-info";
 import ProjectsData from "data/projects";
 import { FiTool } from "react-icons/fi";
+import { useFeatureFlag } from "utils/features";
+import FeatureFlagsData from "data/features";
 
 function Main() {
   return (
@@ -24,12 +26,16 @@ function Main() {
 function NoProjectsElement() {
   return (
     <HighlightedSection>
-      <VStack align={"center"} gap={4} py={16}>
-        <Icon boxSize={20} color={"gray.500"}>
-          <FiTool />
-        </Icon>
-        <SubtitleText>{"There are no projects yet!"}</SubtitleText>
-      </VStack>
+      <EmptyState.Root>
+        <EmptyState.Content>
+          <EmptyState.Indicator>
+            <Icon boxSize={12} color={"gray.500"}>
+              <FiTool />
+            </Icon>
+          </EmptyState.Indicator>
+          <EmptyState.Title>{"There are no projects yet!"}</EmptyState.Title>
+        </EmptyState.Content>
+      </EmptyState.Root>
     </HighlightedSection>
   );
 }
@@ -57,7 +63,11 @@ function ProjectsListElement() {
 }
 
 function Projects() {
-  return ProjectsData.allProjects.length != 0
+  const [, forceEmptyStates] = useFeatureFlag(
+    FeatureFlagsData.featuresIds.FORCE_EMPTY_STATES,
+  );
+
+  return ProjectsData.allProjects.length != 0 && !forceEmptyStates
     ? ProjectsListElement()
     : NoProjectsElement();
 }
