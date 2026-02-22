@@ -9,7 +9,7 @@ tags:
 published: "2026-01-15"
 ---
 
-I used to take character encodings for granted until I hit my first â€™ at @Oracle. It happened because one of our data sources used ISO-8859-1 while we use UTF-8 like 99% of the world. So, I had to learn about character encodings in detail.
+I used to take character encodings for granted until I hit my first â€™ at [Oracle](https://www.oracle.com). It happened because one of our data sources used ISO-8859-1 while we use UTF-8 like 99% of the world. So, I had to learn about character encodings in detail.
 
 Keep reading to learn a bit about Unicode from my point-of-view.
 
