@@ -10,6 +10,20 @@ import CvJumpNav from "@components/page/cv/CvJumpNav";
 
 export default function CvPage() {
   const { profile, sections } = CvData;
+  const educationSection = sections.education
+    ? {
+        ...sections.education,
+        items: sections.education.items.map((item) => ({
+          title: item.degree,
+          organization: item.institution,
+          location: item.location,
+          start: item.start,
+          end: item.end,
+          summary: item.summary,
+          highlights: item.highlights,
+        })),
+      }
+    : undefined;
 
   return (
     <VStack align="stretch" gap={2}>
@@ -26,9 +40,7 @@ export default function CvPage() {
         <CvProjectsSection section={sections.projects} />
       ) : null}
       {sections.skills ? <CvSkillsSection section={sections.skills} /> : null}
-      {sections.education ? (
-        <CvTimelineSection section={sections.education} />
-      ) : null}
+      {educationSection ? <CvTimelineSection section={educationSection} /> : null}
     </VStack>
   );
 }
