@@ -3,25 +3,44 @@ import { InnerBgCard } from "../../core/Cards";
 import { SectionText } from "../../core/Texts";
 import { useColorModeValue } from "@components/ui/color-mode";
 import React, { JSX } from "react";
+import type { ElementType } from "react";
 import NextLink from "next/link";
 
 export default function HighlightedSection({
   title,
+  titleIcon,
   titleActionElement,
+  background,
+  accentColor,
   children,
 }: {
   title?: string;
+  titleIcon?: ElementType;
   titleActionElement?: JSX.Element;
+  background?: string;
+  accentColor?: string;
   children: JSX.Element;
 }) {
   const noHeader = !title && !titleActionElement;
 
   return (
-    <InnerBgCard>
+    <InnerBgCard background={background}>
       <VStack align={"stretch"} gap={4}>
         {noHeader ? null : (
           <HStack justify={"space-between"}>
-            {title ? <SectionText>{title}</SectionText> : <div />}
+            {title ? (
+              <HStack gap={2}>
+                {titleIcon ? (
+                  <Icon
+                    as={titleIcon}
+                    color={accentColor ?? useColorModeValue("gray.500", "gray.400")}
+                  />
+                ) : null}
+                <SectionText>{title}</SectionText>
+              </HStack>
+            ) : (
+              <div />
+            )}
             {titleActionElement}
           </HStack>
         )}

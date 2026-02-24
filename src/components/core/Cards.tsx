@@ -1,5 +1,6 @@
 import { Box, Card } from "@chakra-ui/react";
-import {useColorModeValue} from "@components/ui/color-mode";
+import type { BoxProps } from "@chakra-ui/react";
+import { useColorModeValue } from "@components/ui/color-mode";
 
 export function HeaderCard({ children }) {
   return (
@@ -33,13 +34,17 @@ export function MainCard({ children }) {
   );
 }
 
-export function InnerBgCard({ children }) {
+export function InnerBgCard({ children, bg, background, ...boxProps }: BoxProps) {
+  const defaultBg = useColorModeValue("gray.50", "gray.900");
+  const resolvedBg = background ?? bg ?? defaultBg;
+
   return (
     <Box
-      background={useColorModeValue("gray.50", "gray.900")}
+      background={resolvedBg}
       shadow={"xs"}
       borderRadius={"2xl"}
       p={[4, 6]}
+      {...boxProps}
     >
       {children}
     </Box>

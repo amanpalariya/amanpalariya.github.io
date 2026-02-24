@@ -8,7 +8,7 @@ export function StatusBadge({
   color = "gray",
 }: {
   children?: string;
-  color?: "red" | "blue" | "yellow" | "green" | "gray";
+  color?: "red" | "blue" | "yellow" | "green" | "gray" | "purple" | "orange";
   compact?: boolean;
 }) {
   compact = compact || !children;
@@ -41,7 +41,7 @@ export function CategoryBadge({
   color = "gray",
 }: {
   children?: string;
-  color?: "red" | "blue" | "yellow" | "green" | "gray";
+  color?: "red" | "blue" | "yellow" | "green" | "gray" | "purple" | "orange";
 }) {
   return (
     <Badge

@@ -2,6 +2,7 @@ export interface CvProfile {
   name: string;
   headline: string;
   summary: string;
+  focusAreas?: string[];
   location?: string;
   email?: string;
   phone?: string;
@@ -40,6 +41,7 @@ export interface CvSkillGroup {
 export interface CvProjectItem {
   name: string;
   summary: string;
+  highlight?: string;
   url?: string;
   highlights?: string[];
   tags?: string[];
@@ -99,6 +101,7 @@ const CvData: CvData = {
     headline: "Software Developer at Oracle · AI-focused CS graduate",
     summary:
       "I build reliable, user-focused software with clean architecture, thoughtful UX, and practical AI. I like turning complex requirements into clear workflows and steady execution.",
+    focusAreas: ["Frontend Systems", "Design Systems", "Automation", "AI"],
     location: "Bengaluru, India",
     email: "aman.palariya@gmail.com",
     website: "https://amanpalariya.github.io",
@@ -168,6 +171,7 @@ const CvData: CvData = {
           name: "Personal Knowledge Hub",
           summary:
             "A fast, searchable workspace for notes, writing, and documentation.",
+          highlight: "DX",
           highlights: [
             "Designed modular content blocks to scale across topics.",
           ],
@@ -178,6 +182,7 @@ const CvData: CvData = {
           name: "Developer Utilities",
           summary:
             "CLI-focused tooling to simplify everyday developer workflows.",
+          highlight: "Automation",
           highlights: [
             "Automated repetitive tasks with safe, idempotent commands.",
           ],

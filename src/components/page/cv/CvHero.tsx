@@ -23,6 +23,17 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
         <SubtitleText>{profile.headline}</SubtitleText>
       </VStack>
       <ParagraphText>{profile.summary}</ParagraphText>
+      {profile.focusAreas && profile.focusAreas.length > 0 ? (
+        <Wrap spacing={2}>
+          {profile.focusAreas.map((focus, index) => (
+            <WrapItem key={focus}>
+              <CategoryBadge color={index % 2 === 0 ? "green" : "blue"}>
+                {focus}
+              </CategoryBadge>
+            </WrapItem>
+          ))}
+        </Wrap>
+      ) : null}
       <Wrap spacing={3} align="center">
         {profile.location ? (
           <WrapItem>
