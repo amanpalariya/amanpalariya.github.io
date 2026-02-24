@@ -1,7 +1,6 @@
 "use client";
 
 import { EmptyState, VStack, HStack, Box, Icon } from "@chakra-ui/react";
-import { FiChevronRight } from "react-icons/fi";
 import { SectionText } from "@components/core/Texts";
 import { TitleDescriptionAvatarTile } from "@components/core/Tiles";
 import BottomMessage from "@components/page/common/BottomMessage";
@@ -15,7 +14,8 @@ import { WorkData } from "data";
 import TimeBasedOnlineStatusBadge from "@components/page/home/TimeBasedOnlineStatusBadge";
 import { useFeatureFlag } from "utils/features";
 import FeatureFlagsData from "data/features";
-import { FiBriefcase, FiTool } from "react-icons/fi";
+import { FiBriefcase, FiTool, FiChevronRight } from "react-icons/fi";
+import CvCtaSection from "@components/page/cv/CvCtaSection";
 
 function Main() {
   return (
@@ -150,6 +150,7 @@ export default function Home() {
     <VStack align={"stretch"}>
       <Main />
       <WorkExperience />
+      <CvCtaSection />
       <Projects />
       <ExtraInfo />
     </VStack>

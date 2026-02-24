@@ -10,6 +10,7 @@ import {
 import {
   FiBookOpen,
   FiChevronLeft,
+  FiFileText,
   FiGrid,
   FiHome,
   FiMoon,
@@ -134,6 +135,12 @@ export default function Header() {
                     homepageTabs.projects.pathname,
                   )}
                   url={homepageTabs.projects.pathname}
+                />
+                <HeaderIconButton
+                  icon={FiFileText}
+                  label={homepageTabs.cv.name}
+                  isSelected={isSelectedBasedOnUrl(homepageTabs.cv.pathname)}
+                  url={homepageTabs.cv.pathname}
                 />
                 <Show when={isBlogsFeatureEnabled}>
                   <HeaderIconButton

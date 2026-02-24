@@ -18,6 +18,10 @@ export const homepageTabs = {
     name: "Projects",
     getSubpagePathname,
   },
+  cv: {
+    pathname: "/cv/",
+    name: "CV",
+  },
   blogs: {
     pathname: "/blogs/",
     name: "Blogs",

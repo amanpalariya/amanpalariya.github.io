@@ -1,5 +1,5 @@
 import { Button, ButtonProps, Icon } from "@chakra-ui/react";
-import React from "react";
+import React, { ReactNode } from "react";
 
 const buttonProps: ButtonProps = {
   fontSize: "sm",
@@ -13,18 +13,20 @@ export function PrimaryActionButton({
   icon,
   backgroundColor,
   onClick,
+  ...props
 }: {
-  children: string;
+  children: ReactNode;
   icon?: any;
   backgroundColor?: any;
   onClick?: () => any;
-}) {
+} & ButtonProps) {
   return (
     <Button
       {...buttonProps}
       background={backgroundColor ? backgroundColor : "dodgerblue"}
       variant={"solid"}
       onClick={onClick}
+      {...props}
     >
       {icon ? (
         <Icon fontSize={buttonProps.fontSize}>{React.createElement(icon)}</Icon>
@@ -38,13 +40,14 @@ export function SecondaryActionButton({
   children,
   icon,
   onClick,
+  ...props
 }: {
-  children: string;
+  children: ReactNode;
   icon?: any;
   onClick?: () => any;
-}) {
+} & ButtonProps) {
   return (
-    <Button {...buttonProps} variant={"subtle"} onClick={onClick}>
+    <Button {...buttonProps} variant={"subtle"} onClick={onClick} {...props}>
       {icon ? (
         <Icon fontSize={buttonProps.fontSize}>{React.createElement(icon)}</Icon>
       ) : undefined}
