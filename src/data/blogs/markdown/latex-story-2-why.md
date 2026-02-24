@@ -25,3 +25,5 @@ Then I just kept learning - basic typesetting, tables, images, colors, tikz, com
 - Easy to modify later.
 
 Again, some more examples from my notes and assignments.
+
+If you're curious about how my LaTeX setup evolved, continue with [“The How”](/blogs/latex-story-3-how). You can also revisit [“The What”](/blogs/latex-story-1-what) for the intro.

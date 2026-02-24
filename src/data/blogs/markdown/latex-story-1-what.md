@@ -15,4 +15,4 @@ Like our beloved Linux kernel and Git VCS, it's a member of the popular and infl
 
 People learning LaTeX can't imagine using it casually. And I made it my second nature. LaTeX was my go-to tool for making notes, writing assignments, and preparing slides.
 
-Let me show you a fraction of my LaTeX-y notes and assignments. Get ready for “The Why” and “The How” next.
+Let me show you a fraction of my LaTeX-y notes and assignments. Get ready for [“The Why”](/blogs/latex-story-2-why) and [“The How”](/blogs/latex-story-3-how) next.

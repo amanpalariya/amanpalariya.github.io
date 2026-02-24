@@ -20,3 +20,5 @@ After setting up snippets according to the subject at hand, I could type equatio
 Reach out to me freely, if you want to learn more about the process. And again, Gilles Castel's blogs are a goldmine if you want to dive into this.
 
 Checkout the clip showing how snippets make LaTeX faster than hand writing.
+
+If you'd like to revisit the earlier parts of this LaTeX story, start with [“The What”](/blogs/latex-story-1-what) or jump to [“The Why”](/blogs/latex-story-2-why).
