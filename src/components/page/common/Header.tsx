@@ -223,11 +223,11 @@ export default function Header() {
             <Stack
               as={"nav"}
               aria-label={"Mobile navigation menu"}
-              borderTopWidth={1}
+              borderTopWidth={2}
               borderColor={menuDividerColor}
               mt={4}
               pt={4}
-              gap={3}
+              gap={2}
             >
               {mobileNavItems.map((item) => {
                 const isSelected = isSelectedBasedOnUrl(item.url);
