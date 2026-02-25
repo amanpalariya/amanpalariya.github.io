@@ -11,15 +11,29 @@ const PersonalData = {
   avatar: {
     url: "https://drive.google.com/thumbnail?id=1iQCju1QGnV1umzB1yzNcCEr0Y6gUla3y&sz=w1000",
   },
-  location: {
-    city: "Haldwani",
-    state: "Uttarakhand",
-    stateShort: "UK",
-    country: "India",
-    countryShort: "IN",
-    timeZone: "Asia/Kolkata",
+  locations: {
+    home: {
+      city: "Haldwani",
+      state: "Uttarakhand",
+      stateShort: "UK",
+      country: "India",
+      countryShort: "IN",
+      timeZone: "Asia/Kolkata",
+      display: "Haldwani, Uttarakhand, India",
+    },
+    work: {
+      city: "Bengaluru",
+      state: "Karnataka",
+      stateShort: "KA",
+      country: "India",
+      countryShort: "IN",
+      timeZone: "Asia/Kolkata",
+      display: "Bengaluru, Karnataka, India",
+    },
   },
   email: "aman.palariya@gmail.com",
+  phone: "+91 75350 15290",
+  website: "https://amanpalariya.github.io",
   linkedIn: {
     username: "amanpalariya",
     url: "https://linkedin.com/in/amanpalariya",

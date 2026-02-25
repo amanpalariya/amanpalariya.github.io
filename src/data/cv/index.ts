@@ -1,3 +1,5 @@
+import PersonalData from "../Personal";
+
 export interface CvProfile {
   name: string;
   headline: string;
@@ -10,10 +12,17 @@ export interface CvProfile {
   links?: Array<{ label: string; url: string }>;
 }
 
+export interface CvSectionVisibility {
+  enabled: boolean;
+  defaultExpanded?: boolean;
+  priority?: number;
+}
+
 export interface CvSectionBase {
   id: string;
   title: string;
   description?: string;
+  visibility?: CvSectionVisibility;
 }
 
 export interface CvTimelineItem {
@@ -41,6 +50,7 @@ export interface CvSkillGroup {
 export interface CvProjectItem {
   name: string;
   summary: string;
+  isFeatured?: boolean;
   highlight?: string;
   url?: string;
   highlights?: string[];
@@ -81,82 +91,249 @@ export interface CvPublicationItem {
   summary?: string;
 }
 
+export interface CvCertificationItem {
+  title: string;
+  issuer?: string;
+  date?: string;
+  credentialUrl?: string;
+  summary?: string;
+  tags?: string[];
+}
+
+export interface CvLanguageItem {
+  name: string;
+  nativeName?: string;
+  proficiency?: "basic" | "professional" | "native";
+}
+
+export interface CvCourseItem {
+  name: string;
+  institution?: string;
+  date?: string;
+  timeframe?: string;
+  grade?: string;
+}
+
+export interface CvOrganizationItem {
+  name: string;
+  role?: string;
+  start?: string;
+  end?: string;
+  summary?: string;
+}
+
+export interface CvContactChannel {
+  label: string;
+  value: string;
+  url?: string;
+  iconKey?: "email" | "linkedin" | "github" | "website" | "phone" | "location";
+}
+
+export interface CvRecommendationItem {
+  author: string;
+  role?: string;
+  text: string;
+  date?: string;
+}
+
+export type CvCollectionSection<T> = CvSectionBase & { items: T[] };
+
 export interface CvData {
   profile: CvProfile;
   sections: {
     summary?: CvSectionBase & { content: string };
-    experience?: CvSectionBase & { items: CvTimelineItem[] };
-    projects?: CvSectionBase & { items: CvProjectItem[] };
-    skills?: CvSectionBase & { items: CvSkillGroup[] };
-    education?: CvSectionBase & { items: CvEducationItem[] };
-    volunteering?: CvSectionBase & { items: CvVolunteeringItem[] };
-    awards?: CvSectionBase & { items: CvAwardItem[] };
-    publications?: CvSectionBase & { items: CvPublicationItem[] };
+    about?: CvSectionBase & { content: string };
+    openTo?: CvSectionBase & { roles: string[]; visibilityNote?: string };
+    experience?: CvCollectionSection<CvTimelineItem>;
+    projects?: CvCollectionSection<CvProjectItem>;
+    skills?: CvCollectionSection<CvSkillGroup>;
+    education?: CvCollectionSection<CvEducationItem>;
+    volunteering?: CvCollectionSection<CvVolunteeringItem>;
+    awards?: CvCollectionSection<CvAwardItem>;
+    publications?: CvCollectionSection<CvPublicationItem>;
+    certifications?: CvCollectionSection<CvCertificationItem>;
+    languages?: CvCollectionSection<CvLanguageItem>;
+    courses?: CvCollectionSection<CvCourseItem>;
+    organizations?: CvCollectionSection<CvOrganizationItem>;
+    contact?: CvCollectionSection<CvContactChannel>;
+    recommendations?: CvCollectionSection<CvRecommendationItem>;
   };
 }
 
+const sharedProfileLinks: NonNullable<CvProfile["links"]> = [
+  { label: "LinkedIn", url: PersonalData.linkedIn.url },
+  { label: "GitHub", url: PersonalData.github.url },
+  { label: "X", url: PersonalData.twitter.url },
+];
+
+const sharedContactChannels: CvContactChannel[] = [
+  {
+    label: "Email",
+    value: PersonalData.email,
+    url: `mailto:${PersonalData.email}`,
+    iconKey: "email",
+  },
+  {
+    label: "Phone",
+    value: PersonalData.phone,
+    url: "tel:+917535015290",
+    iconKey: "phone",
+  },
+  {
+    label: "LinkedIn",
+    value: `linkedin.com/in/${PersonalData.linkedIn.username}`,
+    url: PersonalData.linkedIn.url,
+    iconKey: "linkedin",
+  },
+  {
+    label: "GitHub",
+    value: `github.com/${PersonalData.github.username}`,
+    url: PersonalData.github.url,
+    iconKey: "github",
+  },
+  {
+    label: "Website",
+    value: PersonalData.website.replace(/^https?:\/\//, ""),
+    url: PersonalData.website,
+    iconKey: "website",
+  },
+];
+
+const workLocation =
+  PersonalData.locations?.work?.display ?? "Bengaluru, Karnataka, India";
+
 const CvData: CvData = {
   profile: {
-    name: "Aman Palariya",
-    headline: "Software Developer at Oracle · AI-focused CS graduate",
+    name: PersonalData.name.full,
+    headline:
+      "Software Engineer @ Oracle ·  CS graduate (AI specialization) @ IIT Ropar",
     summary:
-      "I build reliable, user-focused software with clean architecture, thoughtful UX, and practical AI. I like turning complex requirements into clear workflows and steady execution.",
-    focusAreas: ["Frontend Systems", "Design Systems", "Automation", "AI"],
-    location: "Bengaluru, India",
-    email: "aman.palariya@gmail.com",
-    website: "https://amanpalariya.github.io",
-    links: [
-      { label: "LinkedIn", url: "https://linkedin.com/in/amanpalariya" },
-      { label: "GitHub", url: "https://github.com/amanpalariya" },
-      { label: "X", url: "https://x.com/AmanPalariya" },
+      "I work on Oracle Integration, building backend-heavy platform capabilities across Java, Python, Docker, and Kubernetes. I have shipped features end-to-end, led high-severity issue resolution with customers, and regularly improve CI/CD and development workflows. I hold a B.Tech in Computer Science from IIT Ropar with specialization in AI, and I enjoy mentoring and teaching alongside engineering work.",
+    focusAreas: [
+      "Backend Engineering",
+      "Platform Reliability",
+      "Developer Experience",
+      "AI-first Workflows",
     ],
+    location: workLocation,
+    email: PersonalData.email,
+    phone: PersonalData.phone,
+    website: PersonalData.website,
+    links: sharedProfileLinks,
   },
   sections: {
+    about: {
+      id: "about",
+      title: "About",
+      description: "A concise profile summary focused on engineering impact.",
+      visibility: { enabled: false, priority: 1 },
+      content:
+        "I work on Oracle Integration, building backend-heavy platform capabilities across Java, Python, Docker, and Kubernetes. I have shipped features end-to-end, led high-severity issue resolution with customers, and regularly improve CI/CD and development workflows. I hold a B.Tech in Computer Science from IIT Ropar with specialization in AI, and I enjoy mentoring and teaching alongside engineering work.",
+    },
+    openTo: {
+      id: "open-to",
+      title: "Open to",
+      description: "Current job-interest profile.",
+      visibility: { enabled: true, priority: 2 },
+      roles: [
+        "Software Engineer",
+        "System Engineer",
+        "Member of Technical Staff",
+        "Graduate Software Engineer",
+      ],
+      visibilityNote: "Visible to recruiters",
+    },
     experience: {
       id: "experience",
       title: "Experience",
-      description: "Roles with measurable product and platform impact.",
+      description:
+        "Roles with measurable product, reliability, and delivery impact.",
+      visibility: { enabled: true, priority: 3 },
       items: [
         {
-          title: "Software Developer",
+          title: "Senior Member of Technical Staff",
           organization: "Oracle",
-          location: "Bengaluru, India",
-          start: "Jun 2023",
+          start: "Sep 2025",
+          location: workLocation,
           end: "Present",
-          summary: "Building developer-facing tooling and streamlining workflows.",
           highlights: [
-            "Shipped productivity-focused UI improvements for daily workflows.",
-            "Partnered cross-functionally to align roadmap scope and constraints.",
+            "Designed and implemented Kubernetes deployment optimization framework saving ~$2.56M annually (patentable candidate).",
+            "Led end-to-end resolution of 10+ high-severity product issues with customer coordination, root-cause analysis, cross-team communication, and deployment ownership.",
+            "Drove AI-first quality tooling including internal MCP servers, increasing code coverage by ~50% and saving 5–10 developer hours weekly.",
           ],
-          tags: ["React", "TypeScript", "Design Systems"],
+          tags: ["Java", "Python", "AI Tooling", "Production Support"],
           logoSrc: "/images/logo/oracle.svg",
           url: "https://www.oracle.com/",
         },
         {
-          title: "Software Developer Intern",
+          title: "Member of Technical Staff",
           organization: "Oracle",
-          location: "Bengaluru, India",
+          location: workLocation,
+          start: "Jun 2023",
+          end: "Oct 2025",
+          highlights: [
+            "Led development of high-demand adapters (File, FTP, Stage), adding SSH/FTP and PGP encryption/decryption capabilities.",
+            "Built FHIR-compliant healthcare components including secure SMART on FHIR integration.",
+            "Architected CI/CD improvements cutting build duration by ~75% (2h to 30m).",
+          ],
+          tags: ["Kubernetes", "Integration", "FHIR", "CI/CD"],
+          logoSrc: "/images/logo/oracle.svg",
+          url: "https://www.oracle.com/",
+        },
+        {
+          title: "Project Intern - Member of Technical Staff",
+          organization: "Oracle",
+          location: workLocation,
           start: "Jun 2022",
           end: "Jul 2022",
-          summary: "Supported tooling initiatives and shipped UX improvements.",
           highlights: [
-            "Built internal dashboards with clear, actionable status indicators.",
+            "Delivered OAuth and REST-based communication framework with test coverage and real-world use case in under two months.",
           ],
-          tags: ["Frontend", "UX"],
+          tags: ["OCI", "OAuth", "REST APIs"],
           logoSrc: "/images/logo/oracle.svg",
           url: "https://www.oracle.com/",
         },
         {
-          title: "Software Developer Intern",
-          organization: "Newzera",
-          location: "Remote",
-          start: "Jan 2021",
-          end: "Jan 2021",
-          summary: "Prototyped features for media workflows and early product design.",
+          title: "Project Member",
+          organization: "IPSA Labs, IIT Ropar",
+          location: "Rupnagar, Punjab, India",
+          start: "Jan 2022",
+          end: "May 2022",
           highlights: [
-            "Improved early-stage UI components for content operations teams.",
+            "Collaborated with district officers to gather constraints and deliver usable workflows.",
+            "System was used by 1200+ Anganwadi workers across five blocks in Rupnagar district.",
           ],
-          tags: ["Prototyping", "Product"],
+          tags: ["Social Impact", "Product Engineering"],
+        },
+        {
+          title: "Subject Matter Expert",
+          organization: "Chegg India",
+          start: "Nov 2021",
+          end: "Mar 2022",
+          highlights: ["Mentored and supported computer science learners."],
+          tags: ["Teaching", "Computer Science"],
+          url: "https://www.chegg.com/",
+        },
+        {
+          title: "Coordinator",
+          organization: "Software Community, IIT Ropar",
+          start: "Dec 2020",
+          end: "Dec 2021",
+          highlights: [
+            "Coordinated technical initiatives and student development programs.",
+          ],
+          tags: ["Leadership", "Community"],
+        },
+        {
+          title: "Software Engineering Intern",
+          organization: "Newzera",
+          location: "Indore, Madhya Pradesh, India",
+          start: "Jan 2021",
+          end: "Feb 2021",
+          highlights: [
+            "Implemented GraphQL APIs in JavaScript with high-coverage unit tests and documentation.",
+          ],
+          tags: ["GraphQL", "JavaScript", "Backend"],
           logoSrc: "/images/logo/newzera.jpeg",
           url: "https://www.newzera.com/",
         },
@@ -164,61 +341,115 @@ const CvData: CvData = {
     },
     projects: {
       id: "projects",
-      title: "Selected Projects",
-      description: "Developer tools, learning, and automation work.",
+      title: "Projects",
+      description: "Selected engineering and academic projects.",
+      visibility: { enabled: true, priority: 4 },
       items: [
         {
-          name: "Personal Knowledge Hub",
+          name: "SAMPAN App",
           summary:
-            "A fast, searchable workspace for notes, writing, and documentation.",
-          highlight: "DX",
+            "A social-sector app and dashboard to improve Anganwadi operations with district-level usage.",
+          isFeatured: true,
+          highlight: "Impact",
           highlights: [
-            "Designed modular content blocks to scale across topics.",
+            "Developed in association with CDPOs and DC Rupnagar to support 1200+ Anganwadi workers.",
+            "Enabled logging of 50K+ data entries per month.",
           ],
-          tags: ["Next.js", "Content"],
-          url: "https://amanpalariya.github.io",
+          tags: ["Flutter", "Mobile + Dashboard", "Social Impact"],
         },
         {
-          name: "Developer Utilities",
+          name: "Console Game Language",
           summary:
-            "CLI-focused tooling to simplify everyday developer workflows.",
-          highlight: "Automation",
+            "Designed a new language, compiler, and runtime for retro controller-based games.",
+          isFeatured: true,
           highlights: [
-            "Automated repetitive tasks with safe, idempotent commands.",
+            "Built a RegEx-based lexical analyzer and LR(0) parser.",
+            "Implemented runtime model for a 6-button controller environment.",
           ],
-          tags: ["Node.js", "Automation"],
+          tags: ["Compiler", "Python", "Language Design"],
+          url: "https://github.com/amanpalariya",
+        },
+        {
+          name: "32-bit RISC-V ISA Simulator",
+          summary:
+            "Academic systems project implementing instruction-level simulation for the RISC-V ISA.",
+          isFeatured: true,
+          highlight: "Systems",
+          highlights: [
+            "Implemented 29 RISC-V instructions across arithmetic, logical, data, and control categories.",
+            "Added pipelined and non-pipelined execution, L1/L2 memory hierarchy, branch prediction, and hazard detection.",
+          ],
+          tags: ["Computer Architecture", "Simulation", "Python"],
+          url: "https://github.com/amanpalariya",
+        },
+        {
+          name: "Rain/snow generation and removal from videos",
+          summary:
+            "Computer vision experimentation on weather artifact synthesis and removal.",
+          highlight: "AI",
+          tags: ["Computer Vision", "Image Processing"],
+        },
+        {
+          name: "Academic Portal",
+          summary: "Workflow-focused portal for academic operations.",
+          tags: ["Web", "Portal"],
+        },
+        {
+          name: "OS Components",
+          summary: "Core operating-systems coursework implementation project.",
+          tags: ["Operating Systems", "Systems Programming"],
+        },
+        {
+          name: "Personal Website",
+          summary: "Content-first portfolio built with Next.js and Chakra UI.",
+          isFeatured: true,
+          highlight: "DX",
+          highlights: [
+            "Designed reusable component architecture with strong visual consistency.",
+          ],
+          tags: ["Next.js", "TypeScript", "Chakra UI"],
+          url: "https://amanpalariya.github.io",
         },
       ],
     },
     skills: {
       id: "skills",
       title: "Skills",
-      description: "Core technologies and strengths used daily.",
+      description:
+        "Programming languages, platforms, tools, and engineering practices.",
+      visibility: { enabled: true, priority: 11 },
       items: [
         {
-          group: "Frontend",
+          group: "Programming Languages",
           items: [
-            { name: "React", level: "advanced" },
-            { name: "TypeScript", level: "advanced" },
-            { name: "Next.js", level: "advanced" },
-            { name: "Chakra UI", level: "advanced" },
+            { name: "Java", level: "expert" },
+            { name: "Python", level: "advanced" },
+            { name: "Bash", level: "advanced" },
+            { name: "JavaScript/TypeScript", level: "advanced" },
+            { name: "C/C++", level: "intermediate" },
           ],
         },
         {
-          group: "Backend & Data",
+          group: "Frameworks & Tools",
           items: [
+            { name: "Linux", level: "advanced" },
+            { name: "Git", level: "advanced" },
+            { name: "Kubernetes", level: "advanced" },
+            { name: "Docker", level: "advanced" },
             { name: "Node.js", level: "advanced" },
-            { name: "REST APIs", level: "advanced" },
-            { name: "SQL", level: "intermediate" },
-            { name: "Python", level: "intermediate" },
+            { name: "React", level: "advanced" },
+            { name: "Oracle Cloud", level: "advanced" },
+            { name: "Vi/Neovim", level: "advanced" },
           ],
         },
         {
-          group: "Practices",
+          group: "Engineering Practices",
           items: [
-            { name: "System Design", level: "intermediate" },
+            { name: "API Development", level: "advanced" },
+            { name: "CI/CD", level: "advanced" },
+            { name: "Generative AI", level: "advanced" },
             { name: "Documentation", level: "advanced" },
-            { name: "Mentoring", level: "intermediate" },
+            { name: "Agile Methodologies", level: "advanced" },
           ],
         },
       ],
@@ -226,6 +457,7 @@ const CvData: CvData = {
     education: {
       id: "education",
       title: "Education",
+      visibility: { enabled: true, priority: 12 },
       items: [
         {
           degree: "B.Tech in Computer Science (AI specialization)",
@@ -233,11 +465,174 @@ const CvData: CvData = {
           location: "Rupnagar, India",
           start: "2019",
           end: "2023",
-          highlights: ["Focused on AI, ML, and software engineering fundamentals."],
+          summary: "Grade: 9.17 GPA, concentration in AI with 10.0 GPA",
+          highlights: [
+            "Focused on AI, ML, computer vision, reinforcement learning, and software engineering fundamentals.",
+          ],
+        },
+        {
+          degree: "CBSE Grade-12 (Mathematics)",
+          institution: "Inspiration Senior Secondary School",
+          start: "2018",
+          end: "2019",
+          summary: "Grade: 96.60%",
         },
       ],
     },
-  },
+    volunteering: {
+      id: "volunteering",
+      title: "Volunteer Experience",
+      description: "Community and mentoring contributions.",
+      visibility: { enabled: true, priority: 13 },
+      items: [
+        {
+          role: "Technical Mentor",
+          organization: "Student engineering circles",
+          start: "2020",
+          end: "Present",
+          summary:
+            "Mentoring students entering software engineering and interview preparation.",
+        },
+      ],
+    },
+    certifications: {
+      id: "certifications",
+      title: "Certifications",
+      description: "Professional and platform credentials.",
+      visibility: { enabled: true, priority: 14 },
+      items: [
+        {
+          title: "Oracle Certified AI Foundations Associate",
+          issuer: "Oracle",
+          tags: ["AI"],
+        },
+        {
+          title: "Oracle Certified Generative AI Professional",
+          issuer: "Oracle",
+          tags: ["GenAI"],
+        },
+        {
+          title: "Oracle Certified OCI Foundations Associate",
+          issuer: "Oracle",
+          tags: ["OCI"],
+        },
+        {
+          title: "Oracle Certified Application Integration Professional",
+          issuer: "Oracle",
+          tags: ["Integration"],
+        },
+        {
+          title: "Kubernetes",
+          issuer: "LinkedIn",
+          tags: ["Cloud Native"],
+        },
+      ],
+    },
+    languages: {
+      id: "languages",
+      title: "Languages",
+      visibility: { enabled: true, priority: 15 },
+      items: [
+        { name: "English", nativeName: "English", proficiency: "professional" },
+        { name: "Hindi", nativeName: "हिन्दी", proficiency: "native" },
+        { name: "Spanish", nativeName: "Español", proficiency: "basic" },
+      ],
+    },
+    courses: {
+      id: "courses",
+      title: "Courses",
+      visibility: { enabled: true, priority: 16 },
+      items: [
+        { name: "Data Structures", institution: "IIT Ropar" },
+        { name: "Computer Architecture", institution: "IIT Ropar" },
+        { name: "Linear Algebra", institution: "IIT Ropar" },
+        { name: "Probability and Statistics", institution: "IIT Ropar" },
+        { name: "Signals and Systems", institution: "IIT Ropar" },
+      ],
+    },
+    awards: {
+      id: "honors",
+      title: "Honors",
+      visibility: { enabled: true, priority: 17 },
+      items: [
+        {
+          title: "Codeforces Expert",
+          issuer: "Codeforces",
+          date: "Rating 1725",
+          summary: "Solved 1500+ programming problems across platforms.",
+        },
+        {
+          title: "Institute Merit Scholar",
+          issuer: "Indian Institute of Technology Ropar",
+          date: "May 2022",
+        },
+        {
+          title: "Best B.Tech Project Award",
+          issuer: "IIT Ropar (National Technology Day)",
+          date: "May 2022",
+        },
+        {
+          title: "ICPC Asia Amritapuri Site",
+          issuer: "ICPC",
+          date: "Oct 2021",
+          summary: "Secured 156th rank in prelims and 530th rank in regionals.",
+        },
+        {
+          title: "Google Hash Code",
+          issuer: "Google",
+          date: "Feb 2021",
+          summary: "Secured 18th rank in India and 198th rank globally.",
+        },
+        {
+          title: "JEE Advanced",
+          issuer: "India",
+          date: "May 2019",
+          summary: "Secured All India Rank 1910 among 150K+ candidates.",
+        },
+      ],
+    },
+    organizations: {
+      id: "organizations",
+      title: "Organizations",
+      visibility: { enabled: true, priority: 18 },
+      items: [
+        {
+          name: "SoftCom",
+          role: "Coordinator",
+          start: "Dec 2020",
+          end: "Present",
+          summary: "Software community leadership and technical mentoring.",
+        },
+      ],
+    },
+    contact: {
+      id: "contact",
+      title: "Contact",
+      description: "Direct channels for collaboration and outreach.",
+      visibility: { enabled: true, priority: 19 },
+      items: sharedContactChannels,
+    },
+    recommendations: {
+      id: "recommendations",
+      title: "Recommendations",
+      description: "Peer and stakeholder feedback.",
+      visibility: { enabled: false, priority: 20 },
+      items: [],
+    },
+    publications: {
+      id: "publications",
+      title: "Publications",
+      visibility: { enabled: false, priority: 21 },
+      items: [],
+    },
+    summary: {
+      id: "profile-summary",
+      title: "Summary",
+      visibility: { enabled: false, priority: 22 },
+      content:
+        "Cross-functional software engineer focused on product reliability, platform quality, and practical AI enablement.",
+    },
+  } as CvData["sections"],
 };
 
 export default CvData;

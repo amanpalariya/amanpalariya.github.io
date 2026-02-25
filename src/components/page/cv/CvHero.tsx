@@ -8,13 +8,61 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { Heading2, ParagraphText, SubtitleText } from "@components/core/Texts";
-import { CategoryBadge } from "@components/core/Badges";
 import type { CvProfile } from "data/cv";
-import { FiMail, FiMapPin, FiLink } from "react-icons/fi";
+import {
+  FiMail,
+  FiMapPin,
+  FiGlobe,
+  FiLink,
+  FiLinkedin,
+  FiGithub,
+  FiTwitter,
+  FiCopy,
+  FiCheck,
+} from "react-icons/fi";
 import { useColorModeValue } from "@components/ui/color-mode";
+import { Tooltip } from "@components/ui/tooltip";
+import { useState } from "react";
+import PersonalData from "../../../data/Personal";
 
 export default function CvHero({ profile }: { profile: CvProfile }) {
   const secondaryColor = useColorModeValue("gray.600", "gray.300");
+  const [emailCopied, setEmailCopied] = useState(false);
+
+  function getSocialIcon(label: string) {
+    const normalized = label.toLowerCase();
+    if (normalized.includes("website")) return FiGlobe;
+    if (normalized.includes("linkedin")) return FiLinkedin;
+    if (normalized.includes("github")) return FiGithub;
+    if (normalized === "x" || normalized.includes("twitter")) return FiTwitter;
+    return FiLink;
+  }
+
+  function getLinkHoverText(label: string, url: string) {
+    const normalized = label.toLowerCase();
+
+    if (normalized.includes("website")) return url;
+    if (normalized.includes("linkedin"))
+      return `@${PersonalData.linkedIn.username}`;
+    if (normalized.includes("github"))
+      return `@${PersonalData.github.username}`;
+    if (normalized === "x" || normalized.includes("twitter"))
+      return `@${PersonalData.twitter.username}`;
+
+    return url;
+  }
+
+  async function copyEmail() {
+    if (!profile.email || emailCopied) return;
+    await navigator.clipboard.writeText(profile.email);
+    setEmailCopied(true);
+    setTimeout(() => setEmailCopied(false), 1200);
+  }
+
+  const profileLinks = [
+    ...(profile.website ? [{ label: "Website", url: profile.website }] : []),
+    ...(profile.links ?? []),
+  ];
 
   return (
     <VStack align={"stretch"} gap={4}>
@@ -22,59 +70,86 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
         <Heading2>{profile.name}</Heading2>
         <SubtitleText>{profile.headline}</SubtitleText>
       </VStack>
-      <ParagraphText>{profile.summary}</ParagraphText>
-      {profile.focusAreas && profile.focusAreas.length > 0 ? (
-        <Wrap spacing={2}>
-          {profile.focusAreas.map((focus, index) => (
-            <WrapItem key={focus}>
-              <CategoryBadge color={index % 2 === 0 ? "green" : "blue"}>
-                {focus}
-              </CategoryBadge>
-            </WrapItem>
-          ))}
-        </Wrap>
-      ) : null}
-      <Wrap spacing={3} align="center">
+      <VStack align="stretch" gap={2}>
         {profile.location ? (
-          <WrapItem>
-            <HStack gap={2} color={secondaryColor}>
-              <Icon as={FiMapPin} />
-              <Text fontSize="sm">{profile.location}</Text>
-            </HStack>
-          </WrapItem>
-        ) : null}
-        {profile.email ? (
-          <WrapItem>
-            <HStack gap={2} color={secondaryColor}>
-              <Icon as={FiMail} />
-              <Link fontSize="sm" href={`mailto:${profile.email}`}>
-                {profile.email}
-              </Link>
-            </HStack>
-          </WrapItem>
-        ) : null}
-        {profile.website ? (
-          <WrapItem>
-            <HStack gap={2} color={secondaryColor}>
-              <Icon as={FiLink} />
-              <Link fontSize="sm" href={profile.website} isExternal>
-                {profile.website.replace("https://", "")}
-              </Link>
-            </HStack>
-          </WrapItem>
-        ) : null}
-      </Wrap>
-      {profile.links && profile.links.length > 0 ? (
-        <Wrap spacing={2}>
-          {profile.links.map((link) => (
-            <WrapItem key={link.url}>
-              <Link href={link.url} isExternal>
-                <CategoryBadge color="blue">{link.label}</CategoryBadge>
-              </Link>
+          <Wrap spacing={3} align="center">
+            <WrapItem>
+              <HStack gap={2} color={secondaryColor}>
+                <Icon as={FiMapPin} />
+                <Text fontSize="sm">{profile.location}</Text>
+              </HStack>
             </WrapItem>
-          ))}
-        </Wrap>
-      ) : null}
+          </Wrap>
+        ) : null}
+
+        {profile.email ? (
+          <Wrap spacing={3} align="center">
+            <WrapItem>
+              <HStack gap={2} color={secondaryColor}>
+                <Icon as={FiMail} />
+                <Link fontSize="sm" href={`mailto:${profile.email}`}>
+                  {profile.email}
+                </Link>
+              </HStack>
+            </WrapItem>
+            <WrapItem>
+              <Tooltip
+                content={emailCopied ? "Copied" : "Copy email"}
+                showArrow
+              >
+                <Link
+                  as="button"
+                  fontSize="xs"
+                  color={secondaryColor}
+                  onClick={() => {
+                    void copyEmail();
+                  }}
+                >
+                  <HStack gap={1}>
+                    <Icon as={emailCopied ? FiCheck : FiCopy} />
+                    <Text>{emailCopied ? "Copied" : "Copy"}</Text>
+                  </HStack>
+                </Link>
+              </Tooltip>
+            </WrapItem>
+          </Wrap>
+        ) : null}
+
+        {profileLinks.length > 0 ? (
+          <Wrap spacing={3} align="center">
+            {profileLinks.map((link, index) => (
+              <WrapItem key={link.url}>
+                <HStack gap={2} align="center">
+                  <Icon as={getSocialIcon(link.label)} color={secondaryColor} />
+                  <Tooltip
+                    content={getLinkHoverText(link.label, link.url)}
+                    showArrow
+                  >
+                    <Link
+                      href={link.url}
+                      isExternal
+                      fontSize="sm"
+                      color={secondaryColor}
+                    >
+                      {link.label}
+                    </Link>
+                  </Tooltip>
+                  {index < profileLinks.length - 1 ? (
+                    <Text
+                      fontSize="sm"
+                      color={secondaryColor}
+                      aria-hidden="true"
+                    >
+                      •
+                    </Text>
+                  ) : null}
+                </HStack>
+              </WrapItem>
+            ))}
+          </Wrap>
+        ) : null}
+      </VStack>
+      <ParagraphText>{profile.summary}</ParagraphText>
     </VStack>
   );
 }

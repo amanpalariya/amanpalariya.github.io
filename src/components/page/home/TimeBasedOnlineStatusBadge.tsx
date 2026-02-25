@@ -4,7 +4,7 @@ import { PersonalData } from "data";
 
 function isOnline(wakeupHour: number = 6, sleepHour: number = 22) {
   const istOptions = {
-    timeZone: PersonalData.location.timeZone, // Indian Standard Time (IST)
+    timeZone: PersonalData.locations.work.timeZone, // Indian Standard Time (IST)
     hour12: false, // Use 24-hour format
   };
 

@@ -9,7 +9,7 @@ import {
   Separator,
   Box,
 } from "@chakra-ui/react";
-import { ParagraphText, Heading4 } from "@components/core/Texts";
+import { Heading4 } from "@components/core/Texts";
 import { CategoryBadge } from "@components/core/Badges";
 import type { CvSectionBase, CvTimelineItem } from "data/cv";
 import { FiLink } from "react-icons/fi";
@@ -21,16 +21,19 @@ type AccentPalette = "blue" | "purple" | "green" | "orange" | "yellow" | "red";
 
 function TimelineItem({
   item,
-  isLast,
   accentColor,
   tagColor,
 }: {
   item: CvTimelineItem;
-  isLast: boolean;
   accentColor?: string;
   tagColor: "gray" | AccentPalette;
 }) {
   const mutedColor = useColorModeValue("gray.600", "gray.300");
+  const highlights = item.highlights && item.highlights.length > 0
+    ? item.highlights
+    : item.summary
+      ? [item.summary]
+      : [];
   const dotColor = accentColor
     ? useColorModeValue(`${accentColor}.500`, `${accentColor}.300`)
     : useColorModeValue("gray.500", "gray.400");
@@ -63,10 +66,9 @@ function TimelineItem({
             </Link>
           ) : null}
         </HStack>
-        {item.summary ? <ParagraphText>{item.summary}</ParagraphText> : null}
-        {item.highlights && item.highlights.length > 0 ? (
+        {highlights.length > 0 ? (
           <VStack align="stretch" gap={1}>
-            {item.highlights.map((highlight, index) => (
+            {highlights.map((highlight, index) => (
               <HStack key={index} align="start" gap={2}>
                 <Text color={mutedColor}>•</Text>
                 <Text fontSize="sm" color={mutedColor}>
@@ -142,12 +144,7 @@ export default function CvTimelineSection({
         />
         {section.items.map((item, index) => (
           <VStack key={`${item.title}-${index}`} align="stretch" gap={4}>
-            <TimelineItem
-              item={item}
-              isLast={index === section.items.length - 1}
-              accentColor={accentColor}
-              tagColor={tagColor}
-            />
+            <TimelineItem item={item} accentColor={accentColor} tagColor={tagColor} />
             {index < section.items.length - 1 ? (
               <Box pl={8}>
                 <Separator />
