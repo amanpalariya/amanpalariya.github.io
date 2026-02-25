@@ -1,5 +1,6 @@
 import { Box, Spacer } from "@chakra-ui/react";
 import Header from "../common/Header";
+import { HEADER_OFFSET_HEIGHT } from "../common/Header";
 
 export default function WithHeader({
   children,
@@ -9,7 +10,7 @@ export default function WithHeader({
   return (
     <>
       <Header />
-      <Spacer h={[20, 24]} />
+      <Spacer h={HEADER_OFFSET_HEIGHT} />
       {children}
     </>
   );

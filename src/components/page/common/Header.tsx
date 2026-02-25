@@ -3,7 +3,6 @@ import {
   HStack,
   Icon,
   IconButton,
-  Link,
   Show,
   useBreakpointValue,
 } from "@chakra-ui/react";
@@ -24,10 +23,12 @@ import * as pathnameUtil from "utils/pathname";
 import LinkedInButton, { LinkedInButtonSmall } from "./LinkedInPrimaryButton";
 import { useColorMode, useColorModeValue } from "@components/ui/color-mode";
 import { Tooltip } from "@components/ui/tooltip";
-import React from "react";
 import NextLink from "next/link";
 import { useFeatureFlag } from "utils/features";
 import FeatureFlagsData from "data/features";
+import type { IconType } from "react-icons";
+
+export const HEADER_OFFSET_HEIGHT = { base: 20, sm: 24 };
 
 function ColorModeToggleIconButton() {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -53,7 +54,7 @@ function HeaderIconButton({
   url,
   isSelected = false,
 }: {
-  icon: any;
+  icon: IconType;
   label: string;
   url?: string;
   isSelected?: boolean;
@@ -63,17 +64,17 @@ function HeaderIconButton({
 
   return (
     <Tooltip content={label} closeOnScroll>
-      <Link rounded={"full"} as={NextLink} href={url ?? ""}>
-        <IconButton
-          borderRadius={"full"}
-          borderWidth={"thick"}
-          variant={isSelected ? "surface" : "ghost"}
-          color={isSelected ? selectedColor : unSelectedColor}
-          aria-label={label}
-        >
-          <Icon boxSize={6}>{React.createElement(icon)}</Icon>
-        </IconButton>
-      </Link>
+      <IconButton
+        as={NextLink}
+        href={url ?? ""}
+        borderRadius={"full"}
+        borderWidth={"thick"}
+        variant={isSelected ? "surface" : "ghost"}
+        color={isSelected ? selectedColor : unSelectedColor}
+        aria-label={label}
+      >
+        <Icon boxSize={6} as={icon} />
+      </IconButton>
     </Tooltip>
   );
 }
@@ -85,7 +86,7 @@ export default function Header() {
     FeatureFlagsData.featuresIds.BLOGS,
   );
 
-  function isSelectedBasedOnUrl(relativeUrl) {
+  function isSelectedBasedOnUrl(relativeUrl: string) {
     return pathnameUtil.doPathnamesMatch(relativeUrl, currentPathname);
   }
 
@@ -97,7 +98,14 @@ export default function Header() {
   );
 
   return (
-    <Box position={"fixed"} width={"100%"} maxW={"3xl"} zIndex={10}>
+    <Box
+      position={"fixed"}
+      width={"100%"}
+      maxW={"3xl"}
+      left={"50%"}
+      transform={"translateX(-50%)"}
+      zIndex={10}
+    >
       <Box p={[2, 4]}>
         <HeaderCard>
           <HStack justify={"space-between"}>
@@ -148,7 +156,7 @@ export default function Header() {
               </HStack>
             )}
 
-            <HStack gap={4}>
+            <HStack as={"nav"} aria-label={"Primary actions"} gap={4}>
               <ColorModeToggleIconButton />
               {showActionButton ? <LinkedInButton /> : <LinkedInButtonSmall />}
             </HStack>
