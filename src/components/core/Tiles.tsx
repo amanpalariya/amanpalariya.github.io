@@ -10,11 +10,14 @@ import {
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { FiChevronRight, FiArrowUpRight } from "react-icons/fi";
-import { InnerCard } from "./Cards";
 import { CategoryBadge } from "./Badges";
 import { useColorModeValue } from "@components/ui/color-mode";
 import { Avatar } from "@components/ui/avatar";
 import { Switch } from "@components/ui/switch";
+
+function FlatTile({ children }: { children: React.ReactNode }) {
+  return <Box px={[1, 2]} py={[1, 2]}>{children}</Box>;
+}
 
 function LinkOverlayIfUrlPresent({
   children,
@@ -75,7 +78,7 @@ export function TitleDescriptionAvatarTile({
 
   return (
     <LinkOverlayIfUrlPresent url={url} isUrlExternal={isUrlExternal}>
-      <InnerCard>
+      <FlatTile>
         <VStack align={"stretch"}>
           <HStack justify={"space-between"}>
             <HStack gap={4}>
@@ -96,7 +99,7 @@ export function TitleDescriptionAvatarTile({
           </HStack>
           <Box mx={2}>{showDescriptionBelow ? descriptionJsx : null}</Box>
         </VStack>
-      </InnerCard>
+      </FlatTile>
     </LinkOverlayIfUrlPresent>
   );
 }
@@ -150,7 +153,7 @@ export function TitleDescriptionTile({
 
   return (
     <LinkOverlayIfUrlPresent url={url} isUrlExternal={isUrlExternal}>
-      <InnerCard>
+      <FlatTile>
         <VStack align={"stretch"}>
           <HStack justify={"space-between"} align={"start"}>
             <VStack align={"start"} gap={1}>
@@ -160,7 +163,7 @@ export function TitleDescriptionTile({
             {url ? <LinkHelperIcon isExternal={isUrlExternal} /> : null}
           </HStack>
         </VStack>
-      </InnerCard>
+      </FlatTile>
     </LinkOverlayIfUrlPresent>
   );
 }
@@ -190,7 +193,7 @@ export function TitleDescriptionMetaTile({
 
   return (
     <LinkOverlayIfUrlPresent url={url} isUrlExternal={isUrlExternal}>
-      <InnerCard>
+      <FlatTile>
         <VStack align={"stretch"} gap={2}>
           <HStack justify={"space-between"} align={"start"}>
             <VStack align={"start"} gap={0}>
@@ -216,7 +219,7 @@ export function TitleDescriptionMetaTile({
             </Wrap>
           ) : null}
         </VStack>
-      </InnerCard>
+      </FlatTile>
     </LinkOverlayIfUrlPresent>
   );
 }
@@ -246,7 +249,7 @@ export function TitleCategoryAvatarTile({
 
   return (
     <LinkOverlayIfUrlPresent url={url} isUrlExternal={isUrlExternal}>
-      <InnerCard>
+      <FlatTile>
         <VStack align={"stretch"}>
           <HStack justify={"space-between"}>
             <HStack gap={4}>
@@ -269,7 +272,7 @@ export function TitleCategoryAvatarTile({
           </HStack>
           <Box>{showBadgeBelow ? categoryRow : null}</Box>
         </VStack>
-      </InnerCard>
+      </FlatTile>
     </LinkOverlayIfUrlPresent>
   );
 }
@@ -324,7 +327,7 @@ export function TitleDescriptionToggleTile({
 
   return (
     <LinkOverlayIfUrlPresent url={url} isUrlExternal={isUrlExternal}>
-      <InnerCard>
+      <FlatTile>
         <VStack align={"stretch"}>
           <HStack justify={"space-between"}>
             <VStack align={"start"}>
@@ -337,7 +340,7 @@ export function TitleDescriptionToggleTile({
             />
           </HStack>
         </VStack>
-      </InnerCard>
+      </FlatTile>
     </LinkOverlayIfUrlPresent>
   );
 }
