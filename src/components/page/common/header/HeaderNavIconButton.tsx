@@ -22,18 +22,17 @@ export default function HeaderNavIconButton({
 
   return (
     <Tooltip content={label} closeOnScroll>
-      <IconButton
-        as={NextLink}
-        href={url ?? ""}
-        borderRadius={"full"}
-        borderWidth={"thick"}
-        variant={isSelected ? "surface" : "ghost"}
-        color={isSelected ? selectedColor : unSelectedColor}
-        aria-label={label}
-        onClick={onClick}
-      >
-        <Icon boxSize={6} as={icon} />
-      </IconButton>
+      <NextLink href={url ?? ""} onClick={onClick}>
+        <IconButton
+          borderRadius={"full"}
+          borderWidth={"thick"}
+          variant={isSelected ? "surface" : "ghost"}
+          color={isSelected ? selectedColor : unSelectedColor}
+          aria-label={label}
+        >
+          <Icon boxSize={6} as={icon} />
+        </IconButton>
+      </NextLink>
     </Tooltip>
   );
 }

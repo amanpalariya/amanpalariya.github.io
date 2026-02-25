@@ -235,8 +235,7 @@ export default function Header() {
                 return (
                   <Button
                     key={item.url}
-                    as={NextLink}
-                    href={item.url}
+                    asChild
                     onClick={() => setMobileMenuOpen(false)}
                     justifyContent={"flex-start"}
                     borderRadius={"xl"}
@@ -247,10 +246,12 @@ export default function Header() {
                         : unselectedMobileNavColor
                     }
                   >
-                    <HStack gap={2}>
-                      <Icon as={item.icon} boxSize={6} />
-                      <Heading6>{item.label}</Heading6>
-                    </HStack>
+                    <NextLink href={item.url}>
+                      <HStack gap={2}>
+                        <Icon as={item.icon} boxSize={6} />
+                        <Heading6>{item.label}</Heading6>
+                      </HStack>
+                    </NextLink>
                   </Button>
                 );
               })}
