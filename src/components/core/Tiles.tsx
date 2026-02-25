@@ -16,12 +16,18 @@ import { useColorModeValue } from "@components/ui/color-mode";
 import { Avatar } from "@components/ui/avatar";
 import { Switch } from "@components/ui/switch";
 
+function useTileColors() {
+  return {
+    divider: useColorModeValue("gray.200", "gray.700"),
+    description: useColorModeValue("gray.600", "gray.300"),
+    avatarBorder: useColorModeValue("gray.200", "gray.600"),
+    linkIcon: useColorModeValue("gray.400", "gray.400"),
+  };
+}
+
 function FlatTile({ children }: { children: React.ReactNode }) {
   return (
-    <Box
-      px={[1, 2]}
-      py={[3, 4]}
-    >
+    <Box px={[1, 2]} py={[3, 4]}>
       {children}
     </Box>
   );
@@ -37,21 +43,21 @@ export function TileList({
   showDividerAfterLast?: boolean;
 }) {
   const items = Children.toArray(children).filter(Boolean);
-  const dividerColor = useColorModeValue("gray.200", "gray.700");
+  const { divider: dividerColor } = useTileColors();
 
   return (
     <VStack
       align={"stretch"}
       gap={0}
-      borderTopWidth={showDividerBeforeFirst ? "1px" : "0px"}
+      borderTopWidth={showDividerBeforeFirst ? "2px" : "0px"}
       borderTopColor={dividerColor}
-      borderBottomWidth={showDividerAfterLast ? "1px" : "0px"}
+      borderBottomWidth={showDividerAfterLast ? "2px" : "0px"}
       borderBottomColor={dividerColor}
     >
       {items.map((child, index) => (
         <Box
           key={index}
-          borderBottomWidth={index < items.length - 1 ? "1px" : "0px"}
+          borderBottomWidth={index < items.length - 1 ? "2px" : "0px"}
           borderBottomColor={dividerColor}
         >
           {child}
@@ -93,8 +99,10 @@ function LinkOverlayIfUrlPresent({
 }
 
 function LinkHelperIcon({ isExternal }) {
+  const { linkIcon } = useTileColors();
+
   return (
-    <Icon color="gray.400" boxSize={5}>
+    <Icon color={linkIcon} boxSize={5}>
       {isExternal ? <FiArrowUpRight /> : <FiChevronRight />}
     </Icon>
   );
@@ -114,7 +122,7 @@ export function TitleDescriptionAvatarTile({
   isUrlExternal?: boolean;
 }) {
   const showDescriptionBelow = useBreakpointValue([true, false]);
-  const descriptionColor = useColorModeValue("gray.500", "gray.300");
+  const { description: descriptionColor, avatarBorder } = useTileColors();
 
   const descriptionJsx = <Text color={descriptionColor}>{description}</Text>;
 
@@ -128,7 +136,7 @@ export function TitleDescriptionAvatarTile({
                 rounded={"full"}
                 p={1.5}
                 borderWidth={"medium"}
-                borderColor={useColorModeValue("gray.200", "gray.600")}
+                borderColor={avatarBorder}
               >
                 <Avatar size={"md"} name={title} src={avatarSrc} />
               </Box>
@@ -189,7 +197,7 @@ export function TitleDescriptionTile({
   url?: string;
   isUrlExternal?: boolean;
 }) {
-  const descriptionColor = useColorModeValue("gray.500", "gray.300");
+  const { description: descriptionColor } = useTileColors();
 
   const descriptionJsx = <Text color={descriptionColor}>{description}</Text>;
 
@@ -227,8 +235,8 @@ export function TitleDescriptionMetaTile({
   url?: string;
   isUrlExternal?: boolean;
 }) {
-  const descriptionColor = useColorModeValue("gray.500", "gray.300");
-  const metadataColor = useColorModeValue("gray.500", "gray.300");
+  const { description: descriptionColor } = useTileColors();
+  const metadataColor = descriptionColor;
 
   const descriptionJsx = <Text color={descriptionColor}>{description}</Text>;
   const metadataLabel = formatBlogDateLabel({ published, updated });
@@ -280,6 +288,7 @@ export function TitleCategoryAvatarTile({
   isUrlExternal?: boolean;
 }) {
   const showBadgeBelow = useBreakpointValue([true, false]);
+  const { avatarBorder } = useTileColors();
 
   const categoryRow = (
     <HStack>
@@ -299,7 +308,7 @@ export function TitleCategoryAvatarTile({
                 rounded={"full"}
                 p={1.5}
                 borderWidth={"medium"}
-                borderColor={useColorModeValue("gray.200", "gray.600")}
+                borderColor={avatarBorder}
               >
                 <Avatar size={"sm"} name={title} src={avatarSrc} />
               </Box>
@@ -363,7 +372,7 @@ export function TitleDescriptionToggleTile({
   onToggle?: (checked: boolean) => void;
   isUrlExternal?: boolean;
 }) {
-  const descriptionColor = useColorModeValue("gray.500", "gray.300");
+  const { description: descriptionColor } = useTileColors();
 
   const descriptionJsx = <Text color={descriptionColor}>{description}</Text>;
 
