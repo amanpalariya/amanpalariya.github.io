@@ -1,10 +1,11 @@
 import {
+  Button,
   Box,
   HStack,
   Icon,
   IconButton,
-  Link,
   Show,
+  Stack,
   useBreakpointValue,
 } from "@chakra-ui/react";
 import {
@@ -19,15 +20,19 @@ import {
 import { HeaderCard } from "../../core/Cards";
 import { usePathname } from "next/navigation";
 import { getHomepageTabByPathname, homepageTabs } from "app/route-info";
-import { Heading2 } from "@components/core/Texts";
+import { Heading2, Heading6 } from "@components/core/Texts";
 import * as pathnameUtil from "utils/pathname";
 import LinkedInButton, { LinkedInButtonSmall } from "./LinkedInPrimaryButton";
+import HeaderNavIconButton from "./header/HeaderNavIconButton";
+import HeaderMobileTrigger from "./header/HeaderMobileTrigger";
 import { useColorMode, useColorModeValue } from "@components/ui/color-mode";
 import { Tooltip } from "@components/ui/tooltip";
-import React from "react";
 import NextLink from "next/link";
 import { useFeatureFlag } from "utils/features";
 import FeatureFlagsData from "data/features";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+export const HEADER_OFFSET_HEIGHT = { base: 20, sm: 24 };
 
 function ColorModeToggleIconButton() {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -47,45 +52,17 @@ function ColorModeToggleIconButton() {
   );
 }
 
-function HeaderIconButton({
-  icon,
-  label,
-  url,
-  isSelected = false,
-}: {
-  icon: any;
-  label: string;
-  url?: string;
-  isSelected?: boolean;
-}) {
-  const selectedColor = useColorModeValue("gray.900", "gray.50");
-  const unSelectedColor = useColorModeValue("gray.500", "gray.300");
-
-  return (
-    <Tooltip content={label} closeOnScroll>
-      <Link rounded={"full"} as={NextLink} href={url ?? ""}>
-        <IconButton
-          borderRadius={"full"}
-          borderWidth={"thick"}
-          variant={isSelected ? "surface" : "ghost"}
-          color={isSelected ? selectedColor : unSelectedColor}
-          aria-label={label}
-        >
-          <Icon boxSize={6}>{React.createElement(icon)}</Icon>
-        </IconButton>
-      </Link>
-    </Tooltip>
-  );
-}
-
 export default function Header() {
   const showActionButton = useBreakpointValue({ base: false, sm: true });
+  const isMobile = useBreakpointValue({ base: true, sm: false }) ?? false;
   const currentPathname = usePathname() ?? "";
+  const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const mobileMenuContainerRef = useRef<HTMLDivElement>(null);
   const [, isBlogsFeatureEnabled, ,] = useFeatureFlag(
     FeatureFlagsData.featuresIds.BLOGS,
   );
 
-  function isSelectedBasedOnUrl(relativeUrl) {
+  function isSelectedBasedOnUrl(relativeUrl: string) {
     return pathnameUtil.doPathnamesMatch(relativeUrl, currentPathname);
   }
 
@@ -96,14 +73,94 @@ export default function Header() {
     1,
   );
 
+  const topLevelPathname = pathnameUtil.trimPathnameToDepth(currentPathname, 1);
+
+  const topLevelTabIcon =
+    {
+      [homepageTabs.home.pathname]: FiHome,
+      [homepageTabs.about.pathname]: FiUser,
+      [homepageTabs.projects.pathname]: FiGrid,
+      [homepageTabs.blogs.pathname]: FiBookOpen,
+    }[topLevelPathname] ?? FiHome;
+
+  const mobileNavItems = useMemo(
+    () => [
+      {
+        icon: FiHome,
+        label: homepageTabs.home.name,
+        url: homepageTabs.home.pathname,
+      },
+      {
+        icon: FiUser,
+        label: homepageTabs.about.name,
+        url: homepageTabs.about.pathname,
+      },
+      {
+        icon: FiGrid,
+        label: homepageTabs.projects.name,
+        url: homepageTabs.projects.pathname,
+      },
+      ...(isBlogsFeatureEnabled
+        ? [
+            {
+              icon: FiBookOpen,
+              label: homepageTabs.blogs.name,
+              url: homepageTabs.blogs.pathname,
+            },
+          ]
+        : []),
+    ],
+    [isBlogsFeatureEnabled],
+  );
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [currentPathname]);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) {
+      return;
+    }
+
+    function handleOutsideClick(event: MouseEvent | TouchEvent) {
+      const target = event.target;
+
+      if (!(target instanceof Node)) {
+        return;
+      }
+
+      if (!mobileMenuContainerRef.current?.contains(target)) {
+        setMobileMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("touchstart", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("touchstart", handleOutsideClick);
+    };
+  }, [isMobileMenuOpen]);
+
+  const menuDividerColor = useColorModeValue("gray.300", "gray.600");
+  const selectedMobileNavColor = useColorModeValue("gray.900", "gray.50");
+  const unselectedMobileNavColor = useColorModeValue("gray.600", "gray.300");
   return (
-    <Box position={"fixed"} width={"100%"} maxW={"3xl"} zIndex={10}>
-      <Box p={[2, 4]}>
+    <Box
+      position={"fixed"}
+      width={"100%"}
+      maxW={"3xl"}
+      left={"50%"}
+      transform={"translateX(-50%)"}
+      zIndex={10}
+    >
+      <Box p={[2, 4]} ref={mobileMenuContainerRef}>
         <HeaderCard>
           <HStack justify={"space-between"}>
             {isPathnameDeep ? (
               <HStack gap={4}>
-                <HeaderIconButton
+                <HeaderNavIconButton
                   icon={FiChevronLeft}
                   label="Back"
                   isSelected={false}
@@ -113,21 +170,29 @@ export default function Header() {
                   {getHomepageTabByPathname(parentTabPathname)?.name ?? ""}
                 </Heading2>
               </HStack>
+            ) : isMobile ? (
+              <HStack gap={1}>
+                <HeaderMobileTrigger
+                  isOpen={isMobileMenuOpen}
+                  onToggle={() => setMobileMenuOpen(!isMobileMenuOpen)}
+                  tabIcon={topLevelTabIcon}
+                />
+              </HStack>
             ) : (
               <HStack gap={4}>
-                <HeaderIconButton
+                <HeaderNavIconButton
                   icon={FiHome}
                   label={homepageTabs.home.name}
                   isSelected={isSelectedBasedOnUrl(homepageTabs.home.pathname)}
                   url={homepageTabs.home.pathname}
                 />
-                <HeaderIconButton
+                <HeaderNavIconButton
                   icon={FiUser}
                   label={homepageTabs.about.name}
                   isSelected={isSelectedBasedOnUrl(homepageTabs.about.pathname)}
                   url={homepageTabs.about.pathname}
                 />
-                <HeaderIconButton
+                <HeaderNavIconButton
                   icon={FiGrid}
                   label={homepageTabs.projects.name}
                   isSelected={isSelectedBasedOnUrl(
@@ -136,7 +201,7 @@ export default function Header() {
                   url={homepageTabs.projects.pathname}
                 />
                 <Show when={isBlogsFeatureEnabled}>
-                  <HeaderIconButton
+                  <HeaderNavIconButton
                     icon={FiBookOpen}
                     label={homepageTabs.blogs.name}
                     isSelected={isSelectedBasedOnUrl(
@@ -148,11 +213,50 @@ export default function Header() {
               </HStack>
             )}
 
-            <HStack gap={4}>
+            <HStack as={"nav"} aria-label={"Primary actions"} gap={4}>
               <ColorModeToggleIconButton />
               {showActionButton ? <LinkedInButton /> : <LinkedInButtonSmall />}
             </HStack>
           </HStack>
+
+          {isMobile && !isPathnameDeep && isMobileMenuOpen ? (
+            <Stack
+              as={"nav"}
+              aria-label={"Mobile navigation menu"}
+              borderTopWidth={1}
+              borderColor={menuDividerColor}
+              mt={4}
+              pt={4}
+              gap={3}
+            >
+              {mobileNavItems.map((item) => {
+                const isSelected = isSelectedBasedOnUrl(item.url);
+
+                return (
+                  <Button
+                    key={item.url}
+                    asChild
+                    onClick={() => setMobileMenuOpen(false)}
+                    justifyContent={"flex-start"}
+                    borderRadius={"xl"}
+                    variant={isSelected ? "surface" : "ghost"}
+                    color={
+                      isSelected
+                        ? selectedMobileNavColor
+                        : unselectedMobileNavColor
+                    }
+                  >
+                    <NextLink href={item.url}>
+                      <HStack gap={2}>
+                        <Icon as={item.icon} boxSize={6} />
+                        <Heading6>{item.label}</Heading6>
+                      </HStack>
+                    </NextLink>
+                  </Button>
+                );
+              })}
+            </Stack>
+          ) : undefined}
         </HeaderCard>
       </Box>
     </Box>
