@@ -16,7 +16,16 @@ import { Avatar } from "@components/ui/avatar";
 import { Switch } from "@components/ui/switch";
 
 function FlatTile({ children }: { children: React.ReactNode }) {
-  return <Box px={[1, 2]} py={[1, 2]}>{children}</Box>;
+  return (
+    <Box
+      px={[1, 2]}
+      py={[3, 4]}
+      borderBottomWidth={"1px"}
+      borderBottomColor={useColorModeValue("gray.200", "gray.700")}
+    >
+      {children}
+    </Box>
+  );
 }
 
 function LinkOverlayIfUrlPresent({
