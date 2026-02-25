@@ -13,11 +13,9 @@ import {
   FiChevronLeft,
   FiGrid,
   FiHome,
-  FiMenu,
   FiMoon,
   FiSun,
   FiUser,
-  FiX,
 } from "react-icons/fi";
 import { HeaderCard } from "../../core/Cards";
 import { usePathname } from "next/navigation";
@@ -25,12 +23,13 @@ import { getHomepageTabByPathname, homepageTabs } from "app/route-info";
 import { Heading2, Heading6 } from "@components/core/Texts";
 import * as pathnameUtil from "utils/pathname";
 import LinkedInButton, { LinkedInButtonSmall } from "./LinkedInPrimaryButton";
+import HeaderNavIconButton from "./header/HeaderNavIconButton";
+import HeaderMobileTrigger from "./header/HeaderMobileTrigger";
 import { useColorMode, useColorModeValue } from "@components/ui/color-mode";
 import { Tooltip } from "@components/ui/tooltip";
 import NextLink from "next/link";
 import { useFeatureFlag } from "utils/features";
 import FeatureFlagsData from "data/features";
-import type { IconType } from "react-icons";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 export const HEADER_OFFSET_HEIGHT = { base: 20, sm: 24 };
@@ -48,40 +47,6 @@ function ColorModeToggleIconButton() {
         aria-label={"Change color mode (dark/light)"}
       >
         <Icon boxSize={6}>{isDark ? <FiSun /> : <FiMoon />}</Icon>
-      </IconButton>
-    </Tooltip>
-  );
-}
-
-function HeaderIconButton({
-  icon,
-  label,
-  url,
-  isSelected = false,
-  onClick,
-}: {
-  icon: IconType;
-  label: string;
-  url?: string;
-  isSelected?: boolean;
-  onClick?: () => void;
-}) {
-  const selectedColor = useColorModeValue("gray.900", "gray.50");
-  const unSelectedColor = useColorModeValue("gray.500", "gray.300");
-
-  return (
-    <Tooltip content={label} closeOnScroll>
-      <IconButton
-        as={NextLink}
-        href={url ?? ""}
-        borderRadius={"full"}
-        borderWidth={"thick"}
-        variant={isSelected ? "surface" : "ghost"}
-        color={isSelected ? selectedColor : unSelectedColor}
-        aria-label={label}
-        onClick={onClick}
-      >
-        <Icon boxSize={6} as={icon} />
       </IconButton>
     </Tooltip>
   );
@@ -181,7 +146,6 @@ export default function Header() {
   const menuDividerColor = useColorModeValue("gray.300", "gray.600");
   const selectedMobileNavColor = useColorModeValue("gray.900", "gray.50");
   const unselectedMobileNavColor = useColorModeValue("gray.600", "gray.300");
-
   return (
     <Box
       position={"fixed"}
@@ -196,7 +160,7 @@ export default function Header() {
           <HStack justify={"space-between"}>
             {isPathnameDeep ? (
               <HStack gap={4}>
-                <HeaderIconButton
+                <HeaderNavIconButton
                   icon={FiChevronLeft}
                   label="Back"
                   isSelected={false}
@@ -208,40 +172,27 @@ export default function Header() {
               </HStack>
             ) : isMobile ? (
               <HStack gap={1}>
-                <Button
-                  px={3}
-                  borderRadius={"full"}
-                  variant={isMobileMenuOpen ? "surface" : "outline"}
-                  aria-label={
-                    isMobileMenuOpen
-                      ? "Close mobile navigation menu"
-                      : "Open mobile navigation menu"
-                  }
-                  onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}
-                >
-                  <HStack gap={2}>
-                    <Icon boxSize={6}>
-                      {isMobileMenuOpen ? <FiX /> : <FiMenu />}
-                    </Icon>
-                    <Icon as={topLevelTabIcon} boxSize={6} />
-                  </HStack>
-                </Button>
+                <HeaderMobileTrigger
+                  isOpen={isMobileMenuOpen}
+                  onToggle={() => setMobileMenuOpen(!isMobileMenuOpen)}
+                  tabIcon={topLevelTabIcon}
+                />
               </HStack>
             ) : (
               <HStack gap={4}>
-                <HeaderIconButton
+                <HeaderNavIconButton
                   icon={FiHome}
                   label={homepageTabs.home.name}
                   isSelected={isSelectedBasedOnUrl(homepageTabs.home.pathname)}
                   url={homepageTabs.home.pathname}
                 />
-                <HeaderIconButton
+                <HeaderNavIconButton
                   icon={FiUser}
                   label={homepageTabs.about.name}
                   isSelected={isSelectedBasedOnUrl(homepageTabs.about.pathname)}
                   url={homepageTabs.about.pathname}
                 />
-                <HeaderIconButton
+                <HeaderNavIconButton
                   icon={FiGrid}
                   label={homepageTabs.projects.name}
                   isSelected={isSelectedBasedOnUrl(
@@ -250,7 +201,7 @@ export default function Header() {
                   url={homepageTabs.projects.pathname}
                 />
                 <Show when={isBlogsFeatureEnabled}>
-                  <HeaderIconButton
+                  <HeaderNavIconButton
                     icon={FiBookOpen}
                     label={homepageTabs.blogs.name}
                     isSelected={isSelectedBasedOnUrl(
