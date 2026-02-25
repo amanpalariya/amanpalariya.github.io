@@ -1,5 +1,5 @@
-import { Button, VStack, HStack, Icon, Link } from "@chakra-ui/react";
-import { InnerBgCard } from "../../core/Cards";
+import { Button, VStack, HStack, Icon, Box } from "@chakra-ui/react";
+import { InnerBgCardWithHeader } from "@components/core/Cards";
 import { SectionText } from "../../core/Texts";
 import { useColorModeValue } from "@components/ui/color-mode";
 import React, { JSX } from "react";
@@ -8,26 +8,27 @@ import NextLink from "next/link";
 export default function HighlightedSection({
   title,
   titleActionElement,
+  separateHeader = false,
   children,
 }: {
   title?: string;
   titleActionElement?: JSX.Element;
+  separateHeader?: boolean;
   children: JSX.Element;
 }) {
   const noHeader = !title && !titleActionElement;
 
+  const headerJsx = noHeader ? undefined : (
+    <HStack justify={"space-between"} align={"center"}>
+      {title ? <SectionText>{title}</SectionText> : <div />}
+      {titleActionElement}
+    </HStack>
+  );
+
   return (
-    <InnerBgCard>
-      <VStack align={"stretch"} gap={4}>
-        {noHeader ? null : (
-          <HStack justify={"space-between"}>
-            {title ? <SectionText>{title}</SectionText> : <div />}
-            {titleActionElement}
-          </HStack>
-        )}
-        {children}
-      </VStack>
-    </InnerBgCard>
+    <InnerBgCardWithHeader header={headerJsx} separateHeader={separateHeader}>
+      {children}
+    </InnerBgCardWithHeader>
   );
 }
 

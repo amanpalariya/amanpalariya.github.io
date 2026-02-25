@@ -66,6 +66,7 @@ function Projects() {
           View All
         </SectionActionLink>
       }
+      separateHeader
     >
       <TileList>
         {ProjectsData.allProjects.slice(0, 3).map((project) => (
@@ -120,7 +121,9 @@ function WorkExperience() {
             <EmptyState.Indicator>
               <Icon as={FiBriefcase} boxSize={12} color={"gray.500"} />
             </EmptyState.Indicator>
-            <EmptyState.Title>{"There is no work experience yet!"}</EmptyState.Title>
+            <EmptyState.Title>
+              {"There is no work experience yet!"}
+            </EmptyState.Title>
           </EmptyState.Content>
         </EmptyState.Root>
       </HighlightedSection>
@@ -128,7 +131,7 @@ function WorkExperience() {
   }
 
   return (
-    <HighlightedSection title="Work Experience">
+    <HighlightedSection title="Work Experience" separateHeader>
       <TileList>
         {WorkData.experience.map((exp, index) => (
           <TitleDescriptionAvatarTile
