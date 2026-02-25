@@ -4,6 +4,7 @@ import { EmptyState, VStack, HStack, Box, Icon } from "@chakra-ui/react";
 import { FiChevronRight } from "react-icons/fi";
 import { SectionText } from "@components/core/Texts";
 import {
+  TileList,
   TitleDescriptionAvatarTile,
   TitleDescriptionTile,
 } from "@components/core/Tiles";
@@ -66,7 +67,7 @@ function Projects() {
         </SectionActionLink>
       }
     >
-      <VStack align={"stretch"} gap={4}>
+      <TileList>
         {ProjectsData.allProjects.slice(0, 3).map((project) => (
           <TitleDescriptionTile
             key={project.id}
@@ -80,7 +81,7 @@ function Projects() {
             isUrlExternal={project.content ? false : true}
           />
         ))}
-      </VStack>
+      </TileList>
     </HighlightedSection>
   );
 }
@@ -128,7 +129,7 @@ function WorkExperience() {
 
   return (
     <HighlightedSection title="Work Experience">
-      <VStack align={"stretch"} gap={4}>
+      <TileList>
         {WorkData.experience.map((exp, index) => (
           <TitleDescriptionAvatarTile
             key={index}
@@ -139,7 +140,7 @@ function WorkExperience() {
             isUrlExternal
           />
         ))}
-      </VStack>
+      </TileList>
     </HighlightedSection>
   );
 }

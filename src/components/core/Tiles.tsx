@@ -9,6 +9,7 @@ import {
   WrapItem,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
+import { Children } from "react";
 import { FiChevronRight, FiArrowUpRight } from "react-icons/fi";
 import { CategoryBadge } from "./Badges";
 import { useColorModeValue } from "@components/ui/color-mode";
@@ -20,11 +21,28 @@ function FlatTile({ children }: { children: React.ReactNode }) {
     <Box
       px={[1, 2]}
       py={[3, 4]}
-      borderBottomWidth={"1px"}
-      borderBottomColor={useColorModeValue("gray.200", "gray.700")}
     >
       {children}
     </Box>
+  );
+}
+
+export function TileList({ children }: { children: React.ReactNode }) {
+  const items = Children.toArray(children).filter(Boolean);
+  const dividerColor = useColorModeValue("gray.200", "gray.700");
+
+  return (
+    <VStack align={"stretch"} gap={0}>
+      {items.map((child, index) => (
+        <Box
+          key={index}
+          borderBottomWidth={index < items.length - 1 ? "1px" : "0px"}
+          borderBottomColor={dividerColor}
+        >
+          {child}
+        </Box>
+      ))}
+    </VStack>
   );
 }
 

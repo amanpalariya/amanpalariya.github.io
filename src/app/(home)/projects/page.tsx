@@ -2,7 +2,7 @@
 
 import { EmptyState, VStack, Spacer, Box, Icon } from "@chakra-ui/react";
 import { Heading1, SectionText, SubtitleText } from "@components/core/Texts";
-import { TitleDescriptionTile } from "@components/core/Tiles";
+import { TileList, TitleDescriptionTile } from "@components/core/Tiles";
 import HighlightedSection from "@components/page/common/HighlightedSection";
 import { homepageTabs } from "app/route-info";
 import ProjectsData from "data/projects";
@@ -43,7 +43,7 @@ function NoProjectsElement() {
 function ProjectsListElement() {
   return (
     <HighlightedSection>
-      <VStack align={"stretch"} gap={4}>
+      <TileList>
         {ProjectsData.allProjects.map((project) => (
           <TitleDescriptionTile
             key={project.id}
@@ -57,7 +57,7 @@ function ProjectsListElement() {
             isUrlExternal={project.content ? false : true}
           />
         ))}
-      </VStack>
+      </TileList>
     </HighlightedSection>
   );
 }

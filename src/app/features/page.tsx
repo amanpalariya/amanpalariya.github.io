@@ -2,7 +2,7 @@
 
 import { EmptyState, VStack, Spacer, Box, Icon, Skeleton } from "@chakra-ui/react";
 import { Heading1, SectionText, SubtitleText } from "@components/core/Texts";
-import { TitleDescriptionToggleTile } from "@components/core/Tiles";
+import { TileList, TitleDescriptionToggleTile } from "@components/core/Tiles";
 import HighlightedSection from "@components/page/common/HighlightedSection";
 import WithBackground from "@components/page/wrapper/WithBackground";
 import WithBodyCard from "@components/page/wrapper/WithBodyCard";
@@ -59,11 +59,11 @@ function FeatureFlagTile({ featureFlag }: { featureFlag: FeatureFlagEntry }) {
 function FeatureFlagsListElement() {
   return (
     <HighlightedSection>
-      <VStack align={"stretch"} gap={4}>
+      <TileList>
         {FeatureFlagsData.flags.map((flag) => (
           <FeatureFlagTile key={flag.id} featureFlag={flag} />
         ))}
-      </VStack>
+      </TileList>
     </HighlightedSection>
   );
 }
