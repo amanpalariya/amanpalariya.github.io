@@ -35,7 +35,9 @@ function NoBlogsElement() {
               <FiBookmark />
             </Icon>
           </EmptyState.Indicator>
-          <EmptyState.Title>{"There are no blogs yet!"}</EmptyState.Title>
+          <EmptyState.Title textAlign={"center"}>
+            {"There are no blogs yet!"}
+          </EmptyState.Title>
         </EmptyState.Content>
       </EmptyState.Root>
     </HighlightedSection>

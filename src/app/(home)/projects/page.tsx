@@ -33,7 +33,9 @@ function NoProjectsElement() {
               <FiTool />
             </Icon>
           </EmptyState.Indicator>
-          <EmptyState.Title>{"There are no projects yet!"}</EmptyState.Title>
+          <EmptyState.Title textAlign={"center"}>
+            {"There are no projects yet!"}
+          </EmptyState.Title>
         </EmptyState.Content>
       </EmptyState.Root>
     </HighlightedSection>

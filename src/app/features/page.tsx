@@ -32,7 +32,9 @@ function NoFeatureFlagsElement() {
           <EmptyState.Indicator>
             <Icon as={FiTool} boxSize={12} color={"gray.500"} />
           </EmptyState.Indicator>
-          <EmptyState.Title>{"There are no feature flags!"}</EmptyState.Title>
+          <EmptyState.Title textAlign={"center"}>
+            {"There are no feature flags!"}
+          </EmptyState.Title>
         </EmptyState.Content>
       </EmptyState.Root>
     </HighlightedSection>
