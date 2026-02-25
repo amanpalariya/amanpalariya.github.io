@@ -47,6 +47,7 @@ export function SectionActionLink({
       as={NextLink}
       href={url ?? ""}
       variant={"ghost"}
+      h={"auto"}
       color={useColorModeValue("gray.500", "gray.500")}
       onClick={onClick}
     >
