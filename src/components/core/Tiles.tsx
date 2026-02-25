@@ -27,12 +27,27 @@ function FlatTile({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function TileList({ children }: { children: React.ReactNode }) {
+export function TileList({
+  children,
+  showDividerBeforeFirst = false,
+  showDividerAfterLast = false,
+}: {
+  children: React.ReactNode;
+  showDividerBeforeFirst?: boolean;
+  showDividerAfterLast?: boolean;
+}) {
   const items = Children.toArray(children).filter(Boolean);
   const dividerColor = useColorModeValue("gray.200", "gray.700");
 
   return (
-    <VStack align={"stretch"} gap={0}>
+    <VStack
+      align={"stretch"}
+      gap={0}
+      borderTopWidth={showDividerBeforeFirst ? "1px" : "0px"}
+      borderTopColor={dividerColor}
+      borderBottomWidth={showDividerAfterLast ? "1px" : "0px"}
+      borderBottomColor={dividerColor}
+    >
       {items.map((child, index) => (
         <Box
           key={index}
