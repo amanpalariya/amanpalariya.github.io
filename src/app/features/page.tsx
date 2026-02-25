@@ -2,7 +2,7 @@
 
 import { EmptyState, VStack, Spacer, Box, Icon, Skeleton } from "@chakra-ui/react";
 import { Heading1, SectionText, SubtitleText } from "@components/core/Texts";
-import { TitleDescriptionAvatarToggleTile } from "@components/core/Tiles";
+import { TitleDescriptionToggleTile } from "@components/core/Tiles";
 import HighlightedSection from "@components/page/common/HighlightedSection";
 import WithBackground from "@components/page/wrapper/WithBackground";
 import WithBodyCard from "@components/page/wrapper/WithBodyCard";
@@ -47,7 +47,7 @@ function FeatureFlagTile({ featureFlag }: { featureFlag: FeatureFlagEntry }) {
   return isLoading ? (
     <Skeleton w={"full"} h={"24"} rounded={"2xl"} />
   ) : (
-    <TitleDescriptionAvatarToggleTile
+    <TitleDescriptionToggleTile
       title={featureFlag.name}
       description={featureFlag.desc}
       toggleValue={featureFlagValue}

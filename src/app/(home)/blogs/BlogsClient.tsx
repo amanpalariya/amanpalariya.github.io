@@ -2,7 +2,7 @@
 
 import { EmptyState, VStack, Spacer, Box, Icon } from "@chakra-ui/react";
 import { Heading1, SectionText, SubtitleText } from "@components/core/Texts";
-import { TitleDescriptionAvatarTile } from "@components/core/Tiles";
+import { TitleDescriptionMetaTile } from "@components/core/Tiles";
 import HighlightedSection from "@components/page/common/HighlightedSection";
 import { homepageTabs } from "app/route-info";
 import BlogsData from "data/blogs";
@@ -47,10 +47,13 @@ function BlogsListElement({ blogs }: { blogs: BlogMeta[] }) {
     <HighlightedSection>
       <VStack align={"stretch"} gap={4}>
         {blogs.map((blog) => (
-          <TitleDescriptionAvatarTile
+          <TitleDescriptionMetaTile
             key={blog.id}
             title={blog.title}
             description={blog.description}
+            tags={blog.tags}
+            published={blog.published}
+            updated={blog.updated}
             url={homepageTabs.blogs.getSubpagePathname(blog.id)}
             isUrlExternal={false}
           />

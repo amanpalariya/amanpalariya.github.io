@@ -3,7 +3,10 @@
 import { EmptyState, VStack, HStack, Box, Icon } from "@chakra-ui/react";
 import { FiChevronRight } from "react-icons/fi";
 import { SectionText } from "@components/core/Texts";
-import { TitleDescriptionAvatarTile } from "@components/core/Tiles";
+import {
+  TitleDescriptionAvatarTile,
+  TitleDescriptionTile,
+} from "@components/core/Tiles";
 import BottomMessage from "@components/page/common/BottomMessage";
 import HighlightedSection, {
   SectionActionLink,
@@ -65,7 +68,7 @@ function Projects() {
     >
       <VStack align={"stretch"} gap={4}>
         {ProjectsData.allProjects.slice(0, 3).map((project) => (
-          <TitleDescriptionAvatarTile
+          <TitleDescriptionTile
             key={project.id}
             title={project.title}
             description={project.description}
