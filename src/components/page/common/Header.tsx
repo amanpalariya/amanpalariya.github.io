@@ -102,11 +102,6 @@ export default function Header() {
         label: homepageTabs.projects.name,
         url: homepageTabs.projects.pathname,
       },
-      {
-        icon: FiFileText,
-        label: homepageTabs.cv.name,
-        url: homepageTabs.cv.pathname,
-      },
       ...(isBlogsFeatureEnabled
         ? [
             {
@@ -206,12 +201,6 @@ export default function Header() {
                     homepageTabs.projects.pathname,
                   )}
                   url={homepageTabs.projects.pathname}
-                />
-                <HeaderNavIconButton
-                  icon={FiFileText}
-                  label={homepageTabs.cv.name}
-                  isSelected={isSelectedBasedOnUrl(homepageTabs.cv.pathname)}
-                  url={homepageTabs.cv.pathname}
                 />
                 <Show when={isBlogsFeatureEnabled}>
                   <HeaderNavIconButton

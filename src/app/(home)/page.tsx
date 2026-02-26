@@ -19,7 +19,6 @@ import TimeBasedOnlineStatusBadge from "@components/page/home/TimeBasedOnlineSta
 import { useFeatureFlag } from "utils/features";
 import FeatureFlagsData from "data/features";
 import { FiBriefcase, FiTool, FiChevronRight } from "react-icons/fi";
-import CvCtaSection from "@components/page/cv/CvCtaSection";
 
 function Main() {
   return (
@@ -159,7 +158,6 @@ export default function Home() {
     <VStack align={"stretch"}>
       <Main />
       <WorkExperience />
-      <CvCtaSection />
       <Projects />
       <ExtraInfo />
     </VStack>
