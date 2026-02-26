@@ -177,7 +177,7 @@ export interface CvData {
 const sharedProfileLinks: NonNullable<CvProfile["links"]> = [
   { label: "LinkedIn", url: PersonalData.linkedIn.url },
   { label: "GitHub", url: PersonalData.github.url },
-  { label: "X", url: PersonalData.twitter.url },
+  { label: "X", url: PersonalData.x.url },
 ];
 
 const sharedContactChannels: CvContactChannel[] = [

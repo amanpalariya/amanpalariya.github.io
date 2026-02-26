@@ -6,7 +6,8 @@ import {
   Icon,
   Link,
 } from "@chakra-ui/react";
-import { FiTwitter, FiInstagram, FiLinkedin, FiGithub } from "react-icons/fi";
+import { FiInstagram, FiLinkedin, FiGithub } from "react-icons/fi";
+import { FaXTwitter } from "react-icons/fa6";
 import { InnerBgCard } from "../../core/Cards";
 import { SectionText } from "../../core/Texts";
 import { PersonalData } from "data";
@@ -44,12 +45,12 @@ function SocialIconButton({
   );
 }
 
-const TwitterIcon = () => (
+const XIcon = () => (
   <SocialIconButton
-    icon={FiTwitter}
-    label={"Twitter"}
-    url={PersonalData.twitter.url}
-    color={"app.brand.twitter.solid"}
+    icon={FaXTwitter}
+    label={"X"}
+    url={PersonalData.x.url}
+    color={"app.brand.x.solid"}
   />
 );
 const InstagramIcon = () => (
@@ -93,7 +94,7 @@ export default function SocialCard() {
           <LinkedinIcon />
           <GithubIcon />
           <InstagramIcon />
-          <TwitterIcon />
+          <XIcon />
         </HStack>
       </Stack>
     </InnerBgCard>

@@ -16,10 +16,10 @@ import {
   FiLink,
   FiLinkedin,
   FiGithub,
-  FiTwitter,
   FiCopy,
   FiCheck,
 } from "react-icons/fi";
+import { FaXTwitter } from "react-icons/fa6";
 import { Tooltip } from "@components/ui/tooltip";
 import { useState } from "react";
 import PersonalData from "../../../data/Personal";
@@ -33,7 +33,7 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
     if (normalized.includes("website")) return FiGlobe;
     if (normalized.includes("linkedin")) return FiLinkedin;
     if (normalized.includes("github")) return FiGithub;
-    if (normalized === "x" || normalized.includes("twitter")) return FiTwitter;
+    if (normalized === "x") return FaXTwitter;
     return FiLink;
   }
 
@@ -45,8 +45,7 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
       return `@${PersonalData.linkedIn.username}`;
     if (normalized.includes("github"))
       return `@${PersonalData.github.username}`;
-    if (normalized === "x" || normalized.includes("twitter"))
-      return `@${PersonalData.twitter.username}`;
+    if (normalized === "x") return `@${PersonalData.x.username}`;
 
     return url;
   }

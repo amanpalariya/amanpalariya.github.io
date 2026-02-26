@@ -84,9 +84,9 @@ export const APP_SEMANTIC_COLOR_TOKENS = {
         soft: semanticColor("{colors.blue.100}", "{colors.blue.900}"),
         contrast: semanticColor("{colors.gray.100}", "{colors.gray.900}"),
       },
-      twitter: {
-        solid: semanticColor("#1DA1F2", "#60C2F7"),
-        soft: semanticColor("{colors.blue.100}", "{colors.blue.900}"),
+      x: {
+        solid: semanticColor("#000000", "#FFFFFF"),
+        soft: semanticColor("{colors.gray.200}", "{colors.gray.700}"),
         contrast: semanticColor("{colors.gray.100}", "{colors.gray.900}"),
       },
       instagram: {

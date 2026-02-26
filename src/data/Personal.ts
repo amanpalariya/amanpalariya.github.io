@@ -37,7 +37,7 @@ const PersonalData = {
     username: "amanpalariya",
     url: "https://linkedin.com/in/amanpalariya",
   },
-  twitter: {
+  x: {
     username: "AmanPalariya",
     url: "https://x.com/AmanPalariya",
   },
