@@ -40,7 +40,7 @@ export default function CvAccomplishmentsSection({
 }) {
   if (!section || items.length === 0) return null;
 
-  const mutedColor = useColorModeValue("gray.600", "gray.300");
+  const mutedColor = "app.fg.muted";
 
   return (
     <CvSection

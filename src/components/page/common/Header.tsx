@@ -147,7 +147,7 @@ export default function Header() {
 
   const menuDividerColor = useColorModeValue("gray.300", "gray.600");
   const selectedMobileNavColor = useColorModeValue("gray.900", "gray.50");
-  const unselectedMobileNavColor = useColorModeValue("gray.600", "gray.300");
+  const unselectedMobileNavColor = "app.fg.muted";
   return (
     <Box
       position={"fixed"}

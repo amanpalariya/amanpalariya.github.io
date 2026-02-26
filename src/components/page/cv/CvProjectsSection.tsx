@@ -13,7 +13,6 @@ import { CategoryBadge } from "@components/core/Badges";
 import type { CvSectionBase, CvProjectItem } from "data/cv";
 import type { ElementType } from "react";
 import { FiLink } from "react-icons/fi";
-import { useColorModeValue } from "@components/ui/color-mode";
 import CvSection from "./CvSection";
 
 function ProjectCard({
@@ -23,7 +22,7 @@ function ProjectCard({
   item: CvProjectItem;
   accentColorPalette?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
 }) {
-  const mutedColor = useColorModeValue("gray.600", "gray.300");
+  const mutedColor = "app.fg.muted";
 
   return (
     <VStack align="stretch" gap={3}>
