@@ -10,6 +10,74 @@ import type {
 
 export type CvSectionKey = keyof CvData["sections"];
 
+const SHORT_MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+] as const;
+
+function formatShortMonth(month: number) {
+  return SHORT_MONTHS[month - 1];
+}
+
+export function formatCvDate(date?: string) {
+  const value = date?.trim();
+  if (!value) return "";
+
+  const yearMatch = value.match(/^(\d{4})$/);
+  if (yearMatch) {
+    return yearMatch[1];
+  }
+
+  const yearMonthMatch = value.match(/^(\d{4})-(0[1-9]|1[0-2])$/);
+  if (yearMonthMatch) {
+    const [, year, month] = yearMonthMatch;
+    return `${formatShortMonth(Number(month))} ${year}`;
+  }
+
+  const fullDateMatch = value.match(/^(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/);
+  if (fullDateMatch) {
+    const [, year, month, day] = fullDateMatch;
+    return `${formatShortMonth(Number(month))} ${Number(day)}, ${year}`;
+  }
+
+  return value;
+}
+
+export function formatCvDateRange({
+  start,
+  end,
+  presentWhenEndMissing = false,
+}: {
+  start?: string;
+  end?: string;
+  presentWhenEndMissing?: boolean;
+}) {
+  const startDisplay = formatCvDate(start);
+  const endValue = end?.trim();
+
+  if (!endValue) {
+    if (!startDisplay) return "";
+    return presentWhenEndMissing ? `${startDisplay} – Present` : startDisplay;
+  }
+
+  const endDisplay = /^present$/i.test(endValue) ? "Present" : formatCvDate(endValue);
+
+  if (!startDisplay) return endDisplay;
+  if (!endDisplay || startDisplay === endDisplay) return startDisplay;
+
+  return `${startDisplay} – ${endDisplay}`;
+}
+
 export function isCollectionSectionEmpty<T>(items?: T[]) {
   return !items || items.length === 0;
 }

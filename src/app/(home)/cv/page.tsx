@@ -29,6 +29,8 @@ import {
   FiMail,
 } from "react-icons/fi";
 import {
+  formatCvDate,
+  formatCvDateRange,
   getRenderableCvSections,
   mapAwardsToTimelineItems,
   mapEducationToTimelineItems,
@@ -67,7 +69,7 @@ function toVisualItems(
       const cert = item as CvCertificationItem;
       return {
         title: cert.title,
-        meta: cert.issuer ?? cert.date,
+        meta: [cert.issuer, formatCvDate(cert.date)].filter(Boolean).join(" · "),
         summary: cert.summary,
         tags: cert.tags,
         url: cert.credentialUrl,
@@ -76,9 +78,14 @@ function toVisualItems(
 
     if ("role" in item) {
       const org = item as CvOrganizationItem;
+      const range = formatCvDateRange({
+        start: org.start,
+        end: org.end,
+        presentWhenEndMissing: true,
+      });
       return {
         title: org.name,
-        meta: [org.role, org.start, org.end].filter(Boolean).join(" · "),
+        meta: [org.role, range].filter(Boolean).join(" · "),
         summary: org.summary,
       };
     }
@@ -87,7 +94,7 @@ function toVisualItems(
       const award = item as CvAwardItem;
       return {
         title: award.title,
-        meta: [award.issuer, award.date].filter(Boolean).join(" · "),
+        meta: [award.issuer, formatCvDate(award.date)].filter(Boolean).join(" · "),
         summary: award.summary,
       };
     }
@@ -95,7 +102,7 @@ function toVisualItems(
     const award = item as CvAwardItem;
     return {
       title: award.title,
-      meta: [award.issuer, award.date].filter(Boolean).join(" · "),
+      meta: [award.issuer, formatCvDate(award.date)].filter(Boolean).join(" · "),
       summary: award.summary,
     };
   });
@@ -170,6 +177,7 @@ export default function CvPage() {
             titleIcon={FiBriefcase}
             primaryColorPalette={primaryColorPalette}
             accentColorPalette={accentColorPalette}
+            presentWhenEndMissing
           />
         ) : null;
 
@@ -214,6 +222,7 @@ export default function CvPage() {
             titleIcon={FiHeart}
             primaryColorPalette={primaryColorPalette}
             accentColorPalette={accentColorPalette}
+            presentWhenEndMissing
           />
         ) : null;
 

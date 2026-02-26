@@ -4,11 +4,12 @@ import type { CvCourseItem, CvSectionBase } from "data/cv";
 import type { ElementType } from "react";
 import { useColorModeValue } from "@components/ui/color-mode";
 import CvSection from "./CvSection";
+import { formatCvDate } from "./cvRenderUtils";
 
 type AccentPalette = "blue" | "purple" | "green" | "orange" | "yellow" | "red";
 
 function toCourseMeta(course: CvCourseItem) {
-  const timeframe = course.timeframe ?? course.date;
+  const timeframe = course.timeframe ?? formatCvDate(course.date);
   return [
     course.institution,
     timeframe,

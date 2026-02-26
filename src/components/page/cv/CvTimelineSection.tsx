@@ -16,6 +16,7 @@ import { FiLink } from "react-icons/fi";
 import { useColorModeValue } from "@components/ui/color-mode";
 import CvSection from "./CvSection";
 import type { ElementType } from "react";
+import { formatCvDateRange } from "./cvRenderUtils";
 
 type AccentPalette = "blue" | "purple" | "green" | "orange" | "yellow" | "red";
 
@@ -23,10 +24,12 @@ function TimelineItem({
   item,
   accentColorPalette,
   tagColor,
+  presentWhenEndMissing,
 }: {
   item: CvTimelineItem;
   accentColorPalette?: string;
   tagColor: "gray" | AccentPalette;
+  presentWhenEndMissing?: boolean;
 }) {
   const mutedColor = useColorModeValue("gray.600", "gray.300");
   const highlights = item.highlights && item.highlights.length > 0
@@ -37,6 +40,11 @@ function TimelineItem({
   const dotColor = accentColorPalette
     ? useColorModeValue(`${accentColorPalette}.500`, `${accentColorPalette}.300`)
     : useColorModeValue("gray.500", "gray.400");
+  const timeframe = formatCvDateRange({
+    start: item.start,
+    end: item.end,
+    presentWhenEndMissing,
+  });
 
   return (
     <HStack align="stretch" gap={4}>
@@ -53,7 +61,7 @@ function TimelineItem({
               </Text>
             </HStack>
             <HStack gap={2} color={mutedColor} fontSize="sm" wrap="wrap">
-              <Text>{`${item.start}${item.end ? ` - ${item.end}` : ""}`}</Text>
+              {timeframe ? <Text>{timeframe}</Text> : null}
               {item.location ? <Text>{`· ${item.location}`}</Text> : null}
             </HStack>
           </VStack>
@@ -97,11 +105,13 @@ export default function CvTimelineSection({
   titleIcon,
   primaryColorPalette,
   accentColorPalette,
+  presentWhenEndMissing,
 }: {
   section: CvSectionBase & { items: CvTimelineItem[] };
   titleIcon?: ElementType;
   primaryColorPalette?: AccentPalette;
   accentColorPalette?: AccentPalette;
+  presentWhenEndMissing?: boolean;
 }) {
   if (!section || section.items.length === 0) return null;
   const resolvedAccentPalette = accentColorPalette ?? primaryColorPalette;
@@ -149,6 +159,7 @@ export default function CvTimelineSection({
               item={item}
               accentColorPalette={resolvedAccentPalette}
               tagColor={tagColor}
+              presentWhenEndMissing={presentWhenEndMissing}
             />
             {index < section.items.length - 1 ? (
               <Box pl={8}>

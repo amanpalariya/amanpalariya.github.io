@@ -1,5 +1,19 @@
 import PersonalData from "../Personal";
 
+/**
+ * Canonical CV date input format.
+ *
+ * Allowed values (ISO-like):
+ * - YYYY
+ * - YYYY-MM
+ * - YYYY-MM-DD
+ *
+ * Date ranges are modeled by separate `start` and `end` fields.
+ * If `end` is omitted, the role/entry is considered ongoing and the renderer may
+ * show `Present` for timeline-like sections.
+ */
+export type CvDateString = string;
+
 export interface CvProfile {
   name: string;
   headline: string;
@@ -29,8 +43,8 @@ export interface CvTimelineItem {
   title: string;
   organization: string;
   location?: string;
-  start: string;
-  end?: string;
+  start: CvDateString;
+  end?: CvDateString;
   summary?: string;
   highlights?: string[];
   tags?: string[];
@@ -60,8 +74,8 @@ export interface CvProjectItem {
 export interface CvVolunteeringItem {
   role: string;
   organization: string;
-  start: string;
-  end?: string;
+  start: CvDateString;
+  end?: CvDateString;
   summary?: string;
   highlights?: string[];
 }
@@ -70,8 +84,8 @@ export interface CvEducationItem {
   degree: string;
   institution: string;
   location?: string;
-  start: string;
-  end?: string;
+  start: CvDateString;
+  end?: CvDateString;
   summary?: string;
   highlights?: string[];
 }
@@ -79,14 +93,14 @@ export interface CvEducationItem {
 export interface CvAwardItem {
   title: string;
   issuer?: string;
-  date?: string;
+  date?: CvDateString;
   summary?: string;
 }
 
 export interface CvPublicationItem {
   title: string;
   venue?: string;
-  date?: string;
+  date?: CvDateString;
   url?: string;
   summary?: string;
 }
@@ -94,7 +108,7 @@ export interface CvPublicationItem {
 export interface CvCertificationItem {
   title: string;
   issuer?: string;
-  date?: string;
+  date?: CvDateString;
   credentialUrl?: string;
   summary?: string;
   tags?: string[];
@@ -109,7 +123,7 @@ export interface CvLanguageItem {
 export interface CvCourseItem {
   name: string;
   institution?: string;
-  date?: string;
+  date?: CvDateString;
   timeframe?: string;
   grade?: string;
 }
@@ -117,8 +131,8 @@ export interface CvCourseItem {
 export interface CvOrganizationItem {
   name: string;
   role?: string;
-  start?: string;
-  end?: string;
+  start?: CvDateString;
+  end?: CvDateString;
   summary?: string;
 }
 
@@ -133,7 +147,7 @@ export interface CvRecommendationItem {
   author: string;
   role?: string;
   text: string;
-  date?: string;
+  date?: CvDateString;
 }
 
 export type CvCollectionSection<T> = CvSectionBase & { items: T[] };
@@ -234,7 +248,7 @@ const CvData: CvData = {
       id: "open-to",
       title: "Open to",
       description: "Current job-interest profile.",
-      visibility: { enabled: true, priority: 2 },
+      visibility: { enabled: false, priority: 2 },
       roles: [
         "Software Engineer",
         "System Engineer",
@@ -253,9 +267,8 @@ const CvData: CvData = {
         {
           title: "Senior Member of Technical Staff",
           organization: "Oracle",
-          start: "Sep 2025",
+          start: "2025-09",
           location: workLocation,
-          end: "Present",
           highlights: [
             "Designed and implemented Kubernetes deployment optimization framework saving ~$2.56M annually (patentable candidate).",
             "Led end-to-end resolution of 10+ high-severity product issues with customer coordination, root-cause analysis, cross-team communication, and deployment ownership.",
@@ -269,8 +282,8 @@ const CvData: CvData = {
           title: "Member of Technical Staff",
           organization: "Oracle",
           location: workLocation,
-          start: "Jun 2023",
-          end: "Oct 2025",
+          start: "2023-06",
+          end: "2025-10",
           highlights: [
             "Led development of high-demand adapters (File, FTP, Stage), adding SSH/FTP and PGP encryption/decryption capabilities.",
             "Built FHIR-compliant healthcare components including secure SMART on FHIR integration.",
@@ -284,8 +297,8 @@ const CvData: CvData = {
           title: "Project Intern - Member of Technical Staff",
           organization: "Oracle",
           location: workLocation,
-          start: "Jun 2022",
-          end: "Jul 2022",
+          start: "2022-06",
+          end: "2022-07",
           highlights: [
             "Delivered OAuth and REST-based communication framework with test coverage and real-world use case in under two months.",
           ],
@@ -297,8 +310,8 @@ const CvData: CvData = {
           title: "Project Member",
           organization: "IPSA Labs, IIT Ropar",
           location: "Rupnagar, Punjab, India",
-          start: "Jan 2022",
-          end: "May 2022",
+          start: "2022-01",
+          end: "2022-05",
           highlights: [
             "Collaborated with district officers to gather constraints and deliver usable workflows.",
             "System was used by 1200+ Anganwadi workers across five blocks in Rupnagar district.",
@@ -308,8 +321,8 @@ const CvData: CvData = {
         {
           title: "Subject Matter Expert",
           organization: "Chegg India",
-          start: "Nov 2021",
-          end: "Mar 2022",
+          start: "2021-11",
+          end: "2022-03",
           highlights: ["Mentored and supported computer science learners."],
           tags: ["Teaching", "Computer Science"],
           url: "https://www.chegg.com/",
@@ -317,8 +330,8 @@ const CvData: CvData = {
         {
           title: "Coordinator",
           organization: "Software Community, IIT Ropar",
-          start: "Dec 2020",
-          end: "Dec 2021",
+          start: "2020-12",
+          end: "2021-12",
           highlights: [
             "Coordinated technical initiatives and student development programs.",
           ],
@@ -328,8 +341,8 @@ const CvData: CvData = {
           title: "Software Engineering Intern",
           organization: "Newzera",
           location: "Indore, Madhya Pradesh, India",
-          start: "Jan 2021",
-          end: "Feb 2021",
+          start: "2021-01",
+          end: "2021-02",
           highlights: [
             "Implemented GraphQL APIs in JavaScript with high-coverage unit tests and documentation.",
           ],
@@ -483,13 +496,12 @@ const CvData: CvData = {
       id: "volunteering",
       title: "Volunteer Experience",
       description: "Community and mentoring contributions.",
-      visibility: { enabled: true, priority: 13 },
+      visibility: { enabled: false, priority: 13 },
       items: [
         {
           role: "Technical Mentor",
           organization: "Student engineering circles",
           start: "2020",
-          end: "Present",
           summary:
             "Mentoring students entering software engineering and interview preparation.",
         },
@@ -499,7 +511,7 @@ const CvData: CvData = {
       id: "certifications",
       title: "Certifications",
       description: "Professional and platform credentials.",
-      visibility: { enabled: true, priority: 14 },
+      visibility: { enabled: false, priority: 14 },
       items: [
         {
           title: "Oracle Certified AI Foundations Associate",
@@ -541,7 +553,7 @@ const CvData: CvData = {
     courses: {
       id: "courses",
       title: "Courses",
-      visibility: { enabled: true, priority: 16 },
+      visibility: { enabled: false, priority: 16 },
       items: [
         { name: "Data Structures", institution: "IIT Ropar" },
         { name: "Computer Architecture", institution: "IIT Ropar" },
@@ -558,35 +570,36 @@ const CvData: CvData = {
         {
           title: "Codeforces Expert",
           issuer: "Codeforces",
-          date: "Rating 1725",
-          summary: "Solved 1500+ programming problems across platforms.",
+          date: "",
+          summary:
+            "Rating 1725; solved 1500+ programming problems across platforms.",
         },
         {
           title: "Institute Merit Scholar",
           issuer: "Indian Institute of Technology Ropar",
-          date: "May 2022",
+          date: "2022-05",
         },
         {
           title: "Best B.Tech Project Award",
           issuer: "IIT Ropar (National Technology Day)",
-          date: "May 2022",
+          date: "2022-05",
         },
         {
           title: "ICPC Asia Amritapuri Site",
           issuer: "ICPC",
-          date: "Oct 2021",
+          date: "2021-10",
           summary: "Secured 156th rank in prelims and 530th rank in regionals.",
         },
         {
           title: "Google Hash Code",
           issuer: "Google",
-          date: "Feb 2021",
+          date: "2021-02",
           summary: "Secured 18th rank in India and 198th rank globally.",
         },
         {
           title: "JEE Advanced",
           issuer: "India",
-          date: "May 2019",
+          date: "2019-05",
           summary: "Secured All India Rank 1910 among 150K+ candidates.",
         },
       ],
@@ -594,13 +607,12 @@ const CvData: CvData = {
     organizations: {
       id: "organizations",
       title: "Organizations",
-      visibility: { enabled: true, priority: 18 },
+      visibility: { enabled: false, priority: 18 },
       items: [
         {
           name: "SoftCom",
           role: "Coordinator",
-          start: "Dec 2020",
-          end: "Present",
+          start: "2020-12",
           summary: "Software community leadership and technical mentoring.",
         },
       ],
