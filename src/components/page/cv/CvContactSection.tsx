@@ -70,13 +70,13 @@ function ContactItem({ item }: { item: CvContactChannel }) {
 export default function CvContactSection({
   section,
   titleIcon,
-  background,
-  accentColor,
+  primaryColorPalette,
+  accentColorPalette,
 }: {
   section: CvSectionBase & { items: CvContactChannel[] };
   titleIcon?: ElementType;
-  background?: string;
-  accentColor?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
+  primaryColorPalette?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
+  accentColorPalette?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
 }) {
   if (!section || section.items.length === 0) return null;
 
@@ -86,8 +86,8 @@ export default function CvContactSection({
       title={section.title}
       description={section.description}
       titleIcon={titleIcon}
-      background={background}
-      accentColor={accentColor}
+      primaryColorPalette={primaryColorPalette}
+      accentColorPalette={accentColorPalette}
     >
       <VStack align="stretch" gap={3}>
         {section.description ? <ParagraphText>{section.description}</ParagraphText> : null}

@@ -7,13 +7,13 @@ import CvSection from "./CvSection";
 export default function CvTextSection({
   section,
   titleIcon,
-  background,
-  accentColor,
+  primaryColorPalette,
+  accentColorPalette,
 }: {
   section: CvSectionBase & { content: string };
   titleIcon?: ElementType;
-  background?: string;
-  accentColor?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
+  primaryColorPalette?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
+  accentColorPalette?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
 }) {
   if (!section || !section.content?.trim()) return null;
 
@@ -23,8 +23,8 @@ export default function CvTextSection({
       title={section.title}
       description={section.description}
       titleIcon={titleIcon}
-      background={background}
-      accentColor={accentColor}
+      primaryColorPalette={primaryColorPalette}
+      accentColorPalette={accentColorPalette}
     >
       <VStack align="stretch" gap={3} maxW="4xl">
         <ParagraphText>{section.content}</ParagraphText>

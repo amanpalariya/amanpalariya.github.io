@@ -24,26 +24,27 @@ function fluencyScore(value?: CvLanguageItem["proficiency"]) {
 export default function CvLanguagesSection({
   section,
   titleIcon,
-  background,
-  accentColor,
+  primaryColorPalette,
+  accentColorPalette,
 }: {
   section: CvSectionBase & { items: CvLanguageItem[] };
   titleIcon?: ElementType;
-  background?: string;
-  accentColor?: AccentPalette;
+  primaryColorPalette?: AccentPalette;
+  accentColorPalette?: AccentPalette;
 }) {
   if (!section || section.items.length === 0) return null;
 
   const cardBg = useColorModeValue("white", "gray.900");
   const mutedColor = useColorModeValue("gray.600", "gray.300");
-  const fluencyColor = accentColor
-    ? useColorModeValue(`${accentColor}.700`, `${accentColor}.200`)
+  const resolvedAccentPalette = accentColorPalette ?? primaryColorPalette;
+  const fluencyColor = resolvedAccentPalette
+    ? useColorModeValue(`${resolvedAccentPalette}.700`, `${resolvedAccentPalette}.200`)
     : mutedColor;
-  const fluencyBg = accentColor
-    ? useColorModeValue(`${accentColor}.100`, `${accentColor}.800`)
+  const fluencyBg = resolvedAccentPalette
+    ? useColorModeValue(`${resolvedAccentPalette}.100`, `${resolvedAccentPalette}.800`)
     : useColorModeValue("gray.100", "gray.800");
-  const meterActive = accentColor
-    ? useColorModeValue(`${accentColor}.500`, `${accentColor}.300`)
+  const meterActive = resolvedAccentPalette
+    ? useColorModeValue(`${resolvedAccentPalette}.500`, `${resolvedAccentPalette}.300`)
     : useColorModeValue("blue.500", "blue.300");
   const meterInactive = useColorModeValue("gray.200", "gray.700");
 
@@ -53,8 +54,8 @@ export default function CvLanguagesSection({
       title={section.title}
       description={section.description}
       titleIcon={titleIcon}
-      background={background}
-      accentColor={accentColor}
+      primaryColorPalette={primaryColorPalette}
+      accentColorPalette={resolvedAccentPalette}
     >
       <VStack align="stretch" gap={3}>
         {section.items.map((item, index) => (

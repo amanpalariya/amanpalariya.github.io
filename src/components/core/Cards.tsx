@@ -57,28 +57,33 @@ export function InnerBgCardWithHeader({
   bg,
   background,
   colorPalette,
+  primaryColorPalette,
+  accentColorPalette,
   separateHeader = false,
   ...boxProps
 }: BoxProps & {
   header?: React.ReactNode;
   children: React.ReactNode;
   colorPalette?: string;
+  primaryColorPalette?: string;
+  accentColorPalette?: string;
   separateHeader?: boolean;
 }) {
-  const resolvedPalette = colorPalette ?? "gray";
+  const resolvedPrimaryPalette = primaryColorPalette ?? colorPalette ?? "gray";
+  const resolvedAccentPalette = accentColorPalette ?? resolvedPrimaryPalette;
   const cardBgColor = useColorModeValue(
-    `${resolvedPalette}.50`,
-    `${resolvedPalette}.950`
+    `${resolvedPrimaryPalette}.50`,
+    `${resolvedPrimaryPalette}.950`
   );
   const resolvedBg = background ?? bg ?? cardBgColor;
   const headerBgColor = useColorModeValue(
-    `${resolvedPalette}.100`,
-    `${resolvedPalette}.900`
+    `${resolvedPrimaryPalette}.100`,
+    `${resolvedPrimaryPalette}.900`
   );
   const resolvedHeaderBg = separateHeader ? headerBgColor : resolvedBg;
   const separatorColor = useColorModeValue(
-    `${resolvedPalette}.200`,
-    `${resolvedPalette}.700`
+    `${resolvedAccentPalette}.200`,
+    `${resolvedAccentPalette}.700`
   );
 
   return (

@@ -9,16 +9,16 @@ export default function CvSection({
   title,
   description,
   titleIcon,
-  background,
-  accentColor,
+  primaryColorPalette,
+  accentColorPalette,
   children,
 }: {
   id: string;
   title: string;
   description?: string;
   titleIcon?: ElementType;
-  background?: string;
-  accentColor?: string;
+  primaryColorPalette?: string;
+  accentColorPalette?: string;
   children: ReactNode;
 }) {
   return (
@@ -26,12 +26,16 @@ export default function CvSection({
       <HighlightedSection
         title={title}
         titleIcon={titleIcon}
-        background={background}
-        accentColor={accentColor}
+        primaryColorPalette={primaryColorPalette}
+        accentColorPalette={accentColorPalette}
+        separateHeader
       >
         <VStack align={"stretch"} gap={4}>
           {description ? (
-            <Text fontSize="sm" color={useColorModeValue("gray.600", "gray.400")}>
+            <Text
+              fontSize="sm"
+              color={useColorModeValue("gray.600", "gray.400")}
+            >
               {description}
             </Text>
           ) : null}

@@ -21,11 +21,11 @@ type AccentPalette = "blue" | "purple" | "green" | "orange" | "yellow" | "red";
 
 function TimelineItem({
   item,
-  accentColor,
+  accentColorPalette,
   tagColor,
 }: {
   item: CvTimelineItem;
-  accentColor?: string;
+  accentColorPalette?: string;
   tagColor: "gray" | AccentPalette;
 }) {
   const mutedColor = useColorModeValue("gray.600", "gray.300");
@@ -34,8 +34,8 @@ function TimelineItem({
     : item.summary
       ? [item.summary]
       : [];
-  const dotColor = accentColor
-    ? useColorModeValue(`${accentColor}.500`, `${accentColor}.300`)
+  const dotColor = accentColorPalette
+    ? useColorModeValue(`${accentColorPalette}.500`, `${accentColorPalette}.300`)
     : useColorModeValue("gray.500", "gray.400");
 
   return (
@@ -95,21 +95,22 @@ function TimelineItem({
 export default function CvTimelineSection({
   section,
   titleIcon,
-  background,
-  accentColor,
+  primaryColorPalette,
+  accentColorPalette,
 }: {
   section: CvSectionBase & { items: CvTimelineItem[] };
   titleIcon?: ElementType;
-  background?: string;
-  accentColor?: AccentPalette;
+  primaryColorPalette?: AccentPalette;
+  accentColorPalette?: AccentPalette;
 }) {
   if (!section || section.items.length === 0) return null;
-  const tagColor = accentColor ?? ("gray" as const);
-  const railTint = accentColor
-    ? useColorModeValue(`${accentColor}.200`, `${accentColor}.700`)
+  const resolvedAccentPalette = accentColorPalette ?? primaryColorPalette;
+  const tagColor = resolvedAccentPalette ?? ("gray" as const);
+  const railTint = resolvedAccentPalette
+    ? useColorModeValue(`${resolvedAccentPalette}.200`, `${resolvedAccentPalette}.700`)
     : useColorModeValue("gray.200", "gray.700");
-  const endCapColor = accentColor
-    ? useColorModeValue(`${accentColor}.300`, `${accentColor}.500`)
+  const endCapColor = resolvedAccentPalette
+    ? useColorModeValue(`${resolvedAccentPalette}.300`, `${resolvedAccentPalette}.500`)
     : useColorModeValue("gray.300", "gray.600");
 
   return (
@@ -118,8 +119,8 @@ export default function CvTimelineSection({
       title={section.title}
       description={section.description}
       titleIcon={titleIcon}
-      background={background}
-      accentColor={accentColor}
+      primaryColorPalette={primaryColorPalette}
+      accentColorPalette={resolvedAccentPalette}
     >
       <VStack align="stretch" gap={4} position="relative">
         <Box
@@ -144,7 +145,11 @@ export default function CvTimelineSection({
         />
         {section.items.map((item, index) => (
           <VStack key={`${item.title}-${index}`} align="stretch" gap={4}>
-            <TimelineItem item={item} accentColor={accentColor} tagColor={tagColor} />
+            <TimelineItem
+              item={item}
+              accentColorPalette={resolvedAccentPalette}
+              tagColor={tagColor}
+            />
             {index < section.items.length - 1 ? (
               <Box pl={8}>
                 <Separator />

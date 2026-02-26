@@ -18,10 +18,10 @@ import CvSection from "./CvSection";
 
 function ProjectCard({
   item,
-  accentColor,
+  accentColorPalette,
 }: {
   item: CvProjectItem;
-  accentColor?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
+  accentColorPalette?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
 }) {
   const mutedColor = useColorModeValue("gray.600", "gray.300");
 
@@ -31,12 +31,12 @@ function ProjectCard({
         <HStack gap={2} flexWrap="wrap">
           <Heading4>{item.name}</Heading4>
           {item.isFeatured ? (
-            <CategoryBadge color={accentColor ? "purple" : "blue"}>
+            <CategoryBadge color={accentColorPalette ? "purple" : "blue"}>
               Featured
             </CategoryBadge>
           ) : null}
           {item.highlight ? (
-            <CategoryBadge color={accentColor ? "purple" : "blue"}>
+            <CategoryBadge color={accentColorPalette ? "purple" : "blue"}>
               {item.highlight}
             </CategoryBadge>
           ) : null}
@@ -67,7 +67,7 @@ function ProjectCard({
         <Wrap spacing={2}>
           {item.tags.map((tag) => (
             <WrapItem key={tag}>
-              <CategoryBadge color={accentColor ? "purple" : "gray"}>
+              <CategoryBadge color={accentColorPalette ? "purple" : "gray"}>
                 {tag}
               </CategoryBadge>
             </WrapItem>
@@ -81,13 +81,13 @@ function ProjectCard({
 export default function CvProjectsSection({
   section,
   titleIcon,
-  background,
-  accentColor,
+  primaryColorPalette,
+  accentColorPalette,
 }: {
   section: CvSectionBase & { items: CvProjectItem[] };
   titleIcon?: ElementType;
-  background?: string;
-  accentColor?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
+  primaryColorPalette?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
+  accentColorPalette?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
 }) {
   if (!section || section.items.length === 0) return null;
 
@@ -97,13 +97,13 @@ export default function CvProjectsSection({
       title={section.title}
       description={section.description}
       titleIcon={titleIcon}
-      background={background}
-      accentColor={accentColor}
+      primaryColorPalette={primaryColorPalette}
+      accentColorPalette={accentColorPalette}
     >
       <VStack align="stretch" gap={4}>
         {section.items.map((item, index) => (
           <VStack key={`${item.name}-${index}`} align="stretch" gap={4}>
-            <ProjectCard item={item} accentColor={accentColor} />
+            <ProjectCard item={item} accentColorPalette={accentColorPalette} />
             {index < section.items.length - 1 ? <Separator /> : null}
           </VStack>
         ))}

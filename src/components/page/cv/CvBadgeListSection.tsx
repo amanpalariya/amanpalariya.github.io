@@ -10,14 +10,14 @@ export default function CvBadgeListSection({
   section,
   items,
   titleIcon,
-  background,
-  accentColor,
+  primaryColorPalette,
+  accentColorPalette,
 }: {
   section: CvSectionBase;
   items: string[];
   titleIcon?: ElementType;
-  background?: string;
-  accentColor?: BadgeColor;
+  primaryColorPalette?: BadgeColor;
+  accentColorPalette?: BadgeColor;
 }) {
   if (!section || items.length === 0) return null;
 
@@ -27,13 +27,13 @@ export default function CvBadgeListSection({
       title={section.title}
       description={section.description}
       titleIcon={titleIcon}
-      background={background}
-      accentColor={accentColor}
+      primaryColorPalette={primaryColorPalette}
+      accentColorPalette={accentColorPalette}
     >
       <Wrap spacing={2}>
         {items.map((item) => (
           <WrapItem key={item}>
-            <CategoryBadge color={accentColor ?? "gray"}>{item}</CategoryBadge>
+            <CategoryBadge color={accentColorPalette ?? "gray"}>{item}</CategoryBadge>
           </WrapItem>
         ))}
       </Wrap>

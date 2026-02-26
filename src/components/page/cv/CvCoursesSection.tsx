@@ -21,13 +21,13 @@ function toCourseMeta(course: CvCourseItem) {
 export default function CvCoursesSection({
   section,
   titleIcon,
-  background,
-  accentColor,
+  primaryColorPalette,
+  accentColorPalette,
 }: {
   section: CvSectionBase & { items: CvCourseItem[] };
   titleIcon?: ElementType;
-  background?: string;
-  accentColor?: AccentPalette;
+  primaryColorPalette?: AccentPalette;
+  accentColorPalette?: AccentPalette;
 }) {
   if (!section || section.items.length === 0) return null;
 
@@ -41,8 +41,8 @@ export default function CvCoursesSection({
       title={section.title}
       description={section.description}
       titleIcon={titleIcon}
-      background={background}
-      accentColor={accentColor}
+      primaryColorPalette={primaryColorPalette}
+      accentColorPalette={accentColorPalette}
     >
       <Wrap gap={2} align="stretch">
         {section.items.map((item, index) => {

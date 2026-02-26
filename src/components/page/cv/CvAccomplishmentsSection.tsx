@@ -29,14 +29,14 @@ export default function CvAccomplishmentsSection({
   section,
   items,
   titleIcon,
-  background,
-  accentColor,
+  primaryColorPalette,
+  accentColorPalette,
 }: {
   section: CvSectionBase;
   items: CvAccomplishmentVisualItem[];
   titleIcon?: ElementType;
-  background?: string;
-  accentColor?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
+  primaryColorPalette?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
+  accentColorPalette?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
 }) {
   if (!section || items.length === 0) return null;
 
@@ -48,8 +48,8 @@ export default function CvAccomplishmentsSection({
       title={section.title}
       description={section.description}
       titleIcon={titleIcon}
-      background={background}
-      accentColor={accentColor}
+      primaryColorPalette={primaryColorPalette}
+      accentColorPalette={accentColorPalette}
     >
       <VStack align="stretch" gap={4}>
         {items.map((item, index) => (
@@ -85,7 +85,7 @@ export default function CvAccomplishmentsSection({
                   <Wrap spacing={2}>
                     {item.tags.map((tag) => (
                       <WrapItem key={`${item.title}-${tag}`}>
-                        <CategoryBadge color={accentColor ?? "gray"}>{tag}</CategoryBadge>
+                        <CategoryBadge color={accentColorPalette ?? "gray"}>{tag}</CategoryBadge>
                       </WrapItem>
                     ))}
                   </Wrap>

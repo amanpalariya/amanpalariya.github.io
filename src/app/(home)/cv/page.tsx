@@ -28,7 +28,6 @@ import {
   FiUsers,
   FiMail,
 } from "react-icons/fi";
-import { useColorModeValue } from "@components/ui/color-mode";
 import {
   getRenderableCvSections,
   mapAwardsToTimelineItems,
@@ -41,7 +40,10 @@ import type {
   CvOrganizationItem,
 } from "data/cv";
 
-const SECTION_ACCENTS: Record<string, "blue" | "purple" | "green" | "orange" | "yellow" | "red"> = {
+const SECTION_ACCENTS: Record<
+  string,
+  "blue" | "purple" | "green" | "orange" | "yellow" | "red"
+> = {
   about: "blue",
   "open-to": "purple",
   experience: "blue",
@@ -101,14 +103,6 @@ function toVisualItems(
 
 export default function CvPage() {
   const { profile, sections } = CvData;
-  const sectionBg = {
-    blue: useColorModeValue("blue.50", "blue.950"),
-    purple: useColorModeValue("purple.50", "purple.950"),
-    green: useColorModeValue("green.50", "green.950"),
-    orange: useColorModeValue("orange.50", "orange.950"),
-    yellow: useColorModeValue("yellow.50", "yellow.950"),
-    red: useColorModeValue("red.50", "red.950"),
-  };
 
   const renderableSections = getRenderableCvSections(sections);
 
@@ -134,15 +128,15 @@ export default function CvPage() {
     : undefined;
 
   function getSectionTheme(sectionId: string) {
-    const accent = SECTION_ACCENTS[sectionId] ?? "blue";
+    const primaryColorPalette = SECTION_ACCENTS[sectionId] ?? "blue";
     return {
-      accent,
-      background: sectionBg[accent],
+      primaryColorPalette,
+      accentColorPalette: primaryColorPalette,
     };
   }
 
   function renderSectionById(sectionId: string) {
-    const { accent, background } = getSectionTheme(sectionId);
+    const { primaryColorPalette, accentColorPalette } = getSectionTheme(sectionId);
 
     switch (sectionId) {
       case "about":
@@ -151,8 +145,8 @@ export default function CvPage() {
             key={sections.about.id}
             section={sections.about}
             titleIcon={FiUser}
-            background={background}
-            accentColor={accent}
+            primaryColorPalette={primaryColorPalette}
+            accentColorPalette={accentColorPalette}
           />
         ) : null;
 
@@ -163,8 +157,8 @@ export default function CvPage() {
             section={sections.openTo}
             items={sections.openTo.roles}
             titleIcon={FiTarget}
-            background={background}
-            accentColor={accent}
+            primaryColorPalette={primaryColorPalette}
+            accentColorPalette={accentColorPalette}
           />
         ) : null;
 
@@ -174,8 +168,8 @@ export default function CvPage() {
             key={sections.experience.id}
             section={sections.experience}
             titleIcon={FiBriefcase}
-            background={background}
-            accentColor={accent}
+            primaryColorPalette={primaryColorPalette}
+            accentColorPalette={accentColorPalette}
           />
         ) : null;
 
@@ -185,8 +179,8 @@ export default function CvPage() {
             key={sections.projects.id}
             section={sections.projects}
             titleIcon={FiGrid}
-            background={background}
-            accentColor={accent}
+            primaryColorPalette={primaryColorPalette}
+            accentColorPalette={accentColorPalette}
           />
         ) : null;
 
@@ -196,8 +190,8 @@ export default function CvPage() {
             key={sections.skills.id}
             section={sections.skills}
             titleIcon={FiTool}
-            background={background}
-            accentColor={accent}
+            primaryColorPalette={primaryColorPalette}
+            accentColorPalette={accentColorPalette}
           />
         ) : null;
 
@@ -207,8 +201,8 @@ export default function CvPage() {
             key={educationTimeline.id}
             section={educationTimeline}
             titleIcon={FiBookOpen}
-            background={background}
-            accentColor={accent}
+            primaryColorPalette={primaryColorPalette}
+            accentColorPalette={accentColorPalette}
           />
         ) : null;
 
@@ -218,8 +212,8 @@ export default function CvPage() {
             key={volunteeringTimeline.id}
             section={volunteeringTimeline}
             titleIcon={FiHeart}
-            background={background}
-            accentColor={accent}
+            primaryColorPalette={primaryColorPalette}
+            accentColorPalette={accentColorPalette}
           />
         ) : null;
 
@@ -230,8 +224,8 @@ export default function CvPage() {
             section={sections.certifications}
             items={toVisualItems(sections.certifications.items)}
             titleIcon={FiAward}
-            background={background}
-            accentColor={accent}
+            primaryColorPalette={primaryColorPalette}
+            accentColorPalette={accentColorPalette}
           />
         ) : null;
 
@@ -241,8 +235,8 @@ export default function CvPage() {
             key={sections.languages.id}
             section={sections.languages}
             titleIcon={FiGlobe}
-            background={background}
-            accentColor={accent}
+            primaryColorPalette={primaryColorPalette}
+            accentColorPalette={accentColorPalette}
           />
         ) : null;
 
@@ -252,8 +246,8 @@ export default function CvPage() {
             key={sections.courses.id}
             section={sections.courses}
             titleIcon={FiBook}
-            background={background}
-            accentColor={accent}
+            primaryColorPalette={primaryColorPalette}
+            accentColorPalette={accentColorPalette}
           />
         ) : null;
 
@@ -263,8 +257,8 @@ export default function CvPage() {
             key={awardsTimeline.id}
             section={awardsTimeline}
             titleIcon={FiAward}
-            background={background}
-            accentColor={accent}
+            primaryColorPalette={primaryColorPalette}
+            accentColorPalette={accentColorPalette}
           />
         ) : null;
 
@@ -275,8 +269,8 @@ export default function CvPage() {
             section={sections.organizations}
             items={toVisualItems(sections.organizations.items)}
             titleIcon={FiUsers}
-            background={background}
-            accentColor={accent}
+            primaryColorPalette={primaryColorPalette}
+            accentColorPalette={accentColorPalette}
           />
         ) : null;
 
@@ -286,8 +280,8 @@ export default function CvPage() {
             key={sections.contact.id}
             section={sections.contact}
             titleIcon={FiMail}
-            background={background}
-            accentColor={accent}
+            primaryColorPalette={primaryColorPalette}
+            accentColorPalette={accentColorPalette}
           />
         ) : null;
 
@@ -300,7 +294,12 @@ export default function CvPage() {
     <VStack align="stretch" gap={2}>
       <Box m={[4, 6]}>
         <VStack align="stretch" gap={5}>
-          <VStack align="stretch" gap={2} letterSpacing="wide" lineHeight="tall">
+          <VStack
+            align="stretch"
+            gap={2}
+            letterSpacing="wide"
+            lineHeight="tall"
+          >
             <SectionText>Curriculum Vitae</SectionText>
           </VStack>
           <CvHero profile={profile} />

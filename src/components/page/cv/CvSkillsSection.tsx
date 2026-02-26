@@ -18,16 +18,16 @@ const LEVEL_SCALE: Record<string, number> = {
 
 function SkillLevel({
   level,
-  accentColor,
+  accentColorPalette,
 }: {
   level?: string;
-  accentColor?: AccentPalette;
+  accentColorPalette?: AccentPalette;
 }) {
   if (!level) return null;
   const label = level.charAt(0).toUpperCase() + level.slice(1);
   const activeCount = LEVEL_SCALE[level] ?? 0;
-  const activeColor = accentColor
-    ? useColorModeValue(`${accentColor}.500`, `${accentColor}.300`)
+  const activeColor = accentColorPalette
+    ? useColorModeValue(`${accentColorPalette}.500`, `${accentColorPalette}.300`)
     : useColorModeValue("gray.700", "gray.200");
   const inactiveColor = useColorModeValue("gray.300", "gray.600");
 
@@ -54,13 +54,13 @@ function SkillLevel({
 export default function CvSkillsSection({
   section,
   titleIcon,
-  background,
-  accentColor,
+  primaryColorPalette,
+  accentColorPalette,
 }: {
   section: CvSectionBase & { items: CvSkillGroup[] };
   titleIcon?: ElementType;
-  background?: string;
-  accentColor?: AccentPalette;
+  primaryColorPalette?: AccentPalette;
+  accentColorPalette?: AccentPalette;
 }) {
   if (!section || section.items.length === 0) return null;
 
@@ -70,8 +70,8 @@ export default function CvSkillsSection({
       title={section.title}
       description={section.description}
       titleIcon={titleIcon}
-      background={background}
-      accentColor={accentColor}
+      primaryColorPalette={primaryColorPalette}
+      accentColorPalette={accentColorPalette}
     >
       <VStack align="stretch" gap={4}>
         {section.items.map((group) => (
@@ -97,10 +97,13 @@ export default function CvSkillsSection({
                       }}
                       transition="background 0.2s ease, border-color 0.2s ease"
                     >
-                      <CategoryBadge color={accentColor ?? "gray"}>
+                      <CategoryBadge color={accentColorPalette ?? "gray"}>
                         {item.name}
                       </CategoryBadge>
-                      <SkillLevel level={item.level} accentColor={accentColor} />
+                      <SkillLevel
+                        level={item.level}
+                        accentColorPalette={accentColorPalette}
+                      />
                     </HStack>
                   </Tooltip>
                 </WrapItem>
