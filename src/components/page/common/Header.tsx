@@ -81,6 +81,7 @@ export default function Header() {
       [homepageTabs.home.pathname]: FiHome,
       [homepageTabs.about.pathname]: FiUser,
       [homepageTabs.projects.pathname]: FiGrid,
+      [homepageTabs.cv.pathname]: FiFileText,
       [homepageTabs.blogs.pathname]: FiBookOpen,
     }[topLevelPathname] ?? FiHome;
 
@@ -100,6 +101,11 @@ export default function Header() {
         icon: FiGrid,
         label: homepageTabs.projects.name,
         url: homepageTabs.projects.pathname,
+      },
+      {
+        icon: FiFileText,
+        label: homepageTabs.cv.name,
+        url: homepageTabs.cv.pathname,
       },
       ...(isBlogsFeatureEnabled
         ? [
@@ -201,7 +207,7 @@ export default function Header() {
                   )}
                   url={homepageTabs.projects.pathname}
                 />
-                <HeaderIconButton
+                <HeaderNavIconButton
                   icon={FiFileText}
                   label={homepageTabs.cv.name}
                   isSelected={isSelectedBasedOnUrl(homepageTabs.cv.pathname)}
