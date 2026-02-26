@@ -1,7 +1,6 @@
 "use client";
 
 import { EmptyState, VStack, HStack, Box, Icon } from "@chakra-ui/react";
-import { FiChevronRight } from "react-icons/fi";
 import { SectionText } from "@components/core/Texts";
 import {
   TileList,
@@ -19,7 +18,7 @@ import { WorkData } from "data";
 import TimeBasedOnlineStatusBadge from "@components/page/home/TimeBasedOnlineStatusBadge";
 import { useFeatureFlag } from "utils/features";
 import FeatureFlagsData from "data/features";
-import { FiBriefcase, FiTool } from "react-icons/fi";
+import { FiBriefcase, FiTool, FiChevronRight } from "react-icons/fi";
 
 function Main() {
   return (

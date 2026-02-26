@@ -1,33 +1,75 @@
-import { Button, VStack, HStack, Icon, Box } from "@chakra-ui/react";
+import { Button, VStack, HStack, Icon } from "@chakra-ui/react";
 import { InnerBgCardWithHeader } from "@components/core/Cards";
 import { SectionText } from "../../core/Texts";
 import { useColorModeValue } from "@components/ui/color-mode";
 import React, { JSX } from "react";
+import type { ElementType } from "react";
 import NextLink from "next/link";
 
 export default function HighlightedSection({
   title,
+  titleIcon,
   titleActionElement,
+  background,
+  accentColor,
+  primaryColorPalette,
+  accentColorPalette,
   separateHeader = false,
   children,
 }: {
   title?: string;
+  titleIcon?: ElementType;
   titleActionElement?: JSX.Element;
+  background?: string;
+  accentColor?: string;
+  primaryColorPalette?: string;
+  accentColorPalette?: string;
   separateHeader?: boolean;
   children: JSX.Element;
 }) {
+  const resolvedPrimaryPalette = primaryColorPalette ?? accentColor ?? "gray";
+  const resolvedAccentPalette =
+    accentColorPalette ?? accentColor ?? resolvedPrimaryPalette;
   const noHeader = !title && !titleActionElement;
 
   const headerJsx = noHeader ? undefined : (
     <HStack justify={"space-between"} align={"center"}>
-      {title ? <SectionText>{title}</SectionText> : <div />}
+      {title ? (
+        <HStack gap={2}>
+          {titleIcon ? (
+            <Icon
+              as={titleIcon}
+              color={useColorModeValue(
+                `${resolvedAccentPalette}.600`,
+                `${resolvedAccentPalette}.300`
+              )}
+            />
+          ) : null}
+          <SectionText
+            dotColorPalette={resolvedAccentPalette}
+            hideDot={Boolean(titleIcon)}
+          >
+            {title}
+          </SectionText>
+        </HStack>
+      ) : (
+        <div />
+      )}
       {titleActionElement}
     </HStack>
   );
 
   return (
-    <InnerBgCardWithHeader header={headerJsx} separateHeader={separateHeader}>
-      {children}
+    <InnerBgCardWithHeader
+      header={headerJsx}
+      separateHeader={separateHeader}
+      background={background}
+      primaryColorPalette={resolvedPrimaryPalette}
+      accentColorPalette={resolvedAccentPalette}
+    >
+      <VStack align={"stretch"} gap={4}>
+        {children}
+      </VStack>
     </InnerBgCardWithHeader>
   );
 }

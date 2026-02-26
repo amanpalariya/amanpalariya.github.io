@@ -1,4 +1,5 @@
 import { Box, Card } from "@chakra-ui/react";
+import type { BoxProps } from "@chakra-ui/react";
 import { useColorModeValue } from "@components/ui/color-mode";
 
 export function HeaderCard({ children }) {
@@ -33,13 +34,17 @@ export function MainCard({ children }) {
   );
 }
 
-export function InnerBgCard({ children }) {
+export function InnerBgCard({ children, bg, background, ...boxProps }: BoxProps) {
+  const defaultBg = useColorModeValue("gray.50", "gray.900");
+  const resolvedBg = background ?? bg ?? defaultBg;
+
   return (
     <Box
-      background={useColorModeValue("gray.50", "gray.900")}
+      background={resolvedBg}
       shadow={"xs"}
       borderRadius={"2xl"}
       p={[4, 6]}
+      {...boxProps}
     >
       {children}
     </Box>
@@ -49,28 +54,51 @@ export function InnerBgCard({ children }) {
 export function InnerBgCardWithHeader({
   header,
   children,
+  bg,
+  background,
+  colorPalette,
+  primaryColorPalette,
+  accentColorPalette,
   separateHeader = false,
-}: {
+  ...boxProps
+}: BoxProps & {
   header?: React.ReactNode;
   children: React.ReactNode;
+  colorPalette?: string;
+  primaryColorPalette?: string;
+  accentColorPalette?: string;
   separateHeader?: boolean;
 }) {
-  const cardBgColor = useColorModeValue("gray.50", "gray.950");
-  const headerBgColor = useColorModeValue("gray.100", "gray.900");
-  const separatorColor = useColorModeValue("gray.200", "gray.700");
+  const resolvedPrimaryPalette = primaryColorPalette ?? colorPalette ?? "gray";
+  const resolvedAccentPalette = accentColorPalette ?? resolvedPrimaryPalette;
+  const cardBgColor = useColorModeValue(
+    `${resolvedPrimaryPalette}.50`,
+    `${resolvedPrimaryPalette}.950`
+  );
+  const resolvedBg = background ?? bg ?? cardBgColor;
+  const headerBgColor = useColorModeValue(
+    `${resolvedPrimaryPalette}.100`,
+    `${resolvedPrimaryPalette}.900`
+  );
+  const resolvedHeaderBg = separateHeader ? headerBgColor : resolvedBg;
+  const separatorColor = useColorModeValue(
+    `${resolvedAccentPalette}.200`,
+    `${resolvedAccentPalette}.700`
+  );
 
   return (
     <Box
-      background={cardBgColor}
+      background={resolvedBg}
       shadow={"xs"}
       borderRadius={"2xl"}
       overflow={"hidden"}
+      {...boxProps}
     >
       {header ? (
         <Box
           px={[4, 6]}
           py={4}
-          background={headerBgColor}
+          background={resolvedHeaderBg}
           borderBottomWidth={separateHeader ? "2px" : "0px"}
           borderBottomColor={separatorColor}
         >

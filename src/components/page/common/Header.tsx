@@ -11,6 +11,7 @@ import {
 import {
   FiBookOpen,
   FiChevronLeft,
+  FiFileText,
   FiGrid,
   FiHome,
   FiMoon,
@@ -80,6 +81,7 @@ export default function Header() {
       [homepageTabs.home.pathname]: FiHome,
       [homepageTabs.about.pathname]: FiUser,
       [homepageTabs.projects.pathname]: FiGrid,
+      [homepageTabs.cv.pathname]: FiFileText,
       [homepageTabs.blogs.pathname]: FiBookOpen,
     }[topLevelPathname] ?? FiHome;
 
