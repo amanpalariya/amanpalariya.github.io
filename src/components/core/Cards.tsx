@@ -38,7 +38,7 @@ export function InnerBgCard({
   background,
   ...boxProps
 }: BoxProps) {
-  const defaultBg = "app.bg.surfaceMuted";
+  const defaultBg = "app.bg.surface";
   const resolvedBg = background ?? bg ?? defaultBg;
 
   return (
@@ -103,21 +103,6 @@ export function InnerBgCardWithHeader({
       <Box px={[4, 6]} py={2}>
         {children}
       </Box>
-    </Box>
-  );
-}
-
-export function InnerCard({ children }) {
-  return (
-    <Box
-      background={"app.bg.surfaceMuted"}
-      shadow={"lg"}
-      borderWidth={0.5}
-      borderColor={"app.border.default"}
-      borderRadius={"2xl"}
-      p={[3, 4]}
-    >
-      {children}
     </Box>
   );
 }

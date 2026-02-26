@@ -80,7 +80,9 @@ export default function CvSkillsSection({
               {group.items.map((item) => (
                 <WrapItem key={`${group.group}-${item.name}`}>
                   <Tooltip
-                    content={item.level ? `${item.name} · ${item.level}` : item.name}
+                    content={
+                      item.level ? `${item.name} · ${item.level}` : item.name
+                    }
                     showArrow
                   >
                     <HStack
@@ -92,7 +94,7 @@ export default function CvSkillsSection({
                       borderColor={"app.border.muted"}
                       _hover={{
                         borderColor: "app.border.strong",
-                        bg: "app.bg.surfaceMuted",
+                        bg: "app.bg.surface",
                       }}
                       transition="background 0.2s ease, border-color 0.2s ease"
                     >

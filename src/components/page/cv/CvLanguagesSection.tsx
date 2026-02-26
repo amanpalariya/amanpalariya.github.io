@@ -41,7 +41,7 @@ export default function CvLanguagesSection({
     : mutedColor;
   const fluencyBg = resolvedAccentPalette
     ? `${resolvedAccentPalette}.subtle`
-    : "app.bg.surfaceMuted";
+    : "app.bg.surface";
   const meterActive = resolvedAccentPalette
     ? `${resolvedAccentPalette}.emphasized`
     : "app.fg.muted";
@@ -89,7 +89,11 @@ export default function CvLanguagesSection({
                     h="6px"
                     flex={1}
                     borderRadius="full"
-                    bg={step <= fluencyScore(item.proficiency) ? meterActive : meterInactive}
+                    bg={
+                      step <= fluencyScore(item.proficiency)
+                        ? meterActive
+                        : meterInactive
+                    }
                   />
                 ))}
               </HStack>

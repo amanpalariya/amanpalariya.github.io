@@ -19,9 +19,6 @@ export const APP_SEMANTIC_COLOR_TOKENS: AppSemanticTokens = {
   "app.bg.surface": {
     value: { _light: "{colors.gray.200}", _dark: "{colors.gray.800}" },
   },
-  "app.bg.surfaceMuted": {
-    value: { _light: "{colors.gray.50}", _dark: "{colors.gray.700}" },
-  },
   "app.bg.card": {
     value: { _light: "{colors.white}", _dark: "{colors.black}" },
   },
@@ -136,6 +133,33 @@ export const APP_SEMANTIC_COLOR_TOKENS: AppSemanticTokens = {
     value: { _light: "{colors.blue.100}", _dark: "{colors.blue.900}" },
   },
   "app.brand.linkedin.contrast": {
+    value: { _light: "{colors.gray.100}", _dark: "{colors.gray.900}" },
+  },
+  "app.brand.twitter.solid": {
+    value: { _light: "#1DA1F2", _dark: "#60C2F7" },
+  },
+  "app.brand.twitter.soft": {
+    value: { _light: "{colors.blue.100}", _dark: "{colors.blue.900}" },
+  },
+  "app.brand.twitter.contrast": {
+    value: { _light: "{colors.gray.100}", _dark: "{colors.gray.900}" },
+  },
+  "app.brand.instagram.solid": {
+    value: { _light: "#E1306C", _dark: "#EE6F98" },
+  },
+  "app.brand.instagram.soft": {
+    value: { _light: "{colors.pink.100}", _dark: "{colors.pink.900}" },
+  },
+  "app.brand.instagram.contrast": {
+    value: { _light: "{colors.gray.100}", _dark: "{colors.gray.900}" },
+  },
+  "app.brand.github.solid": {
+    value: { _light: "{colors.gray.800}", _dark: "{colors.gray.200}" },
+  },
+  "app.brand.github.soft": {
+    value: { _light: "{colors.gray.200}", _dark: "{colors.gray.800}" },
+  },
+  "app.brand.github.contrast": {
     value: { _light: "{colors.gray.100}", _dark: "{colors.gray.900}" },
   },
 
