@@ -36,10 +36,7 @@ export default function HighlightedSection({
       {title ? (
         <HStack gap={2}>
           {titleIcon ? (
-            <Icon
-              as={titleIcon}
-              color={`${resolvedAccentPalette}.fg`}
-            />
+            <Icon as={titleIcon} color={`${resolvedAccentPalette}.focusRing`} />
           ) : null}
           <SectionText
             dotColorPalette={resolvedAccentPalette}

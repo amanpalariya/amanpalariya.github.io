@@ -31,13 +31,14 @@ function TimelineItem({
   presentWhenEndMissing?: boolean;
 }) {
   const mutedColor = "app.fg.subtle";
-  const highlights = item.highlights && item.highlights.length > 0
-    ? item.highlights
-    : item.summary
-      ? [item.summary]
-      : [];
+  const highlights =
+    item.highlights && item.highlights.length > 0
+      ? item.highlights
+      : item.summary
+        ? [item.summary]
+        : [];
   const dotColor = accentColorPalette
-    ? `${accentColorPalette}.fg`
+    ? `${accentColorPalette}.focusRing`
     : "app.fg.icon";
   const timeframe = formatCvDateRange({
     start: item.start,

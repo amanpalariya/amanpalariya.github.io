@@ -15,7 +15,7 @@ export function SectionText({
   dotColorPalette?: string;
 }) {
   const resolvedPalette = dotColorPalette ?? "gray";
-  const iconColor = `${resolvedPalette}.muted`;
+  const iconColor = `${resolvedPalette}.focusRing`;
   return (
     <HStack>
       {hideDot ? null : (

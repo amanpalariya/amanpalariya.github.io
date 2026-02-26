@@ -5,7 +5,7 @@ export function HeaderCard({ children }) {
   return (
     <Box
       background={"app.bg.cardHeader"}
-      shadow={"lg"}
+      shadow={"sm"}
       borderWidth={0}
       borderColor={"app.border.default"}
       borderRadius={"2xl"}
@@ -21,7 +21,6 @@ export function MainCard({ children }) {
   return (
     <Box
       background={"app.bg.card"}
-      shadow={"lg"}
       borderWidth={0}
       borderColor={"app.border.default"}
       borderRadius={"2xl"}
