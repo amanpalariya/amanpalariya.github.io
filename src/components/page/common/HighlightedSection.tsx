@@ -84,6 +84,7 @@ export function SectionActionLink({
       href={url ?? ""}
       variant={"ghost"}
       h={"auto"}
+      p={0}
       color={"app.fg.subtle"}
       onClick={onClick}
     >
