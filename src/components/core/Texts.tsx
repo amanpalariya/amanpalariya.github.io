@@ -10,11 +10,17 @@ const useDefaultTextColor = () =>
 export function SectionText({
   children,
   hideDot = false,
+  dotColorPalette,
 }: {
   children: any;
   hideDot?: boolean;
+  dotColorPalette?: string;
 }) {
-  const iconColor = useColorModeValue("gray.400", "gray.500");
+  const resolvedPalette = dotColorPalette ?? "gray";
+  const iconColor = useColorModeValue(
+    `${resolvedPalette}.400`,
+    `${resolvedPalette}.500`
+  );
   return (
     <HStack>
       {hideDot ? null : (

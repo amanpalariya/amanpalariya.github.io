@@ -23,6 +23,7 @@ export default function HighlightedSection({
   separateHeader?: boolean;
   children: JSX.Element;
 }) {
+  const resolvedPalette = accentColor ?? "gray";
   const noHeader = !title && !titleActionElement;
 
   const headerJsx = noHeader ? undefined : (
@@ -32,10 +33,18 @@ export default function HighlightedSection({
           {titleIcon ? (
             <Icon
               as={titleIcon}
-              color={accentColor ?? useColorModeValue("gray.500", "gray.400")}
+              color={useColorModeValue(
+                `${resolvedPalette}.600`,
+                `${resolvedPalette}.300`
+              )}
             />
           ) : null}
-          <SectionText>{title}</SectionText>
+          <SectionText
+            dotColorPalette={resolvedPalette}
+            hideDot={Boolean(titleIcon)}
+          >
+            {title}
+          </SectionText>
         </HStack>
       ) : (
         <div />
@@ -49,6 +58,7 @@ export default function HighlightedSection({
       header={headerJsx}
       separateHeader={separateHeader}
       background={background}
+      colorPalette={resolvedPalette}
     >
       <VStack align={"stretch"} gap={4}>
         {children}
