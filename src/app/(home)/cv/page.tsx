@@ -29,6 +29,7 @@ import {
   FiMail,
 } from "react-icons/fi";
 import {
+  getCvSectionAccentPalette,
   formatCvDate,
   formatCvDateRange,
   getRenderableCvSections,
@@ -41,25 +42,6 @@ import type {
   CvCertificationItem,
   CvOrganizationItem,
 } from "data/cv";
-
-const SECTION_ACCENTS: Record<
-  string,
-  "blue" | "purple" | "green" | "orange" | "yellow" | "red"
-> = {
-  about: "blue",
-  "open-to": "purple",
-  experience: "blue",
-  projects: "purple",
-  skills: "green",
-  education: "orange",
-  volunteering: "green",
-  certifications: "blue",
-  languages: "orange",
-  courses: "yellow",
-  honors: "red",
-  organizations: "purple",
-  contact: "blue",
-};
 
 function toVisualItems(
   items: CvCertificationItem[] | CvAwardItem[] | CvOrganizationItem[],
@@ -136,7 +118,7 @@ export default function CvPage() {
 
   function getSectionTheme(sectionId: string) {
     const primaryColorPalette = "gray";
-    const accentColorPalette = SECTION_ACCENTS[sectionId] ?? "blue";
+    const accentColorPalette = getCvSectionAccentPalette(sectionId);
     return {
       primaryColorPalette,
       accentColorPalette,

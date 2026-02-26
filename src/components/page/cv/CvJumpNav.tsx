@@ -1,18 +1,18 @@
 import { Link, Wrap, WrapItem, Text } from "@chakra-ui/react";
 import type { CvData } from "data/cv";
 import { useColorModeValue } from "@components/ui/color-mode";
-import { getRenderableCvSections } from "./cvRenderUtils";
+import { getCvSectionAccentPalette, getRenderableCvSections } from "./cvRenderUtils";
 
 export function renderSectionAnchorLinks(sections: CvData["sections"]) {
   return getRenderableCvSections(sections).map((section) => ({
     id: section.id,
     title: section.title,
+    accentColorPalette: getCvSectionAccentPalette(section.id),
   }));
 }
 
 export default function CvJumpNav({ sections }: { sections: CvData["sections"] }) {
   const links = renderSectionAnchorLinks(sections);
-  const linkColor = useColorModeValue("blue.600", "blue.300");
   const separatorColor = useColorModeValue("gray.500", "gray.400");
 
   if (links.length === 0) return null;
@@ -23,7 +23,20 @@ export default function CvJumpNav({ sections }: { sections: CvData["sections"] }
         <WrapItem key={link.id}>
           <Wrap align="center" spacing={3}>
             <WrapItem>
-              <Link href={`#${link.id}`} fontSize="sm" color={linkColor}>
+              <Link
+                href={`#${link.id}`}
+                fontSize="sm"
+                color={useColorModeValue(
+                  `${link.accentColorPalette}.600`,
+                  `${link.accentColorPalette}.300`,
+                )}
+                _hover={{
+                  color: useColorModeValue(
+                    `${link.accentColorPalette}.700`,
+                    `${link.accentColorPalette}.200`,
+                  ),
+                }}
+              >
                 {link.title}
               </Link>
             </WrapItem>
