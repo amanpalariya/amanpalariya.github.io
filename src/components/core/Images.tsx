@@ -1,7 +1,6 @@
 "use client";
 
 import { Center, Image, Text, VStack } from "@chakra-ui/react";
-import { useColorModeValue } from "@components/ui/color-mode";
 
 export function ImageBlock({
   src,
@@ -19,8 +18,8 @@ export function ImageBlock({
         maxW={"5xl"}
         borderWidth={"thin"}
         rounded={"3xl"}
-        borderColor={useColorModeValue("gray.200", "gray.600")}
-        background={useColorModeValue("gray.100", "gray.900")}
+        borderColor={"app.border.muted"}
+        background={"app.bg.canvas"}
       >
         <Image src={src} rounded={"xl"} alt={""} />
         {caption ? <Text>{caption}</Text> : null}

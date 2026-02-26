@@ -12,7 +12,7 @@ export default function HeaderMobileTrigger({
   onToggle: () => void;
   tabIcon: IconType;
 }) {
-  const mobileIconBlendBg = useColorModeValue("gray.50", "gray.700");
+  const mobileIconBlendBg = "app.bg.cardHeader";
 
   return (
     <Button

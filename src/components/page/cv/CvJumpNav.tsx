@@ -1,19 +1,19 @@
 import { Link, Wrap, WrapItem, Text } from "@chakra-ui/react";
 import type { CvData } from "data/cv";
-import { useColorModeValue } from "@components/ui/color-mode";
-import { getCvSectionAccentPalette, getRenderableCvSections } from "./cvRenderUtils";
+import { getRenderableCvSections } from "./cvRenderUtils";
+import { getCvSectionPaletteUnsafe } from "./cvPalettes";
 
 export function renderSectionAnchorLinks(sections: CvData["sections"]) {
   return getRenderableCvSections(sections).map((section) => ({
     id: section.id,
     title: section.title,
-    accentColorPalette: getCvSectionAccentPalette(section.id),
+    accentColorPalette: getCvSectionPaletteUnsafe(section.id),
   }));
 }
 
 export default function CvJumpNav({ sections }: { sections: CvData["sections"] }) {
   const links = renderSectionAnchorLinks(sections);
-  const separatorColor = useColorModeValue("gray.500", "gray.400");
+  const separatorColor = "app.fg.subtle";
 
   if (links.length === 0) return null;
 
@@ -26,15 +26,9 @@ export default function CvJumpNav({ sections }: { sections: CvData["sections"] }
               <Link
                 href={`#${link.id}`}
                 fontSize="sm"
-                color={useColorModeValue(
-                  `${link.accentColorPalette}.600`,
-                  `${link.accentColorPalette}.300`,
-                )}
+                color={`${link.accentColorPalette}.fg`}
                 _hover={{
-                  color: useColorModeValue(
-                    `${link.accentColorPalette}.700`,
-                    `${link.accentColorPalette}.200`,
-                  ),
+                  color: `${link.accentColorPalette}.emphasized`,
                 }}
               >
                 {link.title}

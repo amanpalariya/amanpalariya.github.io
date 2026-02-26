@@ -17,17 +17,15 @@ export default function HeaderNavIconButton({
   isSelected?: boolean;
   onClick?: () => void;
 }) {
-  const selectedColor = useColorModeValue("gray.900", "gray.50");
-  const unSelectedColor = useColorModeValue("gray.500", "gray.300");
-
   return (
     <Tooltip content={label} closeOnScroll>
       <NextLink href={url ?? ""} onClick={onClick}>
         <IconButton
           borderRadius={"full"}
-          borderWidth={"thick"}
+          borderWidth={isSelected ? "thin" : 0}
+          borderColor={"app.border.default"}
           variant={isSelected ? "surface" : "ghost"}
-          color={isSelected ? selectedColor : unSelectedColor}
+          color={isSelected ? "app.fg.default" : "app.fg.subtle"}
           aria-label={label}
         >
           <Icon boxSize={6} as={icon} />

@@ -1,7 +1,6 @@
 import { Button, VStack, HStack, Icon } from "@chakra-ui/react";
 import { InnerBgCardWithHeader } from "@components/core/Cards";
 import { SectionText } from "../../core/Texts";
-import { useColorModeValue } from "@components/ui/color-mode";
 import React, { JSX } from "react";
 import type { ElementType } from "react";
 import NextLink from "next/link";
@@ -37,13 +36,7 @@ export default function HighlightedSection({
       {title ? (
         <HStack gap={2}>
           {titleIcon ? (
-            <Icon
-              as={titleIcon}
-              color={useColorModeValue(
-                `${resolvedAccentPalette}.600`,
-                `${resolvedAccentPalette}.300`
-              )}
-            />
+            <Icon as={titleIcon} color={`${resolvedAccentPalette}.focusRing`} />
           ) : null}
           <SectionText
             dotColorPalette={resolvedAccentPalette}
@@ -91,7 +84,8 @@ export function SectionActionLink({
       href={url ?? ""}
       variant={"ghost"}
       h={"auto"}
-      color={useColorModeValue("gray.500", "gray.500")}
+      p={0}
+      color={"app.fg.subtle"}
       onClick={onClick}
     >
       {children} <Icon>{React.createElement(icon)}</Icon>

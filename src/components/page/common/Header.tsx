@@ -145,9 +145,6 @@ export default function Header() {
     };
   }, [isMobileMenuOpen]);
 
-  const menuDividerColor = useColorModeValue("gray.300", "gray.600");
-  const selectedMobileNavColor = useColorModeValue("gray.900", "gray.50");
-  const unselectedMobileNavColor = useColorModeValue("gray.600", "gray.300");
   return (
     <Box
       position={"fixed"}
@@ -226,7 +223,7 @@ export default function Header() {
               as={"nav"}
               aria-label={"Mobile navigation menu"}
               borderTopWidth={2}
-              borderColor={menuDividerColor}
+              borderColor={"app.border.default"}
               mt={4}
               pt={4}
               gap={2}
@@ -242,11 +239,7 @@ export default function Header() {
                     justifyContent={"flex-start"}
                     borderRadius={"xl"}
                     variant={isSelected ? "surface" : "ghost"}
-                    color={
-                      isSelected
-                        ? selectedMobileNavColor
-                        : unselectedMobileNavColor
-                    }
+                    color={isSelected ? "app.fg.default" : "app.fg.subtle"}
                   >
                     <NextLink href={item.url}>
                       <HStack gap={2}>

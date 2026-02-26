@@ -20,13 +20,12 @@ import {
   FiCopy,
   FiCheck,
 } from "react-icons/fi";
-import { useColorModeValue } from "@components/ui/color-mode";
 import { Tooltip } from "@components/ui/tooltip";
 import { useState } from "react";
 import PersonalData from "../../../data/Personal";
 
 export default function CvHero({ profile }: { profile: CvProfile }) {
-  const secondaryColor = useColorModeValue("gray.600", "gray.300");
+  const secondaryColor = "app.fg.muted";
   const [emailCopied, setEmailCopied] = useState(false);
 
   function getSocialIcon(label: string) {

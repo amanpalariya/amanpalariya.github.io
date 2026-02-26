@@ -2,7 +2,6 @@ import { Box, HStack, Text, VStack, Separator } from "@chakra-ui/react";
 import { Heading4 } from "@components/core/Texts";
 import type { CvLanguageItem, CvSectionBase } from "data/cv";
 import type { ElementType } from "react";
-import { useColorModeValue } from "@components/ui/color-mode";
 import CvSection from "./CvSection";
 
 type AccentPalette = "blue" | "purple" | "green" | "orange" | "yellow" | "red";
@@ -34,19 +33,19 @@ export default function CvLanguagesSection({
 }) {
   if (!section || section.items.length === 0) return null;
 
-  const cardBg = useColorModeValue("white", "gray.900");
-  const mutedColor = useColorModeValue("gray.600", "gray.300");
+  const cardBg = "app.bg.overlay";
+  const mutedColor = "app.fg.subtle";
   const resolvedAccentPalette = accentColorPalette ?? primaryColorPalette;
   const fluencyColor = resolvedAccentPalette
-    ? useColorModeValue(`${resolvedAccentPalette}.700`, `${resolvedAccentPalette}.200`)
+    ? `${resolvedAccentPalette}.fg`
     : mutedColor;
   const fluencyBg = resolvedAccentPalette
-    ? useColorModeValue(`${resolvedAccentPalette}.100`, `${resolvedAccentPalette}.800`)
-    : useColorModeValue("gray.100", "gray.800");
+    ? `${resolvedAccentPalette}.subtle`
+    : "app.bg.surface";
   const meterActive = resolvedAccentPalette
-    ? useColorModeValue(`${resolvedAccentPalette}.500`, `${resolvedAccentPalette}.300`)
-    : useColorModeValue("blue.500", "blue.300");
-  const meterInactive = useColorModeValue("gray.200", "gray.700");
+    ? `${resolvedAccentPalette}.emphasized`
+    : "app.fg.muted";
+  const meterInactive = "app.border.muted";
 
   return (
     <CvSection
@@ -90,7 +89,11 @@ export default function CvLanguagesSection({
                     h="6px"
                     flex={1}
                     borderRadius="full"
-                    bg={step <= fluencyScore(item.proficiency) ? meterActive : meterInactive}
+                    bg={
+                      step <= fluencyScore(item.proficiency)
+                        ? meterActive
+                        : meterInactive
+                    }
                   />
                 ))}
               </HStack>

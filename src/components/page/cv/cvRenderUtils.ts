@@ -7,30 +7,12 @@ import type {
   CvTimelineItem,
   CvVolunteeringItem,
 } from "data/cv";
+import { getCvSectionPaletteUnsafe } from "./cvPalettes";
 
 export type CvSectionKey = keyof CvData["sections"];
 
-export const CV_SECTION_ACCENTS: Record<
-  string,
-  "blue" | "purple" | "green" | "orange" | "yellow" | "red"
-> = {
-  about: "blue",
-  "open-to": "purple",
-  experience: "blue",
-  projects: "purple",
-  skills: "green",
-  education: "orange",
-  volunteering: "green",
-  certifications: "blue",
-  languages: "orange",
-  courses: "yellow",
-  honors: "red",
-  organizations: "purple",
-  contact: "blue",
-};
-
 export function getCvSectionAccentPalette(sectionId: string) {
-  return CV_SECTION_ACCENTS[sectionId] ?? "blue";
+  return getCvSectionPaletteUnsafe(sectionId);
 }
 
 const SHORT_MONTHS = [

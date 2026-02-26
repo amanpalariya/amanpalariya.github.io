@@ -1,14 +1,13 @@
-import { Box, Card } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 import type { BoxProps } from "@chakra-ui/react";
-import { useColorModeValue } from "@components/ui/color-mode";
 
 export function HeaderCard({ children }) {
   return (
     <Box
-      background={useColorModeValue("gray.50", "gray.700")}
-      shadow={"lg"}
-      borderWidth={0.5}
-      borderColor={useColorModeValue("gray.300", "gray.600")}
+      background={"app.bg.cardHeader"}
+      shadow={"sm"}
+      borderWidth={0}
+      borderColor={"app.border.default"}
       borderRadius={"2xl"}
       px={4}
       py={4}
@@ -21,10 +20,9 @@ export function HeaderCard({ children }) {
 export function MainCard({ children }) {
   return (
     <Box
-      background={useColorModeValue("white", "gray.800")}
-      shadow={"lg"}
-      borderWidth={0.5}
-      borderColor={useColorModeValue("gray.300", "gray.600")}
+      background={"app.bg.card"}
+      borderWidth={0}
+      borderColor={"app.border.default"}
       borderRadius={"2xl"}
       px={[2, 4]}
       py={4}
@@ -34,8 +32,13 @@ export function MainCard({ children }) {
   );
 }
 
-export function InnerBgCard({ children, bg, background, ...boxProps }: BoxProps) {
-  const defaultBg = useColorModeValue("gray.50", "gray.900");
+export function InnerBgCard({
+  children,
+  bg,
+  background,
+  ...boxProps
+}: BoxProps) {
+  const defaultBg = "app.bg.surface";
   const resolvedBg = background ?? bg ?? defaultBg;
 
   return (
@@ -71,20 +74,11 @@ export function InnerBgCardWithHeader({
 }) {
   const resolvedPrimaryPalette = primaryColorPalette ?? colorPalette ?? "gray";
   const resolvedAccentPalette = accentColorPalette ?? resolvedPrimaryPalette;
-  const cardBgColor = useColorModeValue(
-    `${resolvedPrimaryPalette}.50`,
-    `${resolvedPrimaryPalette}.950`
-  );
+  const cardBgColor = `${resolvedPrimaryPalette}.subtle`;
   const resolvedBg = background ?? bg ?? cardBgColor;
-  const headerBgColor = useColorModeValue(
-    `${resolvedPrimaryPalette}.100`,
-    `${resolvedPrimaryPalette}.900`
-  );
+  const headerBgColor = `${resolvedPrimaryPalette}.muted`;
   const resolvedHeaderBg = separateHeader ? headerBgColor : resolvedBg;
-  const separatorColor = useColorModeValue(
-    `${resolvedAccentPalette}.200`,
-    `${resolvedAccentPalette}.700`
-  );
+  const separatorColor = `${resolvedAccentPalette}.emphasized`;
 
   return (
     <Box
@@ -109,21 +103,6 @@ export function InnerBgCardWithHeader({
       <Box px={[4, 6]} py={2}>
         {children}
       </Box>
-    </Box>
-  );
-}
-
-export function InnerCard({ children }) {
-  return (
-    <Box
-      background={useColorModeValue("white", "gray.700")}
-      shadow={"lg"}
-      borderWidth={0.5}
-      borderColor={useColorModeValue("gray.300", "gray.600")}
-      borderRadius={"2xl"}
-      p={[3, 4]}
-    >
-      {children}
     </Box>
   );
 }

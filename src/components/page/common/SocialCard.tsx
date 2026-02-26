@@ -11,31 +11,30 @@ import { InnerBgCard } from "../../core/Cards";
 import { SectionText } from "../../core/Texts";
 import { PersonalData } from "data";
 import { Tooltip } from "@components/ui/tooltip";
-import { useColorModeValue } from "@components/ui/color-mode";
 import React from "react";
 
 function SocialIconButton({
   icon,
   label,
   url,
+  color,
 }: {
   icon: any;
   label: string;
   url?: string;
+  color: string;
 }) {
   return (
     <Tooltip content={label} closeOnScroll>
-      <Link
-        href={url ?? ""}
-        target="_blank"
-        rel="noreferrer"
-      >
+      <Link href={url ?? ""} target="_blank" rel="noreferrer">
         <IconButton
           borderRadius={"50%"}
+          borderWidth={1}
+          borderColor={"app.border.default"}
           variant={"solid"}
-          shadow={"md"}
-          background={useColorModeValue("white", "gray.700")}
-          color={useColorModeValue("gray.600", "gray.400")}
+          background={"gray.emphasized"}
+          color={color}
+          _hover={{ opacity: 0.9 }}
           aria-label={label}
         >
           <Icon boxSize={5}>{React.createElement(icon)}</Icon>
@@ -50,6 +49,7 @@ const TwitterIcon = () => (
     icon={FiTwitter}
     label={"Twitter"}
     url={PersonalData.twitter.url}
+    color={"app.brand.twitter.solid"}
   />
 );
 const InstagramIcon = () => (
@@ -57,6 +57,7 @@ const InstagramIcon = () => (
     icon={FiInstagram}
     label={"Instagram"}
     url={PersonalData.instagram.url}
+    color={"app.brand.instagram.solid"}
   />
 );
 const LinkedinIcon = () => (
@@ -64,6 +65,7 @@ const LinkedinIcon = () => (
     icon={FiLinkedin}
     label={"LinkedIn"}
     url={PersonalData.linkedIn.url}
+    color={"app.brand.linkedin.solid"}
   />
 );
 const GithubIcon = () => (
@@ -71,6 +73,7 @@ const GithubIcon = () => (
     icon={FiGithub}
     label={"Github"}
     url={PersonalData.github.url}
+    color={"app.brand.github.solid"}
   />
 );
 

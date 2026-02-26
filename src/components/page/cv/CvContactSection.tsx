@@ -9,7 +9,7 @@ import {
   FiPhone,
   FiMapPin,
 } from "react-icons/fi";
-import { useColorModeValue } from "@components/ui/color-mode";
+import type { AppAccentPalette, AppPalette } from "theme/colors/types";
 import CvSection from "./CvSection";
 
 function iconFromKey(iconKey?: CvContactChannel["iconKey"]) {
@@ -32,8 +32,8 @@ function iconFromKey(iconKey?: CvContactChannel["iconKey"]) {
 }
 
 function ContactItem({ item }: { item: CvContactChannel }) {
-  const iconColor = useColorModeValue("gray.600", "gray.300");
-  const textColor = useColorModeValue("gray.700", "gray.200");
+  const iconColor = "app.fg.subtle";
+  const textColor = "app.fg.muted";
 
   return (
     <HStack
@@ -42,8 +42,8 @@ function ContactItem({ item }: { item: CvContactChannel }) {
       p={3}
       borderRadius="lg"
       borderWidth={1}
-      borderColor={useColorModeValue("gray.200", "gray.700")}
-      bg={useColorModeValue("white", "gray.900")}
+      borderColor={"app.border.muted"}
+      bg={"app.bg.overlay"}
       flexWrap="wrap"
       gap={2}
     >
@@ -74,8 +74,8 @@ export default function CvContactSection({
 }: {
   section: CvSectionBase & { items: CvContactChannel[] };
   titleIcon?: ElementType;
-  primaryColorPalette?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
-  accentColorPalette?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
+  primaryColorPalette?: AppPalette;
+  accentColorPalette?: AppAccentPalette;
 }) {
   if (!section || section.items.length === 0) return null;
 
