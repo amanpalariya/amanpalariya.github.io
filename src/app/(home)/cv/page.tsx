@@ -135,10 +135,11 @@ export default function CvPage() {
     : undefined;
 
   function getSectionTheme(sectionId: string) {
-    const primaryColorPalette = SECTION_ACCENTS[sectionId] ?? "blue";
+    const primaryColorPalette = "gray";
+    const accentColorPalette = SECTION_ACCENTS[sectionId] ?? "blue";
     return {
       primaryColorPalette,
-      accentColorPalette: primaryColorPalette,
+      accentColorPalette,
     };
   }
 

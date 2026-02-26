@@ -32,7 +32,6 @@ const PersonalData = {
     },
   },
   email: "aman.palariya@gmail.com",
-  phone: "+91 75350 15290",
   website: "https://amanpalariya.github.io",
   linkedIn: {
     username: "amanpalariya",

@@ -188,12 +188,6 @@ const sharedContactChannels: CvContactChannel[] = [
     iconKey: "email",
   },
   {
-    label: "Phone",
-    value: PersonalData.phone,
-    url: "tel:+917535015290",
-    iconKey: "phone",
-  },
-  {
     label: "LinkedIn",
     value: `linkedin.com/in/${PersonalData.linkedIn.username}`,
     url: PersonalData.linkedIn.url,
@@ -231,7 +225,6 @@ const CvData: CvData = {
     ],
     location: workLocation,
     email: PersonalData.email,
-    phone: PersonalData.phone,
     website: PersonalData.website,
     links: sharedProfileLinks,
   },

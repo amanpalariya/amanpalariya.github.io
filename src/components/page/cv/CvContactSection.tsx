@@ -1,5 +1,4 @@
 import { HStack, Icon, Link, Text, VStack } from "@chakra-ui/react";
-import { ParagraphText } from "@components/core/Texts";
 import type { CvContactChannel, CvSectionBase } from "data/cv";
 import type { ElementType } from "react";
 import {
@@ -90,7 +89,6 @@ export default function CvContactSection({
       accentColorPalette={accentColorPalette}
     >
       <VStack align="stretch" gap={3}>
-        {section.description ? <ParagraphText>{section.description}</ParagraphText> : null}
         {section.items.map((item) => (
           <ContactItem key={`${item.label}-${item.value}`} item={item} />
         ))}
