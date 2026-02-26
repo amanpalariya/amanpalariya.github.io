@@ -16,6 +16,7 @@ import type { ElementType } from "react";
 import { FiLink } from "react-icons/fi";
 import { useColorModeValue } from "@components/ui/color-mode";
 import CvSection from "./CvSection";
+import { AppAccentPalette, AppPalette } from "theme/colors";
 
 export interface CvAccomplishmentVisualItem {
   title: string;
@@ -35,8 +36,8 @@ export default function CvAccomplishmentsSection({
   section: CvSectionBase;
   items: CvAccomplishmentVisualItem[];
   titleIcon?: ElementType;
-  primaryColorPalette?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
-  accentColorPalette?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
+  primaryColorPalette?: AppPalette;
+  accentColorPalette?: AppAccentPalette;
 }) {
   if (!section || items.length === 0) return null;
 
@@ -56,10 +57,10 @@ export default function CvAccomplishmentsSection({
           <VStack key={`${item.title}-${index}`} align="stretch" gap={3}>
             <Box
               borderWidth={1}
-              borderColor={useColorModeValue("gray.200", "gray.700")}
+              borderColor={"app.border.default"}
               borderRadius="lg"
               p={4}
-              bg={useColorModeValue("white", "gray.900")}
+              bg={"app.bg.card"}
             >
               <VStack align="stretch" gap={2}>
                 <HStack justify="space-between" gap={2} flexWrap="wrap">
@@ -72,7 +73,12 @@ export default function CvAccomplishmentsSection({
                     ) : null}
                   </VStack>
                   {item.url ? (
-                    <Link href={item.url} isExternal fontSize="sm" color={mutedColor}>
+                    <Link
+                      href={item.url}
+                      isExternal
+                      fontSize="sm"
+                      color={mutedColor}
+                    >
                       <HStack gap={1}>
                         <Icon as={FiLink} />
                         <Text>Open</Text>
@@ -80,12 +86,16 @@ export default function CvAccomplishmentsSection({
                     </Link>
                   ) : null}
                 </HStack>
-                {item.summary ? <ParagraphText>{item.summary}</ParagraphText> : null}
+                {item.summary ? (
+                  <ParagraphText>{item.summary}</ParagraphText>
+                ) : null}
                 {item.tags && item.tags.length > 0 ? (
                   <Wrap spacing={2}>
                     {item.tags.map((tag) => (
                       <WrapItem key={`${item.title}-${tag}`}>
-                        <CategoryBadge color={accentColorPalette ?? "gray"}>{tag}</CategoryBadge>
+                        <CategoryBadge color={accentColorPalette ?? "gray"}>
+                          {tag}
+                        </CategoryBadge>
                       </WrapItem>
                     ))}
                   </Wrap>
