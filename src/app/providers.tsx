@@ -1,7 +1,7 @@
 "use client";
 
 import { ThemeProvider } from "next-themes";
-import { system } from "../chakra-config";
+import { system } from "@config/chakra";
 import { ChakraProvider, ClientOnly } from "@chakra-ui/react";
 import { Global, css } from "@emotion/react";
 import { useProseStyles } from "@components/article/proseStyles";

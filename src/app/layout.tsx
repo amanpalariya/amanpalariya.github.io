@@ -2,6 +2,7 @@ import { Providers } from "./providers";
 import { Metadata } from "next";
 import { PersonalData } from "data";
 import "katex/dist/katex.min.css";
+import "@fontsource/lexend";
 
 export const metadata: Metadata = {
   title: `${PersonalData.name.full} | Website`,
