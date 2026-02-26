@@ -1,5 +1,6 @@
 import { createSystem, defaultConfig } from "@chakra-ui/react";
 import "@fontsource/lexend";
+import { APP_SEMANTIC_COLOR_TOKENS } from "theme/colors";
 
 export const system = createSystem(defaultConfig, {
   theme: {
@@ -8,6 +9,9 @@ export const system = createSystem(defaultConfig, {
         heading: { value: `'Lexend', serif` },
         body: { value: `'Lexend', sans-serif` },
       },
+    },
+    semanticTokens: {
+      colors: APP_SEMANTIC_COLOR_TOKENS,
     },
   },
 });

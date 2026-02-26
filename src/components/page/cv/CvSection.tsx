@@ -3,6 +3,7 @@ import HighlightedSection from "@components/page/common/HighlightedSection";
 import { useColorModeValue } from "@components/ui/color-mode";
 import type { ReactNode } from "react";
 import type { ElementType } from "react";
+import type { AppAccentPalette, AppPalette } from "theme/colors/types";
 
 export default function CvSection({
   id,
@@ -17,8 +18,8 @@ export default function CvSection({
   title: string;
   description?: string;
   titleIcon?: ElementType;
-  primaryColorPalette?: string;
-  accentColorPalette?: string;
+  primaryColorPalette?: AppPalette;
+  accentColorPalette?: AppAccentPalette;
   children: ReactNode;
 }) {
   return (

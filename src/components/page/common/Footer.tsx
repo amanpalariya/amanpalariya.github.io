@@ -6,7 +6,7 @@ import { FiArrowUpRight } from "react-icons/fi";
 export default function Footer() {
   return (
     <InnerBgCard>
-      <VStack p={4} color={"gray.500"}>
+      <VStack p={4} color={"app.fg.subtle"}>
         <Text fontSize={"sm"} textAlign={"center"}>
           Share your feedback/suggestions about this website on{" "}
           <Link href={PersonalData.linkedIn.url} target="_blank">

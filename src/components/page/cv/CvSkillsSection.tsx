@@ -3,7 +3,6 @@ import { CategoryBadge } from "@components/core/Badges";
 import { ParagraphText } from "@components/core/Texts";
 import type { CvSectionBase, CvSkillGroup } from "data/cv";
 import type { ElementType } from "react";
-import { useColorModeValue } from "@components/ui/color-mode";
 import { Tooltip } from "@components/ui/tooltip";
 import CvSection from "./CvSection";
 
@@ -27,9 +26,9 @@ function SkillLevel({
   const label = level.charAt(0).toUpperCase() + level.slice(1);
   const activeCount = LEVEL_SCALE[level] ?? 0;
   const activeColor = accentColorPalette
-    ? useColorModeValue(`${accentColorPalette}.500`, `${accentColorPalette}.300`)
-    : useColorModeValue("gray.700", "gray.200");
-  const inactiveColor = useColorModeValue("gray.300", "gray.600");
+    ? `${accentColorPalette}.fg`
+    : "app.fg.muted";
+  const inactiveColor = "app.border.default";
 
   return (
     <HStack spacing={1} aria-label={`${label} proficiency`} title={label}>
@@ -90,10 +89,10 @@ export default function CvSkillsSection({
                       py={1}
                       borderRadius="full"
                       borderWidth={1}
-                      borderColor={useColorModeValue("gray.200", "gray.700")}
+                      borderColor={"app.border.muted"}
                       _hover={{
-                        borderColor: useColorModeValue("gray.400", "gray.500"),
-                        bg: useColorModeValue("gray.50", "gray.800"),
+                        borderColor: "app.border.strong",
+                        bg: "app.bg.surfaceMuted",
                       }}
                       transition="background 0.2s ease, border-color 0.2s ease"
                     >

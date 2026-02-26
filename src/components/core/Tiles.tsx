@@ -12,16 +12,15 @@ import NextLink from "next/link";
 import { Children } from "react";
 import { FiChevronRight, FiArrowUpRight } from "react-icons/fi";
 import { CategoryBadge } from "./Badges";
-import { useColorModeValue } from "@components/ui/color-mode";
 import { Avatar } from "@components/ui/avatar";
 import { Switch } from "@components/ui/switch";
 
 function useTileColors() {
   return {
-    divider: useColorModeValue("gray.200", "gray.700"),
-    description: useColorModeValue("gray.600", "gray.300"),
-    avatarBorder: useColorModeValue("gray.200", "gray.600"),
-    linkIcon: useColorModeValue("gray.400", "gray.400"),
+    divider: "app.border.muted",
+    description: "app.fg.subtle",
+    avatarBorder: "app.border.default",
+    linkIcon: "app.fg.icon",
   };
 }
 

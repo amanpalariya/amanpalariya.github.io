@@ -2,10 +2,8 @@
 
 import { HStack, Icon, Link, Text, TextProps } from "@chakra-ui/react";
 import { FaCircle } from "react-icons/fa";
-import { useColorModeValue } from "@components/ui/color-mode";
 
-const useDefaultTextColor = () =>
-  useColorModeValue("gray.800", "whiteAlpha.900");
+const useDefaultTextColor = () => "app.fg.default";
 
 export function SectionText({
   children,
@@ -17,10 +15,7 @@ export function SectionText({
   dotColorPalette?: string;
 }) {
   const resolvedPalette = dotColorPalette ?? "gray";
-  const iconColor = useColorModeValue(
-    `${resolvedPalette}.400`,
-    `${resolvedPalette}.500`
-  );
+  const iconColor = `${resolvedPalette}.muted`;
   return (
     <HStack>
       {hideDot ? null : (
@@ -94,7 +89,7 @@ export function ParagraphText({
 }) {
   return (
     <Text
-      color={useColorModeValue("gray.700", "gray.200")}
+      color={"app.fg.muted"}
       fontSize={["md", "lg"]}
       fontWeight={"normal"}
       lineHeight={"1.42"}
@@ -116,7 +111,7 @@ export function SubtitleText({
   return (
     <Text
       fontSize={"md"}
-      color={"gray.500"}
+      color={"app.fg.subtle"}
       textAlign={centerAlign ? "center" : "left"}
     >
       {children}

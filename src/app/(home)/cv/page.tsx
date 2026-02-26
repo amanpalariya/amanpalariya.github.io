@@ -29,7 +29,6 @@ import {
   FiMail,
 } from "react-icons/fi";
 import {
-  getCvSectionAccentPalette,
   formatCvDate,
   formatCvDateRange,
   getRenderableCvSections,
@@ -37,6 +36,8 @@ import {
   mapEducationToTimelineItems,
   mapVolunteeringToTimelineItems,
 } from "@components/page/cv/cvRenderUtils";
+import { getCvSectionPaletteUnsafe } from "@components/page/cv/cvPalettes";
+import type { AppAccentPalette, AppNeutralPalette } from "theme/colors/types";
 import type {
   CvAwardItem,
   CvCertificationItem,
@@ -117,8 +118,8 @@ export default function CvPage() {
     : undefined;
 
   function getSectionTheme(sectionId: string) {
-    const primaryColorPalette = "gray";
-    const accentColorPalette = getCvSectionAccentPalette(sectionId);
+    const primaryColorPalette: AppNeutralPalette = "gray";
+    const accentColorPalette: AppAccentPalette = getCvSectionPaletteUnsafe(sectionId);
     return {
       primaryColorPalette,
       accentColorPalette,

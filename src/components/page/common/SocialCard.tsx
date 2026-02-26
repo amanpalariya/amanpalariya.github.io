@@ -11,7 +11,6 @@ import { InnerBgCard } from "../../core/Cards";
 import { SectionText } from "../../core/Texts";
 import { PersonalData } from "data";
 import { Tooltip } from "@components/ui/tooltip";
-import { useColorModeValue } from "@components/ui/color-mode";
 import React from "react";
 
 function SocialIconButton({
@@ -34,8 +33,8 @@ function SocialIconButton({
           borderRadius={"50%"}
           variant={"solid"}
           shadow={"md"}
-          background={useColorModeValue("white", "gray.700")}
-          color={useColorModeValue("gray.600", "gray.400")}
+          background={"app.bg.surfaceMuted"}
+          color={"app.fg.subtle"}
           aria-label={label}
         >
           <Icon boxSize={5}>{React.createElement(icon)}</Icon>

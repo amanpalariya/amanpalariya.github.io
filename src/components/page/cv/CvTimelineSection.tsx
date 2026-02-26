@@ -13,7 +13,6 @@ import { Heading4 } from "@components/core/Texts";
 import { CategoryBadge } from "@components/core/Badges";
 import type { CvSectionBase, CvTimelineItem } from "data/cv";
 import { FiLink } from "react-icons/fi";
-import { useColorModeValue } from "@components/ui/color-mode";
 import CvSection from "./CvSection";
 import type { ElementType } from "react";
 import { formatCvDateRange } from "./cvRenderUtils";
@@ -31,15 +30,15 @@ function TimelineItem({
   tagColor: "gray" | AccentPalette;
   presentWhenEndMissing?: boolean;
 }) {
-  const mutedColor = useColorModeValue("gray.600", "gray.300");
+  const mutedColor = "app.fg.subtle";
   const highlights = item.highlights && item.highlights.length > 0
     ? item.highlights
     : item.summary
       ? [item.summary]
       : [];
   const dotColor = accentColorPalette
-    ? useColorModeValue(`${accentColorPalette}.500`, `${accentColorPalette}.300`)
-    : useColorModeValue("gray.500", "gray.400");
+    ? `${accentColorPalette}.fg`
+    : "app.fg.icon";
   const timeframe = formatCvDateRange({
     start: item.start,
     end: item.end,
@@ -117,11 +116,11 @@ export default function CvTimelineSection({
   const resolvedAccentPalette = accentColorPalette ?? primaryColorPalette;
   const tagColor = resolvedAccentPalette ?? ("gray" as const);
   const railTint = resolvedAccentPalette
-    ? useColorModeValue(`${resolvedAccentPalette}.200`, `${resolvedAccentPalette}.700`)
-    : useColorModeValue("gray.200", "gray.700");
+    ? `${resolvedAccentPalette}.muted`
+    : "app.border.muted";
   const endCapColor = resolvedAccentPalette
-    ? useColorModeValue(`${resolvedAccentPalette}.300`, `${resolvedAccentPalette}.500`)
-    : useColorModeValue("gray.300", "gray.600");
+    ? `${resolvedAccentPalette}.emphasized`
+    : "app.border.default";
 
   return (
     <CvSection

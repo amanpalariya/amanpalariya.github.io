@@ -2,11 +2,9 @@ import { Box, Text, VStack, Wrap, WrapItem } from "@chakra-ui/react";
 import { Heading4 } from "@components/core/Texts";
 import type { CvCourseItem, CvSectionBase } from "data/cv";
 import type { ElementType } from "react";
-import { useColorModeValue } from "@components/ui/color-mode";
+import type { AppAccentPalette, AppPalette } from "theme/colors/types";
 import CvSection from "./CvSection";
 import { formatCvDate } from "./cvRenderUtils";
-
-type AccentPalette = "blue" | "purple" | "green" | "orange" | "yellow" | "red";
 
 function toCourseMeta(course: CvCourseItem) {
   const timeframe = course.timeframe ?? formatCvDate(course.date);
@@ -27,14 +25,14 @@ export default function CvCoursesSection({
 }: {
   section: CvSectionBase & { items: CvCourseItem[] };
   titleIcon?: ElementType;
-  primaryColorPalette?: AccentPalette;
-  accentColorPalette?: AccentPalette;
+  primaryColorPalette?: AppPalette;
+  accentColorPalette?: AppAccentPalette;
 }) {
   if (!section || section.items.length === 0) return null;
 
-  const cardBg = useColorModeValue("white", "gray.900");
-  const cardBorder = useColorModeValue("gray.200", "gray.700");
-  const mutedColor = useColorModeValue("gray.600", "gray.300");
+  const cardBg = "app.bg.overlay";
+  const cardBorder = "app.border.muted";
+  const mutedColor = "app.fg.subtle";
 
   return (
     <CvSection

@@ -15,7 +15,7 @@ export default function WithBackground({
         p={0}
         w="100vw"
         h="100vh"
-        backgroundColor={useColorModeValue("gray.100", "gray.900")}
+        backgroundColor={"app.bg.canvas"}
         backgroundImage={useColorModeValue(
           "radial-gradient(circle, rgba(45, 55, 72, 0.15) 1px, transparent 1px), radial-gradient(circle, rgba(45, 55, 72, 0.12) 1px, transparent 1px)",
           "radial-gradient(circle, rgba(237, 242, 247, 0.10) 1px, transparent 1px), radial-gradient(circle, rgba(237, 242, 247, 0.08) 1px, transparent 1px)",

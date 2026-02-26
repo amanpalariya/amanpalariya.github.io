@@ -1,6 +1,5 @@
 import { Badge, HStack, Icon, Text } from "@chakra-ui/react";
 import { FaCircle } from "react-icons/fa";
-import { useColorModeValue } from "@components/ui/color-mode";
 
 export function StatusBadge({
   children,
@@ -16,8 +15,8 @@ export function StatusBadge({
   return (
     <Badge
       colorPalette={color}
-      background={useColorModeValue(`colorPalette.100`, `colorPalette.700`)}
-      color={useColorModeValue(`colorPalette.600`, `colorPalette.200`)}
+      background={"colorPalette.subtle"}
+      color={"colorPalette.fg"}
       px={2}
       py={compact ? 2 : 1}
       rounded={"full"}
@@ -46,8 +45,8 @@ export function CategoryBadge({
   return (
     <Badge
       colorPalette={color}
-      background={useColorModeValue(`colorPalette.100`, `colorPalette.800`)}
-      color={useColorModeValue(`colorPalette.500`, `colorPalette.300`)}
+      background={"colorPalette.muted"}
+      color={"colorPalette.fg"}
       px={2}
       py={0.5}
       rounded={"full"}

@@ -2,9 +2,8 @@ import { Wrap, WrapItem } from "@chakra-ui/react";
 import { CategoryBadge } from "@components/core/Badges";
 import type { CvSectionBase } from "data/cv";
 import type { ElementType } from "react";
+import type { AppAccentPalette, AppPalette } from "theme/colors/types";
 import CvSection from "./CvSection";
-
-type BadgeColor = "blue" | "purple" | "green" | "orange" | "yellow" | "red";
 
 export default function CvBadgeListSection({
   section,
@@ -16,8 +15,8 @@ export default function CvBadgeListSection({
   section: CvSectionBase;
   items: string[];
   titleIcon?: ElementType;
-  primaryColorPalette?: BadgeColor;
-  accentColorPalette?: BadgeColor;
+  primaryColorPalette?: AppPalette;
+  accentColorPalette?: AppAccentPalette;
 }) {
   if (!section || items.length === 0) return null;
 

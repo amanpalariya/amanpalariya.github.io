@@ -2,6 +2,7 @@ import { VStack } from "@chakra-ui/react";
 import { ParagraphText } from "@components/core/Texts";
 import type { CvSectionBase } from "data/cv";
 import type { ElementType } from "react";
+import type { AppAccentPalette, AppPalette } from "theme/colors/types";
 import CvSection from "./CvSection";
 
 export default function CvTextSection({
@@ -12,8 +13,8 @@ export default function CvTextSection({
 }: {
   section: CvSectionBase & { content: string };
   titleIcon?: ElementType;
-  primaryColorPalette?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
-  accentColorPalette?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
+  primaryColorPalette?: AppPalette;
+  accentColorPalette?: AppAccentPalette;
 }) {
   if (!section || !section.content?.trim()) return null;
 
