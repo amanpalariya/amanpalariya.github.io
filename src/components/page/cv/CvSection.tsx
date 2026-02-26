@@ -30,7 +30,7 @@ export default function CvSection({
         accentColorPalette={accentColorPalette}
         separateHeader
       >
-        <VStack align={"stretch"} gap={4}>
+        <VStack align={"stretch"} gap={4} pb={2}>
           {description ? (
             <Text
               fontSize="sm"
