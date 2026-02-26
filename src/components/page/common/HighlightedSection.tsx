@@ -1,5 +1,5 @@
-import { Button, VStack, HStack, Icon, Link } from "@chakra-ui/react";
-import { InnerBgCard } from "../../core/Cards";
+import { Button, VStack, HStack, Icon } from "@chakra-ui/react";
+import { InnerBgCardWithHeader } from "@components/core/Cards";
 import { SectionText } from "../../core/Texts";
 import { useColorModeValue } from "@components/ui/color-mode";
 import React, { JSX } from "react";
@@ -12,6 +12,7 @@ export default function HighlightedSection({
   titleActionElement,
   background,
   accentColor,
+  separateHeader = false,
   children,
 }: {
   title?: string;
@@ -19,34 +20,40 @@ export default function HighlightedSection({
   titleActionElement?: JSX.Element;
   background?: string;
   accentColor?: string;
+  separateHeader?: boolean;
   children: JSX.Element;
 }) {
   const noHeader = !title && !titleActionElement;
 
+  const headerJsx = noHeader ? undefined : (
+    <HStack justify={"space-between"} align={"center"}>
+      {title ? (
+        <HStack gap={2}>
+          {titleIcon ? (
+            <Icon
+              as={titleIcon}
+              color={accentColor ?? useColorModeValue("gray.500", "gray.400")}
+            />
+          ) : null}
+          <SectionText>{title}</SectionText>
+        </HStack>
+      ) : (
+        <div />
+      )}
+      {titleActionElement}
+    </HStack>
+  );
+
   return (
-    <InnerBgCard background={background}>
+    <InnerBgCardWithHeader
+      header={headerJsx}
+      separateHeader={separateHeader}
+      background={background}
+    >
       <VStack align={"stretch"} gap={4}>
-        {noHeader ? null : (
-          <HStack justify={"space-between"}>
-            {title ? (
-              <HStack gap={2}>
-                {titleIcon ? (
-                  <Icon
-                    as={titleIcon}
-                    color={accentColor ?? useColorModeValue("gray.500", "gray.400")}
-                  />
-                ) : null}
-                <SectionText>{title}</SectionText>
-              </HStack>
-            ) : (
-              <div />
-            )}
-            {titleActionElement}
-          </HStack>
-        )}
         {children}
       </VStack>
-    </InnerBgCard>
+    </InnerBgCardWithHeader>
   );
 }
 
@@ -66,6 +73,7 @@ export function SectionActionLink({
       as={NextLink}
       href={url ?? ""}
       variant={"ghost"}
+      h={"auto"}
       color={useColorModeValue("gray.500", "gray.500")}
       onClick={onClick}
     >

@@ -2,7 +2,7 @@
 
 import { EmptyState, VStack, Spacer, Box, Icon } from "@chakra-ui/react";
 import { Heading1, SectionText, SubtitleText } from "@components/core/Texts";
-import { TitleDescriptionAvatarTile } from "@components/core/Tiles";
+import { TileList, TitleDescriptionMetaTile } from "@components/core/Tiles";
 import HighlightedSection from "@components/page/common/HighlightedSection";
 import { homepageTabs } from "app/route-info";
 import BlogsData from "data/blogs";
@@ -35,7 +35,9 @@ function NoBlogsElement() {
               <FiBookmark />
             </Icon>
           </EmptyState.Indicator>
-          <EmptyState.Title>{"There are no blogs yet!"}</EmptyState.Title>
+          <EmptyState.Title textAlign={"center"}>
+            {"There are no blogs yet!"}
+          </EmptyState.Title>
         </EmptyState.Content>
       </EmptyState.Root>
     </HighlightedSection>
@@ -45,17 +47,20 @@ function NoBlogsElement() {
 function BlogsListElement({ blogs }: { blogs: BlogMeta[] }) {
   return (
     <HighlightedSection>
-      <VStack align={"stretch"} gap={4}>
+      <TileList>
         {blogs.map((blog) => (
-          <TitleDescriptionAvatarTile
+          <TitleDescriptionMetaTile
             key={blog.id}
             title={blog.title}
             description={blog.description}
+            tags={blog.tags}
+            published={blog.published}
+            updated={blog.updated}
             url={homepageTabs.blogs.getSubpagePathname(blog.id)}
             isUrlExternal={false}
           />
         ))}
-      </VStack>
+      </TileList>
     </HighlightedSection>
   );
 }

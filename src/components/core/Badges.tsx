@@ -46,8 +46,8 @@ export function CategoryBadge({
   return (
     <Badge
       colorPalette={color}
-      background={useColorModeValue(`colorPalette.100`, `colorPalette.700`)}
-      color={useColorModeValue(`colorPalette.500`, `colorPalette.200`)}
+      background={useColorModeValue(`colorPalette.100`, `colorPalette.800`)}
+      color={useColorModeValue(`colorPalette.500`, `colorPalette.300`)}
       px={2}
       py={0.5}
       rounded={"full"}

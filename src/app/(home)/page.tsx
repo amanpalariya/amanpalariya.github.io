@@ -2,7 +2,11 @@
 
 import { EmptyState, VStack, HStack, Box, Icon } from "@chakra-ui/react";
 import { SectionText } from "@components/core/Texts";
-import { TitleDescriptionAvatarTile } from "@components/core/Tiles";
+import {
+  TileList,
+  TitleDescriptionAvatarTile,
+  TitleDescriptionTile,
+} from "@components/core/Tiles";
 import BottomMessage from "@components/page/common/BottomMessage";
 import HighlightedSection, {
   SectionActionLink,
@@ -44,7 +48,9 @@ function Projects() {
             <EmptyState.Indicator>
               <Icon as={FiTool} boxSize={12} color={"gray.500"} />
             </EmptyState.Indicator>
-            <EmptyState.Title>{"There are no projects yet!"}</EmptyState.Title>
+            <EmptyState.Title textAlign={"center"}>
+              {"There are no projects yet!"}
+            </EmptyState.Title>
           </EmptyState.Content>
         </EmptyState.Root>
       </HighlightedSection>
@@ -62,10 +68,11 @@ function Projects() {
           View All
         </SectionActionLink>
       }
+      separateHeader
     >
-      <VStack align={"stretch"} gap={4}>
+      <TileList>
         {ProjectsData.allProjects.slice(0, 3).map((project) => (
-          <TitleDescriptionAvatarTile
+          <TitleDescriptionTile
             key={project.id}
             title={project.title}
             description={project.description}
@@ -77,7 +84,7 @@ function Projects() {
             isUrlExternal={project.content ? false : true}
           />
         ))}
-      </VStack>
+      </TileList>
     </HighlightedSection>
   );
 }
@@ -116,7 +123,9 @@ function WorkExperience() {
             <EmptyState.Indicator>
               <Icon as={FiBriefcase} boxSize={12} color={"gray.500"} />
             </EmptyState.Indicator>
-            <EmptyState.Title>{"There is no work experience yet!"}</EmptyState.Title>
+            <EmptyState.Title textAlign={"center"}>
+              {"There is no work experience yet!"}
+            </EmptyState.Title>
           </EmptyState.Content>
         </EmptyState.Root>
       </HighlightedSection>
@@ -124,8 +133,8 @@ function WorkExperience() {
   }
 
   return (
-    <HighlightedSection title="Work Experience">
-      <VStack align={"stretch"} gap={4}>
+    <HighlightedSection title="Work Experience" separateHeader>
+      <TileList>
         {WorkData.experience.map((exp, index) => (
           <TitleDescriptionAvatarTile
             key={index}
@@ -136,7 +145,7 @@ function WorkExperience() {
             isUrlExternal
           />
         ))}
-      </VStack>
+      </TileList>
     </HighlightedSection>
   );
 }

@@ -2,7 +2,7 @@
 
 import { EmptyState, VStack, Spacer, Box, Icon } from "@chakra-ui/react";
 import { Heading1, SectionText, SubtitleText } from "@components/core/Texts";
-import { TitleDescriptionAvatarTile } from "@components/core/Tiles";
+import { TileList, TitleDescriptionTile } from "@components/core/Tiles";
 import HighlightedSection from "@components/page/common/HighlightedSection";
 import { homepageTabs } from "app/route-info";
 import ProjectsData from "data/projects";
@@ -33,7 +33,9 @@ function NoProjectsElement() {
               <FiTool />
             </Icon>
           </EmptyState.Indicator>
-          <EmptyState.Title>{"There are no projects yet!"}</EmptyState.Title>
+          <EmptyState.Title textAlign={"center"}>
+            {"There are no projects yet!"}
+          </EmptyState.Title>
         </EmptyState.Content>
       </EmptyState.Root>
     </HighlightedSection>
@@ -43,9 +45,9 @@ function NoProjectsElement() {
 function ProjectsListElement() {
   return (
     <HighlightedSection>
-      <VStack align={"stretch"} gap={4}>
+      <TileList>
         {ProjectsData.allProjects.map((project) => (
-          <TitleDescriptionAvatarTile
+          <TitleDescriptionTile
             key={project.id}
             title={project.title}
             description={project.description}
@@ -57,7 +59,7 @@ function ProjectsListElement() {
             isUrlExternal={project.content ? false : true}
           />
         ))}
-      </VStack>
+      </TileList>
     </HighlightedSection>
   );
 }

@@ -51,6 +51,50 @@ export function InnerBgCard({ children, bg, background, ...boxProps }: BoxProps)
   );
 }
 
+export function InnerBgCardWithHeader({
+  header,
+  children,
+  bg,
+  background,
+  separateHeader = false,
+  ...boxProps
+}: BoxProps & {
+  header?: React.ReactNode;
+  children: React.ReactNode;
+  separateHeader?: boolean;
+}) {
+  const cardBgColor = useColorModeValue("gray.50", "gray.950");
+  const resolvedBg = background ?? bg ?? cardBgColor;
+  const headerBgColor = useColorModeValue("gray.100", "gray.900");
+  const separatorColor = useColorModeValue("gray.200", "gray.700");
+
+  return (
+    <Box
+      background={resolvedBg}
+      shadow={"xs"}
+      borderRadius={"2xl"}
+      overflow={"hidden"}
+      {...boxProps}
+    >
+      {header ? (
+        <Box
+          px={[4, 6]}
+          py={4}
+          background={headerBgColor}
+          borderBottomWidth={separateHeader ? "2px" : "0px"}
+          borderBottomColor={separatorColor}
+        >
+          {header}
+        </Box>
+      ) : null}
+
+      <Box px={[4, 6]} py={2}>
+        {children}
+      </Box>
+    </Box>
+  );
+}
+
 export function InnerCard({ children }) {
   return (
     <Box
