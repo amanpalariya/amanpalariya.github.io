@@ -13,6 +13,7 @@ export default function HighlightedSection({
   accentColor,
   primaryColorPalette,
   accentColorPalette,
+  useAccentForHeader = false,
   separateHeader = false,
   children,
 }: {
@@ -23,6 +24,7 @@ export default function HighlightedSection({
   accentColor?: string;
   primaryColorPalette?: string;
   accentColorPalette?: string;
+  useAccentForHeader?: boolean;
   separateHeader?: boolean;
   children: JSX.Element;
 }) {
@@ -59,6 +61,7 @@ export default function HighlightedSection({
       background={background}
       primaryColorPalette={resolvedPrimaryPalette}
       accentColorPalette={resolvedAccentPalette}
+      useAccentForHeader={useAccentForHeader}
     >
       <VStack align={"stretch"} gap={4}>
         {children}

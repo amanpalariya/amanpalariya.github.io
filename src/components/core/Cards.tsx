@@ -62,6 +62,7 @@ export function InnerBgCardWithHeader({
   colorPalette,
   primaryColorPalette,
   accentColorPalette,
+  useAccentForHeader = false,
   separateHeader = false,
   ...boxProps
 }: BoxProps & {
@@ -70,13 +71,17 @@ export function InnerBgCardWithHeader({
   colorPalette?: string;
   primaryColorPalette?: string;
   accentColorPalette?: string;
+  useAccentForHeader?: boolean;
   separateHeader?: boolean;
 }) {
   const resolvedPrimaryPalette = primaryColorPalette ?? colorPalette ?? "gray";
   const resolvedAccentPalette = accentColorPalette ?? resolvedPrimaryPalette;
+  const resolvedHeaderPalette = useAccentForHeader
+    ? resolvedAccentPalette
+    : resolvedPrimaryPalette;
   const cardBgColor = `${resolvedPrimaryPalette}.subtle`;
   const resolvedBg = background ?? bg ?? cardBgColor;
-  const headerBgColor = `${resolvedPrimaryPalette}.muted`;
+  const headerBgColor = `${resolvedHeaderPalette}.muted`;
   const resolvedHeaderBg = separateHeader ? headerBgColor : resolvedBg;
   const separatorColor = `${resolvedAccentPalette}.emphasized`;
 
