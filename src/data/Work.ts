@@ -99,11 +99,11 @@ const WorkData: {
       role: "Software Developer Intern",
       company: {
         name: "Newzera",
-        websiteUrl: "https://www.newzera.com/",
+        websiteUrl: "https://www.linkedin.com/company/newzera/",
         logoSrc: "/images/logo/newzera.jpeg",
       },
       email: "aman.palariya@newzera.com",
-      url: "https://www.newzera.com/",
+      url: "https://www.linkedin.com/company/newzera/",
       location: {
         city: "Indore",
         state: "Madhya Pradesh",
