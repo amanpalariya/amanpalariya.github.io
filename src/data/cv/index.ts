@@ -341,7 +341,7 @@ const CvData: CvData = {
           ],
           tags: ["GraphQL", "JavaScript", "Backend"],
           logoSrc: "/images/logo/newzera.jpeg",
-          url: "https://www.newzera.com/",
+          url: "https://www.linkedin.com/company/newzera/",
         },
       ],
     },
