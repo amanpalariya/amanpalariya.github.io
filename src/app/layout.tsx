@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import { PersonalData } from "data";
 import "katex/dist/katex.min.css";
 import "@fontsource/lexend";
+import "computer-modern/index.css";
 
 export const metadata: Metadata = {
   title: `${PersonalData.name.full} | Website`,

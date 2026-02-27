@@ -3,6 +3,12 @@
 import { useColorModeValue } from "@components/ui/color-mode";
 
 export function useProseStyles() {
+  const proseBodyFontFamily =
+    "'CMU Sans Serif', 'Computer Modern Sans', sans-serif";
+  const proseSerifFontFamily = "'CMU Serif', 'Computer Modern Serif', serif";
+  const proseCodeFontFamily =
+    "'CMU Typewriter Text', 'CMU Typewriter', 'Computer Modern Typewriter', mono";
+
   const headingColor = useColorModeValue("gray.800", "whiteAlpha.900");
   const textColor = useColorModeValue("gray.700", "gray.200");
   const subtleTextColor = useColorModeValue("gray.600", "gray.400");
@@ -18,8 +24,9 @@ export function useProseStyles() {
 
   return {
     color: textColor,
+    fontFamily: proseBodyFontFamily,
     lineHeight: "1.42",
-    fontSize: ["md", "lg"],
+    fontSize: ["lg", "xl"],
     letterSpacing: "0.01em",
     width: "100%",
     marginInline: "auto",
@@ -34,6 +41,7 @@ export function useProseStyles() {
     },
     "& h1, & h2, & h3, & h4": {
       color: headingColor,
+      fontFamily: proseSerifFontFamily,
       letterSpacing: "-0.01em",
       lineHeight: "shorter",
       marginTop: 10,
@@ -140,12 +148,13 @@ export function useProseStyles() {
     "& pre": {
       background: preBg,
       color: preTextColor,
+      fontFamily: proseCodeFontFamily,
       padding: [4, 5],
       borderRadius: "2xl",
       overflowX: "hidden",
       border: "1px solid",
       borderColor: preBorder,
-      fontSize: "sm",
+      fontSize: ["md", "lg"],
       marginY: 6,
       marginX: [-2, -3],
     },
@@ -154,7 +163,7 @@ export function useProseStyles() {
       padding: 0,
       fontSize: "inherit",
       color: "inherit",
-      fontFamily: "mono",
+      fontFamily: proseCodeFontFamily,
       whiteSpace: "pre-wrap",
       wordBreak: "break-word",
       border: "none",
@@ -178,7 +187,7 @@ export function useProseStyles() {
       color: useColorModeValue("blue.600", "blue.300"),
     },
     "& code": {
-      fontFamily: "mono",
+      fontFamily: proseCodeFontFamily,
       background: inlineCodeBg,
       color: inlineCodeColor,
       borderRadius: "md",
