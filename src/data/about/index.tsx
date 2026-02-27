@@ -2,21 +2,19 @@ import { PersonalData } from "data";
 
 const aboutMarkdown = `# It's me, Aman!
 
-I am a Software Developer at Oracle.
-Previously, I had interned at Oracle and before that at Newzera (a robo-journalism startup).
-The uniqueness comes from my work experience in a large tech company as well as in a startup.
-I graduated with a bachelor's degree in Computer Science and Engineering from the Indian Institute of Technology Ropar in May 2023.
-Along with my major, I have a specialization in Artificial Intelligence (AI).
+I'm a software engineer at Oracle, focusing on backend systems for Oracle Integrations (OIC).
+Over the past two years, I've worked on features ranging from Kubernetes cost-saving designs to low-level protocols like SSH/FTP, and have also gained experience in CI/CD, DevOps, and development engineering.
+I've also worked with healthcare standards like HL7 FHIR, driven by product demand in that industry.
 
-I find it fascinating to learn what goes behind the world's most influential technologies.
-I have worked with React, GraphQL, Docker, and Kubernetes in my career which has helped me understand both - the pleasing consumer-facing frontend and the robust backend.
+I use AI tools almost every day to automate various processes, such as resolving simpler bugs, managing release changes, and optimizing CI/CD pipelines. I've built tools to streamline these workflows and improve team productivity.
 
-## Looking Forward
+I graduated from IIT Ropar with a B.Tech. in Computer Science and Engineering, specializing in Artificial Intelligence. During college, I interned at Oracle and Newzera.
 
-I want to explore the world of entrepreneurship.
-I'm passionate about tech, education, linguistics, and social causes.
-At Oracle, I often take part in volunteering activities available to me.
-If you have any projects or opportunities in tech and education, feel free to reach out on [LinkedIn](${PersonalData.linkedIn.url}) or send me an [email](mailto:${PersonalData.email}).
+I'm passionate about tech, education, linguistics, and social causes. I participate in Oracle's volunteering activities and look for opportunities to contribute meaningfully outside of work. In my spare time, I enjoy solving puzzles like Sudoku and Crosswords.
+
+I look forward to transition from being an individual contributor to a leader. I also want to explore the world of entrepreneurship in fields of my interests.
+
+Feel free to connect with me on [LinkedIn](${PersonalData.linkedIn.url}) or via [email](mailto:${PersonalData.email}) for new opportunities and discussions.
 `;
 
 export default aboutMarkdown;
