@@ -64,6 +64,7 @@ export function useProseStyles() {
     },
     "& p": {
       marginBottom: 7,
+      textAlign: "justify",
     },
     "& p:last-of-type": {
       marginBottom: 0,

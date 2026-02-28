@@ -15,4 +15,4 @@ With time and regressions, I realized that this messy piece of code is a robust 
 
 This realization relieved a lot of my frustation. Before this realization I wanted to rewrite every file that I touched, but now I know a bit better.
 
-@Joel Spolsky put it elegantly even before I was born: https://www.joelonsoftware.com/2000/04/06/things-you-should-never-do-part-i/
+[Joel Spolsky put it elegantly](https://www.joelonsoftware.com/2000/04/06/things-you-should-never-do-part-i/) even before I was born.
