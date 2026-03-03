@@ -63,7 +63,7 @@ export default function HighlightedSection({
       accentColorPalette={resolvedAccentPalette}
       useAccentForHeader={useAccentForHeader}
     >
-      <VStack align={"stretch"} gap={4}>
+      <VStack align={"stretch"} gap={3}>
         {children}
       </VStack>
     </InnerBgCardWithHeader>
