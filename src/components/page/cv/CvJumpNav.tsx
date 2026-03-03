@@ -25,6 +25,7 @@ export default function CvJumpNav({ sections }: { sections: CvData["sections"] }
             <WrapItem>
               <Link
                 href={`#${link.id}`}
+                fontFamily="ui"
                 fontSize="sm"
                 color={`${link.accentColorPalette}.fg`}
                 _hover={{

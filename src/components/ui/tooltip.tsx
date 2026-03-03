@@ -25,12 +25,17 @@ export const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(
 
     if (disabled) return children
 
+    const mergedContentProps: ChakraTooltip.ContentProps = {
+      fontFamily: "ui",
+      ...contentProps,
+    }
+
     return (
       <ChakraTooltip.Root {...rest}>
         <ChakraTooltip.Trigger asChild>{children}</ChakraTooltip.Trigger>
         <Portal disabled={!portalled} container={portalRef}>
           <ChakraTooltip.Positioner>
-            <ChakraTooltip.Content ref={ref} {...contentProps}>
+            <ChakraTooltip.Content ref={ref} {...mergedContentProps}>
               {showArrow && (
                 <ChakraTooltip.Arrow>
                   <ChakraTooltip.ArrowTip />

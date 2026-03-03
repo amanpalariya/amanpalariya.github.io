@@ -66,7 +66,13 @@ function TimelineItem({
             </HStack>
           </VStack>
           {item.url ? (
-            <Link href={item.url} isExternal fontSize="sm" color={mutedColor}>
+            <Link
+              href={item.url}
+              isExternal
+              fontFamily="ui"
+              fontSize="sm"
+              color={mutedColor}
+            >
               <HStack gap={1}>
                 <Icon as={FiLink} />
                 <Text>Visit</Text>

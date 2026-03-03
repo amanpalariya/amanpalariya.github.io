@@ -23,6 +23,7 @@ export default function CopyLinkSecondaryButton() {
         as="button"
         gap={2}
         onClick={changeIconAndCopy}
+        fontFamily="ui"
         fontSize="sm"
         color="gray.500"
         cursor="pointer"

@@ -88,6 +88,7 @@ export function SectionActionLink({
       variant={"ghost"}
       h={"auto"}
       p={0}
+      fontFamily={"ui"}
       color={"app.fg.subtle"}
       onClick={onClick}
     >
