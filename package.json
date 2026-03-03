@@ -9,6 +9,7 @@
     "@chakra-ui/react": "^3.2.4",
     "@emotion/react": "^11.14.0",
     "@fontsource/lexend": "^5.0.12",
+    "@fontsource/noto-sans": "^5.2.6",
     "computer-modern": "^0.1.3",
     "gray-matter": "^4.0.3",
     "next": "16.1.6",

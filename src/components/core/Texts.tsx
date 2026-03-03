@@ -1,6 +1,13 @@
 "use client";
 
-import { HStack, Icon, Link, Text, TextProps } from "@chakra-ui/react";
+import {
+  HStack,
+  Heading,
+  HeadingProps,
+  Icon,
+  Link,
+  Text,
+} from "@chakra-ui/react";
 import { FaCircle } from "react-icons/fa";
 
 const useDefaultTextColor = () => "app.fg.default";
@@ -23,14 +30,19 @@ export function SectionText({
           <FaCircle />
         </Icon>
       )}
-      <Text color={useDefaultTextColor()} fontSize={"lg"} fontWeight={"medium"}>
+      <Heading
+        as="h3"
+        color={useDefaultTextColor()}
+        fontSize={"lg"}
+        fontWeight={"medium"}
+      >
         {children}
-      </Text>
+      </Heading>
     </HStack>
   );
 }
 
-function GetCustomHeading(props: TextProps) {
+function GetCustomHeading(props: HeadingProps) {
   return function CustomHeading({
     children,
     centerAlign = false,
@@ -39,43 +51,50 @@ function GetCustomHeading(props: TextProps) {
     centerAlign?: boolean;
   }) {
     return (
-      <Text
+      <Heading
         {...props}
+        fontFamily="heading"
         color={useDefaultTextColor()}
         textAlign={centerAlign ? "center" : "left"}
       >
         {children}
-      </Text>
+      </Heading>
     );
   };
 }
 
 export const Heading1 = GetCustomHeading({
+  as: "h1",
   fontSize: "3xl",
   fontWeight: "bold",
 });
 
 export const Heading2 = GetCustomHeading({
+  as: "h2",
   fontSize: "2xl",
   fontWeight: "bold",
 });
 
 export const Heading3 = GetCustomHeading({
+  as: "h3",
   fontSize: "xl",
   fontWeight: "bold",
 });
 
 export const Heading4 = GetCustomHeading({
+  as: "h4",
   fontSize: "lg",
   fontWeight: "bold",
 });
 
 export const Heading5 = GetCustomHeading({
+  as: "h5",
   fontSize: "md",
   fontWeight: "bold",
 });
 
 export const Heading6 = GetCustomHeading({
+  as: "h6",
   fontSize: "md",
   fontWeight: "medium",
 });

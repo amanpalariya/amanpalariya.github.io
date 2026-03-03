@@ -4,6 +4,7 @@ import {
   Icon,
   useBreakpointValue,
   Box,
+  Heading,
   Text,
   Wrap,
   WrapItem,
@@ -140,7 +141,9 @@ export function TitleDescriptionAvatarTile({
                 <Avatar size={"md"} name={title} src={avatarSrc} />
               </Box>
               <VStack align={"start"}>
-                <Text fontSize={"lg"}>{title}</Text>
+                <Heading as="h4" fontSize={"lg"} fontWeight="medium">
+                  {title}
+                </Heading>
                 {showDescriptionBelow ? null : descriptionJsx}
               </VStack>
             </HStack>
@@ -206,7 +209,9 @@ export function TitleDescriptionTile({
         <VStack align={"stretch"}>
           <HStack justify={"space-between"} align={"start"}>
             <VStack align={"start"} gap={1}>
-              <Text fontSize={"lg"}>{title}</Text>
+              <Heading as="h4" fontSize={"lg"} fontWeight="medium">
+                {title}
+              </Heading>
               {descriptionJsx}
             </VStack>
             {url ? <LinkHelperIcon isExternal={isUrlExternal} /> : null}
@@ -246,7 +251,9 @@ export function TitleDescriptionMetaTile({
         <VStack align={"stretch"} gap={2}>
           <HStack justify={"space-between"} align={"start"}>
             <VStack align={"start"} gap={0}>
-              <Text fontSize={"lg"}>{title}</Text>
+              <Heading as="h4" fontSize={"lg"} fontWeight="medium">
+                {title}
+              </Heading>
               {descriptionJsx}
             </VStack>
             {url ? <LinkHelperIcon isExternal={isUrlExternal} /> : null}
@@ -312,7 +319,9 @@ export function TitleCategoryAvatarTile({
                 <Avatar size={"sm"} name={title} src={avatarSrc} />
               </Box>
               <VStack align={"start"}>
-                <Text fontSize={"lg"}>{title}</Text>
+                <Heading as="h4" fontSize={"lg"} fontWeight="medium">
+                  {title}
+                </Heading>
               </VStack>
             </HStack>
             <HStack gap={4}>
@@ -381,7 +390,9 @@ export function TitleDescriptionToggleTile({
         <VStack align={"stretch"}>
           <HStack justify={"space-between"}>
             <VStack align={"start"}>
-              <Text fontSize={"lg"}>{title}</Text>
+              <Heading as="h4" fontSize={"lg"} fontWeight="medium">
+                {title}
+              </Heading>
               {descriptionJsx}
             </VStack>
             <Switch
