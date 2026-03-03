@@ -4,6 +4,7 @@ import {
   Icon,
   useBreakpointValue,
   Box,
+  Heading,
   Text,
   Wrap,
   WrapItem,
@@ -24,9 +25,15 @@ function useTileColors() {
   };
 }
 
-function FlatTile({ children }: { children: React.ReactNode }) {
+function FlatTile({
+  children,
+  compact = false,
+}: {
+  children: React.ReactNode;
+  compact?: boolean;
+}) {
   return (
-    <Box px={[1, 2]} py={[3, 4]}>
+    <Box px={[1, 2]} py={compact ? [2, 2] : [2, 3]}>
       {children}
     </Box>
   );
@@ -112,12 +119,14 @@ export function TitleDescriptionAvatarTile({
   description,
   avatarSrc,
   url,
+  compact = false,
   isUrlExternal = false,
 }: {
   title: string;
   description: string;
   avatarSrc?: string;
   url?: string;
+  compact?: boolean;
   isUrlExternal?: boolean;
 }) {
   const showDescriptionBelow = useBreakpointValue([true, false]);
@@ -127,26 +136,28 @@ export function TitleDescriptionAvatarTile({
 
   return (
     <LinkOverlayIfUrlPresent url={url} isUrlExternal={isUrlExternal}>
-      <FlatTile>
-        <VStack align={"stretch"}>
+      <FlatTile compact={compact}>
+        <VStack align={"stretch"} gap={compact ? 2 : 2}>
           <HStack justify={"space-between"}>
-            <HStack gap={4}>
+            <HStack gap={compact ? 4 : 4}>
               <Box
                 rounded={"full"}
-                p={1.5}
+                p={compact ? 1.5 : 1.5}
                 borderWidth={"medium"}
                 borderColor={avatarBorder}
               >
                 <Avatar size={"md"} name={title} src={avatarSrc} />
               </Box>
-              <VStack align={"start"}>
-                <Text fontSize={"lg"}>{title}</Text>
+              <VStack align={"start"} gap={compact ? 1 : 1}>
+                <Heading as="h4" fontSize={"lg"} fontWeight="medium">
+                  {title}
+                </Heading>
                 {showDescriptionBelow ? null : descriptionJsx}
               </VStack>
             </HStack>
             {url ? <LinkHelperIcon isExternal={isUrlExternal} /> : null}
           </HStack>
-          <Box mx={2}>{showDescriptionBelow ? descriptionJsx : null}</Box>
+          <Box mx={compact ? 1 : 2}>{showDescriptionBelow ? descriptionJsx : null}</Box>
         </VStack>
       </FlatTile>
     </LinkOverlayIfUrlPresent>
@@ -206,7 +217,9 @@ export function TitleDescriptionTile({
         <VStack align={"stretch"}>
           <HStack justify={"space-between"} align={"start"}>
             <VStack align={"start"} gap={1}>
-              <Text fontSize={"lg"}>{title}</Text>
+              <Heading as="h4" fontSize={"lg"} fontWeight="medium">
+                {title}
+              </Heading>
               {descriptionJsx}
             </VStack>
             {url ? <LinkHelperIcon isExternal={isUrlExternal} /> : null}
@@ -246,7 +259,9 @@ export function TitleDescriptionMetaTile({
         <VStack align={"stretch"} gap={2}>
           <HStack justify={"space-between"} align={"start"}>
             <VStack align={"start"} gap={0}>
-              <Text fontSize={"lg"}>{title}</Text>
+              <Heading as="h4" fontSize={"lg"} fontWeight="medium">
+                {title}
+              </Heading>
               {descriptionJsx}
             </VStack>
             {url ? <LinkHelperIcon isExternal={isUrlExternal} /> : null}
@@ -312,7 +327,9 @@ export function TitleCategoryAvatarTile({
                 <Avatar size={"sm"} name={title} src={avatarSrc} />
               </Box>
               <VStack align={"start"}>
-                <Text fontSize={"lg"}>{title}</Text>
+                <Heading as="h4" fontSize={"lg"} fontWeight="medium">
+                  {title}
+                </Heading>
               </VStack>
             </HStack>
             <HStack gap={4}>
@@ -381,7 +398,9 @@ export function TitleDescriptionToggleTile({
         <VStack align={"stretch"}>
           <HStack justify={"space-between"}>
             <VStack align={"start"}>
-              <Text fontSize={"lg"}>{title}</Text>
+              <Heading as="h4" fontSize={"lg"} fontWeight="medium">
+                {title}
+              </Heading>
               {descriptionJsx}
             </VStack>
             <Switch

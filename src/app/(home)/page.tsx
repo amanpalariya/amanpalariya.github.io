@@ -141,6 +141,7 @@ function WorkExperience() {
             description={`${exp.role} · ${getTimeStringFromExp(exp)}`}
             avatarSrc={exp.company.logoSrc}
             url={exp.url}
+            compact
             isUrlExternal
           />
         ))}

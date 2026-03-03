@@ -1,8 +1,10 @@
 import { PersonalData } from "data";
 
-const aboutMarkdown = `# It's me, Aman!
-
-I'm a software engineer at Oracle, focusing on backend systems for Oracle Integrations (OIC).
+const AboutData = {
+  aboutPage: {
+    title: "It's me, Aman!",
+  },
+  markdown: `I'm a software engineer at Oracle, focusing on backend systems for Oracle Integrations (OIC).
 Over the past two years, I've worked on features ranging from Kubernetes cost-saving designs to low-level protocols like SSH/FTP, and have also gained experience in CI/CD, DevOps, and development engineering.
 I've also worked with healthcare standards like HL7 FHIR, driven by product demand in that industry.
 
@@ -15,6 +17,7 @@ I'm passionate about tech, education, linguistics, and social causes. I particip
 I look forward to transition from being an individual contributor to a leader. I also want to explore the world of entrepreneurship in fields of my interests.
 
 Feel free to connect with me on [LinkedIn](${PersonalData.linkedIn.url}) or via [email](mailto:${PersonalData.email}) for new opportunities and discussions.
-`;
+`,
+};
 
-export default aboutMarkdown;
+export default AboutData;
