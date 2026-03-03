@@ -96,7 +96,7 @@ export function InnerBgCardWithHeader({
       {header ? (
         <Box
           px={[4, 6]}
-          py={4}
+          py={3}
           background={resolvedHeaderBg}
           borderBottomWidth={separateHeader ? "2px" : "0px"}
           borderBottomColor={separatorColor}
