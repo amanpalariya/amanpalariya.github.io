@@ -51,7 +51,7 @@ export function CategoryBadge({
       py={0.5}
       rounded={"full"}
     >
-      <Text as={"pre"} fontFamily={"ui"} fontSize={"xs"} letterSpacing={"wide"}>
+      <Text as={"pre"} fontFamily={"mono"} fontSize={"xs"} letterSpacing={"wide"}>
         {children?.toUpperCase()}
       </Text>
     </Badge>
