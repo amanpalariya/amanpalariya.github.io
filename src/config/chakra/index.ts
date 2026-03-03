@@ -6,6 +6,7 @@ const config = defineConfig({
     tokens: {
       fonts: {
         heading: { value: `'Lexend', sans-serif` },
+        ui: { value: `'Lexend', sans-serif` },
         body: { value: `'Noto Sans', sans-serif` },
       },
     },

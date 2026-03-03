@@ -3,6 +3,7 @@ import React from "react";
 import type { IconType } from "react-icons";
 
 const buttonProps: ButtonProps = {
+  fontFamily: "ui",
   fontSize: "sm",
   px: 2.5,
   shadow: "xs",

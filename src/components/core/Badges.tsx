@@ -26,7 +26,7 @@ export function StatusBadge({
           <FaCircle />
         </Icon>
         {compact ? null : (
-          <Text as={"pre"} fontWeight={"bold"}>
+          <Text as={"pre"} fontFamily={"ui"} fontWeight={"bold"}>
             {children?.toUpperCase()}
           </Text>
         )}
@@ -51,7 +51,7 @@ export function CategoryBadge({
       py={0.5}
       rounded={"full"}
     >
-      <Text as={"pre"} fontSize={"xs"} letterSpacing={"wide"}>
+      <Text as={"pre"} fontFamily={"ui"} fontSize={"xs"} letterSpacing={"wide"}>
         {children?.toUpperCase()}
       </Text>
     </Badge>
