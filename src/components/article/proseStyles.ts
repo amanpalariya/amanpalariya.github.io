@@ -205,7 +205,9 @@ export function useProseStyles() {
       marginInline: "auto",
       borderRadius: "lg",
       marginY: 6,
-      boxShadow: useColorModeValue("md", "dark-lg"),
+      border: "1px solid",
+      borderColor,
+      boxShadow: "none",
     },
     "& figure": {
       marginY: 6,
@@ -217,7 +219,7 @@ export function useProseStyles() {
       fontSize: "sm",
       color: subtleTextColor,
       textAlign: "center",
-      marginTop: 2,
+      marginTop: [-4, -2],
     },
     "& hr": {
       borderColor,

@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1040" viewBox="0 0 720 1040" role="img" aria-labelledby="title desc">
+  <title id="title">UTF-8 vs UTF-32 encoding and decoding attempts</title>
+  <desc id="desc">Comparison table for A, thumbs up, and thumbs up with light skin tone showing UTF-8 and UTF-32 bytes plus decoding attempts.</desc>
+
+  <defs>
+    <style>
+      .bg { fill: transparent; }
+      .subheading { font: 700 23px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; fill: #1f2a44; }
+      .line { font: 500 21px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; fill: #2d3748; }
+      .muted { font: 500 19px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; fill: #4a5568; }
+      .ok { fill: #2f855a; }
+      .err { fill: #c53030; }
+      .note { font: 500 18px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; fill: #4a5568; }
+      .separator { stroke: #cbd5e0; stroke-width: 1; }
+      .label { fill: #2d3748; }
+      .arrow { fill: #4a5568; }
+      .value { fill: #2d3748; }
+
+      @media (prefers-color-scheme: dark) {
+        .bg { fill: transparent; }
+        .subheading { fill: #e2e8f0; }
+        .line, .label, .value { fill: #cbd5e1; }
+        .muted, .note, .arrow { fill: #94a3b8; }
+        .separator { stroke: #334155; }
+        .ok { fill: #86efac; }
+        .err { fill: #fca5a5; }
+      }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="720" height="1040" />
+
+  <!-- Block 1 -->
+  <text class="subheading" y="54"><tspan x="24">A</tspan><tspan x="392">A</tspan></text>
+  <text class="line" y="94"><tspan class="label" x="24">UTF-8  bytes</tspan><tspan class="arrow" x="360">→</tspan><tspan class="value" x="392">41</tspan></text>
+  <text class="line" y="126"><tspan class="label" x="24">UTF-32 bytes</tspan><tspan class="arrow" x="360">→</tspan><tspan class="value" x="392">00 00 00 41</tspan></text>
+
+  <text class="muted" x="24" y="170">Decoding attempts</text>
+  <text class="line" y="202"><tspan class="label" x="24">from UTF-8  using UTF-8</tspan><tspan class="arrow" x="360">→</tspan><tspan class="ok" x="392">A</tspan></text>
+  <text class="line" y="234"><tspan class="label" x="24">from UTF-8  using UTF-32</tspan><tspan class="arrow" x="360">→</tspan><tspan class="err" x="392">DecodeError</tspan></text>
+  <text class="line" y="266"><tspan class="label" x="24">from UTF-32 using UTF-8</tspan><tspan class="arrow" x="360">→</tspan><tspan class="err" x="392">���A</tspan></text>
+  <text class="line" y="298"><tspan class="label" x="24">from UTF-32 using UTF-32</tspan><tspan class="arrow" x="360">→</tspan><tspan class="ok" x="392">A</tspan></text>
+
+  <line class="separator" x1="24" y1="330" x2="700" y2="330" />
+
+  <!-- Block 2 -->
+  <text class="subheading" y="382"><tspan x="24">THUMBS_UP</tspan><tspan x="392">👍</tspan></text>
+  <text class="line" y="422"><tspan class="label" x="24">UTF-8  bytes</tspan><tspan class="arrow" x="360">→</tspan><tspan class="value" x="392">F0 9F 91 8D</tspan></text>
+  <text class="line" y="454"><tspan class="label" x="24">UTF-32 bytes</tspan><tspan class="arrow" x="360">→</tspan><tspan class="value" x="392">00 01 F4 4D</tspan></text>
+
+  <text class="muted" x="24" y="498">Decoding attempts</text>
+  <text class="line" y="530"><tspan class="label" x="24">from UTF-8  using UTF-8</tspan><tspan class="arrow" x="360">→</tspan><tspan class="ok" x="392">👍</tspan></text>
+  <text class="line" y="562"><tspan class="label" x="24">from UTF-8  using UTF-32</tspan><tspan class="arrow" x="360">→</tspan><tspan class="err" x="392">DecodeError</tspan></text>
+  <text class="line" y="594"><tspan class="label" x="24">from UTF-32 using UTF-8</tspan><tspan class="arrow" x="360">→</tspan><tspan class="err" x="392">DecodeError</tspan></text>
+  <text class="line" y="626"><tspan class="label" x="24">from UTF-32 using UTF-32</tspan><tspan class="arrow" x="360">→</tspan><tspan class="ok" x="392">👍</tspan></text>
+
+  <line class="separator" x1="24" y1="658" x2="700" y2="658" />
+
+  <!-- Block 3 -->
+  <text class="subheading" y="710"><tspan x="24">THUMBS_UP_LIGHT_SKIN</tspan><tspan x="392">👍🏻</tspan></text>
+  <text class="line" y="750"><tspan class="label" x="24">UTF-8  bytes</tspan><tspan class="arrow" x="360">→</tspan><tspan class="value" x="392">F0 9F 91 8D F0 9F 8F BB</tspan></text>
+  <text class="line" y="782"><tspan class="label" x="24">UTF-32 bytes</tspan><tspan class="arrow" x="360">→</tspan><tspan class="value" x="392">00 01 F4 4D 00 01 F3 FB</tspan></text>
+
+  <text class="muted" x="24" y="826">Decoding attempts</text>
+  <text class="line" y="858"><tspan class="label" x="24">from UTF-8  using UTF-8</tspan><tspan class="arrow" x="360">→</tspan><tspan class="ok" x="392">👍🏻</tspan></text>
+  <text class="line" y="890"><tspan class="label" x="24">from UTF-8  using UTF-32</tspan><tspan class="arrow" x="360">→</tspan><tspan class="err" x="392">DecodeError</tspan></text>
+  <text class="line" y="922"><tspan class="label" x="24">from UTF-32 using UTF-8</tspan><tspan class="arrow" x="360">→</tspan><tspan class="err" x="392">DecodeError</tspan></text>
+  <text class="line" y="954"><tspan class="label" x="24">from UTF-32 using UTF-32</tspan><tspan class="arrow" x="360">→</tspan><tspan class="ok" x="392">👍🏻</tspan></text>
+
+  <text class="note" x="24" y="1018">*All UTF-32 examples here use big-endian byte order</text>
+</svg>
