@@ -1,4 +1,4 @@
-import { Button, VStack, HStack, Icon } from "@chakra-ui/react";
+import { Link, VStack, HStack, Icon } from "@chakra-ui/react";
 import { InnerBgCardWithHeader } from "@components/core/Cards";
 import { SectionText } from "../../core/Texts";
 import React, { JSX } from "react";
@@ -82,17 +82,20 @@ export function SectionActionLink({
   url?: string;
 }) {
   return (
-    <Button
+    <Link
       as={NextLink}
       href={url ?? ""}
-      variant={"ghost"}
-      h={"auto"}
-      p={0}
       fontFamily={"ui"}
       color={"app.fg.subtle"}
+      textDecoration={"none"}
+      _hover={{
+        color: "app.fg.default",
+        textDecoration: "none",
+      }}
       onClick={onClick}
     >
-      {children} <Icon>{React.createElement(icon)}</Icon>
-    </Button>
+      {children}
+      {icon ? <Icon>{React.createElement(icon)}</Icon> : null}
+    </Link>
   );
 }
