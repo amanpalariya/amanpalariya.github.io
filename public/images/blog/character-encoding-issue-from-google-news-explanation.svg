@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="380" viewBox="120 20 180 380" role="img" aria-labelledby="desc">
+  <desc id="desc">Right single quote U+2019 encoded as UTF-8 bytes E2 80 99, then decoded as Windows-1252 resulting in â€™.</desc>
+  <style>
+    .fg { fill: #1f2937; }
+    .muted { fill: #6b7280; }
+    .danger { fill: #b91c1c; }
+    .bytes { fill: #1e90ff; }
+    .stroke { stroke: #9ca3af; }
+    .label-bg { fill: #ffffff; }
+    @media (prefers-color-scheme: dark) {
+      .fg { fill: #e5e7eb; }
+      .muted { fill: #9ca3af; }
+      .danger { fill: #f87171; }
+      .bytes { fill: #60a5fa; }
+      .stroke { stroke: #9ca3af; }
+      .label-bg { fill: #111827; }
+    }
+  </style>
+
+  <defs>
+    <mask id="arrow-line-mask-1" maskUnits="userSpaceOnUse" x="0" y="0" width="420" height="520">
+      <rect x="0" y="0" width="420" height="520" fill="white"/>
+      <rect x="160" y="132" width="100" height="18" rx="4" fill="black"/>
+    </mask>
+    <mask id="arrow-line-mask-2" maskUnits="userSpaceOnUse" x="0" y="0" width="420" height="520">
+      <rect x="0" y="0" width="420" height="520" fill="white"/>
+      <rect x="145" y="266" width="130" height="18" rx="4" fill="black"/>
+    </mask>
+  </defs>
+
+  <g font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+    <text x="210" y="42" text-anchor="middle" class="muted" font-size="12" font-weight="400" letter-spacing="0.8">QUOTE</text>
+    <rect x="158" y="56" width="104" height="58" rx="12" fill="none" class="stroke" stroke-width="1.2"/>
+    <text x="210" y="84" text-anchor="middle" class="fg" font-size="28" font-weight="400">’</text>
+    <text x="210" y="103" text-anchor="middle" class="muted" font-size="14">U+2019</text>
+
+    <line x1="210" y1="124" x2="210" y2="166" class="stroke" stroke-width="1.2" mask="url(#arrow-line-mask-1)"/>
+    <path d="M 205 158 L 210 166 L 215 158" fill="none" class="stroke" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="210" y="145" text-anchor="middle" class="muted" font-size="12" font-weight="400">Encode with UTF-8</text>
+
+    <text x="210" y="190" text-anchor="middle" class="muted" font-size="12" font-weight="400" letter-spacing="0.8">BYTES</text>
+    <rect x="144" y="204" width="132" height="44" rx="12" fill="none" class="stroke" stroke-width="1.2"/>
+    <text x="210" y="231" text-anchor="middle" class="bytes" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace" font-size="20" font-weight="400">E2 80 99</text>
+
+    <line x1="210" y1="258" x2="210" y2="300" class="stroke" stroke-width="1.2" mask="url(#arrow-line-mask-2)"/>
+    <path d="M 205 292 L 210 300 L 215 292" fill="none" class="stroke" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="210" y="279" text-anchor="middle" class="muted" font-size="12" font-weight="400">Decode with Windows-1252</text>
+
+    <text x="210" y="324" text-anchor="middle" class="muted" font-size="12" font-weight="400" letter-spacing="0.8">MOJIBAKE</text>
+    <rect x="170" y="338" width="80" height="48" rx="12" fill="none" class="stroke" stroke-width="1.2"/>
+    <text x="210" y="369" text-anchor="middle" class="danger" font-size="26" font-weight="400">â€™</text>
+  </g>
+</svg>

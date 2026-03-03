@@ -35,4 +35,31 @@ For example:
 - "A" → U+0041 → 41 (UTF-8)
 - "👍" → U+1F44D → F0 9F 91 8D (UTF-8)
 
-When you mix up encoding, it MAY cause mojibake (see https://en.wikipedia.org/wiki/Mojibake). And it often happens when the data travels from one system to another because both systems might have different system encodings. I found an example in the Google News app.
+<figure>
+  <img
+    src="/images/blog/chars-encoded-decoded-using-utf-8-and-32.svg"
+    alt="UTF-8 vs UTF-32 bytes and decoding outcomes for A, thumbs up, and thumbs up with light skin tone"
+  />
+  <figcaption>UTF-8 vs UTF-32 — same characters, different byte layouts and decode outcomes</figcaption>
+</figure>
+
+When you mix up encoding, it MAY cause [mojibake](https://en.wikipedia.org/wiki/Mojibake). And it often happens when the data travels from one system to another because both systems might have different system encodings. I found an example in the Google News app.
+
+<figure>
+  <img
+    src="/images/blog/character-encoding-issue-from-google-news.webp"
+    alt="Google News app screenshot showing mojibake text â€™ caused by an encoding mismatch"
+  />
+  <figcaption>Real-world mojibake in the Google News app</figcaption>
+</figure>
+
+The screenshot above shows the user-facing issue. The diagram below explains what happened at the byte level.
+
+<figure>
+  <img
+    src="/images/blog/character-encoding-issue-from-google-news-explanation.svg"
+    alt="Right quote U+2019 encoded as UTF-8 bytes E2 80 99, then decoded as Windows-1252 into â€™"
+    style="border: none;"
+  />
+  <figcaption>How U+2019 (’) becomes â€™ when UTF-8 bytes are decoded as Windows-1252</figcaption>
+</figure>
