@@ -3,7 +3,6 @@ interface Project {
   title: string;
   description: string;
   url?: string;
-  content?: string[];
 }
 
 const allProjects: Project[] = [
