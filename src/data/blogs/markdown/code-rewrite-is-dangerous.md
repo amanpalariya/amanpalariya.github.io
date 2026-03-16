@@ -2,10 +2,8 @@
 title: "Code Rewrite is Dangerous"
 description: "A lesson from Oracle about why decades-old code survives and why rewrites can hurt."
 tags:
-  - engineering
-  - production
-  - software
-  - maintainability
+  - tech
+  - workflow
 published: "2026-02-03"
 ---
 

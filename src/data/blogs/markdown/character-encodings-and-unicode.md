@@ -3,9 +3,7 @@ title: "Character Encodings Shouldnâ€™t be Ignored"
 description: "A Unicode primer from my perspective after hitting mojibake at work."
 tags:
   - unicode
-  - encoding
-  - programming
-  - debugging
+  - tech
 published: "2026-01-15"
 ---
 

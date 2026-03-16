@@ -3,8 +3,8 @@ title: "notify: A Tiny CLI Utility for Desktop Notifications"
 description: "How my small CLI helper keeps me notified when long commands finish."
 tags:
   - cli
-  - tools
-  - productivity
+  - workflow
+  - linux
 published: "2026-02-05"
 ---
 

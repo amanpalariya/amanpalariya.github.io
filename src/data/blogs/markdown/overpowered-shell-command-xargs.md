@@ -2,9 +2,8 @@
 title: "Overpowered Shell Command #1: xargs"
 description: "Why xargs is a superpower when you compose shell commands."
 tags:
-  - shell
   - cli
-  - productivity
+  - workflow
   - linux
 published: "2024-02-15"
 ---

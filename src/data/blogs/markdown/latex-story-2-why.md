@@ -3,9 +3,7 @@ title: "The LaTeX Story (2/3): The Why"
 description: "Why LaTeX is unintuitive, yet still worth learning for beautiful, editable documents."
 tags:
   - latex
-  - typesetting
-  - writing
-  - productivity
+  - workflow
 published: "2023-10-10"
 ---
 
