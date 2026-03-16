@@ -16,7 +16,9 @@ But these tools hid some of the complexities which I wanted to understand. So, t
 I call this language "Console Game Language", since the runtime here is a custom retro game console.
 With the help of this new language, you can create programs for this custom game console.
 
-![Screenshot of the Retro Console](https://raw.githubusercontent.com/amanpalariya/console-game/main/doc/assets/screenshot-smiley.png)
+<div style="text-align: center;">
+  <img src="https://raw.githubusercontent.com/amanpalariya/console-game/main/doc/assets/screenshot-smiley.png" alt="Screenshot of the Retro Console" style="max-height: 320px; width: auto; max-width: 100%; border: 0;" />
+</div>
 
 ## Quick Intro to Language
 - A program in this language works on states (a state name starts with ~).
@@ -43,7 +45,9 @@ Then the state definition displays the shape at coordinate (10, 10). FYI, all ex
 ```
 It looks like this on a 30x30 screen.
 
-![Screenshot of X displayed on console](https://raw.githubusercontent.com/amanpalariya/console-game/refs/heads/main/doc/assets/screenshot-x.png)
+<div style="text-align: center;">
+  <img src="https://raw.githubusercontent.com/amanpalariya/console-game/refs/heads/main/doc/assets/screenshot-x.png" alt="Screenshot of X displayed on console" style="max-height: 320px; width: auto; max-width: 100%; border: 0;" />
+</div>
 
 Now, let's add one more state which displays Os instead of Xs and we'll switch the state by pressing START.
 ```java
@@ -81,7 +85,9 @@ Now, let's add one more state which displays Os instead of Xs and we'll switch t
 ```
 Here, we've added a button handler `@START` which runs a goto command to jump to a different state. The `clear` statement clears all the pixels, so that the shapes don't appear on top of each other (which may be desired in some cases).
 
-![Screenshot of XO displayed on console](https://raw.githubusercontent.com/amanpalariya/console-game/refs/heads/main/doc/assets/screenshot-xo.gif)
+<div style="text-align: center;">
+  <img src="https://raw.githubusercontent.com/amanpalariya/console-game/refs/heads/main/doc/assets/screenshot-xo.gif" alt="Screenshot of XO displayed on console" style="max-height: 320px; width: auto; max-width: 100%; border: 0;" />
+</div>
 
 It also supports if conditions, while iterations, random numbers, and variables. See [samples](https://github.com/amanpalariya/console-game/tree/main/samples) for more.
 
@@ -200,4 +206,15 @@ Semantic analysis creates semantic objects which makes sense, for example the ex
 Finally, the semantic object can be used by the renderer (here the [PyGame](https://www.pygame.org/) program) to display the pixel arrays, manage the states, buttons presses, etc. It acts as the interface between the user and the program.
 
 Checkout this video to see the program in action.
-<iframe width="560" height="315" src="https://www.youtube.com/embed/okbscpQNZM0?si=r_y1pgdDi8GHbZRP" title="How a Programming Language is Created" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<br/>
+<br/>
+<div style="max-width: 900px; margin: 0 auto; position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+  <iframe
+    src="https://www.youtube.com/embed/okbscpQNZM0?si=r_y1pgdDi8GHbZRP"
+    title="How a Programming Language is Created"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    referrerpolicy="strict-origin-when-cross-origin"
+    allowfullscreen
+    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
+  ></iframe>
+</div>
