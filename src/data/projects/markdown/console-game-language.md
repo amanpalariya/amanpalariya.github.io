@@ -20,11 +20,11 @@ With the help of this new language, you can create programs for this custom game
   <img src="https://raw.githubusercontent.com/amanpalariya/console-game/main/doc/assets/screenshot-smiley.png" alt="Screenshot of the Retro Console" style="max-height: 320px; width: auto; max-width: 100%; border: 0;" />
 </div>
 
-## Quick Intro to Language
+## Quick Intro to the Language
 - A program in this language works on states (a state name starts with ~).
-- All instruction in the current state are executed at every frame refresh (aka a clock tick).
-- The instruction in a state can be to clear the display, to display some shape at a coordinate, to assign values to variables, or to jump to another state.
-- Also, a state can also define button handlers i.e. what happens when X, Y, A, B, or START is pressed when the program in that state. Button handlers start with @.
+- All instructions in the current state are executed at every frame refresh (aka a clock tick).
+- The instructions in a state can be to clear the display, display a shape at a coordinate, assign values to variables, or jump to another state.
+- A state can also define button handlers, i.e. what happens when X, Y, A, B, or START is pressed when the program is in that state. Button handlers start with @.
 - A shape is a fixed pixel array arrangement (a shape name starts with #).
 
 Here's a simple program. A program starts with the name of the first state.
@@ -92,7 +92,7 @@ Here, we've added a button handler `@START` which runs a goto command to jump to
 It also supports if conditions, while iterations, random numbers, and variables. See [samples](https://github.com/amanpalariya/console-game/tree/main/samples) for more.
 
 ## Compilation Steps
-The compilation and running has these five steps
+Compilation and running have these five steps:
 1. Preprocessing
 2. Lexical Analysis
 3. Syntax Analysis
@@ -100,7 +100,7 @@ The compilation and running has these five steps
 5. Rendering the data to screen and interfacing the user to the underlying program
 
 ### Preprocessing
-At preprocessing, we remove the comments from the code, remove trailing whitespaces from lines, and add a new line at the end of file is not present.
+In preprocessing, we remove comments from the code, remove trailing whitespace from lines, and add a newline at the end of the file if it is not present.
 
 ### Lexical Analysis
 Here, the stream of characters is tokenized.
@@ -120,31 +120,32 @@ For example, this code
     display #x_shape @ ([10], [10])
 }
 ```
-will be tokenized as following
-|Token            |Position|Lexeme      |
-|-----------------|--------|------------|
-|state-name       |1:1     |~x_state    |
-|newline          |1:9     |            |
-|shape-name       |3:1     |#x_shape    |
-|left-brace       |3:10    |{           |
-|newline          |3:11    |            |
-|shape            |4:1     |#.#<br/>.#.<br/>#.# |
-|right-brace      |7:1     |}           |
-|newline          |7:2     |            |
-|state-name       |9:1     |~x_state    |
-|left-brace       |9:10    |{           |
-|newline          |9:11    |            |
-|display-shape    |10:5    |display     |
-|shape-name       |10:13   |#x_shape    |
-|coordinate-op    |10:22   |@           |
-|left-paren       |10:24   |(           |
-|single-expression|10:25   |[10]        |
-|comma            |10:29   |,           |
-|single-expression|10:31   |[10]        |
-|right-paren      |10:35   |)           |
-|newline          |10:36   |            |
-|right-brace      |11:1    |}           |
-|newline          |11:2    |            |
+will be tokenized as follows:
+
+| Token             | Position | Lexeme              |
+|-------------------|----------|---------------------|
+| state-name        | 1:1      | ~x_state            |
+| newline           | 1:9      |                     |
+| shape-name        | 3:1      | #x_shape            |
+| left-brace        | 3:10     | {                   |
+| newline           | 3:11     |                     |
+| shape             | 4:1      | #.#<br/>.#.<br/>#.# |
+| right-brace       | 7:1      | }                   |
+| newline           | 7:2      |                     |
+| state-name        | 9:1      | ~x_state            |
+| left-brace        | 9:10     | {                   |
+| newline           | 9:11     |                     |
+| display-shape     | 10:5     | display             |
+| shape-name        | 10:13    | #x_shape            |
+| coordinate-op     | 10:22    | @                   |
+| left-paren        | 10:24    | (                   |
+| single-expression | 10:25    | [10]                |
+| comma             | 10:29    | ,                   |
+| single-expression | 10:31    | [10]                |
+| right-paren       | 10:35    | )                   |
+| newline           | 10:36    |                     |
+| right-brace       | 11:1     | }                   |
+| newline           | 11:2     |                     |
 
 
 ### Syntax Analysis
@@ -200,15 +201,14 @@ But we're not doing that, we're converting this to semantic objects directly.
 
 ### Semantic Analysis
 This is where the abstract terms such as 'expression' and state changes, start to make sense.
-Semantic analysis creates semantic objects which makes sense, for example the expression object can be queried to get a value after it is converted to semantic object. In some languages, the AST is translated to machine code (C++, Go), and in some it's converted to bytecode (Java, Kotlin, Dart).
+Semantic analysis creates semantic objects that make sense. For example, the expression object can be queried to get a value after it is converted to a semantic object. In some languages, the AST is translated to machine code (C++, Go), and in others it's converted to bytecode (Java, Kotlin, Dart).
 
 ### Rendering
-Finally, the semantic object can be used by the renderer (here the [PyGame](https://www.pygame.org/) program) to display the pixel arrays, manage the states, buttons presses, etc. It acts as the interface between the user and the program.
+Finally, the semantic object can be used by the renderer (here the [PyGame](https://www.pygame.org/) program) to display pixel arrays, manage states, button presses, etc. It acts as the interface between the user and the program.
 
-Checkout this video to see the program in action.
-<br/>
-<br/>
-<div style="max-width: 900px; margin: 0 auto; position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+Check out this video to see the program in action.
+
+<div style="max-width: 900px; margin: 16px auto 0; position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden;">
   <iframe
     src="https://www.youtube.com/embed/okbscpQNZM0?si=r_y1pgdDi8GHbZRP"
     title="How a Programming Language is Created"
