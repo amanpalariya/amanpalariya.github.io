@@ -3,9 +3,7 @@ title: "The LaTeX Story (1/3): The What"
 description: "What LaTeX is and why it became my go-to tool for notes, assignments, and slides."
 tags:
   - latex
-  - typesetting
-  - writing
-  - tools
+  - tech
 published: "2023-10-09"
 ---
 

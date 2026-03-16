@@ -3,8 +3,8 @@ title: "Two Git Features That Helped Me Ship Faster"
 description: "How git worktree and git patch solved real workflow problems for me."
 tags:
   - git
-  - workflows
-  - productivity
+  - workflow
+  - linux
 published: "2024-01-08"
 updated: "2024-01-09"
 ---

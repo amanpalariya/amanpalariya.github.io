@@ -3,9 +3,8 @@ title: "The LaTeX Story (3/3): The How"
 description: "How I became a LaTeX power user with TeX Live, Neovim, vimtex, and snippets."
 tags:
   - latex
-  - neovim
-  - vim
-  - workflows
+  - workflow
+  - cli
 published: "2023-10-11"
 ---
 
