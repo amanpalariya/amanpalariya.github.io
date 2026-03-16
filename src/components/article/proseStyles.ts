@@ -30,8 +30,11 @@ export function useProseStyles() {
     letterSpacing: "0.01em",
     width: "100%",
     marginInline: "auto",
-    wordBreak: "break-word",
-    overflowWrap: "anywhere",
+    wordBreak: "normal",
+    overflowWrap: "break-word",
+    hyphens: "auto",
+    WebkitHyphens: "auto",
+    msHyphens: "auto",
     "& > *": {
       marginTop: 0,
       marginBottom: 7,
@@ -65,6 +68,7 @@ export function useProseStyles() {
     "& p": {
       marginBottom: 7,
       textAlign: "justify",
+      hyphens: "auto",
     },
     "& p:last-of-type": {
       marginBottom: 0,
@@ -125,6 +129,7 @@ export function useProseStyles() {
     },
     "& li": {
       marginBottom: 2,
+      hyphens: "auto",
     },
     "& li::marker": {
       color: useColorModeValue("gray.400", "gray.500"),
@@ -158,6 +163,9 @@ export function useProseStyles() {
       fontSize: ["md", "lg"],
       marginY: 6,
       marginX: [-2, -3],
+      hyphens: "none",
+      WebkitHyphens: "none",
+      msHyphens: "none",
     },
     "& pre code": {
       background: "transparent",
@@ -169,6 +177,9 @@ export function useProseStyles() {
       wordBreak: "break-word",
       border: "none",
       boxShadow: "none",
+      hyphens: "none",
+      WebkitHyphens: "none",
+      msHyphens: "none",
     },
     "& pre .hljs-comment, & pre .hljs-quote": {
       color: useColorModeValue("gray.500", "gray.400"),
