@@ -17,7 +17,7 @@ export default async function ProjectDetailPage({
   if (!project) return notFound();
 
   const html = await renderMarkdownToHtml(project.content, {
-    includeMath: false,
+    includeMath: true,
     includeToc: true,
     allowDangerousHtml: true,
   });
