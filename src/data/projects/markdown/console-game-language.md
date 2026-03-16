@@ -128,7 +128,7 @@ will be tokenized as following
 |shape-name       |3:1     |#x_shape    |
 |left-brace       |3:10    |{           |
 |newline          |3:11    |            |
-|shape            |4:1     |#.# .#. #.# |
+|shape            |4:1     |#.#<br/>.#.<br/>#.# |
 |right-brace      |7:1     |}           |
 |newline          |7:2     |            |
 |state-name       |9:1     |~x_state    |
