@@ -19,9 +19,17 @@ export default function CvCoursesSection({
 }) {
   if (!section || section.items.length === 0) return null;
 
-  const cardBg = "app.bg.overlay";
+  const cardBg = "app.bg.card";
   const cardBorder = "app.border.muted";
   const mutedColor = "app.fg.subtle";
+
+  const resolvedAccentPalette = accentColorPalette ?? primaryColorPalette;
+  const badgeColor = resolvedAccentPalette
+    ? `${resolvedAccentPalette}.fg`
+    : mutedColor;
+  const badgeBg = resolvedAccentPalette
+    ? `${resolvedAccentPalette}.subtle`
+    : "app.bg.surface";
 
   return (
     <CvSection
@@ -41,7 +49,7 @@ export default function CvCoursesSection({
               key={`${item.name}-${index}`}
               borderWidth={1}
               borderColor={cardBorder}
-              borderRadius="lg"
+              borderRadius="2xl"
               p={3}
               bg={cardBg}
               height="full"
@@ -53,9 +61,18 @@ export default function CvCoursesSection({
                   <HStack justify="space-between" align="start">
                     <Heading4 fontSize="md" lineClamp={2}>{item.name}</Heading4>
                     {item.courseCode && (
-                      <Badge variant="outline" size="sm" colorPalette={accentColorPalette}>
+                      <Text
+                        fontSize="xs"
+                        px={2}
+                        py={0.5}
+                        borderRadius="md"
+                        bg={badgeBg}
+                        color={badgeColor}
+                        whiteSpace="nowrap"
+                        fontWeight="medium"
+                      >
                         {item.courseCode}
-                      </Badge>
+                      </Text>
                     )}
                   </HStack>
 

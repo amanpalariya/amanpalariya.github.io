@@ -91,10 +91,10 @@ export default function CvSkillsSection({
                       gap={3}
                       px={3}
                       py={1.5}
-                      borderRadius="lg"
+                      borderRadius="2xl"
                       borderWidth={1}
                       borderColor={"app.border.muted"}
-                      bg={"app.bg.overlay"}
+                      bg={"app.bg.card"}
                       _hover={{
                         borderColor: "app.border.strong",
                         bg: "app.bg.surface",

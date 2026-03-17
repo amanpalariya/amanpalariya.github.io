@@ -56,7 +56,7 @@ function AccomplishmentCard({
     <Box
       borderWidth={1}
       borderColor={"app.border.default"}
-      borderRadius="lg"
+      borderRadius="2xl"
       p={4}
       bg={"app.bg.card"}
       height="full"

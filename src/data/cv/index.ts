@@ -513,38 +513,34 @@ const CvData: CvData = {
           issuer: "Oracle",
           date: "2024-03",
           tags: ["AI"],
-          credentialUrl:
-            "https://catalog-education.oracle.com/pls/certview/sharebadge?id=56429E42AFB4F1638B8AE52D1E2C8A9E9EA4927B04B09581E9EBC77750882328",
+          credentialUrl: "https://education.oracle.com/learn/ai-foundations/pP_AIFOUND",
         },
         {
           title: "Oracle Certified Generative AI Professional",
           issuer: "Oracle",
           date: "2024-04",
-          tags: ["GenAI", "AI"],
-          credentialUrl:
-            "https://catalog-education.oracle.com/pls/certview/sharebadge?id=D12B6739007829DDBC7A67E24E241911E1893DD61ECDFBBAE4EF8A2551A5DA0C",
+          tags: ["GenAI"],
+          credentialUrl: "https://education.oracle.com/learn/generative-ai/pP_GENAI",
         },
         {
           title: "Oracle Certified OCI Foundations Associate",
           issuer: "Oracle",
           date: "2023-11",
           tags: ["OCI"],
-          credentialUrl:
-            "https://catalog-education.oracle.com/ords/certview/sharebadge?id=0068B0BCB206AD4CFFD64C75ACFCD947AD4ABAA366F2832E053E8509A614BCC6",
+          credentialUrl: "https://education.oracle.com/learn/oci-foundations/pP_OCIFOUND",
         },
         {
           title: "Oracle Certified Application Integration Professional",
           issuer: "Oracle",
           date: "2023-12",
           tags: ["Integration"],
-          credentialUrl:
-            "https://catalog-education.oracle.com/ords/certview/sharebadge?id=9D2F0B9D632BFA694BF84A473233043D558B1AD966AA2DA4042FB7434B033E2F",
+          credentialUrl: "https://education.oracle.com/learn/application-integration/pP_APPINT",
         },
         {
           title: "Kubernetes",
           issuer: "LinkedIn",
           date: "2024-01",
-          tags: ["Cloud"],
+          tags: ["Cloud Native"],
         },
       ],
     },
