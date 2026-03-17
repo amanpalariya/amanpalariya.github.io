@@ -49,7 +49,12 @@ function ContactItem({ item }: { item: CvContactChannel }) {
     >
       <HStack gap={3}>
         <Icon as={iconFromKey(item.iconKey)} color={iconColor} />
-        <Text fontSize="sm" color={textColor} fontWeight="medium">
+        <Text
+          fontSize="sm"
+          color={textColor}
+          fontWeight="medium"
+          display={{ base: "none", md: "block" }}
+        >
           {item.label}
         </Text>
       </HStack>

@@ -110,6 +110,7 @@ export interface CvCertificationItem {
   issuer?: string;
   date?: CvDateString;
   credentialUrl?: string;
+  imageSrc?: string;
   summary?: string;
   tags?: string[];
 }
@@ -122,6 +123,7 @@ export interface CvLanguageItem {
 
 export interface CvCourseItem {
   name: string;
+  courseCode?: string;
   institution?: string;
   date?: CvDateString;
   timeframe?: string;
@@ -504,31 +506,40 @@ const CvData: CvData = {
       id: "certifications",
       title: "Certifications",
       description: "Professional and platform credentials.",
-      visibility: { enabled: false, priority: 14 },
+      visibility: { enabled: true, priority: 14 },
       items: [
         {
           title: "Oracle Certified AI Foundations Associate",
           issuer: "Oracle",
+          date: "2024-03",
           tags: ["AI"],
+          credentialUrl: "https://education.oracle.com/learn/ai-foundations/pP_AIFOUND",
         },
         {
           title: "Oracle Certified Generative AI Professional",
           issuer: "Oracle",
+          date: "2024-04",
           tags: ["GenAI"],
+          credentialUrl: "https://education.oracle.com/learn/generative-ai/pP_GENAI",
         },
         {
           title: "Oracle Certified OCI Foundations Associate",
           issuer: "Oracle",
+          date: "2023-11",
           tags: ["OCI"],
+          credentialUrl: "https://education.oracle.com/learn/oci-foundations/pP_OCIFOUND",
         },
         {
           title: "Oracle Certified Application Integration Professional",
           issuer: "Oracle",
+          date: "2023-12",
           tags: ["Integration"],
+          credentialUrl: "https://education.oracle.com/learn/application-integration/pP_APPINT",
         },
         {
           title: "Kubernetes",
           issuer: "LinkedIn",
+          date: "2024-01",
           tags: ["Cloud Native"],
         },
       ],
@@ -546,13 +557,35 @@ const CvData: CvData = {
     courses: {
       id: "courses",
       title: "Courses",
-      visibility: { enabled: false, priority: 16 },
+      visibility: { enabled: true, priority: 16 },
       items: [
-        { name: "Data Structures", institution: "IIT Ropar" },
-        { name: "Computer Architecture", institution: "IIT Ropar" },
-        { name: "Linear Algebra", institution: "IIT Ropar" },
-        { name: "Probability and Statistics", institution: "IIT Ropar" },
-        { name: "Signals and Systems", institution: "IIT Ropar" },
+        {
+          name: "Data Structures",
+          courseCode: "CS201",
+          institution: "IIT Ropar",
+          grade: "A",
+        },
+        {
+          name: "Computer Architecture",
+          courseCode: "CS202",
+          institution: "IIT Ropar",
+          grade: "A-",
+        },
+        {
+          name: "Linear Algebra",
+          courseCode: "MA201",
+          institution: "IIT Ropar",
+        },
+        {
+          name: "Probability and Statistics",
+          courseCode: "MA202",
+          institution: "IIT Ropar",
+        },
+        {
+          name: "Signals and Systems",
+          courseCode: "EE201",
+          institution: "IIT Ropar",
+        },
       ],
     },
     awards: {
