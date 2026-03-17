@@ -3,27 +3,120 @@ import {
   HStack,
   Icon,
   Link,
-  Separator,
   Text,
   VStack,
   Wrap,
   WrapItem,
+  SimpleGrid,
+  Image,
+  Button,
 } from "@chakra-ui/react";
 import { CategoryBadge } from "@components/core/Badges";
 import { ParagraphText, Heading4 } from "@components/core/Texts";
 import type { CvSectionBase } from "data/cv";
-import type { ElementType } from "react";
-import { FiLink } from "react-icons/fi";
-import { useColorModeValue } from "@components/ui/color-mode";
+import { useState, type ElementType } from "react";
+import { FiLink, FiEye } from "react-icons/fi";
 import CvSection from "./CvSection";
 import { AppAccentPalette, AppPalette } from "theme/colors";
+import {
+  DialogBody,
+  DialogCloseTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogRoot,
+  DialogTitle,
+} from "@components/ui/dialog";
 
 export interface CvAccomplishmentVisualItem {
   title: string;
+  issuer?: string;
+  date?: string;
   meta?: string;
   summary?: string;
   tags?: string[];
   url?: string;
+  imageSrc?: string;
+}
+
+function AccomplishmentCard({
+  item,
+  accentColorPalette,
+  onViewImage,
+}: {
+  item: CvAccomplishmentVisualItem;
+  accentColorPalette?: AppAccentPalette;
+  onViewImage?: (src: string, title: string) => void;
+}) {
+  const mutedColor = "app.fg.muted";
+  const metaText =
+    item.meta || [item.issuer, item.date].filter(Boolean).join(" · ");
+
+  return (
+    <Box
+      borderWidth={1}
+      borderColor={"app.border.default"}
+      borderRadius="2xl"
+      p={4}
+      bg={"app.bg.card"}
+      height="full"
+      transition="transform 0.2s ease, border-color 0.2s ease"
+      _hover={{ borderColor: "app.border.strong" }}
+    >
+      <VStack align="stretch" gap={3} height="full">
+        <VStack align="stretch" gap={1}>
+          <HStack justify="space-between" align="start" gap={2}>
+            <Heading4>{item.title}</Heading4>
+            <HStack gap={2}>
+              {item.imageSrc && onViewImage && (
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  onClick={() => onViewImage(item.imageSrc!, item.title)}
+                  title="View Certificate"
+                >
+                  <Icon as={FiEye} />
+                </Button>
+              )}
+              {item.url && (
+                <Link
+                  href={item.url}
+                  isExternal
+                  fontSize="sm"
+                  color={mutedColor}
+                  _hover={{ color: "app.fg.default" }}
+                >
+                  <Icon as={FiLink} />
+                </Link>
+              )}
+            </HStack>
+          </HStack>
+          {metaText ? (
+            <Text fontSize="sm" color={mutedColor}>
+              {metaText}
+            </Text>
+          ) : null}
+        </VStack>
+
+        {item.summary ? (
+          <ParagraphText fontSize="sm">{item.summary}</ParagraphText>
+        ) : null}
+
+        <Box mt="auto">
+          {item.tags && item.tags.length > 0 ? (
+            <Wrap spacing={2}>
+              {item.tags.map((tag) => (
+                <WrapItem key={`${item.title}-${tag}`}>
+                  <CategoryBadge color={accentColorPalette ?? "gray"}>
+                    {tag}
+                  </CategoryBadge>
+                </WrapItem>
+              ))}
+            </Wrap>
+          ) : null}
+        </Box>
+      </VStack>
+    </Box>
+  );
 }
 
 export default function CvAccomplishmentsSection({
@@ -39,9 +132,12 @@ export default function CvAccomplishmentsSection({
   primaryColorPalette?: AppPalette;
   accentColorPalette?: AppAccentPalette;
 }) {
-  if (!section || items.length === 0) return null;
+  const [selectedImage, setSelectedImage] = useState<{
+    src: string;
+    title: string;
+  } | null>(null);
 
-  const mutedColor = "app.fg.muted";
+  if (!section || items.length === 0) return null;
 
   return (
     <CvSection
@@ -52,60 +148,40 @@ export default function CvAccomplishmentsSection({
       primaryColorPalette={primaryColorPalette}
       accentColorPalette={accentColorPalette}
     >
-      <VStack align="stretch" gap={4}>
+      <SimpleGrid columns={{ base: 1, md: 2 }} gap={[2, 3]}>
         {items.map((item, index) => (
-          <VStack key={`${item.title}-${index}`} align="stretch" gap={3}>
-            <Box
-              borderWidth={1}
-              borderColor={"app.border.default"}
-              borderRadius="lg"
-              p={4}
-              bg={"app.bg.card"}
-            >
-              <VStack align="stretch" gap={2}>
-                <HStack justify="space-between" gap={2} flexWrap="wrap">
-                  <VStack align="start" gap={1}>
-                    <Heading4>{item.title}</Heading4>
-                    {item.meta ? (
-                      <Text fontSize="sm" color={mutedColor}>
-                        {item.meta}
-                      </Text>
-                    ) : null}
-                  </VStack>
-                  {item.url ? (
-                    <Link
-                      href={item.url}
-                      isExternal
-                      fontSize="sm"
-                      color={mutedColor}
-                    >
-                      <HStack gap={1}>
-                        <Icon as={FiLink} />
-                        <Text>Open</Text>
-                      </HStack>
-                    </Link>
-                  ) : null}
-                </HStack>
-                {item.summary ? (
-                  <ParagraphText>{item.summary}</ParagraphText>
-                ) : null}
-                {item.tags && item.tags.length > 0 ? (
-                  <Wrap spacing={2}>
-                    {item.tags.map((tag) => (
-                      <WrapItem key={`${item.title}-${tag}`}>
-                        <CategoryBadge color={accentColorPalette ?? "gray"}>
-                          {tag}
-                        </CategoryBadge>
-                      </WrapItem>
-                    ))}
-                  </Wrap>
-                ) : null}
-              </VStack>
-            </Box>
-            {index < items.length - 1 ? <Separator /> : null}
-          </VStack>
+          <AccomplishmentCard
+            key={`${item.title}-${index}`}
+            item={item}
+            accentColorPalette={accentColorPalette}
+            onViewImage={(src, title) => setSelectedImage({ src, title })}
+          />
         ))}
-      </VStack>
+      </SimpleGrid>
+
+      <DialogRoot
+        open={!!selectedImage}
+        onOpenChange={(e) => !e.open && setSelectedImage(null)}
+        size="lg"
+        placement="center"
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{selectedImage?.title}</DialogTitle>
+            <DialogCloseTrigger />
+          </DialogHeader>
+          <DialogBody pb={6}>
+            {selectedImage && (
+              <Image
+                src={selectedImage.src}
+                alt={selectedImage.title}
+                borderRadius="md"
+                w="full"
+              />
+            )}
+          </DialogBody>
+        </DialogContent>
+      </DialogRoot>
     </CvSection>
   );
 }

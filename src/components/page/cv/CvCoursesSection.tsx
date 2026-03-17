@@ -1,21 +1,10 @@
-import { Box, Text, VStack, Wrap, WrapItem } from "@chakra-ui/react";
+import { Box, Text, VStack, SimpleGrid, Badge, HStack } from "@chakra-ui/react";
 import { Heading4 } from "@components/core/Texts";
 import type { CvCourseItem, CvSectionBase } from "data/cv";
 import type { ElementType } from "react";
 import type { AppAccentPalette, AppPalette } from "theme/colors/types";
 import CvSection from "./CvSection";
 import { formatCvDate } from "./cvRenderUtils";
-
-function toCourseMeta(course: CvCourseItem) {
-  const timeframe = course.timeframe ?? formatCvDate(course.date);
-  return [
-    course.institution,
-    timeframe,
-    course.grade ? `Grade: ${course.grade}` : undefined,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-}
 
 export default function CvCoursesSection({
   section,
@@ -30,9 +19,17 @@ export default function CvCoursesSection({
 }) {
   if (!section || section.items.length === 0) return null;
 
-  const cardBg = "app.bg.overlay";
+  const cardBg = "app.bg.card";
   const cardBorder = "app.border.muted";
   const mutedColor = "app.fg.subtle";
+
+  const resolvedAccentPalette = accentColorPalette ?? primaryColorPalette;
+  const badgeColor = resolvedAccentPalette
+    ? `${resolvedAccentPalette}.fg`
+    : mutedColor;
+  const badgeBg = resolvedAccentPalette
+    ? `${resolvedAccentPalette}.subtle`
+    : "app.bg.surface";
 
   return (
     <CvSection
@@ -43,36 +40,86 @@ export default function CvCoursesSection({
       primaryColorPalette={primaryColorPalette}
       accentColorPalette={accentColorPalette}
     >
-      <Wrap gap={2} align="stretch">
+      <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={[2, 3]}>
         {section.items.map((item, index) => {
-          const meta = toCourseMeta(item);
+          const timeframe =
+            item.timeframe ?? (item.date ? formatCvDate(item.date) : undefined);
+
           return (
-            <WrapItem
+            <Box
               key={`${item.name}-${index}`}
-              flex="1 1 270px"
-              minW="240px"
+              borderWidth={1}
+              borderColor={cardBorder}
+              borderRadius="2xl"
+              p={3}
+              bg={cardBg}
+              height="full"
+              transition="border-color 0.2s ease"
+              _hover={{ borderColor: "app.border.default" }}
             >
-              <Box
-                w="full"
-                borderWidth={1}
-                borderColor={cardBorder}
-                borderRadius="lg"
-                p={3}
-                bg={cardBg}
-              >
+              <VStack align="stretch" gap={2} height="full">
                 <VStack align="stretch" gap={1}>
-                  <Heading4>{item.name}</Heading4>
-                  {meta ? (
-                    <Text fontSize="sm" color={mutedColor}>
-                      {meta}
+                  <HStack justify="space-between" align="start">
+                    <Heading4 fontSize="md" lineClamp={2}>
+                      {item.name}
+                    </Heading4>
+                    {item.courseCode && (
+                      <Text
+                        fontSize="xs"
+                        px={2}
+                        py={0.5}
+                        borderRadius="md"
+                        bg={badgeBg}
+                        color={badgeColor}
+                        whiteSpace="nowrap"
+                        fontWeight="medium"
+                      >
+                        {item.courseCode}
+                      </Text>
+                    )}
+                  </HStack>
+
+                  {item.institution && (
+                    <Text
+                      fontSize="xs"
+                      fontWeight="medium"
+                      color="app.fg.muted"
+                    >
+                      {item.institution}
                     </Text>
-                  ) : null}
+                  )}
                 </VStack>
-              </Box>
-            </WrapItem>
+
+                <Box mt="auto">
+                  <HStack justify="space-between" align="center" pt={1}>
+                    {timeframe ? (
+                      <Text fontSize="xs" color={mutedColor}>
+                        {timeframe}
+                      </Text>
+                    ) : (
+                      <Box />
+                    )}
+
+                    {item.grade && (
+                      <Text
+                        fontSize="xs"
+                        fontWeight="bold"
+                        color={
+                          accentColorPalette
+                            ? `${accentColorPalette}.fg`
+                            : "app.fg.default"
+                        }
+                      >
+                        Grade: {item.grade}
+                      </Text>
+                    )}
+                  </HStack>
+                </Box>
+              </VStack>
+            </Box>
           );
         })}
-      </Wrap>
+      </SimpleGrid>
     </CvSection>
   );
 }

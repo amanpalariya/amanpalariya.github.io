@@ -1,4 +1,4 @@
-import { Box, HStack, VStack, Wrap, WrapItem } from "@chakra-ui/react";
+import { Box, HStack, VStack, Wrap, WrapItem, Text } from "@chakra-ui/react";
 import { CategoryBadge } from "@components/core/Badges";
 import { ParagraphText } from "@components/core/Texts";
 import type { CvSectionBase, CvSkillGroup } from "data/cv";
@@ -31,14 +31,14 @@ function SkillLevel({
   const inactiveColor = "app.border.default";
 
   return (
-    <HStack spacing={1} aria-label={`${label} proficiency`} title={label}>
+    <HStack gap={1} aria-label={`${label} proficiency`} title={label}>
       {Array.from({ length: 4 }).map((_, index) => {
         const isActive = index < activeCount;
         return (
           <Box
             key={`${label}-${index}`}
-            w={2}
-            h={2}
+            w={1.5}
+            h={1.5}
             borderRadius="full"
             borderWidth="1px"
             borderColor={isActive ? activeColor : inactiveColor}
@@ -72,11 +72,19 @@ export default function CvSkillsSection({
       primaryColorPalette={primaryColorPalette}
       accentColorPalette={accentColorPalette}
     >
-      <VStack align="stretch" gap={4}>
+      <VStack align="stretch" gap={5}>
         {section.items.map((group) => (
-          <VStack key={group.group} align="stretch" gap={2}>
-            <ParagraphText>{group.group}</ParagraphText>
-            <Wrap spacing={2}>
+          <VStack key={group.group} align="stretch" gap={3}>
+            <Text
+              fontSize="sm"
+              fontWeight="bold"
+              color="app.fg.muted"
+              letterSpacing="wider"
+              textTransform="uppercase"
+            >
+              {group.group}
+            </Text>
+            <Wrap gap={1}>
               {group.items.map((item) => (
                 <WrapItem key={`${group.group}-${item.name}`}>
                   <Tooltip
@@ -86,21 +94,27 @@ export default function CvSkillsSection({
                     showArrow
                   >
                     <HStack
-                      spacing={2}
-                      px={2}
-                      py={1}
-                      borderRadius="full"
+                      gap={3}
+                      px={3}
+                      py={1.5}
+                      borderRadius="2xl"
                       borderWidth={1}
                       borderColor={"app.border.muted"}
+                      bg={"app.bg.card"}
                       _hover={{
                         borderColor: "app.border.strong",
                         bg: "app.bg.surface",
+                        transform: "translateY(-1px)",
                       }}
-                      transition="background 0.2s ease, border-color 0.2s ease"
+                      transition="all 0.2s ease"
                     >
-                      <CategoryBadge color={accentColorPalette ?? "gray"}>
+                      <Text
+                        fontSize="sm"
+                        fontWeight="semibold"
+                        color="app.fg.default"
+                      >
                         {item.name}
-                      </CategoryBadge>
+                      </Text>
                       <SkillLevel
                         level={item.level}
                         accentColorPalette={accentColorPalette}

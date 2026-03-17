@@ -52,10 +52,12 @@ function toVisualItems(
       const cert = item as CvCertificationItem;
       return {
         title: cert.title,
-        meta: [cert.issuer, formatCvDate(cert.date)].filter(Boolean).join(" · "),
+        issuer: cert.issuer,
+        date: formatCvDate(cert.date),
         summary: cert.summary,
         tags: cert.tags,
         url: cert.credentialUrl,
+        imageSrc: cert.imageSrc,
       };
     }
 
