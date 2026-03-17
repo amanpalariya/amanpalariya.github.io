@@ -49,8 +49,7 @@ function AccomplishmentCard({
 }) {
   const mutedColor = "app.fg.muted";
   const metaText =
-    item.meta ||
-    [item.issuer, item.date].filter(Boolean).join(" · ");
+    item.meta || [item.issuer, item.date].filter(Boolean).join(" · ");
 
   return (
     <Box
@@ -149,7 +148,7 @@ export default function CvAccomplishmentsSection({
       primaryColorPalette={primaryColorPalette}
       accentColorPalette={accentColorPalette}
     >
-      <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
+      <SimpleGrid columns={{ base: 1, md: 2 }} gap={[2, 3]}>
         {items.map((item, index) => (
           <AccomplishmentCard
             key={`${item.title}-${index}`}

@@ -40,9 +40,10 @@ export default function CvCoursesSection({
       primaryColorPalette={primaryColorPalette}
       accentColorPalette={accentColorPalette}
     >
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={3}>
+      <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={[2, 3]}>
         {section.items.map((item, index) => {
-          const timeframe = item.timeframe ?? (item.date ? formatCvDate(item.date) : undefined);
+          const timeframe =
+            item.timeframe ?? (item.date ? formatCvDate(item.date) : undefined);
 
           return (
             <Box
@@ -59,7 +60,9 @@ export default function CvCoursesSection({
               <VStack align="stretch" gap={2} height="full">
                 <VStack align="stretch" gap={1}>
                   <HStack justify="space-between" align="start">
-                    <Heading4 fontSize="md" lineClamp={2}>{item.name}</Heading4>
+                    <Heading4 fontSize="md" lineClamp={2}>
+                      {item.name}
+                    </Heading4>
                     {item.courseCode && (
                       <Text
                         fontSize="xs"
@@ -77,7 +80,11 @@ export default function CvCoursesSection({
                   </HStack>
 
                   {item.institution && (
-                    <Text fontSize="xs" fontWeight="medium" color="app.fg.muted">
+                    <Text
+                      fontSize="xs"
+                      fontWeight="medium"
+                      color="app.fg.muted"
+                    >
                       {item.institution}
                     </Text>
                   )}
@@ -89,10 +96,20 @@ export default function CvCoursesSection({
                       <Text fontSize="xs" color={mutedColor}>
                         {timeframe}
                       </Text>
-                    ) : <Box />}
+                    ) : (
+                      <Box />
+                    )}
 
                     {item.grade && (
-                      <Text fontSize="xs" fontWeight="bold" color={accentColorPalette ? `${accentColorPalette}.fg` : "app.fg.default"}>
+                      <Text
+                        fontSize="xs"
+                        fontWeight="bold"
+                        color={
+                          accentColorPalette
+                            ? `${accentColorPalette}.fg`
+                            : "app.fg.default"
+                        }
+                      >
                         Grade: {item.grade}
                       </Text>
                     )}

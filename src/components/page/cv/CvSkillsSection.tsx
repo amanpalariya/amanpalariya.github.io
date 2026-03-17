@@ -75,10 +75,16 @@ export default function CvSkillsSection({
       <VStack align="stretch" gap={5}>
         {section.items.map((group) => (
           <VStack key={group.group} align="stretch" gap={3}>
-            <Text fontSize="sm" fontWeight="bold" color="app.fg.muted" letterSpacing="wider" textTransform="uppercase">
+            <Text
+              fontSize="sm"
+              fontWeight="bold"
+              color="app.fg.muted"
+              letterSpacing="wider"
+              textTransform="uppercase"
+            >
               {group.group}
             </Text>
-            <Wrap gap={3}>
+            <Wrap gap={1}>
               {group.items.map((item) => (
                 <WrapItem key={`${group.group}-${item.name}`}>
                   <Tooltip
@@ -102,7 +108,11 @@ export default function CvSkillsSection({
                       }}
                       transition="all 0.2s ease"
                     >
-                      <Text fontSize="sm" fontWeight="semibold" color="app.fg.default">
+                      <Text
+                        fontSize="sm"
+                        fontWeight="semibold"
+                        color="app.fg.default"
+                      >
                         {item.name}
                       </Text>
                       <SkillLevel
