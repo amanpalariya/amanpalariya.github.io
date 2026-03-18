@@ -561,19 +561,17 @@ const CvData: CvData = {
     courses: {
       id: "courses",
       title: "Courses",
-      visibility: { enabled: true, priority: 16 },
+      visibility: { enabled: false, priority: 16 },
       items: [
         {
           name: "Data Structures",
           courseCode: "CS201",
           institution: "IIT Ropar",
-          grade: "A",
         },
         {
           name: "Computer Architecture",
           courseCode: "CS202",
           institution: "IIT Ropar",
-          grade: "A-",
         },
         {
           name: "Linear Algebra",
