@@ -62,8 +62,8 @@ function AccomplishmentCard({
       transition="transform 0.2s ease, border-color 0.2s ease"
       _hover={{ borderColor: "app.border.strong" }}
     >
-      <VStack align="stretch" gap={3} height="full">
-        <VStack align="stretch" gap={1}>
+      <VStack align="stretch" gap={2} height="full">
+        <VStack align="stretch" gap={0.5}>
           <HStack justify="space-between" align="start" gap={2}>
             <Heading4>{item.title}</Heading4>
             <HStack gap={2}>

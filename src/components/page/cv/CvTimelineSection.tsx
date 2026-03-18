@@ -45,25 +45,28 @@ function TimelineItem({
     end: item.end,
     presentWhenEndMissing,
   });
+  const hasMetaLine = Boolean(timeframe || item.location);
 
   return (
     <HStack align="stretch" gap={4}>
       <VStack align="center" spacing={2} minW={4} pt={2}>
         <Box w={2.5} h={2.5} borderRadius="full" bg={dotColor} zIndex={1} />
       </VStack>
-      <VStack align="stretch" gap={3} flex={1}>
+      <VStack align="stretch" gap={2} flex={1}>
         <HStack justify="space-between" flexWrap="wrap" gap={2}>
-          <VStack align="start" gap={1}>
+          <VStack align="start" gap={0.5}>
             <HStack gap={2} align="center" flexWrap="wrap">
               <Heading4>{item.title}</Heading4>
               <Text color={mutedColor} fontSize="sm">
                 · {item.organization}
               </Text>
             </HStack>
-            <HStack gap={2} color={mutedColor} fontSize="sm" wrap="wrap">
-              {timeframe ? <Text>{timeframe}</Text> : null}
-              {item.location ? <Text>{`· ${item.location}`}</Text> : null}
-            </HStack>
+            {hasMetaLine ? (
+              <HStack gap={2} color={mutedColor} fontSize="sm" wrap="wrap">
+                {timeframe ? <Text>{timeframe}</Text> : null}
+                {item.location ? <Text>{`· ${item.location}`}</Text> : null}
+              </HStack>
+            ) : null}
           </VStack>
           {item.url ? (
             <Link

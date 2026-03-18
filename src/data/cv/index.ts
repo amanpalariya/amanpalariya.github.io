@@ -63,7 +63,8 @@ export interface CvSkillGroup {
 
 export interface CvProjectItem {
   name: string;
-  summary: string;
+  start?: CvDateString;
+  end?: CvDateString;
   isFeatured?: boolean;
   highlight?: string;
   url?: string;
@@ -255,8 +256,6 @@ const CvData: CvData = {
     experience: {
       id: "experience",
       title: "Experience",
-      description:
-        "Roles with measurable product, reliability, and delivery impact.",
       visibility: { enabled: true, priority: 3 },
       items: [
         {
@@ -269,7 +268,7 @@ const CvData: CvData = {
             "Led end-to-end resolution of 10+ high-severity product issues with customer coordination, root-cause analysis, cross-team communication, and deployment ownership.",
             "Drove AI-first quality tooling including internal MCP servers, increasing code coverage by ~50% and saving 5–10 developer hours weekly.",
           ],
-          tags: ["Java", "Python", "AI Tooling", "Production Support"],
+          tags: ["Java", "Python", "AI", "Customer Value", "Kubernetes"],
           logoSrc: "/images/logo/oracle.svg",
           url: "https://www.oracle.com/",
         },
@@ -284,7 +283,7 @@ const CvData: CvData = {
             "Built FHIR-compliant healthcare components including secure SMART on FHIR integration.",
             "Architected CI/CD improvements cutting build duration by ~75% (2h to 30m).",
           ],
-          tags: ["Kubernetes", "Integration", "FHIR", "CI/CD"],
+          tags: ["Java", "Kubernetes", "Docker", "FHIR", "CI/CD"],
           logoSrc: "/images/logo/oracle.svg",
           url: "https://www.oracle.com/",
         },
@@ -311,7 +310,7 @@ const CvData: CvData = {
             "Collaborated with district officers to gather constraints and deliver usable workflows.",
             "System was used by 1200+ Anganwadi workers across five blocks in Rupnagar district.",
           ],
-          tags: ["Social Impact", "Product Engineering"],
+          tags: ["Flutter", "Product Engineering"],
         },
         {
           title: "Subject Matter Expert",
@@ -350,71 +349,92 @@ const CvData: CvData = {
     projects: {
       id: "projects",
       title: "Projects",
-      description: "Selected engineering and academic projects.",
       visibility: { enabled: true, priority: 4 },
       items: [
         {
+          name: "Diffusion Model for Audio",
+          start: "2023-01",
+          isFeatured: true,
+          highlight: "AI",
+          url: "https://drive.google.com/file/d/1nA5sDqtmn99gckt8yiGvnE_tL1IF8k_-/view",
+          highlights: [
+            "Proposed two diffusion model frameworks for audio: cross-diffusion for style transfer and double-diffusion for chorus generation.",
+          ],
+          tags: ["Python", "PyTorch", "Diffusion Models", "Audio ML"],
+        },
+        {
           name: "SAMPAN App",
-          summary:
-            "A social-sector app and dashboard to improve Anganwadi operations with district-level usage.",
+          start: "2022-01",
+          end: "2022-05",
           isFeatured: true,
           highlight: "Impact",
+          url: "https://sites.google.com/view/goyalpuneet/sampan",
           highlights: [
-            "Developed in association with CDPOs and DC Rupnagar to support 1200+ Anganwadi workers.",
-            "Enabled logging of 50K+ data entries per month.",
+            "Developed an Android app in association with CDPOs and DC of Rupnagar (Punjab) to help 1200+ Anganwadi workers log 50K+ data entries every month",
+            "Recognized by The Tribune for on-ground impact in Punjab.",
           ],
-          tags: ["Flutter", "Mobile + Dashboard", "Social Impact"],
+          tags: ["Flutter", "Android", "Social Impact"],
         },
         {
           name: "Console Game Language",
-          summary:
-            "Designed a new language, compiler, and runtime for retro controller-based games.",
+          start: "2021-05",
+          end: "2021-06",
           isFeatured: true,
           highlights: [
-            "Built a RegEx-based lexical analyzer and LR(0) parser.",
-            "Implemented runtime model for a 6-button controller environment.",
+            "Developed a new language (compiler + runtime) for programming games on a 6-button retro controller.",
+            "Built the core with a RegEx-based lexical analyzer and an LR(0) parser.",
           ],
           tags: ["Compiler", "Python", "Language Design"],
-          url: "https://github.com/amanpalariya",
+          url: "/projects/console-game-language",
         },
         {
           name: "32-bit RISC-V ISA Simulator",
-          summary:
-            "Academic systems project implementing instruction-level simulation for the RISC-V ISA.",
+          start: "2021-04",
+          end: "2021-05",
           isFeatured: true,
           highlight: "Systems",
           highlights: [
-            "Implemented 29 RISC-V instructions across arithmetic, logical, data, and control categories.",
-            "Added pipelined and non-pipelined execution, L1/L2 memory hierarchy, branch prediction, and hazard detection.",
+            "Created a simulator for 32-bit RISC-V ISA with support for 29 instructions across arithmetic, logical, data, and control categories.",
+            "Added pipelined and non-pipelined execution, L1/L2 memory hierarchy, branch prediction, hazard detection, and GUI support.",
           ],
           tags: ["Computer Architecture", "Simulation", "Python"],
-          url: "https://github.com/amanpalariya",
+          url: "https://github.com/sagalpreet/RISC-V-Simulator",
         },
         {
           name: "Rain/snow generation and removal from videos",
-          summary:
-            "Computer vision experimentation on weather artifact synthesis and removal.",
+          start: "2021-09",
+          end: "2021-12",
           highlight: "AI",
+          url: "https://github.com/amanpalariya/rain-and-snow-removal",
+          highlights: [
+            "Implemented the Barnum et al. research approach for rain/snow removal from videos without machine learning.",
+          ],
           tags: ["Computer Vision", "Image Processing"],
         },
         {
           name: "Academic Portal",
-          summary: "Workflow-focused portal for academic operations.",
-          tags: ["Web", "Portal"],
+          start: "2021-09",
+          end: "2021-12",
+          url: "https://github.com/sagalpreet/Academic-Portal",
+          highlights: [
+            "Designed and coded a robust multi-user database providing fine-grained access control using stored procedures, functions, triggers, and custom data types in PL/pgSQL",
+          ],
+          tags: ["Postgres", "PL/pgSQL", "Database Systems"],
         },
         {
           name: "OS Components",
-          summary: "Core operating-systems coursework implementation project.",
-          tags: ["Operating Systems", "Systems Programming"],
+          start: "2021-08",
+          end: "2021-12",
+          url: "https://github.com/amanpalariya/os-components",
+          highlights: [
+            "Simulated 5 different services of an Operating System in C (dispatcher, hard-drive scheduling, memory allocation, deadlock detection, and file system).",
+          ],
+          tags: ["C", "CMake", "Operating Systems"],
         },
         {
           name: "Personal Website",
-          summary: "Content-first portfolio built with Next.js and Chakra UI.",
           isFeatured: true,
-          highlight: "DX",
-          highlights: [
-            "Designed reusable component architecture with strong visual consistency.",
-          ],
+          highlights: ["Personal website for projects and blogs showcase."],
           tags: ["Next.js", "TypeScript", "Chakra UI"],
           url: "https://amanpalariya.github.io",
         },
@@ -423,8 +443,6 @@ const CvData: CvData = {
     skills: {
       id: "skills",
       title: "Skills",
-      description:
-        "Programming languages, platforms, tools, and engineering practices.",
       visibility: { enabled: true, priority: 11 },
       items: [
         {
@@ -505,7 +523,6 @@ const CvData: CvData = {
     certifications: {
       id: "certifications",
       title: "Certifications",
-      description: "Professional credentials that I've acquired.",
       visibility: { enabled: true, priority: 14 },
       items: [
         {
@@ -561,19 +578,17 @@ const CvData: CvData = {
     courses: {
       id: "courses",
       title: "Courses",
-      visibility: { enabled: true, priority: 16 },
+      visibility: { enabled: false, priority: 16 },
       items: [
         {
           name: "Data Structures",
           courseCode: "CS201",
           institution: "IIT Ropar",
-          grade: "A",
         },
         {
           name: "Computer Architecture",
           courseCode: "CS202",
           institution: "IIT Ropar",
-          grade: "A-",
         },
         {
           name: "Linear Algebra",
