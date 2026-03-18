@@ -1,5 +1,6 @@
-import { VStack, Text } from "@chakra-ui/react";
+import { Box, VStack, Text } from "@chakra-ui/react";
 import HighlightedSection from "@components/page/common/HighlightedSection";
+import { HEADER_OFFSET_HEIGHT } from "@components/page/common/Header";
 import type { ReactNode } from "react";
 import type { ElementType } from "react";
 import type { AppAccentPalette, AppPalette } from "theme/colors/types";
@@ -22,7 +23,7 @@ export default function CvSection({
   children: ReactNode;
 }) {
   return (
-    <div id={id}>
+    <Box id={id} scrollMarginTop={HEADER_OFFSET_HEIGHT}>
       <HighlightedSection
         title={title}
         titleIcon={titleIcon}
@@ -39,6 +40,6 @@ export default function CvSection({
           {children}
         </VStack>
       </HighlightedSection>
-    </div>
+    </Box>
   );
 }
