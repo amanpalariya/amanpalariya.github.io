@@ -385,7 +385,7 @@ const CvData: CvData = {
             "Built the core with a RegEx-based lexical analyzer and an LR(0) parser.",
           ],
           tags: ["Compiler", "Python", "Language Design"],
-          url: "https://github.com/amanpalariya/console-game",
+          url: "/projects/console-game-language",
         },
         {
           name: "32-bit RISC-V ISA Simulator",
