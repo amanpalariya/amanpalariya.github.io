@@ -34,11 +34,12 @@ function ProjectCard({
     start: item.start,
     end: item.end,
   });
+  const hasMetaLine = Boolean(timeframe);
 
   return (
-    <VStack align="stretch" gap={3}>
+    <VStack align="stretch" gap={2}>
       <HStack justify="space-between" gap={2} flexWrap="wrap">
-        <VStack align="start" gap={1}>
+        <VStack align="start" gap={0.5}>
           <HStack gap={2} flexWrap="wrap">
             <Heading4>{item.name}</Heading4>
             {item.isFeatured ? (
@@ -52,7 +53,7 @@ function ProjectCard({
               </CategoryBadge>
             ) : null}
           </HStack>
-          {timeframe ? (
+          {hasMetaLine ? (
             <Text fontSize="sm" color={mutedColor}>
               {timeframe}
             </Text>
