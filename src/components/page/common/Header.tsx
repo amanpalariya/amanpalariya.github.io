@@ -4,7 +4,6 @@ import {
   HStack,
   Icon,
   IconButton,
-  Show,
   Stack,
   useBreakpointValue,
 } from "@chakra-ui/react";
@@ -34,6 +33,30 @@ import FeatureFlagsData from "data/features";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 export const HEADER_OFFSET_HEIGHT = { base: 20, sm: 24 };
+
+const HEADER_NAV_ITEMS = [
+  {
+    icon: FiHome,
+    tab: homepageTabs.home,
+  },
+  {
+    icon: FiUser,
+    tab: homepageTabs.about,
+  },
+  {
+    icon: FiGrid,
+    tab: homepageTabs.projects,
+  },
+  {
+    icon: FiFileText,
+    tab: homepageTabs.cv,
+  },
+  {
+    icon: FiBookOpen,
+    tab: homepageTabs.blogs,
+    needsBlogsFeature: true,
+  },
+] as const;
 
 function ColorModeToggleIconButton() {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -77,46 +100,14 @@ export default function Header() {
   const topLevelPathname = pathnameUtil.trimPathnameToDepth(currentPathname, 1);
 
   const topLevelTabIcon =
-    {
-      [homepageTabs.home.pathname]: FiHome,
-      [homepageTabs.about.pathname]: FiUser,
-      [homepageTabs.projects.pathname]: FiGrid,
-      [homepageTabs.cv.pathname]: FiFileText,
-      [homepageTabs.blogs.pathname]: FiBookOpen,
-    }[topLevelPathname] ?? FiHome;
+    HEADER_NAV_ITEMS.find((item) => item.tab.pathname === topLevelPathname)
+      ?.icon ?? FiHome;
 
-  const mobileNavItems = useMemo(
-    () => [
-      {
-        icon: FiHome,
-        label: homepageTabs.home.name,
-        url: homepageTabs.home.pathname,
-      },
-      {
-        icon: FiUser,
-        label: homepageTabs.about.name,
-        url: homepageTabs.about.pathname,
-      },
-      {
-        icon: FiGrid,
-        label: homepageTabs.projects.name,
-        url: homepageTabs.projects.pathname,
-      },
-      {
-        icon: FiFileText,
-        label: homepageTabs.cv.name,
-        url: homepageTabs.cv.pathname,
-      },
-      ...(isBlogsFeatureEnabled
-        ? [
-            {
-              icon: FiBookOpen,
-              label: homepageTabs.blogs.name,
-              url: homepageTabs.blogs.pathname,
-            },
-          ]
-        : []),
-    ],
+  const navItems = useMemo(
+    () =>
+      HEADER_NAV_ITEMS.filter(
+        (item) => !item.needsBlogsFeature || isBlogsFeatureEnabled,
+      ),
     [isBlogsFeatureEnabled],
   );
 
@@ -184,42 +175,15 @@ export default function Header() {
               </HStack>
             ) : (
               <HStack gap={4}>
-                <HeaderNavIconButton
-                  icon={FiHome}
-                  label={homepageTabs.home.name}
-                  isSelected={isSelectedBasedOnUrl(homepageTabs.home.pathname)}
-                  url={homepageTabs.home.pathname}
-                />
-                <HeaderNavIconButton
-                  icon={FiUser}
-                  label={homepageTabs.about.name}
-                  isSelected={isSelectedBasedOnUrl(homepageTabs.about.pathname)}
-                  url={homepageTabs.about.pathname}
-                />
-                <HeaderNavIconButton
-                  icon={FiGrid}
-                  label={homepageTabs.projects.name}
-                  isSelected={isSelectedBasedOnUrl(
-                    homepageTabs.projects.pathname,
-                  )}
-                  url={homepageTabs.projects.pathname}
-                />
-                <HeaderNavIconButton
-                  icon={FiFileText}
-                  label={homepageTabs.cv.name}
-                  isSelected={isSelectedBasedOnUrl(homepageTabs.cv.pathname)}
-                  url={homepageTabs.cv.pathname}
-                />
-                <Show when={isBlogsFeatureEnabled}>
+                {navItems.map((item) => (
                   <HeaderNavIconButton
-                    icon={FiBookOpen}
-                    label={homepageTabs.blogs.name}
-                    isSelected={isSelectedBasedOnUrl(
-                      homepageTabs.blogs.pathname,
-                    )}
-                    url={homepageTabs.blogs.pathname}
+                    key={item.tab.pathname}
+                    icon={item.icon}
+                    label={item.tab.name}
+                    isSelected={isSelectedBasedOnUrl(item.tab.pathname)}
+                    url={item.tab.pathname}
                   />
-                </Show>
+                ))}
               </HStack>
             )}
 
@@ -239,12 +203,12 @@ export default function Header() {
               pt={4}
               gap={2}
             >
-              {mobileNavItems.map((item) => {
-                const isSelected = isSelectedBasedOnUrl(item.url);
+              {navItems.map((item) => {
+                const isSelected = isSelectedBasedOnUrl(item.tab.pathname);
 
                 return (
                   <Button
-                    key={item.url}
+                    key={item.tab.pathname}
                     asChild
                     onClick={() => setMobileMenuOpen(false)}
                     justifyContent={"flex-start"}
@@ -252,10 +216,10 @@ export default function Header() {
                     variant={isSelected ? "surface" : "ghost"}
                     color={isSelected ? "app.fg.default" : "app.fg.subtle"}
                   >
-                    <NextLink href={item.url}>
+                    <NextLink href={item.tab.pathname}>
                       <HStack gap={2}>
                         <Icon as={item.icon} boxSize={6} />
-                        <Heading6>{item.label}</Heading6>
+                        <Heading6>{item.tab.name}</Heading6>
                       </HStack>
                     </NextLink>
                   </Button>
