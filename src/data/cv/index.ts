@@ -443,8 +443,6 @@ const CvData: CvData = {
     skills: {
       id: "skills",
       title: "Skills",
-      description:
-        "Programming languages, platforms, tools, and engineering practices.",
       visibility: { enabled: true, priority: 11 },
       items: [
         {
@@ -525,7 +523,6 @@ const CvData: CvData = {
     certifications: {
       id: "certifications",
       title: "Certifications",
-      description: "Professional credentials that I've acquired.",
       visibility: { enabled: true, priority: 14 },
       items: [
         {
