@@ -8,38 +8,56 @@ import {
   Icon,
   Separator,
 } from "@chakra-ui/react";
-import { ParagraphText, Heading4 } from "@components/core/Texts";
+import { Heading4 } from "@components/core/Texts";
 import { CategoryBadge } from "@components/core/Badges";
 import type { CvSectionBase, CvProjectItem } from "data/cv";
 import type { ElementType } from "react";
 import { FiLink } from "react-icons/fi";
 import CvSection from "./CvSection";
+import { formatCvDateRange } from "./cvRenderUtils";
 
 function ProjectCard({
   item,
   accentColorPalette,
 }: {
   item: CvProjectItem;
-  accentColorPalette?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
+  accentColorPalette?:
+    | "blue"
+    | "purple"
+    | "green"
+    | "orange"
+    | "yellow"
+    | "red";
 }) {
   const mutedColor = "app.fg.muted";
+  const timeframe = formatCvDateRange({
+    start: item.start,
+    end: item.end,
+  });
 
   return (
     <VStack align="stretch" gap={3}>
       <HStack justify="space-between" gap={2} flexWrap="wrap">
-        <HStack gap={2} flexWrap="wrap">
-          <Heading4>{item.name}</Heading4>
-          {item.isFeatured ? (
-            <CategoryBadge color={accentColorPalette ? "purple" : "blue"}>
-              Featured
-            </CategoryBadge>
+        <VStack align="start" gap={1}>
+          <HStack gap={2} flexWrap="wrap">
+            <Heading4>{item.name}</Heading4>
+            {item.isFeatured ? (
+              <CategoryBadge color={accentColorPalette ? "purple" : "blue"}>
+                Featured
+              </CategoryBadge>
+            ) : null}
+            {item.highlight ? (
+              <CategoryBadge color={accentColorPalette ? "purple" : "blue"}>
+                {item.highlight}
+              </CategoryBadge>
+            ) : null}
+          </HStack>
+          {timeframe ? (
+            <Text fontSize="sm" color={mutedColor}>
+              {timeframe}
+            </Text>
           ) : null}
-          {item.highlight ? (
-            <CategoryBadge color={accentColorPalette ? "purple" : "blue"}>
-              {item.highlight}
-            </CategoryBadge>
-          ) : null}
-        </HStack>
+        </VStack>
         {item.url ? (
           <Link
             href={item.url}
@@ -55,7 +73,6 @@ function ProjectCard({
           </Link>
         ) : null}
       </HStack>
-      <ParagraphText>{item.summary}</ParagraphText>
       {item.highlights && item.highlights.length > 0 ? (
         <VStack align="stretch" gap={1}>
           {item.highlights.map((highlight, index) => (
@@ -91,8 +108,20 @@ export default function CvProjectsSection({
 }: {
   section: CvSectionBase & { items: CvProjectItem[] };
   titleIcon?: ElementType;
-  primaryColorPalette?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
-  accentColorPalette?: "blue" | "purple" | "green" | "orange" | "yellow" | "red";
+  primaryColorPalette?:
+    | "blue"
+    | "purple"
+    | "green"
+    | "orange"
+    | "yellow"
+    | "red";
+  accentColorPalette?:
+    | "blue"
+    | "purple"
+    | "green"
+    | "orange"
+    | "yellow"
+    | "red";
 }) {
   if (!section || section.items.length === 0) return null;
 
@@ -100,7 +129,6 @@ export default function CvProjectsSection({
     <CvSection
       id={section.id}
       title={section.title}
-      description={section.description}
       titleIcon={titleIcon}
       primaryColorPalette={primaryColorPalette}
       accentColorPalette={accentColorPalette}
