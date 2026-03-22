@@ -12,12 +12,7 @@ const TOOL_SEEDS: ToolSeed[] = [
       "Paste HTML pages or plain text, reorder chapters, set metadata, and generate a downloadable EPUB.",
     category: "conversion",
     status: "beta",
-    tags: [
-      { id: "epub", label: "EPUB" },
-      { id: "html", label: "HTML" },
-      { id: "text", label: "Text" },
-      { id: "writer-tools", label: "Writer Tools" },
-    ],
+    tags: [{ id: "epub", label: "EPUB" }],
     path: "/tools/epub-maker/",
     sortOrder: 10,
     isFeatured: true,

@@ -1,6 +1,6 @@
 import { Box, HStack, Icon, Text, VStack } from "@chakra-ui/react";
 import { CategoryBadge } from "@components/core/Badges";
-import { Heading3 } from "@components/core/Texts";
+import { Heading1 } from "@components/core/Texts";
 import { FiBookOpen, FiTool } from "react-icons/fi";
 import type { ToolDefinition } from "../types";
 
@@ -24,22 +24,29 @@ export function ToolDetailsSection({ tool }: { tool: ToolDefinition }) {
   const ToolIcon = getToolIcon(tool.icon);
 
   return (
-    <Box px={[4, 6]} pt={4}>
-      <VStack align={"start"} gap={2}>
-        <HStack gap={2} wrap={"wrap"}>
-          <CategoryBadge color={statusColorMap[tool.status]}>
-            {formatStatus(tool.status)}
-          </CategoryBadge>
-          <CategoryBadge>{tool.category}</CategoryBadge>
+    <VStack align={"stretch"} gap={4} pt={4}>
+      <Box mx={[4, 6]} letterSpacing={"wide"}>
+        <HStack gap={3} align={"center"}>
+          <Icon as={ToolIcon} color={"app.fg.subtle"} boxSize={6} />
+          <Heading1>{tool.name}</Heading1>
         </HStack>
+      </Box>
 
-        <HStack gap={2}>
-          <Icon as={ToolIcon} color={"app.fg.subtle"} boxSize={5} />
-          <Heading3>{tool.name}</Heading3>
-        </HStack>
+      <HStack gap={3} wrap={"wrap"} align={"center"} px={[4, 6]}>
+        <CategoryBadge color={statusColorMap[tool.status]}>
+          {formatStatus(tool.status)}
+        </CategoryBadge>
+        <CategoryBadge>{tool.category}</CategoryBadge>
+        {tool.tags.map((tag) => (
+          <CategoryBadge key={tag.id}>{tag.label}</CategoryBadge>
+        ))}
+      </HStack>
 
-        <Text color={"app.fg.subtle"}>{tool.description}</Text>
+      <VStack align={"start"} gap={2} px={[4, 6]}>
+        <Text color={"app.fg.muted"} fontSize={"md"} lineHeight={"1.6"}>
+          {tool.description}
+        </Text>
       </VStack>
-    </Box>
+    </VStack>
   );
 }
