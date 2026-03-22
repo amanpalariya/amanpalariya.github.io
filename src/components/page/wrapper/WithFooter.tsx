@@ -7,7 +7,7 @@ export default function WithFooter({
   children: React.ReactNode;
 }) {
   return (
-    <VStack align={"stretch"}>
+    <VStack align={"stretch"} gap={0}>
       {children}
       <Footer />
     </VStack>
