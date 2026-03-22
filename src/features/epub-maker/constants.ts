@@ -1,6 +1,14 @@
 import { SanitizationPolicy } from "./types";
 
-export const EPUB_MAKER_PREFS_KEY = "epub-maker-prefs-v1";
+export const EPUB_MAKER_TOOL_ID = "epub-maker";
+export const EPUB_MAKER_STORAGE_FIELDS = {
+  title: "title",
+  author: "author",
+  manualFileName: "manual-file-name",
+  fileNameMode: "file-name-mode",
+  sanitizeEmbedRemoteImages: "sanitize.embed-remote-images",
+  sanitizeAllowExternalLinks: "sanitize.allow-external-links",
+} as const;
 export const DEFAULT_BOOK_TITLE = "EPUB Maker Pages";
 
 const DROP_TAGS = [
