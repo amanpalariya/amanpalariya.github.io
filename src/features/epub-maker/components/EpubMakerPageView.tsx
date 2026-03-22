@@ -70,8 +70,7 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
           pages={props.pages}
           onRemove={props.removePage}
           onRename={props.renamePage}
-          onMoveUp={props.movePageUp}
-          onMoveDown={props.movePageDown}
+          onReorder={props.reorderPages}
         />
 
       </VStack>

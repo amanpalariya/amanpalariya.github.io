@@ -22,8 +22,7 @@ export type UseEpubMakerReturn = EpubMakerState & {
   addFromFallbackText: () => void;
   removePage: (id: string) => void;
   renamePage: (id: string, title: string) => void;
-  movePageUp: (id: string) => void;
-  movePageDown: (id: string) => void;
+  reorderPages: (draggedId: string, targetIndex: number) => void;
   generateEpub: () => Promise<void>;
   setShowPasteFallback: (value: boolean) => void;
   setPastedInput: (value: string) => void;
@@ -196,23 +195,17 @@ export function useEpubMaker(): UseEpubMakerReturn {
     );
   }
 
-  function movePageUp(id: string) {
-    setPages((prev) => {
-      const index = prev.findIndex((page) => page.id === id);
-      if (index <= 0) return prev;
-      const next = [...prev];
-      [next[index - 1], next[index]] = [next[index], next[index - 1]];
-      return next;
-    });
-  }
+  function reorderPages(draggedId: string, targetIndex: number) {
+    if (!draggedId || Number.isNaN(targetIndex)) return;
 
-  function movePageDown(id: string) {
     setPages((prev) => {
-      const index = prev.findIndex((page) => page.id === id);
-      if (index < 0 || index >= prev.length - 1) return prev;
-      const next = [...prev];
-      [next[index + 1], next[index]] = [next[index], next[index + 1]];
-      return next;
+      const draggedPage = prev.find((page) => page.id === draggedId);
+      if (!draggedPage) return prev;
+
+      const remaining = prev.filter((page) => page.id !== draggedId);
+      const insertionIndex = Math.max(0, Math.min(targetIndex, remaining.length));
+      remaining.splice(insertionIndex, 0, draggedPage);
+      return remaining;
     });
   }
 
@@ -287,8 +280,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     addFromFallbackText,
     removePage,
     renamePage,
-    movePageUp,
-    movePageDown,
+    reorderPages,
     generateEpub,
     setShowPasteFallback,
     setPastedInput,
