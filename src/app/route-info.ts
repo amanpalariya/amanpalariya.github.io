@@ -27,7 +27,6 @@ export const homepageTabs = {
     name: "Blogs",
     getSubpagePathname,
   },
-  // Expose standalone tools section from the main homepage navigation.
   tools: {
     pathname: "/tools/",
     name: "Tools",

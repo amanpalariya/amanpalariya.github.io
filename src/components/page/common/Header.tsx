@@ -57,7 +57,6 @@ const HEADER_NAV_ITEMS = [
     tab: homepageTabs.blogs,
     needsBlogsFeature: true,
   },
-  // Keep Tools directly accessible from the shared homepage header.
   {
     icon: FiTool,
     tab: homepageTabs.tools,
