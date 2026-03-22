@@ -19,7 +19,6 @@ import { Tooltip } from "@components/ui/tooltip";
 import {
   LuBookDown,
   LuClipboardPaste,
-  LuDownload,
   LuEye,
   LuEyeOff,
   LuFilePlus,
@@ -103,6 +102,10 @@ function escapeXml(value: string): string {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&apos;");
+}
+
+function plainTextToHtml(value: string): string {
+  return escapeXml(value).replaceAll("\n", "<br />");
 }
 
 function toAbsoluteUrl(url: string, baseUrl: string | null): string | null {
@@ -272,7 +275,7 @@ function getPageFromInput(content: string, id: string): PageDraft {
     };
   }
 
-  const textPreview = `<!doctype html><html><head><meta charset="utf-8" /><style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:12px;line-height:1.35;padding:10px;color:#111}pre{white-space:pre-wrap;word-break:break-word;margin:0}</style></head><body><pre>${escapeXml(content)}</pre></body></html>`;
+  const textPreview = `<!doctype html><html><head><meta charset="utf-8" /><style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:12px;line-height:1.35;padding:10px;color:#111}.plain-text{white-space:pre-wrap;word-break:break-word;margin:0}</style></head><body><div class="plain-text">${plainTextToHtml(content)}</div></body></html>`;
 
   return {
     id,
@@ -290,12 +293,20 @@ export default function EpubMakerPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showPasteFallback, setShowPasteFallback] = useState(false);
   const [pastedInput, setPastedInput] = useState("");
-  const [epubBlob, setEpubBlob] = useState<Blob | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const [summary, setSummary] = useState("");
 
-  const downloadUrl = epubBlob ? URL.createObjectURL(epubBlob) : null;
+  function downloadBlob(blob: Blob, fileName: string) {
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = objectUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(objectUrl);
+  }
 
   function addInputAsPage(content: string) {
     if (!content.trim()) {
@@ -308,7 +319,6 @@ export default function EpubMakerPage() {
     page.id = id;
 
     setPages((prev) => [...prev, page]);
-    setEpubBlob(null);
     setSummary("");
     setWarnings([]);
     setErrors([]);
@@ -320,6 +330,31 @@ export default function EpubMakerPage() {
     setErrors([]);
 
     try {
+      if ("read" in navigator.clipboard) {
+        const items = await navigator.clipboard.read();
+        for (const item of items) {
+          if (item.types.includes("text/html")) {
+            const htmlBlob = await item.getType("text/html");
+            const html = await htmlBlob.text();
+            if (html.trim()) {
+              addInputAsPage(html);
+              return;
+            }
+          }
+        }
+
+        for (const item of items) {
+          if (item.types.includes("text/plain")) {
+            const textBlob = await item.getType("text/plain");
+            const text = await textBlob.text();
+            if (text.trim()) {
+              addInputAsPage(text);
+              return;
+            }
+          }
+        }
+      }
+
       const clipboardText = await navigator.clipboard.readText();
       if (!clipboardText || !clipboardText.trim()) {
         setErrors(["Clipboard is empty."]);
@@ -329,7 +364,7 @@ export default function EpubMakerPage() {
       addInputAsPage(clipboardText);
     } catch (error) {
       setErrors([
-        `Could not read clipboard automatically: ${String(error)}. Use the paste fallback below.`,
+        `Could not read formatted clipboard content automatically: ${String(error)}. Use the paste fallback below.`,
       ]);
       setShowPasteFallback(true);
     } finally {
@@ -362,7 +397,6 @@ export default function EpubMakerPage() {
 
   function removePage(id: string) {
     setPages((prev) => prev.filter((page) => page.id !== id));
-    setEpubBlob(null);
     setSummary("");
   }
 
@@ -371,7 +405,6 @@ export default function EpubMakerPage() {
     setWarnings([]);
     setErrors([]);
     setSummary("");
-    setEpubBlob(null);
 
     if (pages.length === 0) {
       setErrors([
@@ -456,7 +489,7 @@ export default function EpubMakerPage() {
         let chapterBody = "";
 
         if (page.inputKind === "text") {
-          chapterBody = `<pre>${escapeXml(page.rawContent)}</pre>`;
+          chapterBody = `<div class="plain-text">${plainTextToHtml(page.rawContent)}</div>`;
         } else {
           const sanitized = sanitizeHtmlContent(page.rawContent, title);
           const parser = new DOMParser();
@@ -534,7 +567,7 @@ export default function EpubMakerPage() {
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>${escapeXml(title)}</title>
-    <style>pre{white-space:pre-wrap;word-break:break-word}</style>
+    <style>.plain-text{white-space:pre-wrap;word-break:break-word;margin:0}</style>
   </head>
   <body>
     ${chapterBody}
@@ -677,10 +710,10 @@ export default function EpubMakerPage() {
         mimeType: "application/epub+zip",
       });
 
-      setEpubBlob(finalBlob);
+      downloadBlob(finalBlob, "epub-maker-pages.epub");
       setWarnings(localWarnings);
       setSummary(
-        `Generated EPUB with ${chapters.length} page(s) and ${images.length} embedded image(s).`,
+        `Generated and downloaded EPUB with ${chapters.length} page(s) and ${images.length} embedded image(s).`,
       );
     } catch (error) {
       setErrors([`Unexpected error while generating EPUB: ${String(error)}`]);
@@ -737,7 +770,7 @@ export default function EpubMakerPage() {
             <Icon>
               <LuBookDown />
             </Icon>
-            Generate EPUB
+            Save EPUB
           </Button>
           {!showPasteFallback ? (
             <Button
@@ -749,16 +782,6 @@ export default function EpubMakerPage() {
                 <LuEye />
               </Icon>
               Show fallback
-            </Button>
-          ) : null}
-          {downloadUrl ? (
-            <Button asChild variant={"solid"}>
-              <a href={downloadUrl} download={"epub-maker-pages.epub"}>
-                <Icon>
-                  <LuDownload />
-                </Icon>
-                Download EPUB
-              </a>
             </Button>
           ) : null}
         </HStack>
