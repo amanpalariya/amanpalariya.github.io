@@ -20,17 +20,6 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
           export a clean EPUB.
         </Text>
 
-        <EpubMetadataForm
-          prefs={props.prefs}
-          autoEpubFileName={props.autoEpubFileName}
-          onTitleChange={props.setTitle}
-          onAuthorChange={props.setAuthor}
-          onManualFileNameChange={props.setManualFileName}
-          onToggleFileNameMode={props.toggleFileNameMode}
-          onEmbedRemoteImagesChange={props.setEmbedRemoteImages}
-          onAllowExternalLinksChange={props.setAllowExternalLinks}
-        />
-
         <EpubToolbar
           isAdding={props.isAdding}
           isGenerating={props.isGenerating}
@@ -41,6 +30,17 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
           onPastedInputChange={props.setPastedInput}
           onPaste={props.onPasteInput}
           onAddFromFallback={props.addFromFallbackText}
+        />
+
+        <EpubMetadataForm
+          prefs={props.prefs}
+          autoEpubFileName={props.autoEpubFileName}
+          onTitleChange={props.setTitle}
+          onAuthorChange={props.setAuthor}
+          onManualFileNameChange={props.setManualFileName}
+          onToggleFileNameMode={props.toggleFileNameMode}
+          onEmbedRemoteImagesChange={props.setEmbedRemoteImages}
+          onAllowExternalLinksChange={props.setAllowExternalLinks}
         />
 
         {props.pages.length === 0 ? (

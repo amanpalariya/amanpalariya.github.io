@@ -145,13 +145,23 @@ export function useEpubMaker(): UseEpubMakerReturn {
       const content = await readClipboardPageInput();
       addInputAsPage(content);
     } catch (error) {
-      const message = `Could not read formatted clipboard content automatically: ${String(error)}. Use the arrow next to the Add page button to paste manually.`;
-      setErrors([message]);
-      notify(
-        "warning",
-        "Clipboard blocked",
-        "Automatic clipboard read failed. Use the arrow next to Add page to paste manually.",
-      );
+      const rawMessage = String(error);
+      const normalizedMessage = rawMessage.toLowerCase();
+
+      if (normalizedMessage.includes("empty")) {
+        const message =
+          "Clipboard is empty. Copy HTML or text first, then try Add page from clipboard.";
+        setErrors([message]);
+        notify("warning", "Clipboard empty", message);
+      } else {
+        const message = `Could not read formatted clipboard content automatically: ${rawMessage}. Use the arrow next to the Add page button to paste manually.`;
+        setErrors([message]);
+        notify(
+          "warning",
+          "Clipboard blocked",
+          "Automatic clipboard read failed. Use the arrow next to Add page to paste manually.",
+        );
+      }
     } finally {
       setIsAdding(false);
     }
