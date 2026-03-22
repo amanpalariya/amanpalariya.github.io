@@ -7,26 +7,54 @@ import {
 } from "./plain-text";
 import { inferTitleFromHtml, sanitizeHtmlContent } from "./html-sanitizer";
 
+export interface CreatePageDraftOptions {
+  defaultTitle?: string;
+  textUseDefaultTitle?: boolean;
+  htmlUseHeadTitleOnly?: boolean;
+}
+
 export function createPageDraftFromInput(
   content: string,
   index: number,
   policy: SanitizationPolicy,
+  options?: CreatePageDraftOptions,
 ): PageDraft | null {
   if (!content.trim()) return null;
 
-  const defaultPageTitle = `Page ${index}`;
+  const providedDefaultTitle = options?.defaultTitle?.trim() || "";
+  const generatedDefaultTitle = `Page ${index}`;
+  const defaultPageTitle = providedDefaultTitle || generatedDefaultTitle;
   const looksLikeHtml = /<\s*[a-zA-Z!/]/.test(content);
 
   if (looksLikeHtml) {
-    const inferredTitle = inferTitleFromHtml(content, defaultPageTitle);
-    const sanitized = sanitizeHtmlContent(content, inferredTitle, policy);
+    const inferredTitleFromContent = inferTitleFromHtml(content, "").trim();
+    const sanitized = sanitizeHtmlContent(content, "", policy);
+    const htmlDeclaredTitle = sanitized.title?.trim() || "";
+    const htmlFallbackTitle =
+      htmlDeclaredTitle ||
+      providedDefaultTitle ||
+      inferredTitleFromContent ||
+      generatedDefaultTitle;
+
     return {
       id: createPageId(),
-      title: sanitized.title || defaultPageTitle,
+      title: htmlFallbackTitle,
       inputKind: "html",
       rawContent: content,
       baseUrl: sanitized.baseUrl,
       previewHtml: sanitized.previewHtml,
+      createdAt: Date.now(),
+    };
+  }
+
+  if (options?.textUseDefaultTitle) {
+    return {
+      id: createPageId(),
+      title: defaultPageTitle,
+      inputKind: "text",
+      rawContent: content,
+      baseUrl: null,
+      previewHtml: getTextPreviewHtml(content),
       createdAt: Date.now(),
     };
   }

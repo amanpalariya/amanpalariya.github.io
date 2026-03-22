@@ -3,7 +3,10 @@ import { createDefaultSanitizationPolicy, DEFAULT_BOOK_TITLE } from "../constant
 import type { EpubMakerState, GenerationWarning, PageDraft } from "../types";
 import { buildAutoEpubFileName, buildEpubFileName } from "../utils/file-name";
 import { createPageDraftFromInput } from "../domain/page-draft";
-import { readClipboardPageInput } from "../services/clipboard";
+import {
+  clipboardImageBlobToHtml,
+  readClipboardPageInput,
+} from "../services/clipboard";
 import {
   getNormalizedBookTitle,
   readEpubMakerPrefs,
@@ -11,6 +14,31 @@ import {
 } from "../services/prefs-storage";
 import { buildEpub } from "../domain/epub-builder";
 import { downloadBlob } from "../services/download";
+import { renderMarkdownToHtml } from "@utils/markdown";
+
+function fileNameToTitle(fileName: string): string {
+  const withoutExtension = fileName.replace(/\.[^./\\]+$/, "");
+  const normalized = withoutExtension
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return normalized || "Untitled";
+}
+
+function isMarkdownFile(file: File): boolean {
+  const fileName = file.name.toLowerCase();
+  const mimeType = file.type.toLowerCase();
+  return (
+    mimeType === "text/markdown" ||
+    mimeType === "text/x-markdown" ||
+    mimeType === "application/markdown" ||
+    fileName.endsWith(".md") ||
+    fileName.endsWith(".markdown") ||
+    fileName.endsWith(".mdown") ||
+    fileName.endsWith(".mkd") ||
+    fileName.endsWith(".mkdn")
+  );
+}
 
 export type UseEpubMakerReturn = EpubMakerState & {
   normalizedBookTitle: string;
@@ -18,6 +46,7 @@ export type UseEpubMakerReturn = EpubMakerState & {
   autoEpubFileName: string;
   effectiveFileName: string;
   addPageFromClipboard: () => Promise<void>;
+  addPagesFromFiles: (files: FileList | File[]) => Promise<void>;
   onPasteInput: (event: ClipboardEvent<HTMLTextAreaElement>) => void;
   addFromFallbackText: () => void;
   removePage: (id: string) => void;
@@ -101,41 +130,231 @@ export function useEpubMaker(): UseEpubMakerReturn {
     writeEpubMakerPrefs(prefs);
   }, [isPrefsLoaded, prefs]);
 
-  function addInputAsPage(content: string) {
-    if (!content.trim()) {
-      setErrors(["Clipboard/fallback input is empty."]);
-      notify("warning", "Empty input", "Clipboard/fallback input is empty.");
-      return;
+  function evaluatePageInput(existingPages: PageDraft[], content: string) {
+    const trimmedContent = content.trim();
+    if (!trimmedContent) {
+      return { status: "empty" as const };
     }
 
-    const isDuplicate = pages.some(
-      (page) => page.rawContent.trim() === content.trim(),
+    const isDuplicate = existingPages.some(
+      (page) => page.rawContent.trim() === trimmedContent,
     );
     if (isDuplicate) {
+      return { status: "duplicate" as const };
+    }
+
+    const page = createPageDraftFromInput(content, existingPages.length + 1, sanitizePolicy);
+    if (!page) {
+      return { status: "invalid" as const };
+    }
+
+    return { status: "ok" as const, page };
+  }
+
+  function evaluatePageInputWithOptions(
+    existingPages: PageDraft[],
+    content: string,
+    options?: Parameters<typeof createPageDraftFromInput>[3],
+  ) {
+    const trimmedContent = content.trim();
+    if (!trimmedContent) {
+      return { status: "empty" as const };
+    }
+
+    const isDuplicate = existingPages.some(
+      (page) => page.rawContent.trim() === trimmedContent,
+    );
+    if (isDuplicate) {
+      return { status: "duplicate" as const };
+    }
+
+    const page = createPageDraftFromInput(
+      content,
+      existingPages.length + 1,
+      sanitizePolicy,
+      options,
+    );
+    if (!page) {
+      return { status: "invalid" as const };
+    }
+
+    return { status: "ok" as const, page };
+  }
+
+  function addInputAsPage(content: string) {
+    const result = evaluatePageInput(pages, content);
+
+    if (result.status === "empty") {
+      setErrors(["Clipboard/fallback input is empty."]);
+      notify("warning", "Empty input", "Clipboard/fallback input is empty.");
+      return false;
+    }
+
+    if (result.status === "duplicate") {
       const duplicateWarning = {
         code: "EMPTY_PAGE_SKIPPED" as const,
         message: "Duplicate page content detected and skipped.",
       };
-      setWarnings((prev) => [
-        ...prev,
-        duplicateWarning,
-      ]);
+      setWarnings((prev) => [...prev, duplicateWarning]);
       notify("warning", "Duplicate page", duplicateWarning.message);
-      return;
+      return false;
     }
 
-    const page = createPageDraftFromInput(content, pages.length + 1, sanitizePolicy);
-    if (!page) {
+    if (result.status === "invalid") {
       setErrors(["Could not build page from pasted input."]);
       notify("error", "Page add failed", "Could not build page from pasted input.");
-      return;
+      return false;
     }
 
+    const page = result.page;
     setPages((prev) => [...prev, page]);
+
     setSummary("");
     setErrors([]);
     setPastedInput("");
     notify("success", "Page added", `${page.title} added to draft list.`);
+    return true;
+  }
+
+  async function addPagesFromFiles(files: FileList | File[]) {
+    const droppedFiles = Array.from(files);
+    if (droppedFiles.length === 0) {
+      notify("warning", "No files", "Drop one or more files to add pages.");
+      return;
+    }
+
+    setIsAdding(true);
+    setErrors([]);
+
+    let addedCount = 0;
+    let unsupportedCount = 0;
+    let duplicateCount = 0;
+    let invalidCount = 0;
+    let emptyCount = 0;
+    const duplicateWarnings: GenerationWarning[] = [];
+    let nextPages = [...pages];
+
+    try {
+      for (const file of droppedFiles) {
+        const fileName = file.name.toLowerCase();
+        const mimeType = file.type.toLowerCase();
+
+        let content = "";
+        let shouldInferTitleFromHtml = false;
+
+        if (mimeType.startsWith("image/")) {
+          content = await clipboardImageBlobToHtml(file);
+        } else if (isMarkdownFile(file)) {
+          const markdown = await file.text();
+          content = await renderMarkdownToHtml(markdown);
+          shouldInferTitleFromHtml = true;
+        } else if (
+          mimeType === "text/html" ||
+          fileName.endsWith(".html") ||
+          fileName.endsWith(".htm") ||
+          mimeType.startsWith("text/")
+        ) {
+          content = await file.text();
+        } else {
+          unsupportedCount += 1;
+          continue;
+        }
+
+        const droppedFileTitle = fileNameToTitle(file.name);
+        const result = evaluatePageInputWithOptions(nextPages, content, {
+          defaultTitle: droppedFileTitle,
+          textUseDefaultTitle: true,
+          htmlUseHeadTitleOnly: !shouldInferTitleFromHtml,
+        });
+        if (result.status === "ok") {
+          nextPages = [...nextPages, result.page];
+          addedCount += 1;
+          continue;
+        }
+
+        if (result.status === "duplicate") {
+          duplicateCount += 1;
+          duplicateWarnings.push({
+            code: "EMPTY_PAGE_SKIPPED",
+            message: "Duplicate page content detected and skipped.",
+          });
+          continue;
+        }
+
+        if (result.status === "invalid") {
+          invalidCount += 1;
+          continue;
+        }
+
+        emptyCount += 1;
+      }
+
+      if (addedCount > 0) {
+        setPages(nextPages);
+        setSummary("");
+        setErrors([]);
+        setPastedInput("");
+      }
+
+      if (addedCount > 1) {
+        notify(
+          "success",
+          "Pages added",
+          `${addedCount} pages added from dropped files.`,
+        );
+      } else if (addedCount === 1) {
+        notify("success", "Page added", "1 page added from dropped files.");
+      }
+
+      if (unsupportedCount > 0) {
+        notify(
+          "info",
+          "Some files skipped",
+          `${unsupportedCount} file(s) were skipped because only HTML, Markdown, text, and image files are supported.`,
+        );
+      }
+
+      if (duplicateWarnings.length > 0) {
+        setWarnings((prev) => [...prev, ...duplicateWarnings]);
+        notify(
+          "warning",
+          "Duplicate pages skipped",
+          `${duplicateCount} dropped file(s) matched existing page content and were skipped.`,
+        );
+      }
+
+      if (invalidCount > 0) {
+        notify(
+          "warning",
+          "Some files could not be added",
+          `${invalidCount} file(s) could not be converted into page content.`,
+        );
+      }
+
+      if (emptyCount > 0) {
+        notify(
+          "warning",
+          "Some files were empty",
+          `${emptyCount} file(s) had no usable content.`,
+        );
+      }
+
+      if (addedCount === 0 && unsupportedCount > 0) {
+        setErrors([
+          "No supported files found. Drop HTML, Markdown, text, or image files to add pages.",
+        ]);
+      } else if (addedCount === 0 && (duplicateCount > 0 || invalidCount > 0 || emptyCount > 0)) {
+        setErrors([
+          "No pages were added from dropped files. Check file content and try again.",
+        ]);
+      }
+    } catch (error) {
+      const message = `Could not read dropped files: ${String(error)}`;
+      setErrors([message]);
+      notify("error", "File import failed", message);
+    } finally {
+      setIsAdding(false);
+    }
   }
 
   async function addPageFromClipboard() {
@@ -168,6 +387,12 @@ export function useEpubMaker(): UseEpubMakerReturn {
   }
 
   function onPasteInput(event: ClipboardEvent<HTMLTextAreaElement>) {
+    if (event.clipboardData.files.length > 0) {
+      event.preventDefault();
+      void addPagesFromFiles(event.clipboardData.files);
+      return;
+    }
+
     const html = event.clipboardData.getData("text/html");
     if (html?.trim()) {
       event.preventDefault();
@@ -179,6 +404,18 @@ export function useEpubMaker(): UseEpubMakerReturn {
     if (text?.trim()) {
       event.preventDefault();
       addInputAsPage(text);
+      return;
+    }
+
+    const imageFile = Array.from(event.clipboardData.items).find((item) =>
+      item.type.startsWith("image/"),
+    );
+    const imageBlob = imageFile?.getAsFile();
+    if (imageBlob) {
+      event.preventDefault();
+      void clipboardImageBlobToHtml(imageBlob).then((imageHtml) => {
+        addInputAsPage(imageHtml);
+      });
     }
   }
 
@@ -285,6 +522,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     autoEpubFileName,
     effectiveFileName,
     addPageFromClipboard,
+    addPagesFromFiles,
     onPasteInput,
     addFromFallbackText,
     removePage,

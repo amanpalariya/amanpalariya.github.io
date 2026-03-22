@@ -14,7 +14,7 @@ export const SEMANTIC_TOKENS = {
     surface: semanticColor("{colors.gray.50}", "{colors.gray.900}"),
     card: semanticColor("{colors.white}", "{colors.gray.800}"),
     popover: semanticColor("{colors.white}", "{colors.gray.800}"),
-    preview: semanticColor("{colors.gray.100}", "{colors.gray.950}"),
+    preview: semanticColor("{colors.gray.50}", "{colors.gray.900}"),
   },
   fg: {
     default: semanticColor("{colors.gray.800}", "{colors.gray.200}"),
@@ -24,8 +24,8 @@ export const SEMANTIC_TOKENS = {
     danger: semanticColor("{colors.red.600}", "{colors.red.300}"),
   },
   border: {
-    default: semanticColor("{colors.gray.300}", "{colors.gray.700}"),
-    muted: semanticColor("{colors.gray.200}", "{colors.gray.800}"),
+    default: semanticColor("{colors.gray.300}", "{colors.gray.600}"),
+    muted: semanticColor("{colors.gray.200}", "{colors.gray.700}"),
     accent: semanticColor("#c2cfda", "#506276"),
   },
   button: {
