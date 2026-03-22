@@ -7,6 +7,8 @@ import { TileList } from "@components/core/Tiles";
 import HighlightedSection from "@components/page/common/HighlightedSection";
 import NextLink from "next/link";
 import { FiBookOpen, FiChevronRight, FiTool } from "react-icons/fi";
+import FeatureFlagsData from "data/features";
+import { useFeatureFlag } from "utils/features";
 import { getToolsPageContent } from "../data/content";
 import { getAllTools } from "../data/tools-registry";
 import { filterTools } from "../domain/search";
@@ -126,6 +128,9 @@ function Main({
 export function ToolsDirectoryPage() {
   const content = getToolsPageContent();
   const tools = getAllTools();
+  const [, forceEmptyStates] = useFeatureFlag(
+    FeatureFlagsData.featuresIds.FORCE_EMPTY_STATES,
+  );
   const [filters, setFilters] = useState<ToolFiltersState>(defaultFilters);
 
   const categories = useMemo(
@@ -139,6 +144,7 @@ export function ToolsDirectoryPage() {
   );
 
   const filteredTools = useMemo(() => filterTools(tools, filters), [tools, filters]);
+  const visibleTools = forceEmptyStates ? [] : filteredTools;
   const showSearch = tools.length > 1;
   const showFilters = categories.length > 1 || statuses.length > 1;
 
@@ -156,7 +162,7 @@ export function ToolsDirectoryPage() {
         searchPlaceholder={content.searchPlaceholder}
       />
 
-      {filteredTools.length === 0 ? (
+      {visibleTools.length === 0 ? (
         <HighlightedSection>
           <EmptyState.Root>
             <EmptyState.Content>
@@ -164,14 +170,13 @@ export function ToolsDirectoryPage() {
                 <Icon as={FiTool} boxSize={10} color={"app.fg.icon"} />
               </EmptyState.Indicator>
               <EmptyState.Title>{content.emptyStateTitle}</EmptyState.Title>
-              <EmptyState.Description>{content.emptyStateDescription}</EmptyState.Description>
             </EmptyState.Content>
           </EmptyState.Root>
         </HighlightedSection>
       ) : (
         <HighlightedSection>
           <TileList>
-            {filteredTools.map((tool) => (
+            {visibleTools.map((tool) => (
               <ToolListTile key={tool.id} tool={tool} />
             ))}
           </TileList>
