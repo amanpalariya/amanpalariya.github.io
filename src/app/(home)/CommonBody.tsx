@@ -5,7 +5,7 @@ import WithFooter from "@components/page/wrapper/WithFooter";
 
 export default function CommonBody({ children }) {
   return (
-    <WithFooter>
+    <WithFooter hideFooterBottomPart>
       <WithBodyCard>{children}</WithBodyCard>
     </WithFooter>
   );

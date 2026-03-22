@@ -9,7 +9,8 @@ import {
   Wrap,
   WrapItem,
 } from "@chakra-ui/react";
-import { MainCard } from "@components/core/Cards";
+import { HeaderCard } from "@components/core/Cards";
+import { Tooltip } from "@components/ui/tooltip";
 import { homepageTabs } from "app/route-info";
 import { PersonalData } from "data";
 import { FiGithub, FiInstagram, FiLinkedin, FiMail } from "react-icons/fi";
@@ -26,17 +27,64 @@ const footerLinkProps = {
   },
 } as const;
 
-export default function Footer() {
+export default function Footer({
+  hideBottomPart = false,
+}: {
+  hideBottomPart?: boolean;
+}) {
+  const socialLinks = [
+    {
+      label: "LinkedIn",
+      tooltip: `@${PersonalData.linkedIn.username}`,
+      href: PersonalData.linkedIn.url,
+      icon: FiLinkedin,
+      color: "app.brand.linkedin.solid",
+      isExternal: true,
+    },
+    {
+      label: "GitHub",
+      tooltip: `@${PersonalData.github.username}`,
+      href: PersonalData.github.url,
+      icon: FiGithub,
+      color: "app.brand.github.solid",
+      isExternal: true,
+    },
+    {
+      label: "X",
+      tooltip: `@${PersonalData.x.username}`,
+      href: PersonalData.x.url,
+      icon: FaXTwitter,
+      color: "app.brand.x.solid",
+      isExternal: true,
+    },
+    {
+      label: "Instagram",
+      tooltip: `@${PersonalData.instagram.username}`,
+      href: PersonalData.instagram.url,
+      icon: FiInstagram,
+      color: "app.brand.instagram.solid",
+      isExternal: true,
+    },
+    {
+      label: "Email",
+      tooltip: PersonalData.email,
+      href: `mailto:${PersonalData.email}`,
+      icon: FiMail,
+      color: "app.fg.muted",
+      isExternal: false,
+    },
+  ] as const;
+
   return (
     <Box as="footer" p={[1, 4]} pt={[0, 0.5]} role="contentinfo">
-      <MainCard>
+      <HeaderCard>
         <VStack align="stretch" gap={4}>
-          <Box px={[1, 2]} pt={1}>
+          <Box px={[3, 5]} py={[3, 4]}>
             <Stack
               direction={["column", "row"]}
               justify="space-between"
               align={["flex-start", "start"]}
-              gap={[4, 6]}
+              gap={[6, 10]}
             >
               <VStack align="flex-start" gap={2} flex={1} minW={0}>
                 <Text
@@ -49,21 +97,24 @@ export default function Footer() {
                   Connect
                 </Text>
                 <HStack gap={3}>
-                  <Link href={PersonalData.linkedIn.url} target="_blank" rel="noreferrer" aria-label="LinkedIn" color="app.fg.subtle" _hover={{ color: "app.fg.default" }}>
-                    <Icon as={FiLinkedin} boxSize={5} />
-                  </Link>
-                  <Link href={PersonalData.github.url} target="_blank" rel="noreferrer" aria-label="GitHub" color="app.fg.subtle" _hover={{ color: "app.fg.default" }}>
-                    <Icon as={FiGithub} boxSize={5} />
-                  </Link>
-                  <Link href={PersonalData.x.url} target="_blank" rel="noreferrer" aria-label="X" color="app.fg.subtle" _hover={{ color: "app.fg.default" }}>
-                    <Icon as={FaXTwitter} boxSize={5} />
-                  </Link>
-                  <Link href={PersonalData.instagram.url} target="_blank" rel="noreferrer" aria-label="Instagram" color="app.fg.subtle" _hover={{ color: "app.fg.default" }}>
-                    <Icon as={FiInstagram} boxSize={5} />
-                  </Link>
-                  <Link href={`mailto:${PersonalData.email}`} aria-label="Email" color="app.fg.subtle" _hover={{ color: "app.fg.default" }}>
-                    <Icon as={FiMail} boxSize={5} />
-                  </Link>
+                  {socialLinks.map((social) => (
+                    <Tooltip
+                      key={social.label}
+                      content={social.tooltip}
+                      showArrow
+                    >
+                      <Link
+                        href={social.href}
+                        target={social.isExternal ? "_blank" : undefined}
+                        rel={social.isExternal ? "noreferrer" : undefined}
+                        aria-label={social.label}
+                        color={social.color}
+                        _hover={{ opacity: 0.85 }}
+                      >
+                        <Icon as={social.icon} boxSize={5} />
+                      </Link>
+                    </Tooltip>
+                  ))}
                 </HStack>
               </VStack>
 
@@ -79,22 +130,34 @@ export default function Footer() {
                 </Text>
                 <Wrap gapX={4} gapY={2}>
                   <WrapItem>
-                    <Link href={homepageTabs.home.pathname} {...footerLinkProps}>
+                    <Link
+                      href={homepageTabs.home.pathname}
+                      {...footerLinkProps}
+                    >
                       {homepageTabs.home.name}
                     </Link>
                   </WrapItem>
                   <WrapItem>
-                    <Link href={homepageTabs.about.pathname} {...footerLinkProps}>
+                    <Link
+                      href={homepageTabs.about.pathname}
+                      {...footerLinkProps}
+                    >
                       {homepageTabs.about.name}
                     </Link>
                   </WrapItem>
                   <WrapItem>
-                    <Link href={homepageTabs.projects.pathname} {...footerLinkProps}>
+                    <Link
+                      href={homepageTabs.projects.pathname}
+                      {...footerLinkProps}
+                    >
                       {homepageTabs.projects.name}
                     </Link>
                   </WrapItem>
                   <WrapItem>
-                    <Link href={homepageTabs.blogs.pathname} {...footerLinkProps}>
+                    <Link
+                      href={homepageTabs.blogs.pathname}
+                      {...footerLinkProps}
+                    >
                       {homepageTabs.blogs.name}
                     </Link>
                   </WrapItem>
@@ -108,27 +171,29 @@ export default function Footer() {
             </Stack>
           </Box>
 
-          <Box
-            background={"app.bg.cardHeader"}
-            borderTopWidth={"2px"}
-            borderTopColor={"app.border.default"}
-            mx={[-2, -4]}
-            mb={-4}
-            px={[4, 6]}
-            py={3}
-            borderBottomRadius={"2xl"}
-          >
-            <Text
-              fontSize={"sm"}
-              fontWeight={"normal"}
-              color={"app.fg.subtle"}
-              textAlign={"center"}
+          {hideBottomPart ? null : (
+            <Box
+              background={"app.bg.cardHeader"}
+              borderTopWidth={"2px"}
+              borderTopColor={"app.border.default"}
+              mx={-4}
+              mb={-4}
+              px={[4, 6]}
+              py={3}
+              borderBottomRadius={"2xl"}
             >
-              {PersonalData.name.full}
-            </Text>
-          </Box>
+              <Text
+                fontSize={"sm"}
+                fontWeight={"normal"}
+                color={"app.fg.icon"}
+                textAlign={"center"}
+              >
+                {PersonalData.name.full}
+              </Text>
+            </Box>
+          )}
         </VStack>
-      </MainCard>
+      </HeaderCard>
     </Box>
   );
 }
