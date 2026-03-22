@@ -134,7 +134,7 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
                 Drop files to add pages
               </Text>
               <Text fontFamily={"ui"} fontSize={"xs"} color={"app.epub.fg.subtle"}>
-                Supports text, HTML, and image files.
+                Supports Markdown, text, HTML, and image files.
               </Text>
             </VStack>
           </Box>

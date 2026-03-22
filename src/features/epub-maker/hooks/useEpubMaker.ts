@@ -14,6 +14,7 @@ import {
 } from "../services/prefs-storage";
 import { buildEpub } from "../domain/epub-builder";
 import { downloadBlob } from "../services/download";
+import { renderMarkdownToHtml } from "@utils/markdown";
 
 function fileNameToTitle(fileName: string): string {
   const withoutExtension = fileName.replace(/\.[^./\\]+$/, "");
@@ -22,6 +23,21 @@ function fileNameToTitle(fileName: string): string {
     .replace(/\s+/g, " ")
     .trim();
   return normalized || "Untitled";
+}
+
+function isMarkdownFile(file: File): boolean {
+  const fileName = file.name.toLowerCase();
+  const mimeType = file.type.toLowerCase();
+  return (
+    mimeType === "text/markdown" ||
+    mimeType === "text/x-markdown" ||
+    mimeType === "application/markdown" ||
+    fileName.endsWith(".md") ||
+    fileName.endsWith(".markdown") ||
+    fileName.endsWith(".mdown") ||
+    fileName.endsWith(".mkd") ||
+    fileName.endsWith(".mkdn")
+  );
 }
 
 export type UseEpubMakerReturn = EpubMakerState & {
@@ -224,9 +240,14 @@ export function useEpubMaker(): UseEpubMakerReturn {
         const mimeType = file.type.toLowerCase();
 
         let content = "";
+        let shouldInferTitleFromHtml = false;
 
         if (mimeType.startsWith("image/")) {
           content = await clipboardImageBlobToHtml(file);
+        } else if (isMarkdownFile(file)) {
+          const markdown = await file.text();
+          content = await renderMarkdownToHtml(markdown);
+          shouldInferTitleFromHtml = true;
         } else if (
           mimeType === "text/html" ||
           fileName.endsWith(".html") ||
@@ -243,7 +264,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
         const result = evaluatePageInputWithOptions(nextPages, content, {
           defaultTitle: droppedFileTitle,
           textUseDefaultTitle: true,
-          htmlUseHeadTitleOnly: true,
+          htmlUseHeadTitleOnly: !shouldInferTitleFromHtml,
         });
         if (result.status === "ok") {
           nextPages = [...nextPages, result.page];
@@ -289,7 +310,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
         notify(
           "info",
           "Some files skipped",
-          `${unsupportedCount} file(s) were skipped because only HTML, text, and image files are supported.`,
+          `${unsupportedCount} file(s) were skipped because only HTML, Markdown, text, and image files are supported.`,
         );
       }
 
@@ -320,7 +341,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
       if (addedCount === 0 && unsupportedCount > 0) {
         setErrors([
-          "No supported files found. Drop HTML, text, or image files to add pages.",
+          "No supported files found. Drop HTML, Markdown, text, or image files to add pages.",
         ]);
       } else if (addedCount === 0 && (duplicateCount > 0 || invalidCount > 0 || emptyCount > 0)) {
         setErrors([
@@ -366,6 +387,12 @@ export function useEpubMaker(): UseEpubMakerReturn {
   }
 
   function onPasteInput(event: ClipboardEvent<HTMLTextAreaElement>) {
+    if (event.clipboardData.files.length > 0) {
+      event.preventDefault();
+      void addPagesFromFiles(event.clipboardData.files);
+      return;
+    }
+
     const html = event.clipboardData.getData("text/html");
     if (html?.trim()) {
       event.preventDefault();
