@@ -52,6 +52,13 @@ export interface GenerationSummary {
   durationMs: number;
 }
 
+export interface UiNotification {
+  id: string;
+  type: "success" | "error" | "warning" | "info";
+  title: string;
+  description?: string;
+}
+
 export interface SanitizationPolicy {
   dropTags: Set<string>;
   allowTags: Set<string>;
@@ -96,5 +103,6 @@ export interface EpubMakerState {
   warnings: GenerationWarning[];
   errors: string[];
   summary: string;
+  notifications: UiNotification[];
   prefs: EpubMakerPrefs;
 }

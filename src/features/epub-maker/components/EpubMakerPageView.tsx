@@ -1,39 +1,25 @@
-import { Alert, Box, Code, Heading, Text, VStack } from "@chakra-ui/react";
+import { Alert, Box, Heading, Text, VStack } from "@chakra-ui/react";
 import type { UseEpubMakerReturn } from "../hooks/useEpubMaker";
 import { EpubToolbar } from "./EpubToolbar";
 import { EpubMetadataForm } from "./EpubMetadataForm";
 import { PasteFallbackPanel } from "./PasteFallbackPanel";
-import { StatusAlerts } from "./StatusAlerts";
 import { PageDraftGrid } from "./PageDraftGrid";
+import { TopRightNotifications } from "./TopRightNotifications";
 
 export function EpubMakerPageView(props: UseEpubMakerReturn) {
   return (
     <Box w={"full"} px={[4, 6]} py={4}>
       <VStack align={"stretch"} gap={4}>
+        <TopRightNotifications
+          notifications={props.notifications}
+          onDismiss={props.dismissNotification}
+        />
+
         <Heading size={"2xl"}>EPUB Maker</Heading>
         <Text color={"fg.muted"}>
-          Paste full HTML or plain text pages, preview as cards, then generate and
-          download EPUB.
+          Paste full HTML documents or raw text directly, organize pages, and
+          export a clean EPUB.
         </Text>
-
-        <StatusAlerts
-          showPasteFallback={props.showPasteFallback}
-          summary={props.summary}
-          errors={props.errors}
-          warnings={props.warnings}
-          generationProgress={props.generationProgress}
-          onDismissWarnings={() => props.setWarnings([])}
-        />
-
-        <EpubToolbar
-          isAdding={props.isAdding}
-          isGenerating={props.isGenerating}
-          pageCount={props.pages.length}
-          showPasteFallback={props.showPasteFallback}
-          onAddFromClipboard={props.addPageFromClipboard}
-          onGenerate={props.generateEpub}
-          onShowFallback={() => props.setShowPasteFallback(true)}
-        />
 
         <EpubMetadataForm
           prefs={props.prefs}
@@ -44,6 +30,16 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
           onToggleFileNameMode={props.toggleFileNameMode}
           onEmbedRemoteImagesChange={props.setEmbedRemoteImages}
           onAllowExternalLinksChange={props.setAllowExternalLinks}
+        />
+
+        <EpubToolbar
+          isAdding={props.isAdding}
+          isGenerating={props.isGenerating}
+          pageCount={props.pages.length}
+          showPasteFallback={props.showPasteFallback}
+          onAddFromClipboard={props.addPageFromClipboard}
+          onGenerate={props.generateEpub}
+          onShowFallback={() => props.setShowPasteFallback(true)}
         />
 
         {props.showPasteFallback ? (
@@ -78,11 +74,6 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
           onMoveDown={props.movePageDown}
         />
 
-        <Box>
-          <Text fontSize={"xs"} color={"fg.muted"}>
-            Output file: <Code>{props.effectiveFileName}</Code>
-          </Text>
-        </Box>
       </VStack>
     </Box>
   );

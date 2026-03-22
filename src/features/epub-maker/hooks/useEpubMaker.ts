@@ -28,6 +28,7 @@ export type UseEpubMakerReturn = EpubMakerState & {
   setShowPasteFallback: (value: boolean) => void;
   setPastedInput: (value: string) => void;
   setWarnings: (value: GenerationWarning[]) => void;
+  dismissNotification: (id: string) => void;
   setTitle: (value: string) => void;
   setAuthor: (value: string) => void;
   setManualFileName: (value: string) => void;
@@ -46,8 +47,28 @@ export function useEpubMaker(): UseEpubMakerReturn {
   const [warnings, setWarnings] = useState<GenerationWarning[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const [summary, setSummary] = useState("");
+  const [notifications, setNotifications] = useState<EpubMakerState["notifications"]>([]);
   const [prefs, setPrefs] = useState<EpubMakerState["prefs"]>(readEpubMakerPrefs());
   const [isPrefsLoaded, setIsPrefsLoaded] = useState(false);
+
+  function dismissNotification(id: string) {
+    setNotifications((prev) => prev.filter((notification) => notification.id !== id));
+  }
+
+  function notify(
+    type: "success" | "error" | "warning" | "info",
+    title: string,
+    description?: string,
+    durationMs = 4500,
+  ) {
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    setNotifications((prev) => [...prev, { id, type, title, description }]);
+    if (durationMs > 0) {
+      window.setTimeout(() => {
+        dismissNotification(id);
+      }, durationMs);
+    }
+  }
 
   const normalizedBookTitle = getNormalizedBookTitle(prefs.title);
   const normalizedBookAuthor = prefs.author.trim();
@@ -84,6 +105,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
   function addInputAsPage(content: string) {
     if (!content.trim()) {
       setErrors(["Clipboard/fallback input is empty."]);
+      notify("warning", "Empty input", "Clipboard/fallback input is empty.");
       return;
     }
 
@@ -91,19 +113,22 @@ export function useEpubMaker(): UseEpubMakerReturn {
       (page) => page.rawContent.trim() === content.trim(),
     );
     if (isDuplicate) {
+      const duplicateWarning = {
+        code: "EMPTY_PAGE_SKIPPED" as const,
+        message: "Duplicate page content detected and skipped.",
+      };
       setWarnings((prev) => [
         ...prev,
-        {
-          code: "EMPTY_PAGE_SKIPPED",
-          message: "Duplicate page content detected and skipped.",
-        },
+        duplicateWarning,
       ]);
+      notify("warning", "Duplicate page", duplicateWarning.message);
       return;
     }
 
     const page = createPageDraftFromInput(content, pages.length + 1, sanitizePolicy);
     if (!page) {
       setErrors(["Could not build page from pasted input."]);
+      notify("error", "Page add failed", "Could not build page from pasted input.");
       return;
     }
 
@@ -111,6 +136,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     setSummary("");
     setErrors([]);
     setPastedInput("");
+    notify("success", "Page added", `${page.title} added to draft list.`);
   }
 
   async function addPageFromClipboard() {
@@ -120,10 +146,14 @@ export function useEpubMaker(): UseEpubMakerReturn {
       const content = await readClipboardPageInput();
       addInputAsPage(content);
     } catch (error) {
-      setErrors([
-        `Could not read formatted clipboard content automatically: ${String(error)}. Use the paste fallback below.`,
-      ]);
+      const message = `Could not read formatted clipboard content automatically: ${String(error)}. Use the paste fallback below.`;
+      setErrors([message]);
       setShowPasteFallback(true);
+      notify(
+        "warning",
+        "Clipboard blocked",
+        "Automatic clipboard read failed. Paste in fallback box.",
+      );
     } finally {
       setIsAdding(false);
     }
@@ -147,6 +177,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
   function addFromFallbackText() {
     if (!pastedInput.trim()) {
       setErrors(["Paste HTML or text first, then add page."]);
+      notify("warning", "Nothing to add", "Paste HTML or text first, then add page.");
       return;
     }
     addInputAsPage(pastedInput);
@@ -193,7 +224,9 @@ export function useEpubMaker(): UseEpubMakerReturn {
     setSummary("");
 
     if (pages.length === 0) {
-      setErrors(["Add at least one page from clipboard before generating EPUB."]);
+      const message = "Add at least one page from clipboard before generating EPUB.";
+      setErrors([message]);
+      notify("warning", "No pages", message);
       setIsGenerating(false);
       setGenerationProgress(null);
       return;
@@ -214,12 +247,19 @@ export function useEpubMaker(): UseEpubMakerReturn {
       setSummary(
         `Generated and downloaded ${effectiveFileName} with ${result.summary.chapterCount} page(s), ${result.summary.embeddedImageCount} embedded image(s), and ${result.summary.externalImageCount} external image reference(s).`,
       );
+      notify("success", "EPUB generated", `${effectiveFileName} downloaded successfully.`);
+
+      if (result.warnings.length > 0) {
+        // Keep warnings in the on-page warnings list only (no toast notification)
+      }
 
       if (prefs.fileNameMode === "manual" && !prefs.manualFileName.trim()) {
         setPrefs((prev) => ({ ...prev, manualFileName: autoEpubFileName }));
       }
     } catch (error) {
-      setErrors([`Unexpected error while generating EPUB: ${String(error)}`]);
+      const message = `Unexpected error while generating EPUB: ${String(error)}`;
+      setErrors([message]);
+      notify("error", "Generation failed", message);
     } finally {
       setIsGenerating(false);
       setGenerationProgress(null);
@@ -236,6 +276,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     warnings,
     errors,
     summary,
+    notifications,
     prefs,
     normalizedBookTitle,
     normalizedBookAuthor,
@@ -252,6 +293,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     setShowPasteFallback,
     setPastedInput,
     setWarnings,
+    dismissNotification,
     setTitle: (value: string) => setPrefs((prev) => ({ ...prev, title: value })),
     setAuthor: (value: string) => setPrefs((prev) => ({ ...prev, author: value })),
     setManualFileName: (value: string) =>
