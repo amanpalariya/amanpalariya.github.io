@@ -5,7 +5,6 @@ import {
   Box,
   Button,
   Code,
-  DownloadTrigger,
   Heading,
   HStack,
   Icon,
@@ -27,10 +26,13 @@ import {
   LuTrash2,
 } from "react-icons/lu";
 
+type PageInputKind = "html" | "text";
+
 type PageDraft = {
   id: string;
   title: string;
-  rawHtml: string;
+  inputKind: PageInputKind;
+  rawContent: string;
   baseUrl: string | null;
   previewHtml: string;
 };
@@ -41,6 +43,58 @@ type EpubImage = {
   mediaType: string;
   bytes: Uint8Array;
 };
+
+const DROP_TAGS = new Set([
+  "script",
+  "style",
+  "noscript",
+  "template",
+  "svg",
+  "canvas",
+  "iframe",
+  "object",
+  "embed",
+  "link",
+  "meta",
+  "head",
+  "header",
+  "footer",
+  "nav",
+  "aside",
+  "form",
+  "button",
+  "input",
+  "textarea",
+  "select",
+  "option",
+  "label",
+]);
+
+const ALLOWED_TAGS = new Set([
+  "p",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "ul",
+  "ol",
+  "li",
+  "blockquote",
+  "pre",
+  "code",
+  "strong",
+  "em",
+  "a",
+  "br",
+  "hr",
+  "figure",
+  "figcaption",
+  "div",
+  "span",
+  "img",
+]);
 
 function escapeXml(value: string): string {
   return value
@@ -80,8 +134,10 @@ function mediaTypeToExtension(mediaType: string): string {
   return "bin";
 }
 
-function dataUrlToBytes(dataUrl: string): { bytes: Uint8Array; mediaType: string } | null {
-  const match = dataUrl.match(/^data:([^;,]+)?(?:;base64)?,(.*)$/s);
+function dataUrlToBytes(
+  dataUrl: string,
+): { bytes: Uint8Array; mediaType: string } | null {
+  const match = dataUrl.match(/^data:([^;,]+)?(?:;base64)?,([\s\S]*)$/);
   if (!match) return null;
   const mediaType = match[1] || "application/octet-stream";
   const payload = match[2] || "";
@@ -105,171 +161,158 @@ function dataUrlToBytes(dataUrl: string): { bytes: Uint8Array; mediaType: string
   }
 }
 
-function getPageFromClipboardHtml(html: string, id: string): PageDraft {
+function appendSanitizedNode(
+  sourceNode: ChildNode,
+  targetParent: Element,
+  out: Document,
+  baseUrl: string | null,
+) {
+  if (sourceNode.nodeType === Node.TEXT_NODE) {
+    const text = sourceNode.textContent;
+    if (text) targetParent.appendChild(out.createTextNode(text));
+    return;
+  }
+
+  if (sourceNode.nodeType !== Node.ELEMENT_NODE) return;
+
+  const sourceEl = sourceNode as HTMLElement;
+  const tag = sourceEl.tagName.toLowerCase();
+
+  if (DROP_TAGS.has(tag)) return;
+
+  if (!ALLOWED_TAGS.has(tag)) {
+    for (const child of Array.from(sourceEl.childNodes)) {
+      appendSanitizedNode(child, targetParent, out, baseUrl);
+    }
+    return;
+  }
+
+  const target = out.createElement(tag);
+
+  if (tag === "a") {
+    const href = sourceEl.getAttribute("href");
+    if (href) {
+      const absoluteHref = toAbsoluteUrl(href, baseUrl);
+      if (absoluteHref) target.setAttribute("href", absoluteHref);
+    }
+  }
+
+  if (tag === "img") {
+    const src = sourceEl.getAttribute("src");
+    if (!src) return;
+    const absoluteSrc = toAbsoluteUrl(src, baseUrl);
+    if (!absoluteSrc) return;
+    target.setAttribute("src", absoluteSrc);
+    const alt = sourceEl.getAttribute("alt");
+    if (alt) target.setAttribute("alt", alt);
+    targetParent.appendChild(target);
+    return;
+  }
+
+  for (const child of Array.from(sourceEl.childNodes)) {
+    appendSanitizedNode(child, target, out, baseUrl);
+  }
+
+  targetParent.appendChild(target);
+}
+
+function sanitizeHtmlContent(html: string, fallbackPageTitle: string) {
   const parser = new DOMParser();
   const parsed = parser.parseFromString(html, "text/html");
 
   const title =
-    parsed.querySelector('meta[property="og:title"]')?.getAttribute("content") ||
+    parsed
+      .querySelector('meta[property="og:title"]')
+      ?.getAttribute("content") ||
     parsed.title ||
-    `Page ${id}`;
+    fallbackPageTitle;
   const baseUrl =
     parsed.querySelector("base")?.getAttribute("href") ||
     parsed.querySelector('meta[property="og:url"]')?.getAttribute("content") ||
     parsed.querySelector('link[rel="canonical"]')?.getAttribute("href") ||
     null;
+
   const sourceRoot = parsed.querySelector("article, main") || parsed.body;
-
-  const dropTags = new Set([
-    "script",
-    "style",
-    "noscript",
-    "template",
-    "svg",
-    "canvas",
-    "iframe",
-    "object",
-    "embed",
-    "link",
-    "meta",
-    "head",
-    "header",
-    "footer",
-    "nav",
-    "aside",
-    "form",
-    "button",
-    "input",
-    "textarea",
-    "select",
-    "option",
-    "label",
-  ]);
-
-  const allowedTags = new Set([
-    "p",
-    "h1",
-    "h2",
-    "h3",
-    "h4",
-    "h5",
-    "h6",
-    "ul",
-    "ol",
-    "li",
-    "blockquote",
-    "pre",
-    "code",
-    "strong",
-    "em",
-    "a",
-    "br",
-    "hr",
-    "figure",
-    "figcaption",
-    "div",
-    "span",
-    "img",
-  ]);
-
-  const out = document.implementation.createHTMLDocument("preview");
+  const out = document.implementation.createHTMLDocument("sanitized");
   const container = out.createElement("div");
 
-  const appendSanitizedNode = (sourceNode: ChildNode, targetParent: Element) => {
-    if (sourceNode.nodeType === Node.TEXT_NODE) {
-      const text = sourceNode.textContent;
-      if (text) {
-        targetParent.appendChild(out.createTextNode(text));
-      }
-      return;
-    }
-
-    if (sourceNode.nodeType !== Node.ELEMENT_NODE) return;
-
-    const sourceEl = sourceNode as HTMLElement;
-    const tag = sourceEl.tagName.toLowerCase();
-
-    if (dropTags.has(tag)) return;
-
-    if (!allowedTags.has(tag)) {
-      for (const child of Array.from(sourceEl.childNodes)) {
-        appendSanitizedNode(child, targetParent);
-      }
-      return;
-    }
-
-    const target = out.createElement(tag);
-
-    if (tag === "a") {
-      const href = sourceEl.getAttribute("href");
-      if (href) {
-        const absoluteHref = toAbsoluteUrl(href, baseUrl);
-        if (absoluteHref) {
-          target.setAttribute("href", absoluteHref);
-        }
-      }
-    }
-
-    if (tag === "img") {
-      const src = sourceEl.getAttribute("src");
-      if (!src) return;
-      const absoluteSrc = toAbsoluteUrl(src, baseUrl);
-      if (!absoluteSrc) return;
-      target.setAttribute("src", absoluteSrc);
-      const alt = sourceEl.getAttribute("alt");
-      if (alt) target.setAttribute("alt", alt);
-      targetParent.appendChild(target);
-      return;
-    }
-
-    for (const child of Array.from(sourceEl.childNodes)) {
-      appendSanitizedNode(child, target);
-    }
-    targetParent.appendChild(target);
-  };
-
   for (const child of Array.from(sourceRoot.childNodes)) {
-    appendSanitizedNode(child, container);
+    appendSanitizedNode(child, container, out, baseUrl);
   }
 
   const previewContainer = out.createElement("div");
-  const children = Array.from(container.childNodes).slice(0, 10);
-  for (const node of children) {
+  const previewNodes = Array.from(container.childNodes).slice(0, 10);
+  for (const node of previewNodes) {
     previewContainer.appendChild(node.cloneNode(true));
   }
 
   const previewHtml = `<!doctype html><html><head><meta charset="utf-8" /><style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:12px;line-height:1.35;padding:10px;color:#111}img{max-width:100%;height:auto}h1,h2,h3,h4,h5,h6{margin:8px 0 4px}p,li,blockquote,pre{margin:4px 0}a{color:#2563eb;text-decoration:none}</style></head><body>${previewContainer.innerHTML}</body></html>`;
 
   return {
-    id,
     title,
-    rawHtml: html,
     baseUrl,
+    chapterBodyHtml: container.innerHTML,
     previewHtml,
   };
 }
 
-export default function UrlToEpubPage() {
+function getPageFromInput(content: string, id: string): PageDraft {
+  const fallbackPageTitle = `Page ${id}`;
+  const looksLikeHtml = /<\s*[a-zA-Z!/]/.test(content);
+
+  if (looksLikeHtml) {
+    const sanitized = sanitizeHtmlContent(content, fallbackPageTitle);
+    return {
+      id,
+      title: sanitized.title,
+      inputKind: "html",
+      rawContent: content,
+      baseUrl: sanitized.baseUrl,
+      previewHtml: sanitized.previewHtml,
+    };
+  }
+
+  const textPreview = `<!doctype html><html><head><meta charset="utf-8" /><style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:12px;line-height:1.35;padding:10px;color:#111}pre{white-space:pre-wrap;word-break:break-word;margin:0}</style></head><body><pre>${escapeXml(content)}</pre></body></html>`;
+
+  return {
+    id,
+    title: fallbackPageTitle,
+    inputKind: "text",
+    rawContent: content,
+    baseUrl: null,
+    previewHtml: textPreview,
+  };
+}
+
+export default function EpubMakerPage() {
   const [pages, setPages] = useState<PageDraft[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showPasteFallback, setShowPasteFallback] = useState(false);
-  const [pastedHtmlInput, setPastedHtmlInput] = useState("");
+  const [pastedInput, setPastedInput] = useState("");
   const [epubBlob, setEpubBlob] = useState<Blob | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const [summary, setSummary] = useState("");
 
-  function addHtmlAsPage(html: string) {
+  const downloadUrl = epubBlob ? URL.createObjectURL(epubBlob) : null;
+
+  function addInputAsPage(content: string) {
+    if (!content.trim()) {
+      setErrors(["Clipboard/fallback input is empty."]);
+      return;
+    }
+
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const page = getPageFromClipboardHtml(html, `${pages.length + 1}`);
+    const page = getPageFromInput(content, `${pages.length + 1}`);
     page.id = id;
 
     setPages((prev) => [...prev, page]);
     setEpubBlob(null);
     setSummary("");
     setWarnings([]);
-    setPastedHtmlInput("");
+    setErrors([]);
+    setPastedInput("");
   }
 
   async function addPageFromClipboard() {
@@ -283,15 +326,7 @@ export default function UrlToEpubPage() {
         return;
       }
 
-      const looksLikeHtml = /<\s*[a-zA-Z!]/.test(clipboardText);
-      if (!looksLikeHtml) {
-        setErrors([
-          "Clipboard does not look like HTML. Copy page HTML first (for example from DevTools).",
-        ]);
-        return;
-      }
-
-      addHtmlAsPage(clipboardText);
+      addInputAsPage(clipboardText);
     } catch (error) {
       setErrors([
         `Could not read clipboard automatically: ${String(error)}. Use the paste fallback below.`,
@@ -302,31 +337,27 @@ export default function UrlToEpubPage() {
     }
   }
 
-  function onPasteHtml(event: ClipboardEvent<HTMLTextAreaElement>) {
+  function onPasteInput(event: ClipboardEvent<HTMLTextAreaElement>) {
     const html = event.clipboardData.getData("text/html");
-    if (html && /<\s*[a-zA-Z!]/.test(html)) {
+    if (html?.trim()) {
       event.preventDefault();
-      addHtmlAsPage(html);
+      addInputAsPage(html);
       return;
     }
 
     const text = event.clipboardData.getData("text/plain");
-    if (text && /<\s*[a-zA-Z!]/.test(text)) {
+    if (text?.trim()) {
       event.preventDefault();
-      addHtmlAsPage(text);
+      addInputAsPage(text);
     }
   }
 
   function addFromFallbackText() {
-    if (!pastedHtmlInput.trim()) {
-      setErrors(["Paste HTML first, then add page."]);
+    if (!pastedInput.trim()) {
+      setErrors(["Paste HTML or text first, then add page."]);
       return;
     }
-    if (!/<\s*[a-zA-Z!]/.test(pastedHtmlInput)) {
-      setErrors(["Fallback input does not look like HTML."]);
-      return;
-    }
-    addHtmlAsPage(pastedHtmlInput);
+    addInputAsPage(pastedInput);
   }
 
   function removePage(id: string) {
@@ -343,7 +374,9 @@ export default function UrlToEpubPage() {
     setEpubBlob(null);
 
     if (pages.length === 0) {
-      setErrors(["Add at least one page from clipboard before generating EPUB."]);
+      setErrors([
+        "Add at least one page from clipboard before generating EPUB.",
+      ]);
       setIsGenerating(false);
       return;
     }
@@ -410,132 +443,101 @@ export default function UrlToEpubPage() {
         }
       };
 
-      const chapters: Array<{ id: string; href: string; title: string; content: string }> = [];
+      const chapters: Array<{
+        id: string;
+        href: string;
+        title: string;
+        content: string;
+      }> = [];
 
       for (let i = 0; i < pages.length; i += 1) {
         const page = pages[i];
-        const parser = new DOMParser();
-        const parsed = parser.parseFromString(page.rawHtml, "text/html");
-        const sourceRoot = parsed.querySelector("article, main") || parsed.body;
+        const title = page.title || `Page ${i + 1}`;
+        let chapterBody = "";
 
-        const out = document.implementation.createHTMLDocument("chapter");
-        const container = out.createElement("div");
+        if (page.inputKind === "text") {
+          chapterBody = `<pre>${escapeXml(page.rawContent)}</pre>`;
+        } else {
+          const sanitized = sanitizeHtmlContent(page.rawContent, title);
+          const parser = new DOMParser();
+          const parsed = parser.parseFromString(
+            sanitized.chapterBodyHtml,
+            "text/html",
+          );
+          const sourceRoot = parsed.body;
 
-        const dropTags = new Set([
-          "script",
-          "style",
-          "noscript",
-          "template",
-          "svg",
-          "canvas",
-          "iframe",
-          "object",
-          "embed",
-          "link",
-          "meta",
-          "head",
-          "header",
-          "footer",
-          "nav",
-          "aside",
-          "form",
-          "button",
-          "input",
-          "textarea",
-          "select",
-          "option",
-          "label",
-        ]);
+          const out = document.implementation.createHTMLDocument("chapter");
+          const container = out.createElement("div");
 
-        const allowedTags = new Set([
-          "p",
-          "h1",
-          "h2",
-          "h3",
-          "h4",
-          "h5",
-          "h6",
-          "ul",
-          "ol",
-          "li",
-          "blockquote",
-          "pre",
-          "code",
-          "strong",
-          "em",
-          "a",
-          "br",
-          "hr",
-          "figure",
-          "figcaption",
-          "div",
-          "span",
-          "img",
-        ]);
+          const appendNode = async (
+            sourceNode: ChildNode,
+            targetParent: Element,
+          ) => {
+            if (sourceNode.nodeType === Node.TEXT_NODE) {
+              const text = sourceNode.textContent;
+              if (text) targetParent.appendChild(out.createTextNode(text));
+              return;
+            }
 
-        const appendNode = async (sourceNode: ChildNode, targetParent: Element) => {
-          if (sourceNode.nodeType === Node.TEXT_NODE) {
-            const text = sourceNode.textContent;
-            if (text) targetParent.appendChild(out.createTextNode(text));
-            return;
-          }
+            if (sourceNode.nodeType !== Node.ELEMENT_NODE) return;
 
-          if (sourceNode.nodeType !== Node.ELEMENT_NODE) return;
+            const sourceEl = sourceNode as HTMLElement;
+            const tag = sourceEl.tagName.toLowerCase();
 
-          const sourceEl = sourceNode as HTMLElement;
-          const tag = sourceEl.tagName.toLowerCase();
+            if (!ALLOWED_TAGS.has(tag)) {
+              for (const child of Array.from(sourceEl.childNodes)) {
+                await appendNode(child, targetParent);
+              }
+              return;
+            }
 
-          if (dropTags.has(tag)) return;
+            const target = out.createElement(tag);
 
-          if (!allowedTags.has(tag)) {
+            if (tag === "a") {
+              const href = sourceEl.getAttribute("href");
+              if (href) {
+                const absoluteHref = toAbsoluteUrl(href, page.baseUrl);
+                if (absoluteHref) target.setAttribute("href", absoluteHref);
+              }
+            }
+
+            if (tag === "img") {
+              const src = sourceEl.getAttribute("src");
+              if (!src) return;
+              const { localHref, absoluteSrc } = await registerImage(
+                src,
+                page.baseUrl,
+              );
+              if (!localHref && !absoluteSrc) return;
+              target.setAttribute("src", localHref || absoluteSrc || src);
+              const alt = sourceEl.getAttribute("alt");
+              if (alt) target.setAttribute("alt", alt);
+              targetParent.appendChild(target);
+              return;
+            }
+
             for (const child of Array.from(sourceEl.childNodes)) {
-              await appendNode(child, targetParent);
+              await appendNode(child, target);
             }
-            return;
-          }
 
-          const target = out.createElement(tag);
-
-          if (tag === "a") {
-            const href = sourceEl.getAttribute("href");
-            if (href) {
-              const absoluteHref = toAbsoluteUrl(href, page.baseUrl);
-              if (absoluteHref) target.setAttribute("href", absoluteHref);
-            }
-          }
-
-          if (tag === "img") {
-            const src = sourceEl.getAttribute("src");
-            if (!src) return;
-            const { localHref, absoluteSrc } = await registerImage(src, page.baseUrl);
-            if (!localHref && !absoluteSrc) return;
-            target.setAttribute("src", localHref || absoluteSrc || src);
-            const alt = sourceEl.getAttribute("alt");
-            if (alt) target.setAttribute("alt", alt);
             targetParent.appendChild(target);
-            return;
+          };
+
+          for (const child of Array.from(sourceRoot.childNodes)) {
+            await appendNode(child, container);
           }
 
-          for (const child of Array.from(sourceEl.childNodes)) {
-            await appendNode(child, target);
-          }
-
-          targetParent.appendChild(target);
-        };
-
-        for (const child of Array.from(sourceRoot.childNodes)) {
-          await appendNode(child, container);
+          chapterBody = container.innerHTML;
         }
 
-        const title = page.title || `Page ${i + 1}`;
         const xhtml = `<?xml version="1.0" encoding="UTF-8"?>
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>${escapeXml(title)}</title>
+    <style>pre{white-space:pre-wrap;word-break:break-word}</style>
   </head>
   <body>
-    <h1>${escapeXml(title)}</h1>
-    ${container.innerHTML}
+    ${chapterBody}
   </body>
 </html>`;
 
@@ -547,14 +549,17 @@ export default function UrlToEpubPage() {
         });
       }
 
-      const bookTitle = "Clipboard Pages";
+      const bookTitle = "EPUB Maker Pages";
       const bookId =
         typeof crypto !== "undefined" && "randomUUID" in crypto
           ? crypto.randomUUID()
           : `book-${Date.now()}`;
 
       const navItems = chapters
-        .map((chapter) => `<li><a href="${escapeXml(chapter.href)}">${escapeXml(chapter.title)}</a></li>`)
+        .map(
+          (chapter) =>
+            `<li><a href="${escapeXml(chapter.href)}">${escapeXml(chapter.title)}</a></li>`,
+        )
         .join("\n");
 
       const ncxItems = chapters
@@ -687,9 +692,10 @@ export default function UrlToEpubPage() {
   return (
     <Box w={"full"} px={[4, 6]} py={4}>
       <VStack align={"stretch"} gap={4}>
-        <Heading size={"2xl"}>Clipboard HTML to EPUB</Heading>
+        <Heading size={"2xl"}>EPUB Maker</Heading>
         <Text color={"fg.muted"}>
-          Paste page HTML, preview as cards, then generate and download EPUB.
+          Paste full HTML or plain text pages, preview as cards, then generate
+          and download EPUB.
         </Text>
 
         <Alert.Root status={"info"}>
@@ -697,7 +703,7 @@ export default function UrlToEpubPage() {
           <Alert.Content>
             <Alert.Title>Quick steps</Alert.Title>
             <Alert.Description>
-              1) Copy HTML, 2) Add page(s), 3) Generate EPUB.
+              1) Copy HTML/text, 2) Add page(s), 3) Generate EPUB.
             </Alert.Description>
           </Alert.Content>
         </Alert.Root>
@@ -708,8 +714,9 @@ export default function UrlToEpubPage() {
             <Alert.Content>
               <Alert.Title>Clipboard fallback enabled</Alert.Title>
               <Alert.Description>
-                If automatic clipboard read is blocked, click in the box below and press
-                <Code> Cmd/Ctrl + V </Code> to paste HTML directly.
+                If automatic clipboard read is blocked, click in the box below
+                and press
+                <Code> Cmd/Ctrl + V </Code> to paste HTML/text directly.
               </Alert.Description>
             </Alert.Content>
           </Alert.Root>
@@ -722,59 +729,68 @@ export default function UrlToEpubPage() {
             </Icon>
             Add page from clipboard
           </Button>
-          <Button onClick={generateEpub} loading={isGenerating} disabled={pages.length === 0}>
+          <Button
+            onClick={generateEpub}
+            loading={isGenerating}
+            disabled={pages.length === 0}
+          >
             <Icon>
               <LuBookDown />
             </Icon>
             Generate EPUB
           </Button>
           {!showPasteFallback ? (
-            <Button size={"sm"} variant={"outline"} onClick={() => setShowPasteFallback(true)}>
+            <Button
+              size={"sm"}
+              variant={"outline"}
+              onClick={() => setShowPasteFallback(true)}
+            >
               <Icon>
                 <LuEye />
               </Icon>
               Show fallback
             </Button>
           ) : null}
-          {epubBlob ? (
-            <DownloadTrigger
-              data={epubBlob}
-              fileName={"clipboard-pages.epub"}
-              mimeType={"application/epub+zip"}
-              asChild
-            >
-              <Button variant={"solid"}>
+          {downloadUrl ? (
+            <Button asChild variant={"solid"}>
+              <a href={downloadUrl} download={"epub-maker-pages.epub"}>
                 <Icon>
                   <LuDownload />
                 </Icon>
                 Download EPUB
-              </Button>
-            </DownloadTrigger>
+              </a>
+            </Button>
           ) : null}
         </HStack>
 
         {showPasteFallback ? (
           <Box>
             <Textarea
-              value={pastedHtmlInput}
-              onChange={(event) => setPastedHtmlInput(event.target.value)}
-              onPaste={onPasteHtml}
+              value={pastedInput}
+              onChange={(event) => setPastedInput(event.target.value)}
+              onPaste={onPasteInput}
               minH={"140px"}
-              placeholder={"Click here and press Cmd/Ctrl+V to paste HTML (auto-add on paste when possible)."}
+              placeholder={
+                "Click here and press Cmd/Ctrl+V to paste HTML or plain text (auto-add on paste when possible)."
+              }
             />
             <HStack mt={2}>
-              <Button size={"sm"} variant={"subtle"} onClick={addFromFallbackText}>
+              <Button
+                size={"sm"}
+                variant={"subtle"}
+                onClick={addFromFallbackText}
+              >
                 <Icon>
                   <LuClipboardPaste />
                 </Icon>
-                Add pasted HTML as page
+                Add pasted content as page
               </Button>
               <Button
                 size={"sm"}
                 variant={"ghost"}
                 onClick={() => {
                   setShowPasteFallback(false);
-                  setPastedHtmlInput("");
+                  setPastedInput("");
                 }}
               >
                 <Icon>
@@ -838,7 +854,11 @@ export default function UrlToEpubPage() {
               overflow={"hidden"}
               bg={"bg.panel"}
             >
-              <Box p={3} borderBottomWidth={"1px"} borderColor={"border.subtle"}>
+              <Box
+                p={3}
+                borderBottomWidth={"1px"}
+                borderColor={"border.subtle"}
+              >
                 <HStack justify={"space-between"} align={"center"} gap={2}>
                   {`${index + 1}. ${page.title}`.length > 36 ? (
                     <Tooltip content={`${index + 1}. ${page.title}`}>
@@ -889,7 +909,12 @@ export default function UrlToEpubPage() {
                   title={`preview-${page.id}`}
                   srcDoc={page.previewHtml}
                   sandbox=""
-                  style={{ width: "100%", height: "100%", border: "none", pointerEvents: "none" }}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    border: "none",
+                    pointerEvents: "none",
+                  }}
                 />
               </Box>
             </Box>
