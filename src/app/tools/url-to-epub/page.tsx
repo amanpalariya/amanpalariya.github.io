@@ -685,7 +685,7 @@ export default function UrlToEpubPage() {
   }
 
   return (
-    <Box maxW={"6xl"} mx={"auto"} p={{ base: 4, md: 8 }}>
+    <Box w={"full"} px={[4, 6]} py={4}>
       <VStack align={"stretch"} gap={4}>
         <Heading size={"2xl"}>Clipboard HTML to EPUB</Heading>
         <Text color={"fg.muted"}>
