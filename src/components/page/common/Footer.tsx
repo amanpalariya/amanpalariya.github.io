@@ -46,6 +46,35 @@ export default function Footer() {
                   letterSpacing="wide"
                   color="app.fg.muted"
                 >
+                  Connect
+                </Text>
+                <HStack gap={3}>
+                  <Link href={PersonalData.linkedIn.url} target="_blank" rel="noreferrer" aria-label="LinkedIn" color="app.fg.subtle" _hover={{ color: "app.fg.default" }}>
+                    <Icon as={FiLinkedin} boxSize={5} />
+                  </Link>
+                  <Link href={PersonalData.github.url} target="_blank" rel="noreferrer" aria-label="GitHub" color="app.fg.subtle" _hover={{ color: "app.fg.default" }}>
+                    <Icon as={FiGithub} boxSize={5} />
+                  </Link>
+                  <Link href={PersonalData.x.url} target="_blank" rel="noreferrer" aria-label="X" color="app.fg.subtle" _hover={{ color: "app.fg.default" }}>
+                    <Icon as={FaXTwitter} boxSize={5} />
+                  </Link>
+                  <Link href={PersonalData.instagram.url} target="_blank" rel="noreferrer" aria-label="Instagram" color="app.fg.subtle" _hover={{ color: "app.fg.default" }}>
+                    <Icon as={FiInstagram} boxSize={5} />
+                  </Link>
+                  <Link href={`mailto:${PersonalData.email}`} aria-label="Email" color="app.fg.subtle" _hover={{ color: "app.fg.default" }}>
+                    <Icon as={FiMail} boxSize={5} />
+                  </Link>
+                </HStack>
+              </VStack>
+
+              <VStack align="flex-start" gap={2} flex={1} minW={0}>
+                <Text
+                  fontSize="xs"
+                  fontWeight="semibold"
+                  textTransform="uppercase"
+                  letterSpacing="wide"
+                  color="app.fg.muted"
+                >
                   Navigate
                 </Text>
                 <Wrap gapX={4} gapY={2}>
@@ -75,35 +104,6 @@ export default function Footer() {
                     </Link>
                   </WrapItem>
                 </Wrap>
-              </VStack>
-
-              <VStack align="flex-start" gap={2} flex={1} minW={0}>
-                <Text
-                  fontSize="xs"
-                  fontWeight="semibold"
-                  textTransform="uppercase"
-                  letterSpacing="wide"
-                  color="app.fg.muted"
-                >
-                  Connect
-                </Text>
-                <HStack gap={3}>
-                  <Link href={PersonalData.linkedIn.url} target="_blank" rel="noreferrer" aria-label="LinkedIn" color="app.fg.subtle" _hover={{ color: "app.fg.default" }}>
-                    <Icon as={FiLinkedin} boxSize={5} />
-                  </Link>
-                  <Link href={PersonalData.github.url} target="_blank" rel="noreferrer" aria-label="GitHub" color="app.fg.subtle" _hover={{ color: "app.fg.default" }}>
-                    <Icon as={FiGithub} boxSize={5} />
-                  </Link>
-                  <Link href={PersonalData.x.url} target="_blank" rel="noreferrer" aria-label="X" color="app.fg.subtle" _hover={{ color: "app.fg.default" }}>
-                    <Icon as={FaXTwitter} boxSize={5} />
-                  </Link>
-                  <Link href={PersonalData.instagram.url} target="_blank" rel="noreferrer" aria-label="Instagram" color="app.fg.subtle" _hover={{ color: "app.fg.default" }}>
-                    <Icon as={FiInstagram} boxSize={5} />
-                  </Link>
-                  <Link href={`mailto:${PersonalData.email}`} aria-label="Email" color="app.fg.subtle" _hover={{ color: "app.fg.default" }}>
-                    <Icon as={FiMail} boxSize={5} />
-                  </Link>
-                </HStack>
               </VStack>
             </Stack>
           </Box>
