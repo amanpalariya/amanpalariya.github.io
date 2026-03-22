@@ -83,6 +83,9 @@ export function EpubToolbar({
             loading={isAdding}
             roundedRight={0}
             borderRightWidth={"0"}
+            bg={"app.epub.button.primary.bg"}
+            color={"app.epub.button.primary.fg"}
+            _hover={{ bg: "app.epub.button.primary.hoverBg" }}
           >
             <Icon>
               <LuFilePlus />
@@ -97,7 +100,10 @@ export function EpubToolbar({
             }
             roundedLeft={0}
             borderLeftWidth={"1px"}
-            borderLeftColor={"border.emphasized"}
+            borderLeftColor={"app.epub.border.default"}
+            bg={"app.epub.button.primary.bg"}
+            color={"app.epub.button.primary.fg"}
+            _hover={{ bg: "app.epub.button.primary.hoverBg" }}
             onClick={() => setIsManualPasteOpen((prev) => !prev)}
           >
             {isManualPasteOpen ? <LuChevronUp /> : <LuChevronDown />}
@@ -113,10 +119,10 @@ export function EpubToolbar({
             zIndex={20}
             p={0}
             borderWidth={"1px"}
-            borderColor={"border.emphasized"}
+            borderColor={"app.epub.border.default"}
             rounded={"xl"}
             overflow={"hidden"}
-            bg={"bg.panel"}
+            bg={"app.epub.bg.popover"}
             shadow={"lg"}
             w={{ base: "full", sm: "420px" }}
             minW={{ base: "280px", sm: "420px" }}
@@ -130,6 +136,9 @@ export function EpubToolbar({
               display={"block"}
               rounded={"none"}
               borderWidth={0}
+              bg={"app.epub.bg.card"}
+              color={"app.epub.fg.default"}
+              _placeholder={{ color: "app.epub.fg.subtle" }}
               placeholder={
                 "Paste HTML or text here (Cmd/Ctrl+V). Content will be added on paste."
               }
@@ -143,6 +152,9 @@ export function EpubToolbar({
               mt={"-1px"}
               display={"block"}
               rounded={"none"}
+              bg={"app.epub.button.subtle.bg"}
+              color={"app.epub.button.subtle.fg"}
+              _hover={{ bg: "app.epub.button.subtle.hoverBg" }}
               onClick={onAddFromFallback}
             >
               Add pasted content as page
@@ -156,6 +168,9 @@ export function EpubToolbar({
         onClick={onGenerate}
         loading={isGenerating}
         disabled={pageCount === 0}
+        bg={"app.epub.button.success.bg"}
+        color={"app.epub.button.success.fg"}
+        _hover={{ bg: "app.epub.button.success.hoverBg" }}
       >
         <Icon>
           <LuBookDown />

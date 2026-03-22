@@ -47,29 +47,37 @@ export function EpubMetadataForm({
     <>
       <HStack gap={3} wrap={"wrap"} align={"stretch"}>
         <Box minW={["full", "320px"]} flex={1}>
-          <Text fontSize={"sm"} color={"fg.muted"} mb={1}>
+          <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
             Title (optional)
           </Text>
           <Input
             {...controlInputProps}
             placeholder={"EPUB Maker Pages"}
+            bg={"app.epub.bg.card"}
+            color={"app.epub.fg.default"}
+            borderColor={"app.epub.border.default"}
+            _placeholder={{ color: "app.epub.fg.subtle" }}
             value={prefs.title}
             onChange={(event) => onTitleChange(event.target.value)}
           />
         </Box>
         <Box minW={["full", "260px"]} flex={1}>
-          <Text fontSize={"sm"} color={"fg.muted"} mb={1}>
+          <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
             Author (optional)
           </Text>
           <Input
             {...controlInputProps}
             placeholder={"Your name"}
+            bg={"app.epub.bg.card"}
+            color={"app.epub.fg.default"}
+            borderColor={"app.epub.border.default"}
+            _placeholder={{ color: "app.epub.fg.subtle" }}
             value={prefs.author}
             onChange={(event) => onAuthorChange(event.target.value)}
           />
         </Box>
         <Box minW={["full", "320px"]} flex={1}>
-          <Text fontSize={"sm"} color={"fg.muted"} mb={1}>
+          <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
             File name
           </Text>
           <Group attached w={"full"}>
@@ -79,6 +87,10 @@ export function EpubMetadataForm({
               roundedRight={0}
               size={"md"}
               placeholder={"my-book.epub"}
+              bg={"app.epub.bg.card"}
+              color={"app.epub.fg.default"}
+              borderColor={"app.epub.border.default"}
+              _placeholder={{ color: "app.epub.fg.subtle" }}
               value={
                 prefs.fileNameMode === "auto"
                   ? autoEpubFileName
@@ -91,6 +103,13 @@ export function EpubMetadataForm({
               size={"md"}
               roundedLeft={0}
               variant={"outline"}
+              borderColor={"app.epub.border.default"}
+              color={"app.epub.fg.default"}
+              bg={"app.epub.bg.card"}
+              _hover={{
+                bg: "app.epub.bg.surface",
+                color: "app.epub.fg.default",
+              }}
               onClick={onToggleFileNameMode}
             >
               {prefs.fileNameMode === "auto" ? "Auto" : "Manual"}
@@ -101,15 +120,16 @@ export function EpubMetadataForm({
 
       <HStack gap={6} wrap={"wrap"} align={"center"}>
         <HStack gap={2}>
-          <Icon>
+          <Icon color={"app.epub.fg.muted"}>
             <LuSettings2 />
           </Icon>
-          <Text fontSize={"sm"} color={"fg.muted"}>
+          <Text fontSize={"sm"} color={"app.epub.fg.muted"}>
             Generation options
           </Text>
         </HStack>
         <HStack gap={2}>
           <Switch
+            colorPalette={"blue"}
             checked={prefs.sanitizeOptions.embedRemoteImages}
             onCheckedChange={(details) =>
               onEmbedRemoteImagesChange(details.checked)
@@ -125,7 +145,7 @@ export function EpubMetadataForm({
             <Box
               as={"span"}
               aria-label={"About embed remote images"}
-              color={"fg.muted"}
+              color={"app.epub.fg.muted"}
               cursor={"help"}
               display={"inline-flex"}
               alignItems={"center"}
@@ -136,6 +156,7 @@ export function EpubMetadataForm({
         </HStack>
         <HStack gap={2}>
           <Switch
+            colorPalette={"blue"}
             checked={prefs.sanitizeOptions.allowExternalLinks}
             onCheckedChange={(details) =>
               onAllowExternalLinksChange(details.checked)
@@ -151,7 +172,7 @@ export function EpubMetadataForm({
             <Box
               as={"span"}
               aria-label={"About keep external links"}
-              color={"fg.muted"}
+              color={"app.epub.fg.muted"}
               cursor={"help"}
               display={"inline-flex"}
               alignItems={"center"}

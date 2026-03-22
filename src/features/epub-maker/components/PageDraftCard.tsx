@@ -44,15 +44,17 @@ export function PageDraftCard({
       w={"full"}
       borderWidth={isDropTarget ? "2px" : "1px"}
       borderStyle={isDropTarget ? "dashed" : "solid"}
-      borderColor={isDropTarget ? "colorPalette.solid" : "border.emphasized"}
+      borderColor={
+        isDropTarget ? "app.epub.border.accent" : "app.epub.border.default"
+      }
       rounded={"2xl"}
       overflow={"hidden"}
-      bg={"bg.panel"}
+      bg={"app.epub.bg.card"}
       opacity={isDragging ? 0.6 : 1}
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
-      <Box borderBottomWidth={"1px"} borderColor={"border.subtle"}>
+      <Box borderBottomWidth={"1px"} borderColor={"app.epub.border.muted"}>
         <InputGroup
           startAddon={chapterNumber}
           startAddonProps={{
@@ -60,7 +62,7 @@ export function PageDraftCard({
             justifyContent: "center",
             fontSize: "xs",
             fontWeight: "semibold",
-            color: "fg.muted",
+            color: "app.epub.fg.muted",
             borderLeftWidth: 0,
             borderTopWidth: 0,
             borderBottomWidth: "1px",
@@ -77,6 +79,8 @@ export function PageDraftCard({
                 px={2}
                 minW={"auto"}
                 rounded={"none"}
+                color={"app.epub.fg.danger"}
+                _hover={{ bg: "app.status.danger.bg" }}
               >
                 <Icon>
                   <LuTrash2 />
@@ -100,6 +104,10 @@ export function PageDraftCard({
             borderRightWidth={0}
             borderTopWidth={0}
             borderBottomWidth={"1px"}
+            borderBottomColor={"app.epub.border.muted"}
+            bg={"app.epub.bg.card"}
+            color={"app.epub.fg.default"}
+            _placeholder={{ color: "app.epub.fg.subtle" }}
             value={page.title}
             onChange={(event) => onRename(page.id, event.target.value)}
           />
@@ -107,7 +115,7 @@ export function PageDraftCard({
       </Box>
       <Box
         h={"300px"}
-        bg={"bg"}
+        bg={"app.epub.bg.preview"}
         cursor={"grab"}
         draggable
         onDragStart={() => onDragStart(page.id)}

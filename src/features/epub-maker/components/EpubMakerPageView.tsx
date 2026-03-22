@@ -54,7 +54,7 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
             <EmptyState.Root>
               <EmptyState.Content>
                 <EmptyState.Indicator>
-                  <Icon boxSize={12} color={"gray.500"}>
+                  <Icon boxSize={12}>
                     <LuFilePlus />
                   </Icon>
                 </EmptyState.Indicator>

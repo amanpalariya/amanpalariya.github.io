@@ -35,6 +35,10 @@ export function PasteFallbackPanel({
         onChange={(event) => onInputChange(event.target.value)}
         onPaste={onPaste}
         minH={"140px"}
+        bg={"app.epub.bg.card"}
+        color={"app.epub.fg.default"}
+        borderColor={"app.epub.border.default"}
+        _placeholder={{ color: "app.epub.fg.subtle" }}
         placeholder={
           "Click here and press Cmd/Ctrl+V to paste HTML or plain text (auto-add on paste when possible)."
         }
@@ -44,6 +48,9 @@ export function PasteFallbackPanel({
           {...actionButtonProps}
           size={"sm"}
           variant={"subtle"}
+          bg={"app.epub.button.subtle.bg"}
+          color={"app.epub.button.subtle.fg"}
+          _hover={{ bg: "app.epub.button.subtle.hoverBg" }}
           onClick={onAdd}
         >
           <Icon>
@@ -55,6 +62,8 @@ export function PasteFallbackPanel({
           {...actionButtonProps}
           size={"sm"}
           variant={"ghost"}
+          color={"app.epub.fg.muted"}
+          _hover={{ bg: "app.epub.bg.surface", color: "app.epub.fg.default" }}
           onClick={onHide}
         >
           <Icon>
