@@ -37,10 +37,6 @@ export function PageDraftCard({
       overflow={"hidden"}
       bg={"bg.panel"}
       opacity={isDragging ? 0.6 : 1}
-      cursor={"grab"}
-      draggable
-      onDragStart={() => onDragStart(page.id)}
-      onDragEnd={onDragEnd}
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
@@ -95,7 +91,14 @@ export function PageDraftCard({
           />
         </InputGroup>
       </Box>
-      <Box h={"300px"} bg={"bg"}>
+      <Box
+        h={"300px"}
+        bg={"bg"}
+        cursor={"grab"}
+        draggable
+        onDragStart={() => onDragStart(page.id)}
+        onDragEnd={onDragEnd}
+      >
         <iframe
           title={`preview-${page.id}`}
           srcDoc={page.previewHtml}
