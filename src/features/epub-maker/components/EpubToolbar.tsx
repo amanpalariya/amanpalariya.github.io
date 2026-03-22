@@ -7,7 +7,12 @@ import {
   Textarea,
 } from "@chakra-ui/react";
 import { ClipboardEvent, useEffect, useRef, useState } from "react";
-import { LuBookDown, LuChevronDown, LuFilePlus, LuChevronUp } from "react-icons/lu";
+import {
+  LuBookDown,
+  LuChevronDown,
+  LuFilePlus,
+  LuChevronUp,
+} from "react-icons/lu";
 
 export function EpubToolbar({
   isAdding,
@@ -30,6 +35,12 @@ export function EpubToolbar({
   onPaste: (event: ClipboardEvent<HTMLTextAreaElement>) => void;
   onAddFromFallback: () => void;
 }) {
+  const actionButtonProps = {
+    fontFamily: "ui",
+    fontSize: "sm",
+    rounded: "xl",
+  } as const;
+
   const [isManualPasteOpen, setIsManualPasteOpen] = useState(false);
   const triggerGroupRef = useRef<HTMLDivElement | null>(null);
   const popoverRef = useRef<HTMLDivElement | null>(null);
@@ -67,6 +78,7 @@ export function EpubToolbar({
       <Box position={"relative"}>
         <HStack ref={triggerGroupRef} gap={0} align={"stretch"}>
           <Button
+            {...actionButtonProps}
             onClick={onAddFromClipboard}
             loading={isAdding}
             roundedRight={0}
@@ -79,7 +91,10 @@ export function EpubToolbar({
           </Button>
 
           <IconButton
-            aria-label={isManualPasteOpen ? "Hide manual paste" : "Show manual paste"}
+            {...actionButtonProps}
+            aria-label={
+              isManualPasteOpen ? "Hide manual paste" : "Show manual paste"
+            }
             roundedLeft={0}
             borderLeftWidth={"1px"}
             borderLeftColor={"border.emphasized"}
@@ -89,53 +104,59 @@ export function EpubToolbar({
           </IconButton>
         </HStack>
 
-      {isManualPasteOpen ? (
-        <Box
-          ref={popoverRef}
-          position={"absolute"}
-          top={"calc(100% + 6px)"}
-          left={0}
-          zIndex={20}
-          p={0}
-          borderWidth={"1px"}
-          borderColor={"border.emphasized"}
-          rounded={"md"}
-          overflow={"hidden"}
-          bg={"bg.panel"}
-          shadow={"md"}
-          w={{ base: "full", sm: "420px" }}
-          minW={{ base: "280px", sm: "420px" }}
-        >
-          <Textarea
-            value={pastedInput}
-            onChange={(event) => onPastedInputChange(event.target.value)}
-            onPaste={onPaste}
-            minH={"140px"}
-            m={0}
-            display={"block"}
-            rounded={"none"}
-            borderWidth={0}
-            placeholder={
-              "Paste HTML or text here (Cmd/Ctrl+V). Content will be added on paste."
-            }
-          />
-          <Button
-            size={"sm"}
-            variant={"subtle"}
-            w={"full"}
-            m={0}
-            mt={"-1px"}
-            display={"block"}
-            rounded={"none"}
-            onClick={onAddFromFallback}
+        {isManualPasteOpen ? (
+          <Box
+            ref={popoverRef}
+            position={"absolute"}
+            top={"calc(100% + 6px)"}
+            left={0}
+            zIndex={20}
+            p={0}
+            borderWidth={"1px"}
+            borderColor={"border.emphasized"}
+            rounded={"xl"}
+            overflow={"hidden"}
+            bg={"bg.panel"}
+            shadow={"lg"}
+            w={{ base: "full", sm: "420px" }}
+            minW={{ base: "280px", sm: "420px" }}
           >
-            Add pasted content as page
-          </Button>
-        </Box>
-      ) : null}
+            <Textarea
+              value={pastedInput}
+              onChange={(event) => onPastedInputChange(event.target.value)}
+              onPaste={onPaste}
+              minH={"140px"}
+              m={0}
+              display={"block"}
+              rounded={"none"}
+              borderWidth={0}
+              placeholder={
+                "Paste HTML or text here (Cmd/Ctrl+V). Content will be added on paste."
+              }
+            />
+            <Button
+              {...actionButtonProps}
+              size={"sm"}
+              variant={"subtle"}
+              w={"full"}
+              m={0}
+              mt={"-1px"}
+              display={"block"}
+              rounded={"none"}
+              onClick={onAddFromFallback}
+            >
+              Add pasted content as page
+            </Button>
+          </Box>
+        ) : null}
       </Box>
 
-      <Button onClick={onGenerate} loading={isGenerating} disabled={pageCount === 0}>
+      <Button
+        {...actionButtonProps}
+        onClick={onGenerate}
+        loading={isGenerating}
+        disabled={pageCount === 0}
+      >
         <Icon>
           <LuBookDown />
         </Icon>

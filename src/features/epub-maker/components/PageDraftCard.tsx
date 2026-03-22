@@ -27,13 +27,25 @@ export function PageDraftCard({
   isDragging: boolean;
   isDropTarget: boolean;
 }) {
+  const controlInputProps = {
+    fontFamily: "ui",
+    fontSize: "sm",
+    rounded: "xl",
+  } as const;
+
+  const iconButtonProps = {
+    fontFamily: "ui",
+    fontSize: "sm",
+    rounded: "xl",
+  } as const;
+
   return (
     <Box
       w={"full"}
       borderWidth={isDropTarget ? "2px" : "1px"}
       borderStyle={isDropTarget ? "dashed" : "solid"}
       borderColor={isDropTarget ? "colorPalette.solid" : "border.emphasized"}
-      rounded={"md"}
+      rounded={"2xl"}
       overflow={"hidden"}
       bg={"bg.panel"}
       opacity={isDragging ? 0.6 : 1}
@@ -57,6 +69,7 @@ export function PageDraftCard({
           endAddon={
             <Tooltip content={"Remove"}>
               <Button
+                {...iconButtonProps}
                 size={"sm"}
                 variant={"ghost"}
                 onClick={() => onRemove(page.id)}
@@ -80,6 +93,7 @@ export function PageDraftCard({
           }}
         >
           <Input
+            {...controlInputProps}
             size={"sm"}
             rounded={"none"}
             borderLeftWidth={0}

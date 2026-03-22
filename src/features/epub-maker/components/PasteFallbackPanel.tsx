@@ -15,9 +15,22 @@ export function PasteFallbackPanel({
   onAdd: () => void;
   onHide: () => void;
 }) {
+  const actionButtonProps = {
+    fontFamily: "ui",
+    fontSize: "sm",
+    rounded: "xl",
+  } as const;
+
+  const controlInputProps = {
+    fontFamily: "ui",
+    fontSize: "sm",
+    rounded: "xl",
+  } as const;
+
   return (
     <Box>
       <Textarea
+        {...controlInputProps}
         value={pastedInput}
         onChange={(event) => onInputChange(event.target.value)}
         onPaste={onPaste}
@@ -27,13 +40,23 @@ export function PasteFallbackPanel({
         }
       />
       <HStack mt={2}>
-        <Button size={"sm"} variant={"subtle"} onClick={onAdd}>
+        <Button
+          {...actionButtonProps}
+          size={"sm"}
+          variant={"subtle"}
+          onClick={onAdd}
+        >
           <Icon>
             <LuClipboardPaste />
           </Icon>
           Add pasted content as page
         </Button>
-        <Button size={"sm"} variant={"ghost"} onClick={onHide}>
+        <Button
+          {...actionButtonProps}
+          size={"sm"}
+          variant={"ghost"}
+          onClick={onHide}
+        >
           <Icon>
             <LuEyeOff />
           </Icon>

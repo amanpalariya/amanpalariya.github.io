@@ -26,6 +26,7 @@ export function TopRightNotifications({
             status={notification.type}
             pointerEvents={"auto"}
             boxShadow={"md"}
+            rounded={"xl"}
           >
             <Alert.Indicator />
             <Alert.Content>

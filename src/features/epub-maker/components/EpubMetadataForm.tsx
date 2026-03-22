@@ -1,4 +1,12 @@
-import { Box, Button, Group, HStack, Icon, Input, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Group,
+  HStack,
+  Icon,
+  Input,
+  Text,
+} from "@chakra-ui/react";
 import { Switch } from "@components/ui/switch";
 import { Tooltip } from "@components/ui/tooltip";
 import { LuCircleHelp, LuSettings2 } from "react-icons/lu";
@@ -23,6 +31,18 @@ export function EpubMetadataForm({
   onEmbedRemoteImagesChange: (value: boolean) => void;
   onAllowExternalLinksChange: (value: boolean) => void;
 }) {
+  const controlInputProps = {
+    fontFamily: "ui",
+    fontSize: "sm",
+    rounded: "xl",
+  } as const;
+
+  const actionButtonProps = {
+    fontFamily: "ui",
+    fontSize: "sm",
+    rounded: "xl",
+  } as const;
+
   return (
     <>
       <HStack gap={3} wrap={"wrap"} align={"stretch"}>
@@ -31,6 +51,7 @@ export function EpubMetadataForm({
             Title (optional)
           </Text>
           <Input
+            {...controlInputProps}
             placeholder={"EPUB Maker Pages"}
             value={prefs.title}
             onChange={(event) => onTitleChange(event.target.value)}
@@ -41,6 +62,7 @@ export function EpubMetadataForm({
             Author (optional)
           </Text>
           <Input
+            {...controlInputProps}
             placeholder={"Your name"}
             value={prefs.author}
             onChange={(event) => onAuthorChange(event.target.value)}
@@ -52,15 +74,25 @@ export function EpubMetadataForm({
           </Text>
           <Group attached w={"full"}>
             <Input
+              {...controlInputProps}
               flex={1}
+              roundedRight={0}
               size={"md"}
               placeholder={"my-book.epub"}
               value={
-                prefs.fileNameMode === "auto" ? autoEpubFileName : prefs.manualFileName
+                prefs.fileNameMode === "auto"
+                  ? autoEpubFileName
+                  : prefs.manualFileName
               }
               onChange={(event) => onManualFileNameChange(event.target.value)}
             />
-            <Button size={"md"} variant={"outline"} onClick={onToggleFileNameMode}>
+            <Button
+              {...actionButtonProps}
+              size={"md"}
+              roundedLeft={0}
+              variant={"outline"}
+              onClick={onToggleFileNameMode}
+            >
               {prefs.fileNameMode === "auto" ? "Auto" : "Manual"}
             </Button>
           </Group>
@@ -79,7 +111,9 @@ export function EpubMetadataForm({
         <HStack gap={2}>
           <Switch
             checked={prefs.sanitizeOptions.embedRemoteImages}
-            onCheckedChange={(details) => onEmbedRemoteImagesChange(details.checked)}
+            onCheckedChange={(details) =>
+              onEmbedRemoteImagesChange(details.checked)
+            }
           >
             Embed remote images
           </Switch>
@@ -103,7 +137,9 @@ export function EpubMetadataForm({
         <HStack gap={2}>
           <Switch
             checked={prefs.sanitizeOptions.allowExternalLinks}
-            onCheckedChange={(details) => onAllowExternalLinksChange(details.checked)}
+            onCheckedChange={(details) =>
+              onAllowExternalLinksChange(details.checked)
+            }
           >
             Keep external links
           </Switch>
