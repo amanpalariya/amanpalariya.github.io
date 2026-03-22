@@ -14,9 +14,7 @@ export default function ToolsLayout({
     <WithBackground>
       <WithToolsHeader>
         <WithFooter>
-          <WithBodyCard>
-            {children}
-          </WithBodyCard>
+          <WithBodyCard>{children}</WithBodyCard>
         </WithFooter>
       </WithToolsHeader>
     </WithBackground>

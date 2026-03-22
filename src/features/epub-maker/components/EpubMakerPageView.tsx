@@ -1,4 +1,4 @@
-import { Alert, Box, Heading, Text, VStack } from "@chakra-ui/react";
+import { Alert, Box, VStack } from "@chakra-ui/react";
 import type { UseEpubMakerReturn } from "../hooks/useEpubMaker";
 import { EpubToolbar } from "./EpubToolbar";
 import { EpubMetadataForm } from "./EpubMetadataForm";
@@ -13,12 +13,6 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
           notifications={props.notifications}
           onDismiss={props.dismissNotification}
         />
-
-        <Heading size={"2xl"}>EPUB Maker</Heading>
-        <Text color={"fg.muted"}>
-          Paste full HTML documents or raw text directly, organize pages, and
-          export a clean EPUB.
-        </Text>
 
         <EpubToolbar
           isAdding={props.isAdding}
