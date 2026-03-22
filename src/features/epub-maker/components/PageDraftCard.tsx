@@ -22,7 +22,7 @@ export function PageDraftCard({
 }) {
   return (
     <Box
-      w={"220px"}
+      w={"full"}
       borderWidth={"1px"}
       borderColor={"border.emphasized"}
       rounded={"md"}

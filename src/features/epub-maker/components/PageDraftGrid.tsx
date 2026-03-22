@@ -1,4 +1,4 @@
-import { HStack } from "@chakra-ui/react";
+import { SimpleGrid } from "@chakra-ui/react";
 import type { PageDraft } from "../types";
 import { PageDraftCard } from "./PageDraftCard";
 
@@ -16,7 +16,11 @@ export function PageDraftGrid({
   onMoveDown: (id: string) => void;
 }) {
   return (
-    <HStack align={"start"} gap={4} wrap={"wrap"}>
+    <SimpleGrid
+      columns={{ base: 1, md: 2, lg: 3 }}
+      gap={2}
+      alignItems={"start"}
+    >
       {pages.map((page, index) => (
         <PageDraftCard
           key={page.id}
@@ -29,6 +33,6 @@ export function PageDraftGrid({
           onMoveDown={onMoveDown}
         />
       ))}
-    </HStack>
+    </SimpleGrid>
   );
 }
