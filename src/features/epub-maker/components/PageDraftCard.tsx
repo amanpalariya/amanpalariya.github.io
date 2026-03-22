@@ -1,4 +1,4 @@
-import { Box, Button, HStack, Icon, Input, Text } from "@chakra-ui/react";
+import { Box, Button, HStack, Icon, Input, InputGroup } from "@chakra-ui/react";
 import { Tooltip } from "@components/ui/tooltip";
 import { LuArrowDown, LuArrowUp, LuTrash2 } from "react-icons/lu";
 import type { PageDraft } from "../types";
@@ -29,63 +29,83 @@ export function PageDraftCard({
       overflow={"hidden"}
       bg={"bg.panel"}
     >
-      <Box px={3} py={2} borderBottomWidth={"1px"} borderColor={"border.subtle"}>
-        <Text fontSize={"xs"} color={"fg.muted"} mb={1}>
-          Chapter {index + 1}
-        </Text>
-        <Input
-          size={"sm"}
-          value={page.title}
-          onChange={(event) => onRename(page.id, event.target.value)}
-          mb={2}
-        />
-        <HStack justify={"space-between"} align={"center"} gap={1}>
-          <HStack gap={1}>
-            <Tooltip content={"Move up"}>
+      <Box borderBottomWidth={"1px"} borderColor={"border.subtle"}>
+        <InputGroup
+          startAddon={index + 1}
+          startAddonProps={{
+            minW: "2.25rem",
+            justifyContent: "center",
+            fontSize: "xs",
+            fontWeight: "semibold",
+            color: "fg.muted",
+            borderLeftWidth: 0,
+            borderRightWidth: "1px",
+            borderTopWidth: 0,
+            borderBottomWidth: "1px",
+            rounded: "none",
+          }}
+        >
+          <Input
+            size={"sm"}
+            rounded={"none"}
+            borderLeftWidth={0}
+            borderRightWidth={0}
+            borderTopWidth={0}
+            borderBottomWidth={"1px"}
+            value={page.title}
+            onChange={(event) => onRename(page.id, event.target.value)}
+          />
+        </InputGroup>
+
+        <Box px={1.5} py={1}>
+          <HStack justify={"space-between"} align={"center"} gap={1}>
+            <HStack gap={1}>
+              <Tooltip content={"Move up"}>
+                <Button
+                  size={"xs"}
+                  variant={"ghost"}
+                  onClick={() => onMoveUp(page.id)}
+                  disabled={index === 0}
+                  px={1.5}
+                  minW={"auto"}
+                >
+                  <Icon>
+                    <LuArrowUp />
+                  </Icon>
+                </Button>
+              </Tooltip>
+              <Tooltip content={"Move down"}>
+                <Button
+                  size={"xs"}
+                  variant={"ghost"}
+                  onClick={() => onMoveDown(page.id)}
+                  disabled={index === total - 1}
+                  px={1.5}
+                  minW={"auto"}
+                >
+                  <Icon>
+                    <LuArrowDown />
+                  </Icon>
+                </Button>
+              </Tooltip>
+            </HStack>
+
+            <Tooltip content={"Remove"}>
               <Button
                 size={"xs"}
                 variant={"ghost"}
-                onClick={() => onMoveUp(page.id)}
-                disabled={index === 0}
+                onClick={() => onRemove(page.id)}
+                aria-label={"Remove page"}
                 px={1.5}
                 minW={"auto"}
               >
                 <Icon>
-                  <LuArrowUp />
-                </Icon>
-              </Button>
-            </Tooltip>
-            <Tooltip content={"Move down"}>
-              <Button
-                size={"xs"}
-                variant={"ghost"}
-                onClick={() => onMoveDown(page.id)}
-                disabled={index === total - 1}
-                px={1.5}
-                minW={"auto"}
-              >
-                <Icon>
-                  <LuArrowDown />
+                  <LuTrash2 />
                 </Icon>
               </Button>
             </Tooltip>
           </HStack>
-
-          <Tooltip content={"Remove"}>
-            <Button
-              size={"xs"}
-              variant={"ghost"}
-              onClick={() => onRemove(page.id)}
-              aria-label={"Remove page"}
-              px={1.5}
-              minW={"auto"}
-            >
-              <Icon>
-                <LuTrash2 />
-              </Icon>
-            </Button>
-          </Tooltip>
-        </HStack>
+        </Box>
       </Box>
       <Box h={"300px"} bg={"bg"}>
         <iframe
