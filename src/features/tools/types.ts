@@ -37,12 +37,6 @@ export interface ToolsPageContent {
   searchPlaceholder: string;
 }
 
-export interface ToolsHeaderConfig {
-  productName: string;
-  homeHref: string;
-  showThemeToggle: boolean;
-}
-
 export interface ToolFiltersState {
   query: string;
   category: "all" | ToolCategory;

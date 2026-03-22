@@ -1,7 +1,6 @@
-import { Box, HStack, Text, VStack } from "@chakra-ui/react";
+import { Box, HStack, Icon, Text, VStack } from "@chakra-ui/react";
 import { CategoryBadge } from "@components/core/Badges";
 import { Heading3 } from "@components/core/Texts";
-import { Icon } from "@chakra-ui/react";
 import { FiBookOpen, FiTool } from "react-icons/fi";
 import type { ToolDefinition } from "../types";
 
@@ -21,7 +20,7 @@ function getToolIcon(icon?: string) {
   return FiTool;
 }
 
-export function ToolPageHeader({ tool }: { tool: ToolDefinition }) {
+export function ToolDetailsSection({ tool }: { tool: ToolDefinition }) {
   const ToolIcon = getToolIcon(tool.icon);
 
   return (
@@ -33,10 +32,12 @@ export function ToolPageHeader({ tool }: { tool: ToolDefinition }) {
           </CategoryBadge>
           <CategoryBadge>{tool.category}</CategoryBadge>
         </HStack>
+
         <HStack gap={2}>
           <Icon as={ToolIcon} color={"app.fg.subtle"} boxSize={5} />
           <Heading3>{tool.name}</Heading3>
         </HStack>
+
         <Text color={"app.fg.subtle"}>{tool.description}</Text>
       </VStack>
     </Box>

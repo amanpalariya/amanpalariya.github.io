@@ -1,7 +1,7 @@
 "use client";
 
 import { EpubMakerPageView, useEpubMaker } from "features/epub-maker";
-import { getToolById, ToolPageHeader } from "features/tools";
+import { getToolById, ToolDetailsSection } from "features/tools";
 
 export default function EpubMakerPage() {
   const epubMaker = useEpubMaker();
@@ -9,7 +9,7 @@ export default function EpubMakerPage() {
 
   return (
     <>
-      {tool ? <ToolPageHeader tool={tool} /> : null}
+      {tool ? <ToolDetailsSection tool={tool} /> : null}
       <EpubMakerPageView {...epubMaker} />
     </>
   );

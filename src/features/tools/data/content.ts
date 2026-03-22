@@ -1,4 +1,4 @@
-import type { ToolsHeaderConfig, ToolsPageContent } from "../types";
+import type { ToolsPageContent } from "../types";
 
 const TOOLS_PAGE_CONTENT: ToolsPageContent = {
   title: "Tools",
@@ -9,16 +9,6 @@ const TOOLS_PAGE_CONTENT: ToolsPageContent = {
   searchPlaceholder: "Search tools",
 };
 
-const TOOLS_HEADER_CONFIG: ToolsHeaderConfig = {
-  productName: "Tools",
-  homeHref: "/",
-  showThemeToggle: true,
-};
-
 export function getToolsPageContent(): ToolsPageContent {
   return TOOLS_PAGE_CONTENT;
-}
-
-export function getToolHeaderConfig(): ToolsHeaderConfig {
-  return TOOLS_HEADER_CONFIG;
 }
