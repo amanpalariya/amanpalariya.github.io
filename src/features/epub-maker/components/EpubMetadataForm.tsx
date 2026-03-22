@@ -27,7 +27,7 @@ export function EpubMetadataForm({
       <HStack gap={3} wrap={"wrap"} align={"stretch"}>
         <Box minW={["full", "320px"]} flex={1}>
           <Text fontSize={"sm"} color={"fg.muted"} mb={1}>
-            Title
+            Title (optional)
           </Text>
           <Input
             placeholder={"EPUB Maker Pages"}
