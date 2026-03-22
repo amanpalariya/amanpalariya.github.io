@@ -3,13 +3,15 @@ import Footer from "../common/Footer";
 
 export default function WithFooter({
   children,
+  hideFooterBottomPart = false,
 }: {
   children: React.ReactNode;
+  hideFooterBottomPart?: boolean;
 }) {
   return (
-    <VStack align={"stretch"}>
+    <VStack align={"stretch"} gap={0}>
       {children}
-      <Footer />
+      <Footer hideBottomPart={hideFooterBottomPart} />
     </VStack>
   );
 }

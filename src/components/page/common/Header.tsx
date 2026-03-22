@@ -150,7 +150,7 @@ export default function Header() {
       transform={"translateX(-50%)"}
       zIndex={10}
     >
-      <Box p={[2, 4]} ref={mobileMenuContainerRef}>
+      <Box p={[1, 4]} ref={mobileMenuContainerRef}>
         <HeaderCard>
           <HStack justify={"space-between"}>
             {isPathnameDeep ? (
