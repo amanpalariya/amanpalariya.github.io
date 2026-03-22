@@ -67,6 +67,7 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
             pageCount={props.pages.length}
             pastedInput={props.pastedInput}
             onAddFromClipboard={props.addPageFromClipboard}
+            onAddFromFiles={props.addPagesFromFiles}
             onGenerate={props.generateEpub}
             onPastedInputChange={props.setPastedInput}
             onPaste={props.onPasteInput}

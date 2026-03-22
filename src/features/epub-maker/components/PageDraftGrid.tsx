@@ -1,6 +1,16 @@
-import { Box, Button, Icon, SimpleGrid, Text, Textarea, VStack } from "@chakra-ui/react";
-import { type ClipboardEvent, useState } from "react";
-import { LuFilePlus } from "react-icons/lu";
+import {
+  Box,
+  Button,
+  FileUpload,
+  HStack,
+  Icon,
+  SimpleGrid,
+  Text,
+  Textarea,
+  VStack,
+} from "@chakra-ui/react";
+import { type ChangeEvent, type ClipboardEvent, useRef, useState } from "react";
+import { LuFilePlus, LuUpload } from "react-icons/lu";
 import type { PageDraft } from "../types";
 import { PageDraftCard } from "./PageDraftCard";
 
@@ -32,6 +42,14 @@ export function PageDraftGrid({
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [isGhostDropTarget, setIsGhostDropTarget] = useState(false);
+  const ghostUploadInputRef = useRef<HTMLInputElement | null>(null);
+
+  function handleGhostUploadChange(event: ChangeEvent<HTMLInputElement>) {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+    void onAddFromFiles(files);
+    event.target.value = "";
+  }
 
   const dragIndex =
     draggedId == null ? -1 : pages.findIndex((page) => page.id === draggedId);
@@ -144,6 +162,33 @@ export function PageDraftGrid({
         }}
       >
         <Box h={"336px"} display={"flex"} flexDirection={"column"}>
+          <Box borderBottomWidth={"1px"} borderColor={"app.epub.border.muted"}>
+            <FileUpload.Root maxFiles={50}>
+              <FileUpload.HiddenInput
+                ref={ghostUploadInputRef}
+                onChange={handleGhostUploadChange}
+              />
+              <Button
+                size={"xs"}
+                w={"full"}
+                rounded={"none"}
+                m={0}
+                display={"block"}
+                variant={"subtle"}
+                loading={isAdding}
+                onClick={() => ghostUploadInputRef.current?.click()}
+                bg={"app.epub.button.subtle.bg"}
+                color={"app.epub.button.subtle.fg"}
+                _hover={{ bg: "app.epub.button.subtle.hoverBg" }}
+              >
+                <Icon>
+                  <LuUpload />
+                </Icon>
+                Upload files
+              </Button>
+            </FileUpload.Root>
+          </Box>
+
           <VStack
             flex={1}
             align={"center"}
@@ -166,7 +211,7 @@ export function PageDraftGrid({
               Add page
             </Text>
             <Text fontFamily={"ui"} fontSize={"xs"} color={"app.epub.fg.subtle"}>
-              Click to import clipboard content or drop files.
+              Click to import clipboard content, upload files, or drop files.
             </Text>
           </VStack>
 

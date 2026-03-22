@@ -56,7 +56,7 @@ export function PasteFallbackPanel({
           <Icon>
             <LuClipboardPaste />
           </Icon>
-          Add pasted content as page
+          Add pasted content
         </Button>
         <Button
           {...actionButtonProps}

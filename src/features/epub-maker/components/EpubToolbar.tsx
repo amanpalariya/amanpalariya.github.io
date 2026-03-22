@@ -1,17 +1,25 @@
 import {
   Box,
   Button,
+  FileUpload,
   HStack,
   Icon,
   IconButton,
   Textarea,
 } from "@chakra-ui/react";
-import { ClipboardEvent, useEffect, useRef, useState } from "react";
+import {
+  type ChangeEvent,
+  ClipboardEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   LuBookDown,
   LuChevronDown,
   LuFilePlus,
   LuChevronUp,
+  LuUpload,
 } from "react-icons/lu";
 
 export function EpubToolbar({
@@ -20,6 +28,7 @@ export function EpubToolbar({
   pageCount,
   pastedInput,
   onAddFromClipboard,
+  onAddFromFiles,
   onGenerate,
   onPastedInputChange,
   onPaste,
@@ -30,6 +39,7 @@ export function EpubToolbar({
   pageCount: number;
   pastedInput: string;
   onAddFromClipboard: () => Promise<void>;
+  onAddFromFiles: (files: FileList | File[]) => Promise<void>;
   onGenerate: () => Promise<void>;
   onPastedInputChange: (value: string) => void;
   onPaste: (event: ClipboardEvent<HTMLTextAreaElement>) => void;
@@ -44,6 +54,14 @@ export function EpubToolbar({
   const [isManualPasteOpen, setIsManualPasteOpen] = useState(false);
   const triggerGroupRef = useRef<HTMLDivElement | null>(null);
   const popoverRef = useRef<HTMLDivElement | null>(null);
+  const uploadInputRef = useRef<HTMLInputElement | null>(null);
+
+  function handleUploadInputChange(event: ChangeEvent<HTMLInputElement>) {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+    void onAddFromFiles(files);
+    event.target.value = "";
+  }
 
   useEffect(() => {
     if (!isManualPasteOpen) return;
@@ -92,6 +110,26 @@ export function EpubToolbar({
             </Icon>
             Add from clipboard
           </Button>
+
+          <FileUpload.Root maxFiles={50}>
+            <FileUpload.HiddenInput
+              ref={uploadInputRef}
+              onChange={handleUploadInputChange}
+            />
+            <IconButton
+              {...actionButtonProps}
+              aria-label={"Upload files"}
+              rounded={0}
+              borderLeftWidth={"1px"}
+              borderLeftColor={"app.epub.button.primary.divider"}
+              bg={"app.epub.button.primary.bg"}
+              color={"app.epub.button.primary.fg"}
+              _hover={{ bg: "app.epub.button.primary.hoverBg" }}
+              onClick={() => uploadInputRef.current?.click()}
+            >
+              <LuUpload />
+            </IconButton>
+          </FileUpload.Root>
 
           <IconButton
             {...actionButtonProps}
@@ -157,7 +195,7 @@ export function EpubToolbar({
               _hover={{ bg: "app.epub.button.subtle.hoverBg" }}
               onClick={onAddFromFallback}
             >
-              Add pasted content as page
+              Add pasted content
             </Button>
           </Box>
         ) : null}
