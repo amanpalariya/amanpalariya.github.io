@@ -90,7 +90,7 @@ export function EpubToolbar({
             <Icon>
               <LuFilePlus />
             </Icon>
-            Add page from clipboard
+            Add from clipboard
           </Button>
 
           <IconButton
@@ -140,7 +140,7 @@ export function EpubToolbar({
               color={"app.epub.fg.default"}
               _placeholder={{ color: "app.epub.fg.subtle" }}
               placeholder={
-                "Paste HTML or text here (Cmd/Ctrl+V). Content will be added on paste."
+                "Paste HTML, text, or an image here (Cmd/Ctrl+V). Content will be added on paste."
               }
             />
             <Button

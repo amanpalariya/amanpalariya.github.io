@@ -3,7 +3,10 @@ import { createDefaultSanitizationPolicy, DEFAULT_BOOK_TITLE } from "../constant
 import type { EpubMakerState, GenerationWarning, PageDraft } from "../types";
 import { buildAutoEpubFileName, buildEpubFileName } from "../utils/file-name";
 import { createPageDraftFromInput } from "../domain/page-draft";
-import { readClipboardPageInput } from "../services/clipboard";
+import {
+  clipboardImageBlobToHtml,
+  readClipboardPageInput,
+} from "../services/clipboard";
 import {
   getNormalizedBookTitle,
   readEpubMakerPrefs,
@@ -179,6 +182,18 @@ export function useEpubMaker(): UseEpubMakerReturn {
     if (text?.trim()) {
       event.preventDefault();
       addInputAsPage(text);
+      return;
+    }
+
+    const imageFile = Array.from(event.clipboardData.items).find((item) =>
+      item.type.startsWith("image/"),
+    );
+    const imageBlob = imageFile?.getAsFile();
+    if (imageBlob) {
+      event.preventDefault();
+      void clipboardImageBlobToHtml(imageBlob).then((imageHtml) => {
+        addInputAsPage(imageHtml);
+      });
     }
   }
 
