@@ -1,8 +1,8 @@
 "use client";
 
-import { Box, Button, HStack, Icon, IconButton, Stack, Text } from "@chakra-ui/react";
+import { Box, HStack, Icon, IconButton } from "@chakra-ui/react";
 import { HeaderCard } from "@components/core/Cards";
-import { Heading4 } from "@components/core/Texts";
+import { Heading3 } from "@components/core/Texts";
 import { useColorMode } from "@components/ui/color-mode";
 import { Tooltip } from "@components/ui/tooltip";
 import { usePathname } from "next/navigation";
@@ -10,6 +10,19 @@ import NextLink from "next/link";
 import { FiChevronLeft, FiHome, FiMoon, FiSun, FiTool } from "react-icons/fi";
 import * as pathnameUtil from "utils/pathname";
 import { getToolHeaderConfig } from "../data/content";
+import { getAllTools } from "../data/tools-registry";
+
+function getToolsHeaderTitle(pathname: string) {
+  if (pathnameUtil.getPathnameDepth(pathname) <= 1) {
+    return getToolHeaderConfig().productName;
+  }
+
+  const canonicalPathname = pathnameUtil.getCanonicalPathname(pathname);
+  const tools = getAllTools();
+  const activeTool = tools.find((tool) => canonicalPathname.startsWith(tool.path));
+
+  return activeTool?.name ?? getToolHeaderConfig().productName;
+}
 
 function ColorModeToggleIconButton() {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -34,6 +47,7 @@ export function ToolsProductHeader() {
   const pathname = usePathname() ?? "/tools/";
   const isPathnameDeep = pathnameUtil.getPathnameDepth(pathname) > 1;
   const parentPathname = pathnameUtil.trimPathnameToDepth(pathname, 1);
+  const headerTitle = getToolsHeaderTitle(pathname);
 
   return (
     <Box
@@ -47,47 +61,42 @@ export function ToolsProductHeader() {
       <Box p={[2, 4]}>
         <HeaderCard>
           <HStack justify={"space-between"} align={"center"} gap={4}>
-            {isPathnameDeep ? (
-              <HStack gap={3}>
-                <Button asChild variant={"surface"} size={"sm"} borderRadius={"full"}>
+            <HStack gap={3}>
+              {isPathnameDeep ? (
+                <Tooltip content={"Back"} closeOnScroll>
                   <NextLink href={parentPathname}>
-                    <Icon>
-                      <FiChevronLeft />
-                    </Icon>
-                    Back
+                    <IconButton
+                      borderRadius={"full"}
+                      variant={"ghost"}
+                      color={"app.fg.subtle"}
+                      aria-label={"Back"}
+                    >
+                      <Icon as={FiChevronLeft} boxSize={6} />
+                    </IconButton>
                   </NextLink>
-                </Button>
-                <Heading4>{config.productName}</Heading4>
-              </HStack>
-            ) : (
-              <Stack gap={0}>
-                <HStack gap={2}>
-                  <Icon color={"app.fg.subtle"}>
-                    <FiTool />
-                  </Icon>
-                  <Heading4>{config.productName}</Heading4>
-                </HStack>
-                <Text color={"app.fg.subtle"} fontSize={"sm"}>
-                  {config.productTagline}
-                </Text>
-              </Stack>
-            )}
+                </Tooltip>
+              ) : (
+                <Icon color={"app.fg.subtle"} boxSize={7}>
+                  <FiTool />
+                </Icon>
+              )}
+
+              <Heading3>{headerTitle}</Heading3>
+            </HStack>
 
             <HStack gap={2}>
-              <Button asChild variant={"surface"} size={"sm"} borderRadius={"full"}>
-                <NextLink href={config.homeHref}>
-                  <Icon>
-                    <FiHome />
-                  </Icon>
-                  Home
-                </NextLink>
-              </Button>
-              {isPathnameDeep ? null : (
-                <Button asChild variant={"surface"} size={"sm"} borderRadius={"full"}>
-                  <NextLink href="/tools/">All tools</NextLink>
-                </Button>
-              )}
               {config.showThemeToggle ? <ColorModeToggleIconButton /> : null}
+              <Tooltip content={"Home"} closeOnScroll>
+                <NextLink href={config.homeHref}>
+                  <IconButton
+                    borderRadius={"full"}
+                    variant={"surface"}
+                    aria-label={"Home"}
+                  >
+                    <Icon as={FiHome} boxSize={6} />
+                  </IconButton>
+                </NextLink>
+              </Tooltip>
             </HStack>
           </HStack>
         </HeaderCard>

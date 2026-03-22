@@ -39,7 +39,6 @@ export interface ToolsPageContent {
 
 export interface ToolsHeaderConfig {
   productName: string;
-  productTagline: string;
   homeHref: string;
   showThemeToggle: boolean;
 }

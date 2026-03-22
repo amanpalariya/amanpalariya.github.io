@@ -11,7 +11,6 @@ const TOOLS_PAGE_CONTENT: ToolsPageContent = {
 
 const TOOLS_HEADER_CONFIG: ToolsHeaderConfig = {
   productName: "Tools",
-  productTagline: "Utility suite",
   homeHref: "/",
   showThemeToggle: true,
 };
