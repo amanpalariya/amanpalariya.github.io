@@ -2,7 +2,6 @@ import { Alert, Box, Heading, Text, VStack } from "@chakra-ui/react";
 import type { UseEpubMakerReturn } from "../hooks/useEpubMaker";
 import { EpubToolbar } from "./EpubToolbar";
 import { EpubMetadataForm } from "./EpubMetadataForm";
-import { PasteFallbackPanel } from "./PasteFallbackPanel";
 import { PageDraftGrid } from "./PageDraftGrid";
 import { TopRightNotifications } from "./TopRightNotifications";
 
@@ -36,24 +35,13 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
           isAdding={props.isAdding}
           isGenerating={props.isGenerating}
           pageCount={props.pages.length}
-          showPasteFallback={props.showPasteFallback}
+          pastedInput={props.pastedInput}
           onAddFromClipboard={props.addPageFromClipboard}
           onGenerate={props.generateEpub}
-          onShowFallback={() => props.setShowPasteFallback(true)}
+          onPastedInputChange={props.setPastedInput}
+          onPaste={props.onPasteInput}
+          onAddFromFallback={props.addFromFallbackText}
         />
-
-        {props.showPasteFallback ? (
-          <PasteFallbackPanel
-            pastedInput={props.pastedInput}
-            onInputChange={props.setPastedInput}
-            onPaste={props.onPasteInput}
-            onAdd={props.addFromFallbackText}
-            onHide={() => {
-              props.setShowPasteFallback(false);
-              props.setPastedInput("");
-            }}
-          />
-        ) : null}
 
         {props.pages.length === 0 ? (
           <Alert.Root status={"info"}>
@@ -72,7 +60,6 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
           onRename={props.renamePage}
           onReorder={props.reorderPages}
         />
-
       </VStack>
     </Box>
   );

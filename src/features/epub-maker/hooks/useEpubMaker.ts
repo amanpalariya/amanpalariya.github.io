@@ -145,13 +145,12 @@ export function useEpubMaker(): UseEpubMakerReturn {
       const content = await readClipboardPageInput();
       addInputAsPage(content);
     } catch (error) {
-      const message = `Could not read formatted clipboard content automatically: ${String(error)}. Use the paste fallback below.`;
+      const message = `Could not read formatted clipboard content automatically: ${String(error)}. Use the arrow next to the Add page button to paste manually.`;
       setErrors([message]);
-      setShowPasteFallback(true);
       notify(
         "warning",
         "Clipboard blocked",
-        "Automatic clipboard read failed. Paste in fallback box.",
+        "Automatic clipboard read failed. Use the arrow next to Add page to paste manually.",
       );
     } finally {
       setIsAdding(false);
