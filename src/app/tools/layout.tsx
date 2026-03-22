@@ -3,7 +3,6 @@
 import WithBackground from "@components/page/wrapper/WithBackground";
 import WithBodyCard from "@components/page/wrapper/WithBodyCard";
 import WithFooter from "@components/page/wrapper/WithFooter";
-import WithSocial from "@components/page/wrapper/WithSocial";
 import WithToolsHeader from "@components/page/wrapper/WithToolsHeader";
 
 export default function ToolsLayout({
@@ -14,11 +13,11 @@ export default function ToolsLayout({
   return (
     <WithBackground>
       <WithToolsHeader>
-        <WithBodyCard>
-          <WithFooter>
-            <WithSocial>{children}</WithSocial>
-          </WithFooter>
-        </WithBodyCard>
+        <WithFooter>
+          <WithBodyCard>
+            {children}
+          </WithBodyCard>
+        </WithFooter>
       </WithToolsHeader>
     </WithBackground>
   );
