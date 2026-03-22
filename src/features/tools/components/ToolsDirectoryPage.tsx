@@ -1,13 +1,16 @@
 "use client";
 
-import { Box, EmptyState, Icon, SimpleGrid, Text, VStack } from "@chakra-ui/react";
+import { Box, EmptyState, Heading, HStack, Icon, Text, VStack } from "@chakra-ui/react";
+import { CategoryBadge } from "@components/core/Badges";
 import { Heading1, SubtitleText } from "@components/core/Texts";
-import { FiTool } from "react-icons/fi";
+import { TileList } from "@components/core/Tiles";
+import HighlightedSection from "@components/page/common/HighlightedSection";
+import NextLink from "next/link";
+import { FiBookOpen, FiChevronRight, FiTool } from "react-icons/fi";
 import { getToolsPageContent } from "../data/content";
 import { getAllTools } from "../data/tools-registry";
 import { filterTools } from "../domain/search";
-import type { ToolFiltersState } from "../types";
-import { ToolCard } from "./ToolCard";
+import type { ToolDefinition, ToolFiltersState } from "../types";
 import { ToolsFilters } from "./ToolsFilters";
 import { ToolsSearchBar } from "./ToolsSearchBar";
 import { useMemo, useState } from "react";
@@ -18,6 +21,107 @@ const defaultFilters: ToolFiltersState = {
   status: "all",
   featuredOnly: false,
 };
+
+const statusColorMap = {
+  stable: "green",
+  beta: "blue",
+  alpha: "purple",
+  archived: "gray",
+} as const;
+
+function getToolIcon(icon?: string) {
+  if (icon === "book") return FiBookOpen;
+  return FiTool;
+}
+
+function ToolListTile({ tool }: { tool: ToolDefinition }) {
+  const ToolIcon = getToolIcon(tool.icon);
+
+  return (
+    <NextLink href={tool.path} style={{ display: "block" }}>
+      <Box px={[1, 2]} py={[2, 3]}>
+        <VStack align={"stretch"} gap={2}>
+          <HStack justify={"space-between"} align={"start"}>
+            <VStack align={"start"} gap={0}>
+              <HStack gap={2} align={"center"}>
+                <Icon as={ToolIcon} boxSize={5} color={"app.fg.subtle"} />
+                <Heading
+                  as={"h4"}
+                  fontSize={"lg"}
+                  fontWeight={"medium"}
+                  fontFamily={"heading"}
+                >
+                  {tool.name}
+                </Heading>
+              </HStack>
+              <Text color={"app.fg.subtle"} fontFamily={"body"}>
+                {tool.tagline}
+              </Text>
+            </VStack>
+            <Icon color={"app.fg.icon"} boxSize={5}>
+              <FiChevronRight />
+            </Icon>
+          </HStack>
+
+          <HStack gap={2} wrap={"wrap"}>
+            <CategoryBadge color={statusColorMap[tool.status]}>{tool.status}</CategoryBadge>
+            <CategoryBadge>{tool.category}</CategoryBadge>
+            {tool.isFeatured ? <CategoryBadge color={"orange"}>Featured</CategoryBadge> : null}
+          </HStack>
+        </VStack>
+      </Box>
+    </NextLink>
+  );
+}
+
+function Main({
+  title,
+  subtitle,
+  showSearch,
+  showFilters,
+  filters,
+  onFiltersChange,
+  categories,
+  statuses,
+  searchPlaceholder,
+}: {
+  title: string;
+  subtitle: string;
+  showSearch: boolean;
+  showFilters: boolean;
+  filters: ToolFiltersState;
+  onFiltersChange: (next: ToolFiltersState) => void;
+  categories: Array<ToolDefinition["category"]>;
+  statuses: Array<ToolDefinition["status"]>;
+  searchPlaceholder: string;
+}) {
+  return (
+    <Box m={[4, 6]} letterSpacing={"wide"} lineHeight={"tall"}>
+      <VStack align={"stretch"} gap={5}>
+        <Heading1>{title}</Heading1>
+        {subtitle ? <SubtitleText>{subtitle}</SubtitleText> : null}
+
+        {showSearch ? (
+          <ToolsSearchBar
+            value={filters.query}
+            placeholder={searchPlaceholder}
+            onChange={(query) => onFiltersChange({ ...filters, query })}
+            onClear={() => onFiltersChange({ ...filters, query: "" })}
+          />
+        ) : null}
+
+        {showFilters ? (
+          <ToolsFilters
+            filters={filters}
+            categories={categories}
+            statuses={statuses}
+            onChange={onFiltersChange}
+          />
+        ) : null}
+      </VStack>
+    </Box>
+  );
+}
 
 export function ToolsDirectoryPage() {
   const content = getToolsPageContent();
@@ -39,30 +143,21 @@ export function ToolsDirectoryPage() {
   const showFilters = categories.length > 1 || statuses.length > 1;
 
   return (
-    <Box p={[4, 6]}>
-      <VStack align={"stretch"} gap={5}>
-        <Heading1>{content.title}</Heading1>
-        {content.subtitle ? <SubtitleText>{content.subtitle}</SubtitleText> : null}
+    <VStack align={"stretch"} gap={0}>
+      <Main
+        title={content.title}
+        subtitle={content.subtitle}
+        showSearch={showSearch}
+        showFilters={showFilters}
+        filters={filters}
+        onFiltersChange={setFilters}
+        categories={categories}
+        statuses={statuses}
+        searchPlaceholder={content.searchPlaceholder}
+      />
 
-        {showSearch ? (
-          <ToolsSearchBar
-            value={filters.query}
-            placeholder={content.searchPlaceholder}
-            onChange={(query) => setFilters({ ...filters, query })}
-            onClear={() => setFilters({ ...filters, query: "" })}
-          />
-        ) : null}
-
-        {showFilters ? (
-          <ToolsFilters
-            filters={filters}
-            categories={categories}
-            statuses={statuses}
-            onChange={setFilters}
-          />
-        ) : null}
-
-        {filteredTools.length === 0 ? (
+      {filteredTools.length === 0 ? (
+        <HighlightedSection>
           <EmptyState.Root>
             <EmptyState.Content>
               <EmptyState.Indicator>
@@ -72,14 +167,16 @@ export function ToolsDirectoryPage() {
               <EmptyState.Description>{content.emptyStateDescription}</EmptyState.Description>
             </EmptyState.Content>
           </EmptyState.Root>
-        ) : (
-          <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
+        </HighlightedSection>
+      ) : (
+        <HighlightedSection>
+          <TileList>
             {filteredTools.map((tool) => (
-              <ToolCard key={tool.id} tool={tool} />
+              <ToolListTile key={tool.id} tool={tool} />
             ))}
-          </SimpleGrid>
-        )}
-      </VStack>
-    </Box>
+          </TileList>
+        </HighlightedSection>
+      )}
+    </VStack>
   );
 }
