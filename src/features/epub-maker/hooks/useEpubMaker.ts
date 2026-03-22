@@ -15,6 +15,15 @@ import {
 import { buildEpub } from "../domain/epub-builder";
 import { downloadBlob } from "../services/download";
 
+function fileNameToTitle(fileName: string): string {
+  const withoutExtension = fileName.replace(/\.[^./\\]+$/, "");
+  const normalized = withoutExtension
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return normalized || "Untitled";
+}
+
 export type UseEpubMakerReturn = EpubMakerState & {
   normalizedBookTitle: string;
   normalizedBookAuthor: string;
@@ -126,6 +135,36 @@ export function useEpubMaker(): UseEpubMakerReturn {
     return { status: "ok" as const, page };
   }
 
+  function evaluatePageInputWithOptions(
+    existingPages: PageDraft[],
+    content: string,
+    options?: Parameters<typeof createPageDraftFromInput>[3],
+  ) {
+    const trimmedContent = content.trim();
+    if (!trimmedContent) {
+      return { status: "empty" as const };
+    }
+
+    const isDuplicate = existingPages.some(
+      (page) => page.rawContent.trim() === trimmedContent,
+    );
+    if (isDuplicate) {
+      return { status: "duplicate" as const };
+    }
+
+    const page = createPageDraftFromInput(
+      content,
+      existingPages.length + 1,
+      sanitizePolicy,
+      options,
+    );
+    if (!page) {
+      return { status: "invalid" as const };
+    }
+
+    return { status: "ok" as const, page };
+  }
+
   function addInputAsPage(content: string) {
     const result = evaluatePageInput(pages, content);
 
@@ -200,7 +239,12 @@ export function useEpubMaker(): UseEpubMakerReturn {
           continue;
         }
 
-        const result = evaluatePageInput(nextPages, content);
+        const droppedFileTitle = fileNameToTitle(file.name);
+        const result = evaluatePageInputWithOptions(nextPages, content, {
+          defaultTitle: droppedFileTitle,
+          textUseDefaultTitle: true,
+          htmlUseHeadTitleOnly: true,
+        });
         if (result.status === "ok") {
           nextPages = [...nextPages, result.page];
           addedCount += 1;

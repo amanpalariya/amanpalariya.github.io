@@ -7,18 +7,27 @@ import {
 } from "./plain-text";
 import { inferTitleFromHtml, sanitizeHtmlContent } from "./html-sanitizer";
 
+export interface CreatePageDraftOptions {
+  defaultTitle?: string;
+  textUseDefaultTitle?: boolean;
+  htmlUseHeadTitleOnly?: boolean;
+}
+
 export function createPageDraftFromInput(
   content: string,
   index: number,
   policy: SanitizationPolicy,
+  options?: CreatePageDraftOptions,
 ): PageDraft | null {
   if (!content.trim()) return null;
 
-  const defaultPageTitle = `Page ${index}`;
+  const defaultPageTitle = options?.defaultTitle?.trim() || `Page ${index}`;
   const looksLikeHtml = /<\s*[a-zA-Z!/]/.test(content);
 
   if (looksLikeHtml) {
-    const inferredTitle = inferTitleFromHtml(content, defaultPageTitle);
+    const inferredTitle = options?.htmlUseHeadTitleOnly
+      ? defaultPageTitle
+      : inferTitleFromHtml(content, defaultPageTitle);
     const sanitized = sanitizeHtmlContent(content, inferredTitle, policy);
     return {
       id: createPageId(),
@@ -27,6 +36,18 @@ export function createPageDraftFromInput(
       rawContent: content,
       baseUrl: sanitized.baseUrl,
       previewHtml: sanitized.previewHtml,
+      createdAt: Date.now(),
+    };
+  }
+
+  if (options?.textUseDefaultTitle) {
+    return {
+      id: createPageId(),
+      title: defaultPageTitle,
+      inputKind: "text",
+      rawContent: content,
+      baseUrl: null,
+      previewHtml: getTextPreviewHtml(content),
       createdAt: Date.now(),
     };
   }
