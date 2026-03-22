@@ -43,6 +43,19 @@ export function EpubMetadataForm({
     rounded: "xl",
   } as const;
 
+  const switchProps = {
+    controlProps: {
+      bg: "app.epub.switch.track.off",
+      _checked: { bg: "app.epub.switch.track.on" },
+    },
+    thumbProps: {
+      bg: "app.epub.switch.thumb",
+    },
+    labelProps: {
+      color: "app.epub.switch.label",
+    },
+  } as const;
+
   return (
     <>
       <HStack gap={3} wrap={"wrap"} align={"stretch"}>
@@ -129,7 +142,7 @@ export function EpubMetadataForm({
         </HStack>
         <HStack gap={2}>
           <Switch
-            colorPalette={"blue"}
+            {...switchProps}
             checked={prefs.sanitizeOptions.embedRemoteImages}
             onCheckedChange={(details) =>
               onEmbedRemoteImagesChange(details.checked)
@@ -156,7 +169,7 @@ export function EpubMetadataForm({
         </HStack>
         <HStack gap={2}>
           <Switch
-            colorPalette={"blue"}
+            {...switchProps}
             checked={prefs.sanitizeOptions.allowExternalLinks}
             onCheckedChange={(details) =>
               onAllowExternalLinksChange(details.checked)

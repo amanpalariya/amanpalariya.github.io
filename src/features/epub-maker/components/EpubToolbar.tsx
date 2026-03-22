@@ -100,7 +100,7 @@ export function EpubToolbar({
             }
             roundedLeft={0}
             borderLeftWidth={"1px"}
-            borderLeftColor={"app.epub.border.default"}
+            borderLeftColor={"app.epub.button.primary.divider"}
             bg={"app.epub.button.primary.bg"}
             color={"app.epub.button.primary.fg"}
             _hover={{ bg: "app.epub.button.primary.hoverBg" }}
