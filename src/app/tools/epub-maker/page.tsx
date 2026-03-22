@@ -6,15 +6,17 @@ import {
   Button,
   Code,
   Heading,
+  Group,
   HStack,
   Icon,
+  Input,
   List,
   Textarea,
   Text,
   VStack,
 } from "@chakra-ui/react";
 import JSZip from "jszip";
-import { ClipboardEvent, useState } from "react";
+import { ClipboardEvent, useEffect, useState } from "react";
 import { Tooltip } from "@components/ui/tooltip";
 import {
   LuBookDown,
@@ -26,6 +28,7 @@ import {
 } from "react-icons/lu";
 
 type PageInputKind = "html" | "text";
+type FileNameMode = "auto" | "manual";
 
 type PageDraft = {
   id: string;
@@ -42,6 +45,8 @@ type EpubImage = {
   mediaType: string;
   bytes: Uint8Array;
 };
+
+const EPUB_MAKER_PREFS_KEY = "epub-maker-prefs-v1";
 
 const DROP_TAGS = new Set([
   "script",
@@ -106,6 +111,61 @@ function escapeXml(value: string): string {
 
 function plainTextToHtml(value: string): string {
   return escapeXml(value).replaceAll("\n", "<br />");
+}
+
+function inferTitleFromText(
+  value: string,
+  fallback: string,
+  maxWords = 8,
+): string {
+  const cleaned = value.replace(/\s+/g, " ").trim();
+  if (!cleaned) return fallback;
+
+  const words = cleaned.split(" ").filter(Boolean);
+  const previewWords = words.slice(0, maxWords);
+  if (previewWords.length === 0) return fallback;
+  return `${previewWords.join(" ")}...`;
+}
+
+function inferTitleFromHtml(value: string, fallback: string): string {
+  try {
+    const parser = new DOMParser();
+    const parsed = parser.parseFromString(value, "text/html");
+    const contentRoot = parsed.querySelector("article, main") || parsed.body;
+    const text = contentRoot?.textContent || "";
+    return inferTitleFromText(text, fallback);
+  } catch {
+    return fallback;
+  }
+}
+
+function sanitizeDownloadFileName(value: string): string {
+  return value
+    .replace(/[<>:"/\\|?*\u0000-\u001f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\.+$/g, "");
+}
+
+function ensureEpubExtension(value: string): string {
+  return value.toLowerCase().endsWith(".epub") ? value : `${value}.epub`;
+}
+
+function buildEpubFileName(
+  manualFileName: string,
+  title: string,
+  author: string,
+): string {
+  const composedBase = [title.trim(), author.trim()]
+    .filter(Boolean)
+    .join(" - ");
+  const base = manualFileName.trim() || composedBase || "epub-maker-pages";
+  const sanitized = sanitizeDownloadFileName(base) || "epub-maker-pages";
+  return ensureEpubExtension(sanitized);
+}
+
+function buildAutoEpubFileName(title: string, author: string): string {
+  return buildEpubFileName("", title, author);
 }
 
 function toAbsoluteUrl(url: string, baseUrl: string | null): string | null {
@@ -249,7 +309,7 @@ function sanitizeHtmlContent(html: string, fallbackPageTitle: string) {
     previewContainer.appendChild(node.cloneNode(true));
   }
 
-  const previewHtml = `<!doctype html><html><head><meta charset="utf-8" /><style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:12px;line-height:1.35;padding:10px;color:#111}img{max-width:100%;height:auto}h1,h2,h3,h4,h5,h6{margin:8px 0 4px}p,li,blockquote,pre{margin:4px 0}a{color:#2563eb;text-decoration:none}</style></head><body>${previewContainer.innerHTML}</body></html>`;
+  const previewHtml = `<!doctype html><html><head><meta charset="utf-8" /><meta name="color-scheme" content="light" /><style>:root{color-scheme:light}html,body{margin:0;padding:0;overflow:hidden;background:#fff;color:#111}body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:12px;line-height:1.35;padding:10px}img{max-width:100%;height:auto}h1,h2,h3,h4,h5,h6{margin:8px 0 4px}p,li,blockquote,pre{margin:4px 0}a{color:#2563eb;text-decoration:none}*{scrollbar-width:none}*::-webkit-scrollbar{width:0;height:0}</style></head><body>${previewContainer.innerHTML}</body></html>`;
 
   return {
     title,
@@ -260,11 +320,12 @@ function sanitizeHtmlContent(html: string, fallbackPageTitle: string) {
 }
 
 function getPageFromInput(content: string, id: string): PageDraft {
-  const fallbackPageTitle = `Page ${id}`;
+  const defaultPageTitle = `Page ${id}`;
   const looksLikeHtml = /<\s*[a-zA-Z!/]/.test(content);
 
   if (looksLikeHtml) {
-    const sanitized = sanitizeHtmlContent(content, fallbackPageTitle);
+    const inferredTitle = inferTitleFromHtml(content, defaultPageTitle);
+    const sanitized = sanitizeHtmlContent(content, inferredTitle);
     return {
       id,
       title: sanitized.title,
@@ -275,7 +336,8 @@ function getPageFromInput(content: string, id: string): PageDraft {
     };
   }
 
-  const textPreview = `<!doctype html><html><head><meta charset="utf-8" /><style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:12px;line-height:1.35;padding:10px;color:#111}.plain-text{white-space:pre-wrap;word-break:break-word;margin:0}</style></head><body><div class="plain-text">${plainTextToHtml(content)}</div></body></html>`;
+  const fallbackPageTitle = inferTitleFromText(content, defaultPageTitle);
+  const textPreview = `<!doctype html><html><head><meta charset="utf-8" /><meta name="color-scheme" content="light" /><style>:root{color-scheme:light}html,body{margin:0;padding:0;overflow:hidden;background:#fff;color:#111}body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:12px;line-height:1.35;padding:10px}.plain-text{white-space:pre-wrap;word-break:break-word;margin:0}*{scrollbar-width:none}*::-webkit-scrollbar{width:0;height:0}</style></head><body><div class="plain-text">${plainTextToHtml(content)}</div></body></html>`;
 
   return {
     id,
@@ -296,6 +358,74 @@ export default function EpubMakerPage() {
   const [warnings, setWarnings] = useState<string[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const [summary, setSummary] = useState("");
+  const [epubTitle, setEpubTitle] = useState("");
+  const [epubAuthor, setEpubAuthor] = useState("");
+  const [fileNameMode, setFileNameMode] = useState<FileNameMode>("auto");
+  const [manualEpubFileName, setManualEpubFileName] = useState("");
+  const [isPrefsLoaded, setIsPrefsLoaded] = useState(false);
+
+  const normalizedBookTitle = epubTitle.trim() || "EPUB Maker Pages";
+  const normalizedBookAuthor = epubAuthor.trim();
+  const autoEpubFileName = buildAutoEpubFileName(
+    normalizedBookTitle,
+    normalizedBookAuthor,
+  );
+  const effectiveFileName =
+    fileNameMode === "manual"
+      ? buildEpubFileName(
+          manualEpubFileName,
+          normalizedBookTitle,
+          normalizedBookAuthor,
+        )
+      : autoEpubFileName;
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(EPUB_MAKER_PREFS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as {
+          title?: string;
+          author?: string;
+          manualFileName?: string;
+          fileNameMode?: FileNameMode;
+        };
+
+        if (typeof parsed.title === "string") setEpubTitle(parsed.title);
+        if (typeof parsed.author === "string") setEpubAuthor(parsed.author);
+        if (typeof parsed.manualFileName === "string") {
+          setManualEpubFileName(parsed.manualFileName);
+        }
+        if (
+          parsed.fileNameMode === "auto" ||
+          parsed.fileNameMode === "manual"
+        ) {
+          setFileNameMode(parsed.fileNameMode);
+        }
+      }
+    } catch {
+      // ignore localStorage parse/access errors
+    } finally {
+      setIsPrefsLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isPrefsLoaded) return;
+
+    try {
+      window.localStorage.setItem(
+        EPUB_MAKER_PREFS_KEY,
+        JSON.stringify({
+          title: epubTitle,
+          author: epubAuthor,
+          manualFileName: manualEpubFileName,
+          fileNameMode,
+        }),
+      );
+    } catch {
+      // ignore localStorage write errors
+    }
+  }, [isPrefsLoaded, epubTitle, epubAuthor, manualEpubFileName, fileNameMode]);
 
   function downloadBlob(blob: Blob, fileName: string) {
     const objectUrl = URL.createObjectURL(blob);
@@ -582,7 +712,12 @@ export default function EpubMakerPage() {
         });
       }
 
-      const bookTitle = "EPUB Maker Pages";
+      const bookTitle = normalizedBookTitle;
+      const bookAuthorName = normalizedBookAuthor;
+      if (fileNameMode === "manual" && !manualEpubFileName.trim()) {
+        setManualEpubFileName(autoEpubFileName);
+      }
+      const downloadFileName = effectiveFileName;
       const bookId =
         typeof crypto !== "undefined" && "randomUUID" in crypto
           ? crypto.randomUUID()
@@ -629,6 +764,7 @@ export default function EpubMakerPage() {
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
     <dc:identifier id="book-id">urn:uuid:${escapeXml(bookId)}</dc:identifier>
     <dc:title>${escapeXml(bookTitle)}</dc:title>
+    ${bookAuthorName ? `<dc:creator>${escapeXml(bookAuthorName)}</dc:creator>` : ""}
     <dc:language>en</dc:language>
     <meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d{3}Z$/, "Z")}</meta>
   </metadata>
@@ -710,10 +846,10 @@ export default function EpubMakerPage() {
         mimeType: "application/epub+zip",
       });
 
-      downloadBlob(finalBlob, "epub-maker-pages.epub");
+      downloadBlob(finalBlob, downloadFileName);
       setWarnings(localWarnings);
       setSummary(
-        `Generated and downloaded EPUB with ${chapters.length} page(s) and ${images.length} embedded image(s).`,
+        `Generated and downloaded ${downloadFileName} with ${chapters.length} page(s) and ${images.length} embedded image(s).`,
       );
     } catch (error) {
       setErrors([`Unexpected error while generating EPUB: ${String(error)}`]);
@@ -786,6 +922,75 @@ export default function EpubMakerPage() {
           ) : null}
         </HStack>
 
+        <HStack gap={3} wrap={"wrap"} align={"stretch"}>
+          <Box minW={["full", "320px"]} flex={1}>
+            <Text fontSize={"sm"} color={"fg.muted"} mb={1}>
+              Title
+            </Text>
+            <Input
+              placeholder={"EPUB Maker Pages"}
+              value={epubTitle}
+              onChange={(event) => setEpubTitle(event.target.value)}
+            />
+          </Box>
+          <Box minW={["full", "260px"]} flex={1}>
+            <Text fontSize={"sm"} color={"fg.muted"} mb={1}>
+              Author (optional)
+            </Text>
+            <Input
+              placeholder={"Your name"}
+              value={epubAuthor}
+              onChange={(event) => setEpubAuthor(event.target.value)}
+            />
+          </Box>
+          <Box minW={["full", "320px"]} flex={1}>
+            <Text fontSize={"sm"} color={"fg.muted"} mb={1}>
+              File name
+            </Text>
+            <Group attached w={"full"}>
+              <Input
+                flex={1}
+                size={"md"}
+                placeholder={"my-book.epub"}
+                value={
+                  fileNameMode === "auto"
+                    ? autoEpubFileName
+                    : manualEpubFileName
+                }
+                onChange={(event) => {
+                  if (fileNameMode === "auto") {
+                    setFileNameMode("manual");
+                  }
+                  setManualEpubFileName(event.target.value);
+                }}
+                onBlur={() => {
+                  if (
+                    fileNameMode === "manual" &&
+                    !manualEpubFileName.trim()
+                  ) {
+                    setManualEpubFileName(autoEpubFileName);
+                  }
+                }}
+              />
+              <Button
+                size={"md"}
+                variant={"outline"}
+                onClick={() => {
+                  setFileNameMode((prev) => {
+                    const nextMode = prev === "auto" ? "manual" : "auto";
+                    if (nextMode === "manual" && !manualEpubFileName.trim()) {
+                      setManualEpubFileName(autoEpubFileName);
+                    }
+                    return nextMode;
+                  });
+                }}
+              >
+                {fileNameMode === "auto" ? "Auto" : "Manual"}
+              </Button>
+            </Group>
+          </Box>
+        </HStack>
+
         {showPasteFallback ? (
           <Box>
             <Textarea
@@ -854,14 +1059,25 @@ export default function EpubMakerPage() {
           <Alert.Root status={"warning"}>
             <Alert.Indicator />
             <Alert.Content>
-              <Alert.Title>Warnings</Alert.Title>
-              <List.Root>
-                {warnings.map((warning, index) => (
-                  <List.Item key={`${warning}-${index}`}>
-                    <Code whiteSpace={"pre-wrap"}>{warning}</Code>
-                  </List.Item>
-                ))}
-              </List.Root>
+              <HStack justify={"space-between"} align={"start"} mb={2}>
+                <Alert.Title>Warnings</Alert.Title>
+                <Button
+                  size={"xs"}
+                  variant={"ghost"}
+                  onClick={() => setWarnings([])}
+                >
+                  Dismiss
+                </Button>
+              </HStack>
+              <Box maxH={"150px"} overflowY={"auto"} pr={1}>
+                <List.Root>
+                  {warnings.map((warning, index) => (
+                    <List.Item key={`${warning}-${index}`}>
+                      <Code whiteSpace={"pre-wrap"}>{warning}</Code>
+                    </List.Item>
+                  ))}
+                </List.Root>
+              </Box>
             </Alert.Content>
           </Alert.Root>
         ) : null}
@@ -878,7 +1094,8 @@ export default function EpubMakerPage() {
               bg={"bg.panel"}
             >
               <Box
-                p={3}
+                px={3}
+                py={2}
                 borderBottomWidth={"1px"}
                 borderColor={"border.subtle"}
               >
