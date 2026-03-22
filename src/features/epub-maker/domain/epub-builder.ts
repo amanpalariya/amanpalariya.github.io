@@ -12,6 +12,55 @@ type Chapter = {
   content: string;
 };
 
+const XHTML_VOID_TAGS = new Set([
+  "area",
+  "base",
+  "br",
+  "col",
+  "embed",
+  "hr",
+  "img",
+  "input",
+  "link",
+  "meta",
+  "param",
+  "source",
+  "track",
+  "wbr",
+]);
+
+function serializeNodeToXhtml(node: Node): string {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return escapeXml(node.textContent || "");
+  }
+
+  if (node.nodeType !== Node.ELEMENT_NODE) {
+    return "";
+  }
+
+  const element = node as Element;
+  const tag = element.tagName.toLowerCase();
+  const attrs = Array.from(element.attributes)
+    .map((attribute) => ` ${attribute.name}="${escapeXml(attribute.value)}"`)
+    .join("");
+
+  const children = Array.from(element.childNodes)
+    .map((child) => serializeNodeToXhtml(child))
+    .join("");
+
+  if (XHTML_VOID_TAGS.has(tag) && children.length === 0) {
+    return `<${tag}${attrs} />`;
+  }
+
+  return `<${tag}${attrs}>${children}</${tag}>`;
+}
+
+function serializeBodyToXhtml(body: HTMLElement): string {
+  return Array.from(body.childNodes)
+    .map((node) => serializeNodeToXhtml(node))
+    .join("");
+}
+
 export async function buildEpub(input: BuildEpubInput): Promise<BuildEpubResult> {
   const startedAt = Date.now();
   const warnings = [] as BuildEpubResult["warnings"];
@@ -58,10 +107,13 @@ export async function buildEpub(input: BuildEpubInput): Promise<BuildEpubResult>
           node.remove();
           continue;
         }
-        node.setAttribute("src", result.localHref || result.absoluteSrc || src);
+        node.setAttribute(
+          "src",
+          result.localHref ? `../${result.localHref}` : (result.absoluteSrc || src),
+        );
       }
 
-      chapterBody = parsed.body.innerHTML;
+      chapterBody = serializeBodyToXhtml(parsed.body);
     }
 
     const xhtml = `<?xml version="1.0" encoding="UTF-8"?>
