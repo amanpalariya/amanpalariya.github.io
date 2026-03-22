@@ -32,28 +32,6 @@ export function MainCard({ children }) {
   );
 }
 
-export function InnerBgCard({
-  children,
-  bg,
-  background,
-  ...boxProps
-}: BoxProps) {
-  const defaultBg = "app.bg.surface";
-  const resolvedBg = background ?? bg ?? defaultBg;
-
-  return (
-    <Box
-      background={resolvedBg}
-      shadow={"xs"}
-      borderRadius={"2xl"}
-      p={[4, 6]}
-      {...boxProps}
-    >
-      {children}
-    </Box>
-  );
-}
-
 export function InnerBgCardWithHeader({
   header,
   children,

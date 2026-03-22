@@ -1,3 +1,5 @@
+import { SEMANTIC_TOKENS as EPUB_MAKER_SEMANTIC_COLOR_TOKENS } from "@features/epub-maker/theme";
+
 export interface AppSemanticTokenDefinition {
   value:
     | string
@@ -107,5 +109,6 @@ export const APP_SEMANTIC_COLOR_TOKENS = {
       number: semanticColor("{colors.orange.500}", "{colors.orange.500}"),
       function: semanticColor("{colors.blue.600}", "{colors.blue.400}"),
     },
+    epub: EPUB_MAKER_SEMANTIC_COLOR_TOKENS,
   },
 } as const;

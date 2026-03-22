@@ -27,6 +27,10 @@ export const homepageTabs = {
     name: "Blogs",
     getSubpagePathname,
   },
+  tools: {
+    pathname: "/tools/",
+    name: "Tools",
+  },
 };
 
 export function getHomepageTabByPathname(pathname: string) {

@@ -1,11 +1,12 @@
 import FeatureFlagsData from "data/features";
 import { useEffect, useState } from "react";
+import { buildFeatureFlagStorageKey } from "../storage";
 
 class FeatureFlagsManager {
   constructor() {}
 
   private getLocalStorageKeyFromFeatureFlagId(featureFlagId: string) {
-    return `ff.${featureFlagId}`;
+    return buildFeatureFlagStorageKey(featureFlagId);
   }
 
   getFeatureById(featureFlagId: string) {

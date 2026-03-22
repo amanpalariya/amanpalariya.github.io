@@ -15,6 +15,7 @@ import {
   FiHome,
   FiMoon,
   FiSun,
+  FiTool,
   FiUser,
 } from "react-icons/fi";
 import { HeaderCard } from "../../core/Cards";
@@ -55,6 +56,10 @@ const HEADER_NAV_ITEMS = [
     icon: FiBookOpen,
     tab: homepageTabs.blogs,
     needsBlogsFeature: true,
+  },
+  {
+    icon: FiTool,
+    tab: homepageTabs.tools,
   },
 ] as const;
 

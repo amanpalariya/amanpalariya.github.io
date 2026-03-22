@@ -24,7 +24,8 @@
     "paths": {
       "@components/*": ["components/*"],
       "@utils/*": ["utils/*"],
-      "@config/*": ["config/*"]
+      "@config/*": ["config/*"],
+      "@features/*": ["features/*"]
     }
   },
   "include": [
