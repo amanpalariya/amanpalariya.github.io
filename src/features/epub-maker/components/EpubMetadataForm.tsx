@@ -1,6 +1,7 @@
 import { Box, Button, Group, HStack, Icon, Input, Text } from "@chakra-ui/react";
 import { Switch } from "@components/ui/switch";
-import { LuSettings2 } from "react-icons/lu";
+import { Tooltip } from "@components/ui/tooltip";
+import { LuCircleHelp, LuSettings2 } from "react-icons/lu";
 import type { EpubMakerState } from "../types";
 
 export function EpubMetadataForm({
@@ -75,18 +76,54 @@ export function EpubMetadataForm({
             Generation options
           </Text>
         </HStack>
-        <Switch
-          checked={prefs.sanitizeOptions.embedRemoteImages}
-          onCheckedChange={(details) => onEmbedRemoteImagesChange(details.checked)}
-        >
-          Embed remote images
-        </Switch>
-        <Switch
-          checked={prefs.sanitizeOptions.allowExternalLinks}
-          onCheckedChange={(details) => onAllowExternalLinksChange(details.checked)}
-        >
-          Keep external links
-        </Switch>
+        <HStack gap={2}>
+          <Switch
+            checked={prefs.sanitizeOptions.embedRemoteImages}
+            onCheckedChange={(details) => onEmbedRemoteImagesChange(details.checked)}
+          >
+            Embed remote images
+          </Switch>
+          <Tooltip
+            content={
+              "When enabled, remote images are downloaded and packaged into the EPUB. When disabled, image URLs stay external."
+            }
+          >
+            <Box
+              as={"span"}
+              aria-label={"About embed remote images"}
+              color={"fg.muted"}
+              cursor={"help"}
+              display={"inline-flex"}
+              alignItems={"center"}
+            >
+              <LuCircleHelp />
+            </Box>
+          </Tooltip>
+        </HStack>
+        <HStack gap={2}>
+          <Switch
+            checked={prefs.sanitizeOptions.allowExternalLinks}
+            onCheckedChange={(details) => onAllowExternalLinksChange(details.checked)}
+          >
+            Keep external links
+          </Switch>
+          <Tooltip
+            content={
+              "When enabled, clickable links are kept in chapter content. When disabled, link targets are removed from sanitized HTML."
+            }
+          >
+            <Box
+              as={"span"}
+              aria-label={"About keep external links"}
+              color={"fg.muted"}
+              cursor={"help"}
+              display={"inline-flex"}
+              alignItems={"center"}
+            >
+              <LuCircleHelp />
+            </Box>
+          </Tooltip>
+        </HStack>
       </HStack>
     </>
   );
