@@ -9,7 +9,7 @@ import {
   Separator,
 } from "@chakra-ui/react";
 import { Heading4 } from "@components/core/Texts";
-import { CategoryBadge } from "@components/core/Badges";
+import { CategoryBadge, FeaturedIndicator } from "@components/core/Badges";
 import type { CvSectionBase, CvProjectItem } from "data/cv";
 import type { ElementType } from "react";
 import { FiLink } from "react-icons/fi";
@@ -43,9 +43,9 @@ function ProjectCard({
           <HStack gap={2} flexWrap="wrap">
             <Heading4>{item.name}</Heading4>
             {item.isFeatured ? (
-              <CategoryBadge color={accentColorPalette ? "purple" : "blue"}>
-                Featured
-              </CategoryBadge>
+              <FeaturedIndicator
+                colorPalette={accentColorPalette ? "purple" : "blue"}
+              />
             ) : null}
             {item.highlight ? (
               <CategoryBadge color={accentColorPalette ? "purple" : "blue"}>
