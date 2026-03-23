@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 export type PageInputKind = "html" | "text";
 export type FileNameMode = "auto" | "manual";
 export type PageId = string;
@@ -56,7 +58,7 @@ export interface UiNotification {
   id: string;
   type: "success" | "error" | "warning" | "info";
   title: string;
-  description?: string;
+  description?: ReactNode;
 }
 
 export interface SanitizationPolicy {

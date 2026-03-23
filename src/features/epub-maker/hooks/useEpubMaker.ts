@@ -1,5 +1,16 @@
-import { ClipboardEvent, useEffect, useMemo, useState } from "react";
-import { createDefaultSanitizationPolicy, DEFAULT_BOOK_TITLE } from "../constants";
+import {
+  ClipboardEvent,
+  createElement,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { LuChevronDown, LuFilePlus } from "react-icons/lu";
+import {
+  createDefaultSanitizationPolicy,
+  DEFAULT_BOOK_TITLE,
+} from "../constants";
 import type { EpubMakerState, GenerationWarning, PageDraft } from "../types";
 import { buildAutoEpubFileName, buildEpubFileName } from "../utils/file-name";
 import { createPageDraftFromInput } from "../domain/page-draft";
@@ -69,24 +80,31 @@ export function useEpubMaker(): UseEpubMakerReturn {
   const [pages, setPages] = useState<PageDraft[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generationProgress, setGenerationProgress] = useState<number | null>(null);
+  const [generationProgress, setGenerationProgress] = useState<number | null>(
+    null,
+  );
   const [showPasteFallback, setShowPasteFallback] = useState(false);
   const [pastedInput, setPastedInput] = useState("");
   const [warnings, setWarnings] = useState<GenerationWarning[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const [summary, setSummary] = useState("");
-  const [notifications, setNotifications] = useState<EpubMakerState["notifications"]>([]);
-  const [prefs, setPrefs] = useState<EpubMakerState["prefs"]>(readEpubMakerPrefs());
+  const [notifications, setNotifications] = useState<
+    EpubMakerState["notifications"]
+  >([]);
+  const [prefs, setPrefs] =
+    useState<EpubMakerState["prefs"]>(readEpubMakerPrefs());
   const [isPrefsLoaded, setIsPrefsLoaded] = useState(false);
 
   function dismissNotification(id: string) {
-    setNotifications((prev) => prev.filter((notification) => notification.id !== id));
+    setNotifications((prev) =>
+      prev.filter((notification) => notification.id !== id),
+    );
   }
 
   function notify(
     type: "success" | "error" | "warning" | "info",
     title: string,
-    description?: string,
+    description?: ReactNode,
     durationMs = 4500,
   ) {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -96,6 +114,58 @@ export function useEpubMaker(): UseEpubMakerReturn {
         dismissNotification(id);
       }, durationMs);
     }
+  }
+
+  function addButtonHint(): ReactNode {
+    return createElement(
+      "span",
+      {
+        style: {
+          display: "inline-flex",
+          alignItems: "baseline",
+          gap: "0.25rem",
+          whiteSpace: "nowrap",
+        },
+      },
+      createElement(
+        "span",
+        { style: { display: "inline-flex", lineHeight: 1 } },
+        createElement(LuFilePlus, {
+          style: { display: "inline-block", transform: "translateY(0.08em)" },
+        }),
+      ),
+      createElement("span", null, "Add"),
+    );
+  }
+
+  function addMenuHint(): ReactNode {
+    return createElement(
+      "span",
+      {
+        style: {
+          display: "inline-flex",
+          alignItems: "baseline",
+          gap: "0.25rem",
+          whiteSpace: "nowrap",
+        },
+      },
+      createElement(
+        "span",
+        { style: { display: "inline-flex", lineHeight: 1 } },
+        createElement(LuChevronDown, {
+          style: { display: "inline-block", transform: "translateY(0.08em)" },
+        }),
+      ),
+      createElement("span", null, "next to"),
+      createElement(
+        "span",
+        { style: { display: "inline-flex", lineHeight: 1 } },
+        createElement(LuFilePlus, {
+          style: { display: "inline-block", transform: "translateY(0.08em)" },
+        }),
+      ),
+      createElement("span", null, "Add"),
+    );
   }
 
   const normalizedBookTitle = getNormalizedBookTitle(prefs.title);
@@ -118,7 +188,10 @@ export function useEpubMaker(): UseEpubMakerReturn {
     policy.embedRemoteImages = prefs.sanitizeOptions.embedRemoteImages;
     policy.allowExternalLinks = prefs.sanitizeOptions.allowExternalLinks;
     return policy;
-  }, [prefs.sanitizeOptions.embedRemoteImages, prefs.sanitizeOptions.allowExternalLinks]);
+  }, [
+    prefs.sanitizeOptions.embedRemoteImages,
+    prefs.sanitizeOptions.allowExternalLinks,
+  ]);
 
   useEffect(() => {
     setPrefs(readEpubMakerPrefs());
@@ -143,7 +216,11 @@ export function useEpubMaker(): UseEpubMakerReturn {
       return { status: "duplicate" as const };
     }
 
-    const page = createPageDraftFromInput(content, existingPages.length + 1, sanitizePolicy);
+    const page = createPageDraftFromInput(
+      content,
+      existingPages.length + 1,
+      sanitizePolicy,
+    );
     if (!page) {
       return { status: "invalid" as const };
     }
@@ -185,24 +262,27 @@ export function useEpubMaker(): UseEpubMakerReturn {
     const result = evaluatePageInput(pages, content);
 
     if (result.status === "empty") {
-      setErrors(["Clipboard/fallback input is empty."]);
-      notify("warning", "Empty input", "Clipboard/fallback input is empty.");
+      const message = "Copy or paste some content, then try again.";
+      setErrors([message]);
+      notify("warning", "Nothing to add", message);
       return false;
     }
 
     if (result.status === "duplicate") {
       const duplicateWarning = {
         code: "EMPTY_PAGE_SKIPPED" as const,
-        message: "Duplicate page content detected and skipped.",
+        message: "That page matches existing content, so it was skipped.",
       };
       setWarnings((prev) => [...prev, duplicateWarning]);
-      notify("warning", "Duplicate page", duplicateWarning.message);
+      notify("warning", "Page already added", duplicateWarning.message);
       return false;
     }
 
     if (result.status === "invalid") {
-      setErrors(["Could not build page from pasted input."]);
-      notify("error", "Page add failed", "Could not build page from pasted input.");
+      const message =
+        "Couldn’t create a page from that content. Check the input and try again.";
+      setErrors([message]);
+      notify("error", "Couldn’t add page", message);
       return false;
     }
 
@@ -212,14 +292,22 @@ export function useEpubMaker(): UseEpubMakerReturn {
     setSummary("");
     setErrors([]);
     setPastedInput("");
-    notify("success", "Page added", `${page.title} added to draft list.`);
+    notify(
+      "success",
+      "Page added",
+      `“${page.title}” was added to draft pages.`,
+    );
     return true;
   }
 
   async function addPagesFromFiles(files: FileList | File[]) {
     const droppedFiles = Array.from(files);
     if (droppedFiles.length === 0) {
-      notify("warning", "No files", "Drop one or more files to add pages.");
+      notify(
+        "warning",
+        "No files selected",
+        "Drop one or more files to add pages.",
+      );
       return;
     }
 
@@ -300,17 +388,21 @@ export function useEpubMaker(): UseEpubMakerReturn {
         notify(
           "success",
           "Pages added",
-          `${addedCount} pages added from dropped files.`,
+          `${addedCount} pages were added from dropped files.`,
         );
       } else if (addedCount === 1) {
-        notify("success", "Page added", "1 page added from dropped files.");
+        notify(
+          "success",
+          "Page added",
+          "1 page was added from dropped files.",
+        );
       }
 
       if (unsupportedCount > 0) {
         notify(
           "info",
-          "Some files skipped",
-          `${unsupportedCount} file(s) were skipped because only HTML, Markdown, text, and image files are supported.`,
+          "Some files were skipped",
+          `${unsupportedCount} file(s) weren’t added because only HTML, Markdown, text, and image files are supported.`,
         );
       }
 
@@ -319,15 +411,15 @@ export function useEpubMaker(): UseEpubMakerReturn {
         notify(
           "warning",
           "Duplicate pages skipped",
-          `${duplicateCount} dropped file(s) matched existing page content and were skipped.`,
+          `${duplicateCount} file(s) matched existing pages, so they were skipped.`,
         );
       }
 
       if (invalidCount > 0) {
         notify(
           "warning",
-          "Some files could not be added",
-          `${invalidCount} file(s) could not be converted into page content.`,
+          "Some files couldn’t be added",
+          `${invalidCount} file(s) couldn’t be converted into readable page content.`,
         );
       }
 
@@ -335,7 +427,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
         notify(
           "warning",
           "Some files were empty",
-          `${emptyCount} file(s) had no usable content.`,
+          `${emptyCount} file(s) had no usable content to add as a page.`,
         );
       }
 
@@ -343,7 +435,10 @@ export function useEpubMaker(): UseEpubMakerReturn {
         setErrors([
           "No supported files found. Drop HTML, Markdown, text, or image files to add pages.",
         ]);
-      } else if (addedCount === 0 && (duplicateCount > 0 || invalidCount > 0 || emptyCount > 0)) {
+      } else if (
+        addedCount === 0 &&
+        (duplicateCount > 0 || invalidCount > 0 || emptyCount > 0)
+      ) {
         setErrors([
           "No pages were added from dropped files. Check file content and try again.",
         ]);
@@ -351,7 +446,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     } catch (error) {
       const message = `Could not read dropped files: ${String(error)}`;
       setErrors([message]);
-      notify("error", "File import failed", message);
+      notify("error", "Couldn’t import files", message);
     } finally {
       setIsAdding(false);
     }
@@ -368,17 +463,32 @@ export function useEpubMaker(): UseEpubMakerReturn {
       const normalizedMessage = rawMessage.toLowerCase();
 
       if (normalizedMessage.includes("empty")) {
-        const message =
-          "Clipboard is empty. Copy HTML or text first, then try Add page from clipboard.";
-        setErrors([message]);
-        notify("warning", "Clipboard empty", message);
-      } else {
-        const message = `Could not read formatted clipboard content automatically: ${rawMessage}. Use the arrow next to the Add page button to paste manually.`;
+        const message = "Copy HTML or text first, then click Add.";
         setErrors([message]);
         notify(
           "warning",
-          "Clipboard blocked",
-          "Automatic clipboard read failed. Use the arrow next to Add page to paste manually.",
+          "Clipboard is empty",
+          createElement(
+            "span",
+            null,
+            "Copy HTML or text first, then click ",
+            addButtonHint(),
+            ".",
+          ),
+        );
+      } else {
+        const message = `Could not read formatted clipboard content automatically: ${rawMessage}. Use the menu next to Add to paste manually.`;
+        setErrors([message]);
+        notify(
+          "warning",
+          "Can’t access clipboard automatically",
+          createElement(
+            "span",
+            null,
+            "Clipboard could not be read directly. Use ",
+            addMenuHint(),
+            " to paste manually.",
+          ),
         );
       }
     } finally {
@@ -421,8 +531,9 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
   function addFromFallbackText() {
     if (!pastedInput.trim()) {
-      setErrors(["Paste HTML or text first, then add page."]);
-      notify("warning", "Nothing to add", "Paste HTML or text first, then add page.");
+      const message = "Paste HTML or text first, then add the page.";
+      setErrors([message]);
+      notify("warning", "Nothing to add", message);
       return;
     }
     addInputAsPage(pastedInput);
@@ -449,7 +560,10 @@ export function useEpubMaker(): UseEpubMakerReturn {
       if (!draggedPage) return prev;
 
       const remaining = prev.filter((page) => page.id !== draggedId);
-      const insertionIndex = Math.max(0, Math.min(targetIndex, remaining.length));
+      const insertionIndex = Math.max(
+        0,
+        Math.min(targetIndex, remaining.length),
+      );
       remaining.splice(insertionIndex, 0, draggedPage);
       return remaining;
     });
@@ -463,9 +577,10 @@ export function useEpubMaker(): UseEpubMakerReturn {
     setSummary("");
 
     if (pages.length === 0) {
-      const message = "Add at least one page from clipboard before generating EPUB.";
+      const message =
+        "Add at least one page from clipboard before generating EPUB.";
       setErrors([message]);
-      notify("warning", "No pages", message);
+      notify("warning", "No pages added", message);
       setIsGenerating(false);
       setGenerationProgress(null);
       return;
@@ -484,9 +599,13 @@ export function useEpubMaker(): UseEpubMakerReturn {
       downloadBlob(result.blob, effectiveFileName);
       setWarnings(result.warnings);
       setSummary(
-        `Generated and downloaded ${effectiveFileName} with ${result.summary.chapterCount} page(s), ${result.summary.embeddedImageCount} embedded image(s), and ${result.summary.externalImageCount} external image reference(s).`,
+        `Generated and downloaded “${effectiveFileName}” with ${result.summary.chapterCount} page(s), ${result.summary.embeddedImageCount} embedded image(s), and ${result.summary.externalImageCount} external image reference(s).`,
       );
-      notify("success", "EPUB generated", `${effectiveFileName} downloaded successfully.`);
+      notify(
+        "success",
+        "EPUB ready",
+        `EPUB generated and downloaded as “${effectiveFileName}”.`,
+      );
 
       if (result.warnings.length > 0) {
         // Keep warnings in the on-page warnings list only (no toast notification)
@@ -498,7 +617,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     } catch (error) {
       const message = `Unexpected error while generating EPUB: ${String(error)}`;
       setErrors([message]);
-      notify("error", "Generation failed", message);
+      notify("error", "EPUB generation failed", message);
     } finally {
       setIsGenerating(false);
       setGenerationProgress(null);
@@ -533,12 +652,15 @@ export function useEpubMaker(): UseEpubMakerReturn {
     setPastedInput,
     setWarnings,
     dismissNotification,
-    setTitle: (value: string) => setPrefs((prev) => ({ ...prev, title: value })),
-    setAuthor: (value: string) => setPrefs((prev) => ({ ...prev, author: value })),
+    setTitle: (value: string) =>
+      setPrefs((prev) => ({ ...prev, title: value })),
+    setAuthor: (value: string) =>
+      setPrefs((prev) => ({ ...prev, author: value })),
     setManualFileName: (value: string) =>
       setPrefs((prev) => ({
         ...prev,
-        fileNameMode: prev.fileNameMode === "auto" ? "manual" : prev.fileNameMode,
+        fileNameMode:
+          prev.fileNameMode === "auto" ? "manual" : prev.fileNameMode,
         manualFileName: value,
       })),
     toggleFileNameMode: () =>

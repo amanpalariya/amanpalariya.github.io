@@ -32,9 +32,13 @@ export function TopRightNotifications({
             <Alert.Content>
               <Box display={"flex"} justifyContent={"space-between"} alignItems={"start"}>
                 <Box>
-                  <Alert.Title>{notification.title}</Alert.Title>
+                  <Alert.Title fontWeight={"bold"} lineHeight={"short"}>
+                    {notification.title}
+                  </Alert.Title>
                   {notification.description ? (
-                    <Alert.Description>{notification.description}</Alert.Description>
+                    <Alert.Description mt={1} lineHeight={"tall"}>
+                      {notification.description}
+                    </Alert.Description>
                   ) : null}
                 </Box>
                 <CloseButton size={"sm"} onClick={() => onDismiss(notification.id)} />
