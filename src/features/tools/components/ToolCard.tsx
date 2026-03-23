@@ -1,5 +1,5 @@
 import { HStack, Icon, Text, VStack } from "@chakra-ui/react";
-import { CategoryBadge } from "@components/core/Badges";
+import { CategoryBadge, FeaturedIndicator } from "@components/core/Badges";
 import { InnerBgCardWithHeader } from "@components/core/Cards";
 import { Heading5 } from "@components/core/Texts";
 import NextLink from "next/link";
@@ -34,6 +34,7 @@ export function ToolCard({ tool }: { tool: ToolDefinition }) {
               <HStack gap={2} align={"center"}>
                 <Icon as={ToolIcon} boxSize={5} color={"app.fg.subtle"} />
                 <Heading5>{tool.name}</Heading5>
+                {tool.isFeatured ? <FeaturedIndicator /> : null}
               </HStack>
               <Text color={"app.fg.subtle"} fontSize={"sm"}>
                 {tool.tagline}
@@ -51,9 +52,6 @@ export function ToolCard({ tool }: { tool: ToolDefinition }) {
                 {formatStatus(tool.status)}
               </CategoryBadge>
               <CategoryBadge>{tool.category}</CategoryBadge>
-              {tool.isFeatured ? (
-                <CategoryBadge color={"orange"}>Featured</CategoryBadge>
-              ) : null}
             </HStack>
           </HStack>
         </VStack>

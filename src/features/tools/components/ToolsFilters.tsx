@@ -1,6 +1,7 @@
 "use client";
 
-import { Badge, Box, Button, HStack, Text, VStack } from "@chakra-ui/react";
+import { Box, Button, HStack, Text, VStack } from "@chakra-ui/react";
+import { FeaturedIndicator } from "@components/core/Badges";
 import { Switch } from "@components/ui/switch";
 import type { ToolCategory, ToolFiltersState, ToolStatus } from "../types";
 
@@ -88,7 +89,7 @@ export function ToolsFilters({
         >
           <HStack gap={2}>
             <Text>Featured only</Text>
-            <Badge colorPalette={"orange"}>Featured</Badge>
+            <FeaturedIndicator />
           </HStack>
         </Switch>
       </Box>
