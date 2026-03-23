@@ -7,7 +7,19 @@ export function inferTitleFromHtml(value: string, fallback: string): string {
     const parser = new DOMParser();
     const parsed = parser.parseFromString(value, "text/html");
     const contentRoot = parsed.querySelector("article, main") || parsed.body;
-    const text = contentRoot?.textContent || "";
+
+    const firstHeading = contentRoot?.querySelector("h1, h2, h3, h4, h5, h6");
+    const headingTitle = firstHeading?.textContent?.replace(/\s+/g, " ").trim() || "";
+    if (headingTitle) return headingTitle;
+
+    const textFromInnerText = contentRoot?.innerText?.trim() || "";
+    const textFromTagSeparatedHtml =
+      contentRoot?.innerHTML.replace(/<[^>]+>/g, " ").trim() || "";
+    const text =
+      textFromInnerText ||
+      textFromTagSeparatedHtml ||
+      contentRoot?.textContent ||
+      "";
     return inferTitleFromText(text, fallback);
   } catch {
     return fallback;
