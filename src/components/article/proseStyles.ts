@@ -88,6 +88,10 @@ export function useProseStyles() {
       textDecorationThickness: "from-font",
       textDecorationStyle: "solid",
       overflowWrap: "anywhere",
+      wordBreak: "break-all",
+      hyphens: "none",
+      WebkitHyphens: "none",
+      msHyphens: "none",
     },
     "& a.external-link": {
       textDecoration: "none",

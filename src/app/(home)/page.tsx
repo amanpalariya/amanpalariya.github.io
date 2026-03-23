@@ -75,12 +75,8 @@ function Projects() {
             key={project.id}
             title={project.title}
             description={project.description}
-            url={
-              project.content
-                ? homepageTabs.projects.getSubpagePathname(project.id)
-                : project.url
-            }
-            isUrlExternal={project.content ? false : true}
+            url={project.url ?? homepageTabs.projects.getSubpagePathname(project.id)}
+            isUrlExternal={project.url ? !project.url.startsWith("/") : false}
           />
         ))}
       </TileList>
