@@ -24,7 +24,7 @@ const allProjects: Project[] = [
     title: "Console Game Language",
     description:
       "A new programming language (compiler & runtime) for retro console games",
-    url: "https://github.com/amanpalariya/console-game",
+    url: "/projects/console-game-language",
   },
   {
     id: "rain-and-snow-removal",
