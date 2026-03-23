@@ -3,6 +3,27 @@ import { projectIdsWithDetails } from "data/projects/ids";
 import { getProjectById } from "data/projects/loader";
 import { renderMarkdownToHtml } from "@utils/markdown";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { getPageTitle } from "app/metadata";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const resolvedParams = await params;
+  const project = getProjectById(resolvedParams.id);
+
+  if (!project) {
+    return {
+      title: getPageTitle("Project"),
+    };
+  }
+
+  return {
+    title: getPageTitle(project.title),
+  };
+}
 
 export default async function ProjectDetailPage({
   params,

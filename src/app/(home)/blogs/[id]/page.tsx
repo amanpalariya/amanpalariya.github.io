@@ -3,6 +3,27 @@ import { blogIds } from "data/blogs/ids";
 import { getBlogById } from "data/blogs/loader";
 import { renderMarkdownToHtml } from "@utils/markdown";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { getPageTitle } from "app/metadata";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const resolvedParams = await params;
+  const blog = getBlogById(resolvedParams.id);
+
+  if (!blog) {
+    return {
+      title: getPageTitle("Blog"),
+    };
+  }
+
+  return {
+    title: getPageTitle(blog.title),
+  };
+}
 
 export default async function BlogDetailPage({
   params,

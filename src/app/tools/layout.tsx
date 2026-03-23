@@ -1,22 +1,18 @@
-"use client";
+import type { Metadata } from "next";
+import ToolsShell from "./ToolsShell";
+import { getPageTitle } from "app/metadata";
+import { getToolsPageContent } from "features/tools/data/content";
 
-import WithBackground from "@components/page/wrapper/WithBackground";
-import WithBodyCard from "@components/page/wrapper/WithBodyCard";
-import WithFooter from "@components/page/wrapper/WithFooter";
-import WithHeader from "@components/page/wrapper/WithHeader";
+const toolsPageContent = getToolsPageContent();
+
+export const metadata: Metadata = {
+  title: getPageTitle(toolsPageContent.title),
+};
 
 export default function ToolsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <WithBackground>
-      <WithHeader>
-        <WithFooter>
-          <WithBodyCard>{children}</WithBodyCard>
-        </WithFooter>
-      </WithHeader>
-    </WithBackground>
-  );
+  return <ToolsShell>{children}</ToolsShell>;
 }
