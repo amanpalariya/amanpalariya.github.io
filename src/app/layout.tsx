@@ -1,13 +1,13 @@
 import { Providers } from "./providers";
 import { Metadata } from "next";
-import { PersonalData } from "data";
+import { SITE_OWNER_NAME } from "./metadata";
 import "katex/dist/katex.min.css";
 import "@fontsource/lexend";
 import "@fontsource/noto-sans";
 import "computer-modern/index.css";
 
 export const metadata: Metadata = {
-  title: `${PersonalData.name.full} | Website`,
+  title: SITE_OWNER_NAME,
 };
 
 export default function RootLayout({

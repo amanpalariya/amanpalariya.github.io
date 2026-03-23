@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
-import ToolsShell from "./ToolsShell";
 import { getPageTitle } from "app/metadata";
 
 export const metadata: Metadata = {
-  title: getPageTitle("Tools"),
+  title: getPageTitle("About"),
 };
 
-export default function ToolsLayout({
+export default function AboutLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <ToolsShell>{children}</ToolsShell>;
+  return children;
 }

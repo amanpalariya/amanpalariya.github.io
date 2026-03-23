@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
-import ToolsShell from "./ToolsShell";
 import { getPageTitle } from "app/metadata";
 
 export const metadata: Metadata = {
-  title: getPageTitle("Tools"),
+  title: getPageTitle("EPUB Maker"),
 };
 
-export default function ToolsLayout({
+export default function EpubMakerLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <ToolsShell>{children}</ToolsShell>;
+  return children;
 }
