@@ -2,6 +2,22 @@ import { inferTitleFromText } from "./plain-text";
 import type { SanitizationPolicy, SanitizedHtmlResult } from "../types";
 import { resolveAbsoluteUrl } from "../utils/url";
 
+function extractSpacedText(root: Element | null | undefined): string {
+  if (!root) return "";
+
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const parts: string[] = [];
+  let current = walker.nextNode();
+
+  while (current) {
+    const chunk = current.textContent?.replace(/\s+/g, " ").trim() || "";
+    if (chunk) parts.push(chunk);
+    current = walker.nextNode();
+  }
+
+  return parts.join(" ");
+}
+
 export function inferTitleFromHtml(value: string, fallback: string): string {
   try {
     const parser = new DOMParser();
@@ -12,14 +28,11 @@ export function inferTitleFromHtml(value: string, fallback: string): string {
     const headingTitle = firstHeading?.textContent?.replace(/\s+/g, " ").trim() || "";
     if (headingTitle) return headingTitle;
 
-    const textFromInnerText = contentRoot?.innerText?.trim() || "";
+    const textFromTextNodes = extractSpacedText(contentRoot);
     const textFromTagSeparatedHtml =
-      contentRoot?.innerHTML.replace(/<[^>]+>/g, " ").trim() || "";
-    const text =
-      textFromInnerText ||
-      textFromTagSeparatedHtml ||
-      contentRoot?.textContent ||
+      contentRoot?.innerHTML.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() ||
       "";
+    const text = textFromTextNodes || textFromTagSeparatedHtml || contentRoot?.textContent || "";
     return inferTitleFromText(text, fallback);
   } catch {
     return fallback;
