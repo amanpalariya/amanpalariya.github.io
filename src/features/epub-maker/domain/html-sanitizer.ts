@@ -2,12 +2,37 @@ import { inferTitleFromText } from "./plain-text";
 import type { SanitizationPolicy, SanitizedHtmlResult } from "../types";
 import { resolveAbsoluteUrl } from "../utils/url";
 
+function extractSpacedText(root: Element | null | undefined): string {
+  if (!root) return "";
+
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const parts: string[] = [];
+  let current = walker.nextNode();
+
+  while (current) {
+    const chunk = current.textContent?.replace(/\s+/g, " ").trim() || "";
+    if (chunk) parts.push(chunk);
+    current = walker.nextNode();
+  }
+
+  return parts.join(" ");
+}
+
 export function inferTitleFromHtml(value: string, fallback: string): string {
   try {
     const parser = new DOMParser();
     const parsed = parser.parseFromString(value, "text/html");
     const contentRoot = parsed.querySelector("article, main") || parsed.body;
-    const text = contentRoot?.textContent || "";
+
+    const firstHeading = contentRoot?.querySelector("h1, h2, h3, h4, h5, h6");
+    const headingTitle = firstHeading?.textContent?.replace(/\s+/g, " ").trim() || "";
+    if (headingTitle) return headingTitle;
+
+    const textFromTextNodes = extractSpacedText(contentRoot);
+    const textFromTagSeparatedHtml =
+      contentRoot?.innerHTML.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() ||
+      "";
+    const text = textFromTextNodes || textFromTagSeparatedHtml || contentRoot?.textContent || "";
     return inferTitleFromText(text, fallback);
   } catch {
     return fallback;
