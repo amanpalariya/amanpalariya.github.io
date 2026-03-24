@@ -1,4 +1,4 @@
-import { Box, Text, VStack, SimpleGrid, Badge, HStack } from "@chakra-ui/react";
+import { Box, Text, VStack, SimpleGrid, HStack } from "@chakra-ui/react";
 import { Heading4 } from "@components/core/Texts";
 import type { CvCourseItem, CvSectionBase } from "data/cv";
 import type { ElementType } from "react";

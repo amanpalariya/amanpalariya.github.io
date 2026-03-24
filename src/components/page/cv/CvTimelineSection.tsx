@@ -16,8 +16,7 @@ import { FiLink } from "react-icons/fi";
 import CvSection from "./CvSection";
 import type { ElementType } from "react";
 import { formatCvDateRange } from "./cvRenderUtils";
-
-type AccentPalette = "blue" | "purple" | "green" | "orange" | "yellow" | "red";
+import type { AppAccentPalette, AppPalette } from "theme/colors/types";
 
 function TimelineItem({
   item,
@@ -26,8 +25,8 @@ function TimelineItem({
   presentWhenEndMissing,
 }: {
   item: CvTimelineItem;
-  accentColorPalette?: string;
-  tagColor: "gray" | AccentPalette;
+  accentColorPalette?: AppAccentPalette;
+  tagColor: AppPalette;
   presentWhenEndMissing?: boolean;
 }) {
   const mutedColor = "app.fg.subtle";
@@ -49,7 +48,7 @@ function TimelineItem({
 
   return (
     <HStack align="stretch" gap={4}>
-      <VStack align="center" spacing={2} minW={4} pt={2}>
+      <VStack align="center" gap={2} minW={4} pt={2}>
         <Box w={2.5} h={2.5} borderRadius="full" bg={dotColor} zIndex={1} />
       </VStack>
       <VStack align="stretch" gap={2} flex={1}>
@@ -71,7 +70,8 @@ function TimelineItem({
           {item.url ? (
             <Link
               href={item.url}
-              isExternal
+              target="_blank"
+              rel="noopener noreferrer"
               fontFamily="ui"
               fontSize="sm"
               color={mutedColor}
@@ -96,7 +96,7 @@ function TimelineItem({
           </VStack>
         ) : null}
         {item.tags && item.tags.length > 0 ? (
-          <Wrap spacing={2}>
+          <Wrap gap={2}>
             {item.tags.map((tag) => (
               <WrapItem key={tag}>
                 <CategoryBadge color={tagColor}>{tag}</CategoryBadge>
@@ -118,13 +118,15 @@ export default function CvTimelineSection({
 }: {
   section: CvSectionBase & { items: CvTimelineItem[] };
   titleIcon?: ElementType;
-  primaryColorPalette?: AccentPalette;
-  accentColorPalette?: AccentPalette;
+  primaryColorPalette?: AppPalette;
+  accentColorPalette?: AppAccentPalette;
   presentWhenEndMissing?: boolean;
 }) {
   if (!section || section.items.length === 0) return null;
-  const resolvedAccentPalette = accentColorPalette ?? primaryColorPalette;
-  const tagColor = resolvedAccentPalette ?? ("gray" as const);
+  const resolvedAccentPalette =
+    accentColorPalette ??
+    (primaryColorPalette === "gray" ? undefined : primaryColorPalette);
+  const tagColor = resolvedAccentPalette ?? "gray";
   const railTint = resolvedAccentPalette
     ? `${resolvedAccentPalette}.muted`
     : "app.border.muted";
@@ -144,9 +146,9 @@ export default function CvTimelineSection({
       <VStack align="stretch" gap={4} position="relative">
         <Box
           position="absolute"
-          top="13px"
-          bottom="9px"
-          left="8px"
+          top={3}
+          bottom={2}
+          left={2}
           w="2px"
           bg={railTint}
           zIndex={0}
@@ -154,8 +156,8 @@ export default function CvTimelineSection({
         />
         <Box
           position="absolute"
-          bottom="9px"
-          left="8px"
+          bottom={2}
+          left={2}
           transform="translateX(-50%)"
           h="2px"
           w={3}

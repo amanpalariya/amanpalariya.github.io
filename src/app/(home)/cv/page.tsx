@@ -289,12 +289,7 @@ export default function CvPage() {
     <VStack align="stretch" gap={2}>
       <Box m={[4, 6]}>
         <VStack align="stretch" gap={5}>
-          <VStack
-            align="stretch"
-            gap={2}
-            letterSpacing="wide"
-            lineHeight="tall"
-          >
+          <VStack align="stretch" gap={2}>
             <SectionText>Curriculum Vitae</SectionText>
           </VStack>
           <CvHero profile={profile} />

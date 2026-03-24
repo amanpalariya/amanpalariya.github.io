@@ -18,10 +18,10 @@ export default function CvJumpNav({ sections }: { sections: CvData["sections"] }
   if (links.length === 0) return null;
 
   return (
-    <Wrap spacing={3}>
+    <Wrap gap={3}>
       {links.map((link, index) => (
         <WrapItem key={link.id}>
-          <Wrap align="center" spacing={3}>
+          <Wrap align="center" gap={3}>
             <WrapItem>
               <Link
                 href={`#${link.id}`}

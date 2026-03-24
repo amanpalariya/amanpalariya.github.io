@@ -31,7 +31,7 @@ export default function CvSection({
         accentColorPalette={accentColorPalette}
         separateHeader
       >
-        <VStack align={"stretch"} gap={4} pb={2}>
+        <VStack align={"stretch"} gap={3}>
           {description ? (
             <Text fontSize="sm" color={"app.fg.subtle"}>
               {description}

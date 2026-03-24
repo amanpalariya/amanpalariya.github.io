@@ -7,7 +7,9 @@ import {
   Icon,
   Link,
   Text,
+  TextProps,
 } from "@chakra-ui/react";
+import type { ReactNode } from "react";
 import { FaCircle } from "react-icons/fa";
 
 const useDefaultTextColor = () => "app.fg.default";
@@ -46,13 +48,15 @@ function GetCustomHeading(props: HeadingProps) {
   return function CustomHeading({
     children,
     centerAlign = false,
+    ...headingProps
   }: {
-    children: any;
+    children: ReactNode;
     centerAlign?: boolean;
-  }) {
+  } & HeadingProps) {
     return (
       <Heading
         {...props}
+        {...headingProps}
         fontFamily="heading"
         color={useDefaultTextColor()}
         textAlign={centerAlign ? "center" : "left"}
@@ -102,14 +106,20 @@ export const Heading6 = GetCustomHeading({
 export function ParagraphText({
   children,
   justifyText = false,
+  size = "md",
+  ...textProps
 }: {
-  children: any;
+  children: ReactNode;
   justifyText?: boolean;
-}) {
+  size?: "sm" | "md";
+} & TextProps) {
+  const fontSize = size === "sm" ? ["sm", "md"] : ["md", "lg"];
+
   return (
     <Text
+      {...textProps}
       color={"app.fg.muted"}
-      fontSize={["md", "lg"]}
+      fontSize={fontSize}
       fontWeight={"normal"}
       lineHeight={"1.42"}
       letterSpacing={"0.01em"}

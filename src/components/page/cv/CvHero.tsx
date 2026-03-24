@@ -70,7 +70,7 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
       </VStack>
       <VStack align="stretch" gap={2}>
         {profile.location ? (
-          <Wrap spacing={3} align="center">
+          <Wrap gap={3} align="center">
             <WrapItem>
               <HStack gap={2} color={secondaryColor}>
                 <Icon as={FiMapPin} />
@@ -81,7 +81,7 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
         ) : null}
 
         {profile.email ? (
-          <Wrap spacing={3} align="center">
+          <Wrap gap={3} align="center">
             <WrapItem>
               <HStack gap={2} color={secondaryColor}>
                 <Icon as={FiMail} />
@@ -114,7 +114,7 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
         ) : null}
 
         {profileLinks.length > 0 ? (
-          <Wrap spacing={3} align="center">
+          <Wrap gap={3} align="center">
             {profileLinks.map((link, index) => (
               <WrapItem key={link.url}>
                 <HStack gap={2} align="center">
@@ -125,7 +125,8 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
                   >
                     <Link
                       href={link.url}
-                      isExternal
+                      target="_blank"
+                      rel="noopener noreferrer"
                       fontSize="sm"
                       color={secondaryColor}
                     >

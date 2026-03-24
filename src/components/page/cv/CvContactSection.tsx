@@ -59,7 +59,12 @@ function ContactItem({ item }: { item: CvContactChannel }) {
         </Text>
       </HStack>
       {item.url ? (
-        <Link href={item.url} isExternal fontSize="sm">
+        <Link
+          href={item.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          fontSize="sm"
+        >
           {item.value}
         </Link>
       ) : (

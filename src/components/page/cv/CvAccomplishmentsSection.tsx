@@ -80,7 +80,8 @@ function AccomplishmentCard({
               {item.url && (
                 <Link
                   href={item.url}
-                  isExternal
+                  target="_blank"
+                  rel="noopener noreferrer"
                   fontSize="sm"
                   color={mutedColor}
                   _hover={{ color: "app.fg.default" }}
@@ -98,12 +99,12 @@ function AccomplishmentCard({
         </VStack>
 
         {item.summary ? (
-          <ParagraphText fontSize="sm">{item.summary}</ParagraphText>
+          <ParagraphText size="sm">{item.summary}</ParagraphText>
         ) : null}
 
         <Box mt="auto">
           {item.tags && item.tags.length > 0 ? (
-            <Wrap spacing={2}>
+            <Wrap gap={2}>
               {item.tags.map((tag) => (
                 <WrapItem key={`${item.title}-${tag}`}>
                   <CategoryBadge color={accentColorPalette ?? "gray"}>
