@@ -5,6 +5,10 @@ tags:
   - latex
   - tech
 published: "2023-10-09"
+externalLinks:
+  - label: "LinkedIn Post"
+    url: "https://www.linkedin.com/posts/amanpalariya_figures-equations-and-other-fancy-stuff-activity-7116988149901197312-KvaG"
+    kind: article
 ---
 
 I bet you must have come across LaTeX (📢 LA-tek) once in your lifetime. It's a beautiful piece of typesetting software based on TeX. A shoutout to Donald Knuth!

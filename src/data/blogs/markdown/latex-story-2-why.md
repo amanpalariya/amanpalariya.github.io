@@ -7,7 +7,7 @@ tags:
 published: "2023-10-10"
 externalLinks:
   - label: "LinkedIn Post"
-    url: "https://www.linkedin.com/posts/amanpalariya_figures-equations-and-other-fancy-stuff-ugcPost-7115720218571644930-Lf_v"
+    url: "https://www.linkedin.com/posts/amanpalariya_figures-equations-and-other-fancy-stuff-ugcPost-7115720580544290816-AYVP"
     kind: article
 ---
 
