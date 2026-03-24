@@ -5,6 +5,10 @@ tags:
   - tech
   - workflow
 published: "2026-02-03"
+externalLinks:
+  - label: "LinkedIn Post"
+    url: "https://www.linkedin.com/posts/amanpalariya_when-i-was-new-to-production-code-at-oracle-share-7424412935688540160-Q8im"
+    kind: article
 ---
 
 When I was new to production code at @Oracle, I was frustrated. It was a messy code. There were strangely structured functions, and seemingly random conditionals. If I tried to clean up some of the mess, I had a hard time getting the pull request reviewed.

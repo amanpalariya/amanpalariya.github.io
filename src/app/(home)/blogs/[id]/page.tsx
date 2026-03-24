@@ -40,7 +40,7 @@ export default async function BlogDetailPage({
     includeToc: true,
     allowDangerousHtml: true,
   });
-  return <Client blogId={resolvedParams.id} html={html} blog={blog} />;
+  return <Client html={html} blog={blog} />;
 }
 
 export function generateStaticParams() {

@@ -1,8 +1,11 @@
+import type { ExternalLink } from "data/external-links";
+
 interface Project {
   id: string;
   title: string;
   description: string;
   url?: string;
+  externalLinks?: ExternalLink[];
 }
 
 const allProjects: Project[] = [
@@ -25,6 +28,23 @@ const allProjects: Project[] = [
     description:
       "A new programming language (compiler & runtime) for retro console games",
     url: "/projects/console-game-language",
+    externalLinks: [
+      {
+        label: "Source Code",
+        url: "https://github.com/amanpalariya/console-game",
+        kind: "code",
+      },
+      {
+        label: "Demo Video",
+        url: "https://www.youtube.com/watch?v=okbscpQNZM0",
+        kind: "video",
+      },
+      {
+        label: "Language Samples",
+        url: "https://github.com/amanpalariya/console-game/tree/main/samples",
+        kind: "code",
+      },
+    ],
   },
   {
     id: "rain-and-snow-removal",

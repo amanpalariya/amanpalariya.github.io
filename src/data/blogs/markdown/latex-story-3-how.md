@@ -6,6 +6,10 @@ tags:
   - workflow
   - cli
 published: "2023-10-11"
+externalLinks:
+  - label: "LinkedIn Post"
+    url: "https://www.linkedin.com/posts/amanpalariya_the-latex-story-3-how-i-came-across-gilles-ugcPost-7115723553370439680-eSAo"
+    kind: article
 ---
 
 I came across @Gilles Castel's blogs on note-taking with LaTeX. Those were the inspiration and the foundation of my obsession with LaTeX.
