@@ -12,7 +12,9 @@ function Main() {
   const [html, setHtml] = useState("");
 
   useEffect(() => {
-    renderMarkdownToHtml(AboutData.markdown).then(setHtml);
+    renderMarkdownToHtml(AboutData.markdown, {
+      allowDangerousHtml: true,
+    }).then(setHtml);
   }, []);
 
   const proseStyles = useProseStyles();
@@ -25,9 +27,10 @@ function Main() {
           It&apos;s me,{" "}
           <Box
             as="span"
-            className="handwritten"
+            className="handwritten handwritten-squiggle squiggle-pink"
             fontFamily={"handwritten"}
-            fontSize={["4xl", "5xl"]}
+            fontSize={"1.25em"}
+            fontWeight={"black"}
           >
             Aman
           </Box>

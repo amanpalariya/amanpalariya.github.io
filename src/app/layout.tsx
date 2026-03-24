@@ -21,7 +21,7 @@ const notoSans = Noto_Sans({
 
 const handwritten = Caveat({
   subsets: ["latin"],
-  weight: ["600", "700"],
+  weight: ["500", "600", "700"],
   display: "swap",
   variable: "--font-handwritten",
 });

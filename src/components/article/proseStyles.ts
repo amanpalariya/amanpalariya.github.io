@@ -5,7 +5,7 @@ import { useColorModeValue } from "@components/ui/color-mode";
 export function useProseStyles() {
   const proseBodyFontFamily =
     "'CMU Sans Serif', 'Computer Modern Sans', sans-serif";
-  const proseSerifFontFamily = "'CMU Serif', 'Computer Modern Serif', serif";
+  const proseHeadingFontFamily = "'Lexend', sans-serif";
   const proseCodeFontFamily =
     "'CMU Typewriter Text', 'CMU Typewriter', 'Computer Modern Typewriter', mono";
 
@@ -44,7 +44,7 @@ export function useProseStyles() {
     },
     "& h1, & h2, & h3, & h4": {
       color: headingColor,
-      fontFamily: proseSerifFontFamily,
+      fontFamily: proseHeadingFontFamily,
       letterSpacing: "-0.01em",
       lineHeight: "shorter",
       marginTop: 10,
