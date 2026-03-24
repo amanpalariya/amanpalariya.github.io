@@ -54,7 +54,7 @@ function TimelineItem({
   const hasMetaLine = Boolean(timeframe || item.location);
 
   return (
-    <HStack align="stretch" gap={4}>
+    <HStack align="stretch" gap={4} ml={-2}>
       <VStack align="center" gap={2} minW={4} pt={2}>
         <Box w={2.5} h={2.5} borderRadius="full" bg={dotColor} zIndex={1} />
       </VStack>
@@ -168,7 +168,7 @@ export default function CvTimelineSection({
           position="absolute"
           top={3}
           bottom={2}
-          left={2}
+          left={0}
           w="2px"
           bg={railTint}
           zIndex={0}
@@ -177,7 +177,7 @@ export default function CvTimelineSection({
         <Box
           position="absolute"
           bottom={2}
-          left={2}
+          left={0}
           transform="translateX(-50%)"
           h="2px"
           w={3}
@@ -194,7 +194,7 @@ export default function CvTimelineSection({
               emphasizeOrganization={emphasizeOrganization}
             />
             {index < section.items.length - 1 ? (
-              <Box pl={8}>
+              <Box pl={6}>
                 <Separator />
               </Box>
             ) : null}
