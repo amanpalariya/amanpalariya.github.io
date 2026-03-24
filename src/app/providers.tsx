@@ -13,6 +13,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <Global
         styles={css({
           ".prose-content": proseStyles,
+          ".handwritten": {
+            fontFamily: "'Caveat', cursive",
+            fontWeight: 400,
+            letterSpacing: "0.01em",
+          },
         })}
       />
       <ClientOnly>

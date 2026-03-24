@@ -49,15 +49,15 @@ export function useProseStyles() {
       lineHeight: "shorter",
       marginTop: 10,
       marginBottom: 4,
-      fontWeight: "semibold",
+      fontWeight: "medium",
     },
     "& h1": {
       fontSize: ["2xl", "3xl"],
-      fontWeight: "bold",
+      fontWeight: "semibold",
     },
     "& h2": {
       fontSize: ["xl", "2xl"],
-      fontWeight: "bold",
+      fontWeight: "semibold",
     },
     "& h3": {
       fontSize: ["lg", "xl"],
@@ -75,7 +75,7 @@ export function useProseStyles() {
     },
     "& strong": {
       color: headingColor,
-      fontWeight: "semibold",
+      fontWeight: "medium",
     },
     "& em, & i": {
       color: textColor,
@@ -191,7 +191,7 @@ export function useProseStyles() {
     },
     "& pre .hljs-keyword, & pre .hljs-selector-tag, & pre .hljs-literal": {
       color: useColorModeValue("purple.600", "purple.300"),
-      fontWeight: "semibold",
+      fontWeight: "medium",
     },
     "& pre .hljs-string, & pre .hljs-title, & pre .hljs-name": {
       color: useColorModeValue("green.600", "green.300"),
@@ -256,7 +256,7 @@ export function useProseStyles() {
     "& thead th": {
       background: codeBg,
       color: headingColor,
-      fontWeight: "semibold",
+      fontWeight: "medium",
     },
   } as const;
 }

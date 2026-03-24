@@ -1,7 +1,7 @@
 import { Providers } from "./providers";
 import { Metadata } from "next";
 import { SITE_OWNER_NAME } from "./metadata";
-import { Lexend, Noto_Sans } from "next/font/google";
+import { Caveat, Lexend, Noto_Sans } from "next/font/google";
 import "katex/dist/katex.min.css";
 import "computer-modern/index.css";
 
@@ -19,6 +19,13 @@ const notoSans = Noto_Sans({
   variable: "--font-noto-sans",
 });
 
+const handwritten = Caveat({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  display: "swap",
+  variable: "--font-handwritten",
+});
+
 export const metadata: Metadata = {
   title: SITE_OWNER_NAME,
 };
@@ -31,7 +38,9 @@ export default function RootLayout({
   return (
     <html lang={"en"} suppressHydrationWarning>
       <head />
-      <body className={`${lexend.variable} ${notoSans.variable}`}>
+      <body
+        className={`${notoSans.className} ${lexend.variable} ${notoSans.variable} ${handwritten.variable}`}
+      >
         <Providers>{children}</Providers>
       </body>
     </html>

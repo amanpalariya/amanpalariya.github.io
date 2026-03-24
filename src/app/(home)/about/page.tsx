@@ -21,7 +21,18 @@ function Main() {
       <VStack align={"stretch"} gap={5}>
         <SectionText>{homepageTabs.about.name}</SectionText>
         <Spacer h={4} />
-        <Heading1>{AboutData.aboutPage.title}</Heading1>
+        <Heading1>
+          It&apos;s me,{" "}
+          <Box
+            as="span"
+            className="handwritten"
+            fontFamily={"handwritten"}
+            fontSize={["4xl", "5xl"]}
+          >
+            Aman
+          </Box>
+          !
+        </Heading1>
         <Box
           className="prose-content"
           css={proseStyles}
