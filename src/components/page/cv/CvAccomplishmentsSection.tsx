@@ -19,6 +19,11 @@ import { FiLink, FiEye } from "react-icons/fi";
 import CvSection from "./CvSection";
 import { AppAccentPalette, AppPalette } from "theme/colors";
 import {
+  CV_CMU_FONT_FAMILY,
+  CV_META_TEXT_SIZE,
+  CV_SECONDARY_TEXT_COLOR,
+} from "./cvStyleTokens";
+import {
   DialogBody,
   DialogCloseTrigger,
   DialogContent,
@@ -47,7 +52,6 @@ function AccomplishmentCard({
   accentColorPalette?: AppAccentPalette;
   onViewImage?: (src: string, title: string) => void;
 }) {
-  const mutedColor = "app.fg.muted";
   const metaText =
     item.meta || [item.issuer, item.date].filter(Boolean).join(" · ");
 
@@ -80,9 +84,11 @@ function AccomplishmentCard({
               {item.url && (
                 <Link
                   href={item.url}
-                  isExternal
-                  fontSize="sm"
-                  color={mutedColor}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  fontSize={CV_META_TEXT_SIZE}
+                  color={CV_SECONDARY_TEXT_COLOR}
+                  fontFamily={CV_CMU_FONT_FAMILY}
                   _hover={{ color: "app.fg.default" }}
                 >
                   <Icon as={FiLink} />
@@ -91,19 +97,25 @@ function AccomplishmentCard({
             </HStack>
           </HStack>
           {metaText ? (
-            <Text fontSize="sm" color={mutedColor}>
+            <Text
+              fontSize={CV_META_TEXT_SIZE}
+              color={CV_SECONDARY_TEXT_COLOR}
+              fontFamily={CV_CMU_FONT_FAMILY}
+            >
               {metaText}
             </Text>
           ) : null}
         </VStack>
 
         {item.summary ? (
-          <ParagraphText fontSize="sm">{item.summary}</ParagraphText>
+          <ParagraphText size="sm" justifyText>
+            {item.summary}
+          </ParagraphText>
         ) : null}
 
         <Box mt="auto">
           {item.tags && item.tags.length > 0 ? (
-            <Wrap spacing={2}>
+            <Wrap gap={2}>
               {item.tags.map((tag) => (
                 <WrapItem key={`${item.title}-${tag}`}>
                   <CategoryBadge color={accentColorPalette ?? "gray"}>

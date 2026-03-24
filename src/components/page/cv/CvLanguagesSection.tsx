@@ -3,8 +3,8 @@ import { Heading4 } from "@components/core/Texts";
 import type { CvLanguageItem, CvSectionBase } from "data/cv";
 import type { ElementType } from "react";
 import CvSection from "./CvSection";
-
-type AccentPalette = "blue" | "purple" | "green" | "orange" | "yellow" | "red";
+import type { AppAccentPalette, AppPalette } from "theme/colors/types";
+import { CV_CMU_FONT_FAMILY, CV_META_TEXT_SIZE } from "./cvStyleTokens";
 
 function fluencyLabel(value?: CvLanguageItem["proficiency"]) {
   if (!value) return "Not specified";
@@ -28,14 +28,15 @@ export default function CvLanguagesSection({
 }: {
   section: CvSectionBase & { items: CvLanguageItem[] };
   titleIcon?: ElementType;
-  primaryColorPalette?: AccentPalette;
-  accentColorPalette?: AccentPalette;
+  primaryColorPalette?: AppPalette;
+  accentColorPalette?: AppAccentPalette;
 }) {
   if (!section || section.items.length === 0) return null;
 
-  const cardBg = "app.bg.overlay";
   const mutedColor = "app.fg.subtle";
-  const resolvedAccentPalette = accentColorPalette ?? primaryColorPalette;
+  const resolvedAccentPalette =
+    accentColorPalette ??
+    (primaryColorPalette === "gray" ? undefined : primaryColorPalette);
   const fluencyColor = resolvedAccentPalette
     ? `${resolvedAccentPalette}.fg`
     : mutedColor;
@@ -63,19 +64,24 @@ export default function CvLanguagesSection({
               <VStack align="start" gap={0}>
                 <Heading4>{item.name}</Heading4>
                 {item.nativeName ? (
-                  <Text fontSize="sm" color={mutedColor}>
+                  <Text
+                    fontSize={CV_META_TEXT_SIZE}
+                    color={mutedColor}
+                    fontFamily={CV_CMU_FONT_FAMILY}
+                  >
                     {item.nativeName}
                   </Text>
                 ) : null}
               </VStack>
               <Text
-                fontSize="xs"
+                fontSize="17px"
                 px={2}
                 py={1}
                 borderRadius="md"
                 bg={fluencyBg}
                 color={fluencyColor}
                 whiteSpace="nowrap"
+                fontFamily={CV_CMU_FONT_FAMILY}
               >
                 {fluencyLabel(item.proficiency)}
               </Text>

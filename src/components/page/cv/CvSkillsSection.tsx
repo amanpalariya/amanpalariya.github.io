@@ -1,12 +1,10 @@
 import { Box, HStack, VStack, Wrap, WrapItem, Text } from "@chakra-ui/react";
-import { CategoryBadge } from "@components/core/Badges";
-import { ParagraphText } from "@components/core/Texts";
 import type { CvSectionBase, CvSkillGroup } from "data/cv";
 import type { ElementType } from "react";
 import { Tooltip } from "@components/ui/tooltip";
 import CvSection from "./CvSection";
-
-type AccentPalette = "blue" | "purple" | "green" | "orange" | "yellow" | "red";
+import type { AppAccentPalette, AppPalette } from "theme/colors/types";
+import { CV_CMU_FONT_FAMILY, CV_META_TEXT_SIZE } from "./cvStyleTokens";
 
 const LEVEL_SCALE: Record<string, number> = {
   beginner: 1,
@@ -20,7 +18,7 @@ function SkillLevel({
   accentColorPalette,
 }: {
   level?: string;
-  accentColorPalette?: AccentPalette;
+  accentColorPalette?: AppAccentPalette;
 }) {
   if (!level) return null;
   const label = level.charAt(0).toUpperCase() + level.slice(1);
@@ -58,8 +56,8 @@ export default function CvSkillsSection({
 }: {
   section: CvSectionBase & { items: CvSkillGroup[] };
   titleIcon?: ElementType;
-  primaryColorPalette?: AccentPalette;
-  accentColorPalette?: AccentPalette;
+  primaryColorPalette?: AppPalette;
+  accentColorPalette?: AppAccentPalette;
 }) {
   if (!section || section.items.length === 0) return null;
 
@@ -76,11 +74,11 @@ export default function CvSkillsSection({
         {section.items.map((group) => (
           <VStack key={group.group} align="stretch" gap={3}>
             <Text
-              fontSize="sm"
+              fontSize={CV_META_TEXT_SIZE}
               fontWeight="bold"
               color="app.fg.muted"
               letterSpacing="wider"
-              textTransform="uppercase"
+              fontFamily={CV_CMU_FONT_FAMILY}
             >
               {group.group}
             </Text>
@@ -109,9 +107,10 @@ export default function CvSkillsSection({
                       transition="all 0.2s ease"
                     >
                       <Text
-                        fontSize="sm"
-                        fontWeight="semibold"
+                        fontSize={CV_META_TEXT_SIZE}
+                        fontWeight="normal"
                         color="app.fg.default"
+                        fontFamily={CV_CMU_FONT_FAMILY}
                       >
                         {item.name}
                       </Text>

@@ -1,10 +1,15 @@
-import { Box, Text, VStack, SimpleGrid, Badge, HStack } from "@chakra-ui/react";
+import { Box, Text, VStack, SimpleGrid, HStack } from "@chakra-ui/react";
 import { Heading4 } from "@components/core/Texts";
 import type { CvCourseItem, CvSectionBase } from "data/cv";
 import type { ElementType } from "react";
 import type { AppAccentPalette, AppPalette } from "theme/colors/types";
 import CvSection from "./CvSection";
 import { formatCvDate } from "./cvRenderUtils";
+import {
+  CV_CMU_FONT_FAMILY,
+  CV_META_TEXT_SIZE,
+  CV_SECONDARY_TEXT_COLOR,
+} from "./cvStyleTokens";
 
 export default function CvCoursesSection({
   section,
@@ -21,7 +26,7 @@ export default function CvCoursesSection({
 
   const cardBg = "app.bg.card";
   const cardBorder = "app.border.muted";
-  const mutedColor = "app.fg.subtle";
+  const mutedColor = CV_SECONDARY_TEXT_COLOR;
 
   const resolvedAccentPalette = accentColorPalette ?? primaryColorPalette;
   const badgeColor = resolvedAccentPalette
@@ -60,12 +65,12 @@ export default function CvCoursesSection({
               <VStack align="stretch" gap={2} height="full">
                 <VStack align="stretch" gap={1}>
                   <HStack justify="space-between" align="start">
-                    <Heading4 fontSize="md" lineClamp={2}>
+                    <Heading4 lineClamp={2}>
                       {item.name}
                     </Heading4>
                     {item.courseCode && (
                       <Text
-                        fontSize="xs"
+                        fontSize="17px"
                         px={2}
                         py={0.5}
                         borderRadius="md"
@@ -73,6 +78,7 @@ export default function CvCoursesSection({
                         color={badgeColor}
                         whiteSpace="nowrap"
                         fontWeight="medium"
+                        fontFamily={CV_CMU_FONT_FAMILY}
                       >
                         {item.courseCode}
                       </Text>
@@ -81,9 +87,10 @@ export default function CvCoursesSection({
 
                   {item.institution && (
                     <Text
-                      fontSize="xs"
+                      fontSize={CV_META_TEXT_SIZE}
                       fontWeight="medium"
                       color="app.fg.muted"
+                      fontFamily={CV_CMU_FONT_FAMILY}
                     >
                       {item.institution}
                     </Text>
@@ -93,7 +100,11 @@ export default function CvCoursesSection({
                 <Box mt="auto">
                   <HStack justify="space-between" align="center" pt={1}>
                     {timeframe ? (
-                      <Text fontSize="xs" color={mutedColor}>
+                      <Text
+                        fontSize={CV_META_TEXT_SIZE}
+                        color={mutedColor}
+                        fontFamily={CV_CMU_FONT_FAMILY}
+                      >
                         {timeframe}
                       </Text>
                     ) : (
@@ -102,8 +113,9 @@ export default function CvCoursesSection({
 
                     {item.grade && (
                       <Text
-                        fontSize="xs"
+                        fontSize={CV_META_TEXT_SIZE}
                         fontWeight="bold"
+                        fontFamily={CV_CMU_FONT_FAMILY}
                         color={
                           accentColorPalette
                             ? `${accentColorPalette}.fg`

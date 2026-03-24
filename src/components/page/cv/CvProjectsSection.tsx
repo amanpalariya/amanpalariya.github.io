@@ -15,21 +15,27 @@ import type { ElementType } from "react";
 import { FiLink } from "react-icons/fi";
 import CvSection from "./CvSection";
 import { formatCvDateRange } from "./cvRenderUtils";
+import type { AppAccentPalette, AppPalette } from "theme/colors/types";
+import {
+  CV_BULLET_ITEM_GAP,
+  CV_BULLET_TEXT_COLOR,
+  CV_CMU_BULLET_FONT_FAMILY,
+  CV_CMU_FONT_FAMILY,
+  CV_BULLET_LINE_HEIGHT,
+  CV_BULLET_TEXT_SIZE,
+  CV_META_TEXT_SIZE,
+  CV_SECONDARY_TEXT_COLOR,
+} from "./cvStyleTokens";
 
 function ProjectCard({
   item,
   accentColorPalette,
 }: {
   item: CvProjectItem;
-  accentColorPalette?:
-    | "blue"
-    | "purple"
-    | "green"
-    | "orange"
-    | "yellow"
-    | "red";
+  accentColorPalette?: AppAccentPalette;
 }) {
-  const mutedColor = "app.fg.muted";
+  const badgeColor = accentColorPalette ?? "blue";
+  const tagColor = accentColorPalette ?? "gray";
   const timeframe = formatCvDateRange({
     start: item.start,
     end: item.end,
@@ -43,18 +49,18 @@ function ProjectCard({
           <HStack gap={2} flexWrap="wrap">
             <Heading4>{item.name}</Heading4>
             {item.isFeatured ? (
-              <FeaturedIndicator
-                colorPalette={accentColorPalette ? "purple" : "blue"}
-              />
+              <FeaturedIndicator colorPalette={badgeColor} />
             ) : null}
             {item.highlight ? (
-              <CategoryBadge color={accentColorPalette ? "purple" : "blue"}>
-                {item.highlight}
-              </CategoryBadge>
+              <CategoryBadge color={badgeColor}>{item.highlight}</CategoryBadge>
             ) : null}
           </HStack>
           {hasMetaLine ? (
-            <Text fontSize="sm" color={mutedColor}>
+            <Text
+              fontSize={CV_META_TEXT_SIZE}
+              color={CV_SECONDARY_TEXT_COLOR}
+              fontFamily={CV_CMU_FONT_FAMILY}
+            >
               {timeframe}
             </Text>
           ) : null}
@@ -62,10 +68,11 @@ function ProjectCard({
         {item.url ? (
           <Link
             href={item.url}
-            isExternal
-            fontFamily="ui"
-            fontSize="sm"
-            color={mutedColor}
+            target="_blank"
+            rel="noopener noreferrer"
+            fontFamily={CV_CMU_FONT_FAMILY}
+            fontSize={CV_META_TEXT_SIZE}
+            color={CV_SECONDARY_TEXT_COLOR}
           >
             <HStack gap={1}>
               <Icon as={FiLink} />
@@ -75,11 +82,26 @@ function ProjectCard({
         ) : null}
       </HStack>
       {item.highlights && item.highlights.length > 0 ? (
-        <VStack align="stretch" gap={1}>
+        <VStack align="stretch" gap={CV_BULLET_ITEM_GAP}>
           {item.highlights.map((highlight, index) => (
             <HStack key={index} align="start" gap={2}>
-              <Text color={mutedColor}>•</Text>
-              <Text fontSize="sm" color={mutedColor}>
+              <Text
+                fontSize={CV_BULLET_TEXT_SIZE}
+                color={CV_BULLET_TEXT_COLOR}
+                lineHeight={CV_BULLET_LINE_HEIGHT}
+              >
+                •
+              </Text>
+              <Text
+                fontSize={CV_BULLET_TEXT_SIZE}
+                color={CV_BULLET_TEXT_COLOR}
+                fontFamily={CV_CMU_BULLET_FONT_FAMILY}
+                lineHeight={CV_BULLET_LINE_HEIGHT}
+                textAlign="justify"
+                hyphens="auto"
+                flex={1}
+                css={{ WebkitHyphens: "auto", textWrap: "pretty" }}
+              >
                 {highlight}
               </Text>
             </HStack>
@@ -87,12 +109,10 @@ function ProjectCard({
         </VStack>
       ) : null}
       {item.tags && item.tags.length > 0 ? (
-        <Wrap spacing={2}>
+        <Wrap gap={2}>
           {item.tags.map((tag) => (
             <WrapItem key={tag}>
-              <CategoryBadge color={accentColorPalette ? "purple" : "gray"}>
-                {tag}
-              </CategoryBadge>
+              <CategoryBadge color={tagColor}>{tag}</CategoryBadge>
             </WrapItem>
           ))}
         </Wrap>
@@ -109,20 +129,8 @@ export default function CvProjectsSection({
 }: {
   section: CvSectionBase & { items: CvProjectItem[] };
   titleIcon?: ElementType;
-  primaryColorPalette?:
-    | "blue"
-    | "purple"
-    | "green"
-    | "orange"
-    | "yellow"
-    | "red";
-  accentColorPalette?:
-    | "blue"
-    | "purple"
-    | "green"
-    | "orange"
-    | "yellow"
-    | "red";
+  primaryColorPalette?: AppPalette;
+  accentColorPalette?: AppAccentPalette;
 }) {
   if (!section || section.items.length === 0) return null;
 

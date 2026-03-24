@@ -16,21 +16,31 @@ import { FiLink } from "react-icons/fi";
 import CvSection from "./CvSection";
 import type { ElementType } from "react";
 import { formatCvDateRange } from "./cvRenderUtils";
-
-type AccentPalette = "blue" | "purple" | "green" | "orange" | "yellow" | "red";
+import type { AppAccentPalette, AppPalette } from "theme/colors/types";
+import {
+  CV_BULLET_ITEM_GAP,
+  CV_BULLET_TEXT_COLOR,
+  CV_CMU_BULLET_FONT_FAMILY,
+  CV_CMU_FONT_FAMILY,
+  CV_BULLET_LINE_HEIGHT,
+  CV_BULLET_TEXT_SIZE,
+  CV_META_TEXT_SIZE,
+  CV_SECONDARY_TEXT_COLOR,
+} from "./cvStyleTokens";
 
 function TimelineItem({
   item,
   accentColorPalette,
   tagColor,
   presentWhenEndMissing,
+  emphasizeOrganization,
 }: {
   item: CvTimelineItem;
-  accentColorPalette?: string;
-  tagColor: "gray" | AccentPalette;
+  accentColorPalette?: AppAccentPalette;
+  tagColor: AppPalette;
   presentWhenEndMissing?: boolean;
+  emphasizeOrganization?: boolean;
 }) {
-  const mutedColor = "app.fg.subtle";
   const highlights =
     item.highlights && item.highlights.length > 0
       ? item.highlights
@@ -48,8 +58,8 @@ function TimelineItem({
   const hasMetaLine = Boolean(timeframe || item.location);
 
   return (
-    <HStack align="stretch" gap={4}>
-      <VStack align="center" spacing={2} minW={4} pt={2}>
+    <HStack align="stretch" gap={4} ml={-2}>
+      <VStack align="center" gap={2} minW={4} pt={2}>
         <Box w={2.5} h={2.5} borderRadius="full" bg={dotColor} zIndex={1} />
       </VStack>
       <VStack align="stretch" gap={2} flex={1}>
@@ -57,12 +67,23 @@ function TimelineItem({
           <VStack align="start" gap={0.5}>
             <HStack gap={2} align="center" flexWrap="wrap">
               <Heading4>{item.title}</Heading4>
-              <Text color={mutedColor} fontSize="sm">
+              <Text
+                color={emphasizeOrganization ? "app.fg.muted" : CV_SECONDARY_TEXT_COLOR}
+                fontSize={CV_META_TEXT_SIZE}
+                fontWeight={emphasizeOrganization ? "medium" : "normal"}
+                fontFamily={CV_CMU_FONT_FAMILY}
+              >
                 · {item.organization}
               </Text>
             </HStack>
             {hasMetaLine ? (
-              <HStack gap={2} color={mutedColor} fontSize="sm" wrap="wrap">
+              <HStack
+                gap={2}
+                color={CV_SECONDARY_TEXT_COLOR}
+                fontSize={CV_META_TEXT_SIZE}
+                wrap="wrap"
+                fontFamily={CV_CMU_FONT_FAMILY}
+              >
                 {timeframe ? <Text>{timeframe}</Text> : null}
                 {item.location ? <Text>{`· ${item.location}`}</Text> : null}
               </HStack>
@@ -71,10 +92,11 @@ function TimelineItem({
           {item.url ? (
             <Link
               href={item.url}
-              isExternal
-              fontFamily="ui"
-              fontSize="sm"
-              color={mutedColor}
+              target="_blank"
+              rel="noopener noreferrer"
+              fontFamily={CV_CMU_FONT_FAMILY}
+              fontSize={CV_META_TEXT_SIZE}
+              color={CV_SECONDARY_TEXT_COLOR}
             >
               <HStack gap={1}>
                 <Icon as={FiLink} />
@@ -84,11 +106,26 @@ function TimelineItem({
           ) : null}
         </HStack>
         {highlights.length > 0 ? (
-          <VStack align="stretch" gap={1}>
+          <VStack align="stretch" gap={CV_BULLET_ITEM_GAP}>
             {highlights.map((highlight, index) => (
               <HStack key={index} align="start" gap={2}>
-                <Text color={mutedColor}>•</Text>
-                <Text fontSize="sm" color={mutedColor}>
+                <Text
+                  fontSize={CV_BULLET_TEXT_SIZE}
+                  color={CV_BULLET_TEXT_COLOR}
+                  lineHeight={CV_BULLET_LINE_HEIGHT}
+                >
+                  •
+                </Text>
+                <Text
+                  fontSize={CV_BULLET_TEXT_SIZE}
+                  color={CV_BULLET_TEXT_COLOR}
+                  fontFamily={CV_CMU_BULLET_FONT_FAMILY}
+                  lineHeight={CV_BULLET_LINE_HEIGHT}
+                  textAlign="justify"
+                  hyphens="auto"
+                  flex={1}
+                  css={{ WebkitHyphens: "auto", textWrap: "pretty" }}
+                >
                   {highlight}
                 </Text>
               </HStack>
@@ -96,7 +133,7 @@ function TimelineItem({
           </VStack>
         ) : null}
         {item.tags && item.tags.length > 0 ? (
-          <Wrap spacing={2}>
+          <Wrap gap={2}>
             {item.tags.map((tag) => (
               <WrapItem key={tag}>
                 <CategoryBadge color={tagColor}>{tag}</CategoryBadge>
@@ -115,16 +152,20 @@ export default function CvTimelineSection({
   primaryColorPalette,
   accentColorPalette,
   presentWhenEndMissing,
+  emphasizeOrganization,
 }: {
   section: CvSectionBase & { items: CvTimelineItem[] };
   titleIcon?: ElementType;
-  primaryColorPalette?: AccentPalette;
-  accentColorPalette?: AccentPalette;
+  primaryColorPalette?: AppPalette;
+  accentColorPalette?: AppAccentPalette;
   presentWhenEndMissing?: boolean;
+  emphasizeOrganization?: boolean;
 }) {
   if (!section || section.items.length === 0) return null;
-  const resolvedAccentPalette = accentColorPalette ?? primaryColorPalette;
-  const tagColor = resolvedAccentPalette ?? ("gray" as const);
+  const resolvedAccentPalette =
+    accentColorPalette ??
+    (primaryColorPalette === "gray" ? undefined : primaryColorPalette);
+  const tagColor = resolvedAccentPalette ?? "gray";
   const railTint = resolvedAccentPalette
     ? `${resolvedAccentPalette}.muted`
     : "app.border.muted";
@@ -144,9 +185,9 @@ export default function CvTimelineSection({
       <VStack align="stretch" gap={4} position="relative">
         <Box
           position="absolute"
-          top="13px"
-          bottom="9px"
-          left="8px"
+          top={3}
+          bottom={2}
+          left={0}
           w="2px"
           bg={railTint}
           zIndex={0}
@@ -154,8 +195,8 @@ export default function CvTimelineSection({
         />
         <Box
           position="absolute"
-          bottom="9px"
-          left="8px"
+          bottom={2}
+          left={0}
           transform="translateX(-50%)"
           h="2px"
           w={3}
@@ -169,9 +210,10 @@ export default function CvTimelineSection({
               accentColorPalette={resolvedAccentPalette}
               tagColor={tagColor}
               presentWhenEndMissing={presentWhenEndMissing}
+              emphasizeOrganization={emphasizeOrganization}
             />
             {index < section.items.length - 1 ? (
-              <Box pl={8}>
+              <Box pl={6}>
                 <Separator />
               </Box>
             ) : null}

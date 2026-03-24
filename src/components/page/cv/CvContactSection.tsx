@@ -11,6 +11,7 @@ import {
 } from "react-icons/fi";
 import type { AppAccentPalette, AppPalette } from "theme/colors/types";
 import CvSection from "./CvSection";
+import { CV_CMU_FONT_FAMILY, CV_META_TEXT_SIZE } from "./cvStyleTokens";
 
 function iconFromKey(iconKey?: CvContactChannel["iconKey"]) {
   switch (iconKey) {
@@ -50,20 +51,31 @@ function ContactItem({ item }: { item: CvContactChannel }) {
       <HStack gap={3}>
         <Icon as={iconFromKey(item.iconKey)} color={iconColor} />
         <Text
-          fontSize="sm"
+          fontSize={CV_META_TEXT_SIZE}
           color={textColor}
           fontWeight="medium"
+          fontFamily={CV_CMU_FONT_FAMILY}
           display={{ base: "none", md: "block" }}
         >
           {item.label}
         </Text>
       </HStack>
       {item.url ? (
-        <Link href={item.url} isExternal fontSize="sm">
+        <Link
+          href={item.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          fontSize={CV_META_TEXT_SIZE}
+          fontFamily={CV_CMU_FONT_FAMILY}
+        >
           {item.value}
         </Link>
       ) : (
-        <Text fontSize="sm" color={textColor}>
+        <Text
+          fontSize={CV_META_TEXT_SIZE}
+          color={textColor}
+          fontFamily={CV_CMU_FONT_FAMILY}
+        >
           {item.value}
         </Text>
       )}

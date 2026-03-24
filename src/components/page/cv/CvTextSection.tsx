@@ -28,7 +28,7 @@ export default function CvTextSection({
       accentColorPalette={accentColorPalette}
     >
       <VStack align="stretch" gap={3} maxW="4xl">
-        <ParagraphText>{section.content}</ParagraphText>
+        <ParagraphText justifyText>{section.content}</ParagraphText>
       </VStack>
     </CvSection>
   );

@@ -7,7 +7,7 @@ import {
   WrapItem,
   Text,
 } from "@chakra-ui/react";
-import { Heading2, ParagraphText, SubtitleText } from "@components/core/Texts";
+import { Heading2, ParagraphText } from "@components/core/Texts";
 import type { CvProfile } from "data/cv";
 import {
   FiMail,
@@ -23,9 +23,11 @@ import { FaXTwitter } from "react-icons/fa6";
 import { Tooltip } from "@components/ui/tooltip";
 import { useState } from "react";
 import PersonalData from "../../../data/Personal";
+import { CV_CMU_FONT_FAMILY } from "./cvStyleTokens";
 
 export default function CvHero({ profile }: { profile: CvProfile }) {
   const secondaryColor = "app.fg.muted";
+  const contactTextSize = "19px";
   const [emailCopied, setEmailCopied] = useState(false);
 
   function getSocialIcon(label: string) {
@@ -66,26 +68,43 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
     <VStack align={"stretch"} gap={4}>
       <VStack align={"stretch"} gap={2}>
         <Heading2>{profile.name}</Heading2>
-        <SubtitleText>{profile.headline}</SubtitleText>
+        <Text
+          fontSize={"19px"}
+          color={"app.fg.subtle"}
+          fontFamily={CV_CMU_FONT_FAMILY}
+        >
+          {profile.headline}
+        </Text>
       </VStack>
-      <VStack align="stretch" gap={2}>
+      <VStack align="stretch" gap={1}>
         {profile.location ? (
-          <Wrap spacing={3} align="center">
+          <Wrap gap={3} align="center">
             <WrapItem>
               <HStack gap={2} color={secondaryColor}>
                 <Icon as={FiMapPin} />
-                <Text fontSize="sm">{profile.location}</Text>
+                <Text
+                  fontSize={contactTextSize}
+                  fontFamily={CV_CMU_FONT_FAMILY}
+                  fontWeight="medium"
+                >
+                  {profile.location}
+                </Text>
               </HStack>
             </WrapItem>
           </Wrap>
         ) : null}
 
         {profile.email ? (
-          <Wrap spacing={3} align="center">
+          <Wrap gap={3} align="center">
             <WrapItem>
               <HStack gap={2} color={secondaryColor}>
                 <Icon as={FiMail} />
-                <Link fontSize="sm" href={`mailto:${profile.email}`}>
+                <Link
+                  fontSize={contactTextSize}
+                  fontFamily={CV_CMU_FONT_FAMILY}
+                  fontWeight="medium"
+                  href={`mailto:${profile.email}`}
+                >
                   {profile.email}
                 </Link>
               </HStack>
@@ -97,8 +116,10 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
               >
                 <Link
                   as="button"
-                  fontSize="xs"
+                  fontSize="17px"
                   color={secondaryColor}
+                  fontFamily={CV_CMU_FONT_FAMILY}
+                  fontWeight="medium"
                   onClick={() => {
                     void copyEmail();
                   }}
@@ -114,7 +135,7 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
         ) : null}
 
         {profileLinks.length > 0 ? (
-          <Wrap spacing={3} align="center">
+          <Wrap gap={3} align="center">
             {profileLinks.map((link, index) => (
               <WrapItem key={link.url}>
                 <HStack gap={2} align="center">
@@ -125,17 +146,21 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
                   >
                     <Link
                       href={link.url}
-                      isExternal
-                      fontSize="sm"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      fontSize={contactTextSize}
                       color={secondaryColor}
+                      fontFamily={CV_CMU_FONT_FAMILY}
+                      fontWeight="medium"
                     >
                       {link.label}
                     </Link>
                   </Tooltip>
                   {index < profileLinks.length - 1 ? (
                     <Text
-                      fontSize="sm"
+                      fontSize={contactTextSize}
                       color={secondaryColor}
+                      fontFamily={CV_CMU_FONT_FAMILY}
                       aria-hidden="true"
                     >
                       •
@@ -147,7 +172,7 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
           </Wrap>
         ) : null}
       </VStack>
-      <ParagraphText>{profile.summary}</ParagraphText>
+      <ParagraphText justifyText>{profile.summary}</ParagraphText>
     </VStack>
   );
 }
