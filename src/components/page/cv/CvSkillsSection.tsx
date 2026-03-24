@@ -78,7 +78,6 @@ export default function CvSkillsSection({
               fontWeight="bold"
               color="app.fg.muted"
               letterSpacing="wider"
-              textTransform="uppercase"
               fontFamily={CV_CMU_FONT_FAMILY}
             >
               {group.group}
@@ -109,7 +108,7 @@ export default function CvSkillsSection({
                     >
                       <Text
                         fontSize={CV_META_TEXT_SIZE}
-                        fontWeight="semibold"
+                        fontWeight="normal"
                         color="app.fg.default"
                         fontFamily={CV_CMU_FONT_FAMILY}
                       >
