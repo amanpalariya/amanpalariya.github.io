@@ -6,6 +6,13 @@ tags:
   - workflow
   - linux
 published: "2026-02-05"
+externalLinks:
+  - label: "LinkedIn Post"
+    url: "https://www.linkedin.com/posts/amanpalariya_i-have-a-small-vibe-coded-cli-utility-called-ugcPost-7425141232353353728-uT5A"
+    kind: article
+  - label: "GitHub Gist"
+    url: "https://gist.github.com/amanpalariya/4830e40c26325c68940216c40c42b10a"
+    kind: code
 ---
 
 I have a small vibe-coded CLI utility called notify. It sends a desktop notification when a command finishes running.

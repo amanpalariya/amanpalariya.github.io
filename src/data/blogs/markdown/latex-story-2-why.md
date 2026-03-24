@@ -5,6 +5,10 @@ tags:
   - latex
   - workflow
 published: "2023-10-10"
+externalLinks:
+  - label: "LinkedIn Post"
+    url: "https://www.linkedin.com/posts/amanpalariya_figures-equations-and-other-fancy-stuff-ugcPost-7115720218571644930-Lf_v"
+    kind: article
 ---
 
 LaTeX is unintuitive. The spaces don't work like spaces, the commands have a syntax like no other language, the special characters often keep you busy debugging your code, adding images already requires a package (don't even talk about floats to a newcomer), adding a ₹ still requires a hack, and the list goes on.

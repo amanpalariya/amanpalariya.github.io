@@ -6,6 +6,10 @@ tags:
   - workflow
   - linux
 published: "2024-02-15"
+externalLinks:
+  - label: "LinkedIn Post"
+    url: "https://www.linkedin.com/posts/amanpalariya_some-usage-of-xargs-command-with-explanation-ugcPost-7163461117883637762-gXOp"
+    kind: article
 ---
 
 ## Overpowered shell command #1 (xargs)

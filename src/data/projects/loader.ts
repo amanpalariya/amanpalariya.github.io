@@ -2,12 +2,18 @@ import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
 import ProjectsData from ".";
+import {
+  mergeExternalLinks,
+  normalizeExternalLinks,
+  type ExternalLink,
+} from "data/external-links";
 
 export type ProjectMeta = {
   id: string;
   title: string;
   description: string;
   url?: string;
+  externalLinks?: ExternalLink[];
 };
 
 export type ProjectDetail = ProjectMeta & {
@@ -22,8 +28,32 @@ const markdownDirectory = path.join(
   "markdown",
 );
 
+function resolveExternalLinks({
+  links,
+  legacyUrl,
+}: {
+  links: unknown;
+  legacyUrl?: string;
+}): ExternalLink[] {
+  return mergeExternalLinks(normalizeExternalLinks(links), legacyUrl);
+}
+
+function withResolvedExternalLinks<
+  T extends { externalLinks?: unknown; url?: string },
+>(project: T): Omit<T, "externalLinks"> & { externalLinks: ExternalLink[] } {
+  return {
+    ...project,
+    externalLinks: resolveExternalLinks({
+      links: project.externalLinks,
+      legacyUrl: project.url,
+    }),
+  };
+}
+
 function getProjectMetaById(id: string): ProjectMeta | null {
-  return ProjectsData.allProjects.find((project) => project.id === id) ?? null;
+  const project = ProjectsData.allProjects.find((entry) => entry.id === id);
+  if (!project) return null;
+  return withResolvedExternalLinks(project);
 }
 
 export function getProjectIdsWithDetails(): string[] {
@@ -34,13 +64,17 @@ export function getProjectIdsWithDetails(): string[] {
     .filter((file) => file.endsWith(".md"))
     .map((file) => file.replace(/\.md$/, ""));
 
-  const validProjectIds = new Set(ProjectsData.allProjects.map((project) => project.id));
+  const validProjectIds = new Set(
+    ProjectsData.allProjects.map((project) => project.id),
+  );
 
   return idsFromMarkdown.filter((id) => validProjectIds.has(id));
 }
 
 export function getAllProjects(): ProjectMeta[] {
-  return ProjectsData.allProjects;
+  return ProjectsData.allProjects.map((project) =>
+    withResolvedExternalLinks(project),
+  );
 }
 
 export function getProjectById(id: string): ProjectDetail | null {
@@ -60,6 +94,13 @@ export function getProjectById(id: string): ProjectDetail | null {
     ...meta,
     title: String(data.title ?? meta.title),
     description: String(data.description ?? meta.description),
+    externalLinks: withResolvedExternalLinks({
+      ...meta,
+      externalLinks: [
+        ...(meta.externalLinks ?? []),
+        ...normalizeExternalLinks(data.externalLinks),
+      ],
+    }).externalLinks,
     content,
   };
 }

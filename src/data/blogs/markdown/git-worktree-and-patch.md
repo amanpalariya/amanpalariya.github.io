@@ -7,6 +7,13 @@ tags:
   - linux
 published: "2024-01-08"
 updated: "2024-01-09"
+externalLinks:
+  - label: "LinkedIn Post (Git Patch)"
+    url: "https://www.linkedin.com/posts/amanpalariya_git-patch-recently-i-made-changes-to-a-share-7148992738988875777-pZWo"
+    kind: article
+  - label: "LinkedIn Post (Git Worktree)"
+    url: "https://www.linkedin.com/posts/amanpalariya_found-2-interesting-git-features-that-helped-share-7148992327951278080-Ln0t"
+    kind: article
 ---
 
 ## Found 2 interesting git features that helped me in my work

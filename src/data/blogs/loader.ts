@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
+import { normalizeExternalLinks, type ExternalLink } from "data/external-links";
 
 export type BlogMeta = {
   id: string;
@@ -9,6 +10,7 @@ export type BlogMeta = {
   tags?: string[];
   published?: string;
   updated?: string;
+  externalLinks?: ExternalLink[];
 };
 
 export type BlogPost = BlogMeta & {
@@ -23,6 +25,18 @@ const markdownDirectory = path.join(
   "markdown",
 );
 
+function buildBlogMeta(id: string, data: Record<string, unknown>): BlogMeta {
+  return {
+    id,
+    title: String(data.title ?? id),
+    description: String(data.description ?? ""),
+    tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
+    published: data.published ? String(data.published) : undefined,
+    updated: data.updated ? String(data.updated) : undefined,
+    externalLinks: normalizeExternalLinks(data.externalLinks),
+  };
+}
+
 export function getBlogIds(): string[] {
   if (!fs.existsSync(markdownDirectory)) return [];
   return fs
@@ -34,17 +48,10 @@ export function getBlogIds(): string[] {
 export function getAllBlogs(): BlogMeta[] {
   return getBlogIds()
     .map((id) => {
-    const fullPath = path.join(markdownDirectory, `${id}.md`);
-    const fileContents = fs.readFileSync(fullPath, "utf8");
-    const { data } = matter(fileContents);
-    return {
-      id,
-      title: String(data.title ?? id),
-      description: String(data.description ?? ""),
-      tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
-      published: data.published ? String(data.published) : undefined,
-      updated: data.updated ? String(data.updated) : undefined,
-    };
+      const fullPath = path.join(markdownDirectory, `${id}.md`);
+      const fileContents = fs.readFileSync(fullPath, "utf8");
+      const { data } = matter(fileContents);
+      return buildBlogMeta(id, data);
     })
     .sort((a, b) => {
       const aDate = a.published ? Date.parse(a.published) : 0;
@@ -59,12 +66,7 @@ export function getBlogById(id: string): BlogPost | null {
   const fileContents = fs.readFileSync(fullPath, "utf8");
   const { data, content } = matter(fileContents);
   return {
-    id,
-    title: String(data.title ?? id),
-    description: String(data.description ?? ""),
-    tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
-    published: data.published ? String(data.published) : undefined,
-    updated: data.updated ? String(data.updated) : undefined,
+    ...buildBlogMeta(id, data),
     content,
   };
 }

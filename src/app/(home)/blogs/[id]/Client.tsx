@@ -1,12 +1,15 @@
 "use client";
 
-import { VStack, Spacer, HStack, Box, Text } from "@chakra-ui/react";
-import { Heading1 } from "@components/core/Texts";
+import { VStack, HStack, Text } from "@chakra-ui/react";
 import { HtmlArticleRenderer } from "@components/article/Renderer";
 import { CategoryBadge } from "@components/core/Badges";
-import CopyLinkSecondaryButton from "@components/page/common/CopyLinkSecondaryButton";
 import { useFeatureFlag } from "utils/features";
 import FeatureFlagsData from "data/features";
+import {
+  DetailExternalLinks,
+  DetailTitleBar,
+} from "@components/page/common/DetailPage";
+import type { ExternalLink } from "data/external-links";
 type Blog = {
   id: string;
   title: string;
@@ -14,6 +17,7 @@ type Blog = {
   tags?: string[];
   published?: string;
   updated?: string;
+  externalLinks?: ExternalLink[];
 };
 
 function formatDate(value?: string) {
@@ -25,14 +29,6 @@ function formatDate(value?: string) {
     month: "short",
     day: "numeric",
   });
-}
-
-function TitleBar({ title }: { title: string }) {
-  return (
-    <Box mx={[4, 6]} mt={4} letterSpacing={"wide"}>
-      <Heading1>{title}</Heading1>
-    </Box>
-  );
 }
 
 function DateRow({
@@ -69,21 +65,21 @@ function TagRow({ tags = [] as string[] }) {
       {tags.map((t, i) => (
         <CategoryBadge key={i}>{t}</CategoryBadge>
       ))}
-      <Spacer />
-      <CopyLinkSecondaryButton />
     </HStack>
   );
 }
 
-export default function Client({
-  blogId,
-  html,
-  blog,
-}: {
-  blogId: string;
-  html: string;
-  blog: Blog;
-}) {
+function ExternalLinksBlock({ links }: { links?: ExternalLink[] }) {
+  if (!links || links.length === 0) return null;
+
+  return (
+    <HStack gap={3} px={[4, 6]} wrap={"wrap"} align={"center"}>
+      <DetailExternalLinks links={links} />
+    </HStack>
+  );
+}
+
+export default function Client({ html, blog }: { html: string; blog: Blog }) {
   const [isLoading, isBlogsFeatureEnabled] = useFeatureFlag(
     FeatureFlagsData.featuresIds.BLOGS,
   );
@@ -93,9 +89,10 @@ export default function Client({
 
   return (
     <VStack align={"stretch"} gap={4}>
-      <TitleBar title={blog.title} />
+      <DetailTitleBar title={blog.title} />
       <DateRow published={blog.published} updated={blog.updated} />
       <TagRow tags={blog.tags} />
+      <ExternalLinksBlock links={blog.externalLinks} />
       <HtmlArticleRenderer title={blog.title} html={html} showTitle={false} />
     </VStack>
   );
