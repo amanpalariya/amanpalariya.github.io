@@ -76,7 +76,7 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
           {profile.headline}
         </Text>
       </VStack>
-      <VStack align="stretch" gap={2}>
+      <VStack align="stretch" gap={1}>
         {profile.location ? (
           <Wrap gap={3} align="center">
             <WrapItem>
