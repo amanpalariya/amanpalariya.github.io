@@ -5,6 +5,7 @@ import type { ElementType } from "react";
 import type { AppAccentPalette, AppPalette } from "theme/colors/types";
 import CvSection from "./CvSection";
 import { formatCvDate } from "./cvRenderUtils";
+import { CV_META_TEXT_SIZE, CV_SECONDARY_TEXT_COLOR } from "./cvStyleTokens";
 
 export default function CvCoursesSection({
   section,
@@ -21,7 +22,7 @@ export default function CvCoursesSection({
 
   const cardBg = "app.bg.card";
   const cardBorder = "app.border.muted";
-  const mutedColor = "app.fg.subtle";
+  const mutedColor = CV_SECONDARY_TEXT_COLOR;
 
   const resolvedAccentPalette = accentColorPalette ?? primaryColorPalette;
   const badgeColor = resolvedAccentPalette
@@ -60,7 +61,7 @@ export default function CvCoursesSection({
               <VStack align="stretch" gap={2} height="full">
                 <VStack align="stretch" gap={1}>
                   <HStack justify="space-between" align="start">
-                    <Heading4 fontSize="md" lineClamp={2}>
+                    <Heading4 lineClamp={2}>
                       {item.name}
                     </Heading4>
                     {item.courseCode && (
@@ -81,7 +82,7 @@ export default function CvCoursesSection({
 
                   {item.institution && (
                     <Text
-                      fontSize="xs"
+                      fontSize={CV_META_TEXT_SIZE}
                       fontWeight="medium"
                       color="app.fg.muted"
                     >
@@ -93,7 +94,7 @@ export default function CvCoursesSection({
                 <Box mt="auto">
                   <HStack justify="space-between" align="center" pt={1}>
                     {timeframe ? (
-                      <Text fontSize="xs" color={mutedColor}>
+                      <Text fontSize={CV_META_TEXT_SIZE} color={mutedColor}>
                         {timeframe}
                       </Text>
                     ) : (
@@ -102,7 +103,7 @@ export default function CvCoursesSection({
 
                     {item.grade && (
                       <Text
-                        fontSize="xs"
+                        fontSize={CV_META_TEXT_SIZE}
                         fontWeight="bold"
                         color={
                           accentColorPalette

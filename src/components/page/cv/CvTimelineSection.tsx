@@ -17,6 +17,12 @@ import CvSection from "./CvSection";
 import type { ElementType } from "react";
 import { formatCvDateRange } from "./cvRenderUtils";
 import type { AppAccentPalette, AppPalette } from "theme/colors/types";
+import {
+  CV_BULLET_TEXT_COLOR,
+  CV_BULLET_TEXT_SIZE,
+  CV_META_TEXT_SIZE,
+  CV_SECONDARY_TEXT_COLOR,
+} from "./cvStyleTokens";
 
 function TimelineItem({
   item,
@@ -29,7 +35,6 @@ function TimelineItem({
   tagColor: AppPalette;
   presentWhenEndMissing?: boolean;
 }) {
-  const mutedColor = "app.fg.subtle";
   const highlights =
     item.highlights && item.highlights.length > 0
       ? item.highlights
@@ -56,12 +61,17 @@ function TimelineItem({
           <VStack align="start" gap={0.5}>
             <HStack gap={2} align="center" flexWrap="wrap">
               <Heading4>{item.title}</Heading4>
-              <Text color={mutedColor} fontSize="sm">
+              <Text color={CV_SECONDARY_TEXT_COLOR} fontSize={CV_META_TEXT_SIZE}>
                 · {item.organization}
               </Text>
             </HStack>
             {hasMetaLine ? (
-              <HStack gap={2} color={mutedColor} fontSize="sm" wrap="wrap">
+              <HStack
+                gap={2}
+                color={CV_SECONDARY_TEXT_COLOR}
+                fontSize={CV_META_TEXT_SIZE}
+                wrap="wrap"
+              >
                 {timeframe ? <Text>{timeframe}</Text> : null}
                 {item.location ? <Text>{`· ${item.location}`}</Text> : null}
               </HStack>
@@ -73,8 +83,8 @@ function TimelineItem({
               target="_blank"
               rel="noopener noreferrer"
               fontFamily="ui"
-              fontSize="sm"
-              color={mutedColor}
+              fontSize={CV_META_TEXT_SIZE}
+              color={CV_SECONDARY_TEXT_COLOR}
             >
               <HStack gap={1}>
                 <Icon as={FiLink} />
@@ -87,8 +97,10 @@ function TimelineItem({
           <VStack align="stretch" gap={1}>
             {highlights.map((highlight, index) => (
               <HStack key={index} align="start" gap={2}>
-                <Text color={mutedColor}>•</Text>
-                <Text fontSize="sm" color={mutedColor}>
+                <Text fontSize={CV_BULLET_TEXT_SIZE} color={CV_BULLET_TEXT_COLOR}>
+                  •
+                </Text>
+                <Text fontSize={CV_BULLET_TEXT_SIZE} color={CV_BULLET_TEXT_COLOR}>
                   {highlight}
                 </Text>
               </HStack>

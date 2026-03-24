@@ -16,6 +16,12 @@ import { FiLink } from "react-icons/fi";
 import CvSection from "./CvSection";
 import { formatCvDateRange } from "./cvRenderUtils";
 import type { AppAccentPalette, AppPalette } from "theme/colors/types";
+import {
+  CV_BULLET_TEXT_COLOR,
+  CV_BULLET_TEXT_SIZE,
+  CV_META_TEXT_SIZE,
+  CV_SECONDARY_TEXT_COLOR,
+} from "./cvStyleTokens";
 
 function ProjectCard({
   item,
@@ -24,7 +30,6 @@ function ProjectCard({
   item: CvProjectItem;
   accentColorPalette?: AppAccentPalette;
 }) {
-  const mutedColor = "app.fg.muted";
   const badgeColor = accentColorPalette ?? "blue";
   const tagColor = accentColorPalette ?? "gray";
   const timeframe = formatCvDateRange({
@@ -47,7 +52,7 @@ function ProjectCard({
             ) : null}
           </HStack>
           {hasMetaLine ? (
-            <Text fontSize="sm" color={mutedColor}>
+            <Text fontSize={CV_META_TEXT_SIZE} color={CV_SECONDARY_TEXT_COLOR}>
               {timeframe}
             </Text>
           ) : null}
@@ -58,8 +63,8 @@ function ProjectCard({
             target="_blank"
             rel="noopener noreferrer"
             fontFamily="ui"
-            fontSize="sm"
-            color={mutedColor}
+            fontSize={CV_META_TEXT_SIZE}
+            color={CV_SECONDARY_TEXT_COLOR}
           >
             <HStack gap={1}>
               <Icon as={FiLink} />
@@ -72,8 +77,10 @@ function ProjectCard({
         <VStack align="stretch" gap={1}>
           {item.highlights.map((highlight, index) => (
             <HStack key={index} align="start" gap={2}>
-              <Text color={mutedColor}>•</Text>
-              <Text fontSize="sm" color={mutedColor}>
+              <Text fontSize={CV_BULLET_TEXT_SIZE} color={CV_BULLET_TEXT_COLOR}>
+                •
+              </Text>
+              <Text fontSize={CV_BULLET_TEXT_SIZE} color={CV_BULLET_TEXT_COLOR}>
                 {highlight}
               </Text>
             </HStack>

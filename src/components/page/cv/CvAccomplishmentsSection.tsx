@@ -18,6 +18,7 @@ import { useState, type ElementType } from "react";
 import { FiLink, FiEye } from "react-icons/fi";
 import CvSection from "./CvSection";
 import { AppAccentPalette, AppPalette } from "theme/colors";
+import { CV_META_TEXT_SIZE, CV_SECONDARY_TEXT_COLOR } from "./cvStyleTokens";
 import {
   DialogBody,
   DialogCloseTrigger,
@@ -47,7 +48,6 @@ function AccomplishmentCard({
   accentColorPalette?: AppAccentPalette;
   onViewImage?: (src: string, title: string) => void;
 }) {
-  const mutedColor = "app.fg.muted";
   const metaText =
     item.meta || [item.issuer, item.date].filter(Boolean).join(" · ");
 
@@ -82,8 +82,8 @@ function AccomplishmentCard({
                   href={item.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  fontSize="sm"
-                  color={mutedColor}
+                  fontSize={CV_META_TEXT_SIZE}
+                  color={CV_SECONDARY_TEXT_COLOR}
                   _hover={{ color: "app.fg.default" }}
                 >
                   <Icon as={FiLink} />
@@ -92,7 +92,7 @@ function AccomplishmentCard({
             </HStack>
           </HStack>
           {metaText ? (
-            <Text fontSize="sm" color={mutedColor}>
+            <Text fontSize={CV_META_TEXT_SIZE} color={CV_SECONDARY_TEXT_COLOR}>
               {metaText}
             </Text>
           ) : null}
