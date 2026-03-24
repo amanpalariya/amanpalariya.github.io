@@ -158,6 +158,7 @@ export function PageDraftGrid({
         }}
         onDrop={(event) => {
           event.preventDefault();
+          event.stopPropagation();
           void handleGhostDrop(event.dataTransfer.files);
         }}
       >

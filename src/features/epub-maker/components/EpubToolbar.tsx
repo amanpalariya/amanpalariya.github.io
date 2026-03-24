@@ -19,6 +19,8 @@ import {
   LuChevronDown,
   LuFilePlus,
   LuChevronUp,
+  LuRedo2,
+  LuUndo2,
   LuUpload,
 } from "react-icons/lu";
 
@@ -30,6 +32,10 @@ export function EpubToolbar({
   onAddFromClipboard,
   onAddFromFiles,
   onGenerate,
+  onUndoPages,
+  onRedoPages,
+  canUndo,
+  canRedo,
   onPastedInputChange,
   onPaste,
   onAddFromFallback,
@@ -41,6 +47,10 @@ export function EpubToolbar({
   onAddFromClipboard: () => Promise<void>;
   onAddFromFiles: (files: FileList | File[]) => Promise<void>;
   onGenerate: () => Promise<void>;
+  onUndoPages: () => void;
+  onRedoPages: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
   onPastedInputChange: (value: string) => void;
   onPaste: (event: ClipboardEvent<HTMLTextAreaElement>) => void;
   onAddFromFallback: () => void;
@@ -215,6 +225,40 @@ export function EpubToolbar({
         </Icon>
         Save EPUB
       </Button>
+
+      <HStack gap={0} align={"stretch"}>
+        <Button
+          {...actionButtonProps}
+          aria-label={"Undo page change"}
+          onClick={onUndoPages}
+          disabled={!canUndo}
+          roundedRight={0}
+          borderRightWidth={"0"}
+          bg={"app.epub.button.subtle.bg"}
+          color={"app.epub.button.subtle.fg"}
+          _hover={{ bg: "app.epub.button.subtle.hoverBg" }}
+        >
+          <Icon>
+            <LuUndo2 />
+          </Icon>
+          Undo
+        </Button>
+
+        <IconButton
+          {...actionButtonProps}
+          aria-label={"Redo page change"}
+          onClick={onRedoPages}
+          disabled={!canRedo}
+          roundedLeft={0}
+          borderLeftWidth={"1px"}
+          borderLeftColor={"app.epub.border.default"}
+          bg={"app.epub.button.subtle.bg"}
+          color={"app.epub.button.subtle.fg"}
+          _hover={{ bg: "app.epub.button.subtle.hoverBg" }}
+        >
+          <LuRedo2 />
+        </IconButton>
+      </HStack>
     </HStack>
   );
 }

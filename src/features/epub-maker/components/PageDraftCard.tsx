@@ -1,7 +1,7 @@
 import { Box, Button, Icon, Input, InputGroup } from "@chakra-ui/react";
 import { Tooltip } from "@components/ui/tooltip";
 import { LuTrash2 } from "react-icons/lu";
-import type { DragEvent } from "react";
+import { useEffect, useState, type DragEvent, type KeyboardEvent } from "react";
 import type { PageDraft } from "../types";
 
 export function PageDraftCard({
@@ -27,6 +27,22 @@ export function PageDraftCard({
   isDragging: boolean;
   isDropTarget: boolean;
 }) {
+  const [titleDraft, setTitleDraft] = useState(page.title);
+
+  useEffect(() => {
+    setTitleDraft(page.title);
+  }, [page.title]);
+
+  function commitRenameIfChanged() {
+    if (titleDraft === page.title) return;
+    onRename(page.id, titleDraft);
+  }
+
+  function handleTitleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== "Enter") return;
+    event.currentTarget.blur();
+  }
+
   const controlInputProps = {
     fontFamily: "ui",
     fontSize: "sm",
@@ -108,8 +124,10 @@ export function PageDraftCard({
             bg={"app.epub.bg.card"}
             color={"app.epub.fg.default"}
             _placeholder={{ color: "app.epub.fg.subtle" }}
-            value={page.title}
-            onChange={(event) => onRename(page.id, event.target.value)}
+            value={titleDraft}
+            onChange={(event) => setTitleDraft(event.target.value)}
+            onBlur={commitRenameIfChanged}
+            onKeyDown={handleTitleKeyDown}
           />
         </InputGroup>
       </Box>

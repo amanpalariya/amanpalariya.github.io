@@ -2,8 +2,11 @@ import {
   ClipboardEvent,
   createElement,
   type ReactNode,
+  useCallback,
   useEffect,
   useMemo,
+  useReducer,
+  useRef,
   useState,
 } from "react";
 import { LuChevronDown, LuFilePlus } from "react-icons/lu";
@@ -26,6 +29,61 @@ import {
 import { buildEpub } from "../domain/epub-builder";
 import { downloadBlob } from "../services/download";
 import { renderMarkdownToHtml } from "@utils/markdown";
+
+const PAGE_HISTORY_LIMIT = 100;
+
+interface PageHistoryState {
+  past: PageDraft[][];
+  present: PageDraft[];
+  future: PageDraft[][];
+}
+
+type PageHistoryAction =
+  | { type: "commit"; updater: (previousPages: PageDraft[]) => PageDraft[] }
+  | { type: "undo" }
+  | { type: "redo" };
+
+function pageHistoryReducer(
+  state: PageHistoryState,
+  action: PageHistoryAction,
+): PageHistoryState {
+  if (action.type === "undo") {
+    if (state.past.length === 0) {
+      return state;
+    }
+
+    const previousPages = state.past[state.past.length - 1];
+    return {
+      past: state.past.slice(0, -1),
+      present: previousPages,
+      future: [...state.future.slice(-(PAGE_HISTORY_LIMIT - 1)), state.present],
+    };
+  }
+
+  if (action.type === "redo") {
+    if (state.future.length === 0) {
+      return state;
+    }
+
+    const nextPages = state.future[state.future.length - 1];
+    return {
+      past: [...state.past.slice(-(PAGE_HISTORY_LIMIT - 1)), state.present],
+      present: nextPages,
+      future: state.future.slice(0, -1),
+    };
+  }
+
+  const nextPages = action.updater(state.present);
+  if (nextPages === state.present) {
+    return state;
+  }
+
+  return {
+    past: [...state.past.slice(-(PAGE_HISTORY_LIMIT - 1)), state.present],
+    present: nextPages,
+    future: [],
+  };
+}
 
 function fileNameToTitle(fileName: string): string {
   const withoutExtension = fileName.replace(/\.[^./\\]+$/, "");
@@ -63,6 +121,10 @@ export type UseEpubMakerReturn = EpubMakerState & {
   removePage: (id: string) => void;
   renamePage: (id: string, title: string) => void;
   reorderPages: (draggedId: string, targetIndex: number) => void;
+  undoPages: () => void;
+  redoPages: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
   generateEpub: () => Promise<void>;
   setShowPasteFallback: (value: boolean) => void;
   setPastedInput: (value: string) => void;
@@ -77,7 +139,11 @@ export type UseEpubMakerReturn = EpubMakerState & {
 };
 
 export function useEpubMaker(): UseEpubMakerReturn {
-  const [pages, setPages] = useState<PageDraft[]>([]);
+  const [pageHistory, dispatchPageHistory] = useReducer(pageHistoryReducer, {
+    past: [],
+    present: [],
+    future: [],
+  });
   const [isAdding, setIsAdding] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState<number | null>(
@@ -94,6 +160,26 @@ export function useEpubMaker(): UseEpubMakerReturn {
   const [prefs, setPrefs] =
     useState<EpubMakerState["prefs"]>(readEpubMakerPrefs());
   const [isPrefsLoaded, setIsPrefsLoaded] = useState(false);
+  const isFileImportInProgressRef = useRef(false);
+  const pages = pageHistory.present;
+
+  const canUndo = pageHistory.past.length > 0;
+  const canRedo = pageHistory.future.length > 0;
+
+  const commitPageChange = useCallback(
+    (updater: (previousPages: PageDraft[]) => PageDraft[]) => {
+      dispatchPageHistory({ type: "commit", updater });
+    },
+    [],
+  );
+
+  const undoPages = useCallback(() => {
+    dispatchPageHistory({ type: "undo" });
+  }, []);
+
+  const redoPages = useCallback(() => {
+    dispatchPageHistory({ type: "redo" });
+  }, []);
 
   function dismissNotification(id: string) {
     setNotifications((prev) =>
@@ -287,7 +373,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     }
 
     const page = result.page;
-    setPages((prev) => [...prev, page]);
+    commitPageChange((prev) => [...prev, page]);
 
     setSummary("");
     setErrors([]);
@@ -301,6 +387,10 @@ export function useEpubMaker(): UseEpubMakerReturn {
   }
 
   async function addPagesFromFiles(files: FileList | File[]) {
+    if (isFileImportInProgressRef.current) {
+      return;
+    }
+
     const droppedFiles = Array.from(files);
     if (droppedFiles.length === 0) {
       notify(
@@ -311,6 +401,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
       return;
     }
 
+    isFileImportInProgressRef.current = true;
     setIsAdding(true);
     setErrors([]);
 
@@ -378,7 +469,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
       }
 
       if (addedCount > 0) {
-        setPages(nextPages);
+        commitPageChange(() => nextPages);
         setSummary("");
         setErrors([]);
         setPastedInput("");
@@ -448,6 +539,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
       setErrors([message]);
       notify("error", "Couldn’t import files", message);
     } finally {
+      isFileImportInProgressRef.current = false;
       setIsAdding(false);
     }
   }
@@ -540,22 +632,41 @@ export function useEpubMaker(): UseEpubMakerReturn {
   }
 
   function removePage(id: string) {
-    setPages((prev) => prev.filter((page) => page.id !== id));
+    commitPageChange((prev) => {
+      const nextPages = prev.filter((page) => page.id !== id);
+      if (nextPages.length === prev.length) {
+        return prev;
+      }
+      return nextPages;
+    });
     setSummary("");
   }
 
   function renamePage(id: string, title: string) {
-    setPages((prev) =>
-      prev.map((page) =>
-        page.id === id ? { ...page, title: title.trim() || page.title } : page,
-      ),
-    );
+    commitPageChange((prev) => {
+      let hasChanged = false;
+      const nextPages = prev.map((page) => {
+        if (page.id !== id) {
+          return page;
+        }
+
+        const nextTitle = title.trim() || page.title;
+        if (nextTitle === page.title) {
+          return page;
+        }
+
+        hasChanged = true;
+        return { ...page, title: nextTitle };
+      });
+
+      return hasChanged ? nextPages : prev;
+    });
   }
 
   function reorderPages(draggedId: string, targetIndex: number) {
     if (!draggedId || Number.isNaN(targetIndex)) return;
 
-    setPages((prev) => {
+    commitPageChange((prev) => {
       const draggedPage = prev.find((page) => page.id === draggedId);
       if (!draggedPage) return prev;
 
@@ -565,6 +676,11 @@ export function useEpubMaker(): UseEpubMakerReturn {
         Math.min(targetIndex, remaining.length),
       );
       remaining.splice(insertionIndex, 0, draggedPage);
+      if (
+        remaining.every((page, index) => page.id === prev[index]?.id)
+      ) {
+        return prev;
+      }
       return remaining;
     });
   }
@@ -647,6 +763,10 @@ export function useEpubMaker(): UseEpubMakerReturn {
     removePage,
     renamePage,
     reorderPages,
+    undoPages,
+    redoPages,
+    canUndo,
+    canRedo,
     generateEpub,
     setShowPasteFallback,
     setPastedInput,

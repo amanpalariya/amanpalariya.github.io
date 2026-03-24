@@ -69,6 +69,10 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
             onAddFromClipboard={props.addPageFromClipboard}
             onAddFromFiles={props.addPagesFromFiles}
             onGenerate={props.generateEpub}
+            onUndoPages={props.undoPages}
+            onRedoPages={props.redoPages}
+            canUndo={props.canUndo}
+            canRedo={props.canRedo}
             onPastedInputChange={props.setPastedInput}
             onPaste={props.onPasteInput}
             onAddFromFallback={props.addFromFallbackText}
