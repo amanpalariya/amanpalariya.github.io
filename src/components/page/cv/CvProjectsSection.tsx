@@ -18,6 +18,8 @@ import { formatCvDateRange } from "./cvRenderUtils";
 import type { AppAccentPalette, AppPalette } from "theme/colors/types";
 import {
   CV_BULLET_TEXT_COLOR,
+  CV_CMU_BULLET_FONT_FAMILY,
+  CV_BULLET_LINE_HEIGHT,
   CV_BULLET_TEXT_SIZE,
   CV_META_TEXT_SIZE,
   CV_SECONDARY_TEXT_COLOR,
@@ -74,13 +76,26 @@ function ProjectCard({
         ) : null}
       </HStack>
       {item.highlights && item.highlights.length > 0 ? (
-        <VStack align="stretch" gap={1}>
+        <VStack align="stretch" gap={0.5}>
           {item.highlights.map((highlight, index) => (
             <HStack key={index} align="start" gap={2}>
-              <Text fontSize={CV_BULLET_TEXT_SIZE} color={CV_BULLET_TEXT_COLOR}>
+              <Text
+                fontSize={CV_BULLET_TEXT_SIZE}
+                color={CV_BULLET_TEXT_COLOR}
+                lineHeight={CV_BULLET_LINE_HEIGHT}
+              >
                 •
               </Text>
-              <Text fontSize={CV_BULLET_TEXT_SIZE} color={CV_BULLET_TEXT_COLOR}>
+              <Text
+                fontSize={CV_BULLET_TEXT_SIZE}
+                color={CV_BULLET_TEXT_COLOR}
+                fontFamily={CV_CMU_BULLET_FONT_FAMILY}
+                lineHeight={CV_BULLET_LINE_HEIGHT}
+                textAlign="justify"
+                hyphens="auto"
+                flex={1}
+                css={{ WebkitHyphens: "auto", textWrap: "pretty" }}
+              >
                 {highlight}
               </Text>
             </HStack>

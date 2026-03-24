@@ -113,17 +113,20 @@ export function ParagraphText({
   justifyText?: boolean;
   size?: "sm" | "md";
 } & TextProps) {
-  const fontSize = size === "sm" ? ["sm", "md"] : ["md", "lg"];
+  const fontSize = size === "sm" ? ["16px", "17px"] : ["19px", "20px"];
 
   return (
     <Text
       {...textProps}
       color={"app.fg.muted"}
+      fontFamily={"'CMU Sans Serif', 'Noto Sans', sans-serif"}
       fontSize={fontSize}
       fontWeight={"normal"}
       lineHeight={"1.42"}
       letterSpacing={"0.01em"}
       textAlign={justifyText ? "justify" : "left"}
+      hyphens={justifyText ? "auto" : undefined}
+      css={justifyText ? { WebkitHyphens: "auto", textWrap: "pretty" } : undefined}
     >
       {children}
     </Text>

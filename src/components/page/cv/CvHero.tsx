@@ -148,7 +148,7 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
           </Wrap>
         ) : null}
       </VStack>
-      <ParagraphText>{profile.summary}</ParagraphText>
+      <ParagraphText justifyText>{profile.summary}</ParagraphText>
     </VStack>
   );
 }

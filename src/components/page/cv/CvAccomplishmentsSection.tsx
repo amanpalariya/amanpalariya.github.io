@@ -99,7 +99,9 @@ function AccomplishmentCard({
         </VStack>
 
         {item.summary ? (
-          <ParagraphText size="sm">{item.summary}</ParagraphText>
+          <ParagraphText size="sm" justifyText>
+            {item.summary}
+          </ParagraphText>
         ) : null}
 
         <Box mt="auto">
