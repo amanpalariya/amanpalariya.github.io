@@ -6,10 +6,10 @@ import {
   Wrap,
   WrapItem,
   Icon,
-  Separator,
 } from "@chakra-ui/react";
 import { Heading4 } from "@components/core/Texts";
 import { CategoryBadge, FeaturedIndicator } from "@components/core/Badges";
+import { ListDivider } from "@components/core/Dividers";
 import type { CvSectionBase, CvProjectItem } from "data/cv";
 import type { ElementType } from "react";
 import { FiLink } from "react-icons/fi";
@@ -146,7 +146,9 @@ export default function CvProjectsSection({
         {section.items.map((item, index) => (
           <VStack key={`${item.name}-${index}`} align="stretch" gap={4}>
             <ProjectCard item={item} accentColorPalette={accentColorPalette} />
-            {index < section.items.length - 1 ? <Separator /> : null}
+            {index < section.items.length - 1 ? (
+              <ListDivider />
+            ) : null}
           </VStack>
         ))}
       </VStack>

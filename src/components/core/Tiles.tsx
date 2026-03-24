@@ -15,10 +15,14 @@ import { FiChevronRight, FiArrowUpRight } from "react-icons/fi";
 import { CategoryBadge } from "./Badges";
 import { Avatar } from "@components/ui/avatar";
 import { Switch } from "@components/ui/switch";
+import {
+  APP_LIST_DIVIDER_COLOR,
+  APP_LIST_DIVIDER_WIDTH,
+} from "@components/core/Dividers";
 
 function useTileColors() {
   return {
-    divider: "app.border.muted",
+    divider: APP_LIST_DIVIDER_COLOR,
     description: "app.fg.subtle",
     avatarBorder: "app.border.default",
     linkIcon: "app.fg.icon",
@@ -55,15 +59,17 @@ export function TileList({
     <VStack
       align={"stretch"}
       gap={0}
-      borderTopWidth={showDividerBeforeFirst ? "2px" : "0px"}
+      borderTopWidth={showDividerBeforeFirst ? APP_LIST_DIVIDER_WIDTH : "0px"}
       borderTopColor={dividerColor}
-      borderBottomWidth={showDividerAfterLast ? "2px" : "0px"}
+      borderBottomWidth={showDividerAfterLast ? APP_LIST_DIVIDER_WIDTH : "0px"}
       borderBottomColor={dividerColor}
     >
       {items.map((child, index) => (
         <Box
           key={index}
-          borderBottomWidth={index < items.length - 1 ? "2px" : "0px"}
+          borderBottomWidth={
+            index < items.length - 1 ? APP_LIST_DIVIDER_WIDTH : "0px"
+          }
           borderBottomColor={dividerColor}
         >
           {child}
