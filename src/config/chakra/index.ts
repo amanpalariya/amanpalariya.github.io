@@ -5,9 +5,10 @@ const config = defineConfig({
   theme: {
     tokens: {
       fonts: {
-        heading: { value: `'Lexend', sans-serif` },
-        ui: { value: `'Lexend', sans-serif` },
-        body: { value: `'Noto Sans', sans-serif` },
+        heading: { value: "'Lexend', sans-serif" },
+        ui: { value: "'Lexend', sans-serif" },
+        body: { value: "'Noto Sans', sans-serif" },
+        handwritten: { value: "'Caveat', cursive" },
       },
     },
     semanticTokens: {

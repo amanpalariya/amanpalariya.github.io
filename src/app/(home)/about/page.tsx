@@ -12,7 +12,9 @@ function Main() {
   const [html, setHtml] = useState("");
 
   useEffect(() => {
-    renderMarkdownToHtml(AboutData.markdown).then(setHtml);
+    renderMarkdownToHtml(AboutData.markdown, {
+      allowDangerousHtml: true,
+    }).then(setHtml);
   }, []);
 
   const proseStyles = useProseStyles();
@@ -21,7 +23,19 @@ function Main() {
       <VStack align={"stretch"} gap={5}>
         <SectionText>{homepageTabs.about.name}</SectionText>
         <Spacer h={4} />
-        <Heading1>{AboutData.aboutPage.title}</Heading1>
+        <Heading1>
+          It&apos;s me,{" "}
+          <Box
+            as="span"
+            className="handwritten handwritten-squiggle squiggle-pink"
+            fontFamily={"handwritten"}
+            fontSize={"1.25em"}
+            fontWeight={"black"}
+          >
+            Aman
+          </Box>
+          !
+        </Heading1>
         <Box
           className="prose-content"
           css={proseStyles}

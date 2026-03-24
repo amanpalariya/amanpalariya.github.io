@@ -34,7 +34,7 @@ export function SectionText({
         as="h3"
         color={useDefaultTextColor()}
         fontSize={"lg"}
-        fontWeight={"medium"}
+        fontWeight={"normal"}
       >
         {children}
       </Heading>
@@ -66,37 +66,37 @@ function GetCustomHeading(props: HeadingProps) {
 export const Heading1 = GetCustomHeading({
   as: "h1",
   fontSize: "3xl",
-  fontWeight: "bold",
+  fontWeight: "semibold",
 });
 
 export const Heading2 = GetCustomHeading({
   as: "h2",
   fontSize: "2xl",
-  fontWeight: "bold",
+  fontWeight: "semibold",
 });
 
 export const Heading3 = GetCustomHeading({
   as: "h3",
   fontSize: "xl",
-  fontWeight: "bold",
+  fontWeight: "medium",
 });
 
 export const Heading4 = GetCustomHeading({
   as: "h4",
   fontSize: "lg",
-  fontWeight: "bold",
+  fontWeight: "medium",
 });
 
 export const Heading5 = GetCustomHeading({
   as: "h5",
   fontSize: "md",
-  fontWeight: "bold",
+  fontWeight: "medium",
 });
 
 export const Heading6 = GetCustomHeading({
   as: "h6",
   fontSize: "md",
-  fontWeight: "medium",
+  fontWeight: "normal",
 });
 
 export function ParagraphText({

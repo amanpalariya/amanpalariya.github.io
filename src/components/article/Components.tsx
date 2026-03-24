@@ -32,7 +32,7 @@ function ArticleParagraph({ children }: { children: any }) {
 
 function ArticleBold({ children }: { children: any }) {
   return (
-    <Text as={"span"} fontWeight={"extrabold"}>
+    <Text as={"span"} fontWeight={"medium"}>
       {children}
     </Text>
   );
