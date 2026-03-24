@@ -164,6 +164,7 @@ export default function CvPage() {
             primaryColorPalette={primaryColorPalette}
             accentColorPalette={accentColorPalette}
             presentWhenEndMissing
+            emphasizeOrganization
           />
         ) : null;
 
@@ -254,6 +255,7 @@ export default function CvPage() {
             titleIcon={FiAward}
             primaryColorPalette={primaryColorPalette}
             accentColorPalette={accentColorPalette}
+            emphasizeOrganization
           />
         ) : null;
 

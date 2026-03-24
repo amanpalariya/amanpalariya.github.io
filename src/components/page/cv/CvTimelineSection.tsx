@@ -29,11 +29,13 @@ function TimelineItem({
   accentColorPalette,
   tagColor,
   presentWhenEndMissing,
+  emphasizeOrganization,
 }: {
   item: CvTimelineItem;
   accentColorPalette?: AppAccentPalette;
   tagColor: AppPalette;
   presentWhenEndMissing?: boolean;
+  emphasizeOrganization?: boolean;
 }) {
   const highlights =
     item.highlights && item.highlights.length > 0
@@ -61,7 +63,11 @@ function TimelineItem({
           <VStack align="start" gap={0.5}>
             <HStack gap={2} align="center" flexWrap="wrap">
               <Heading4>{item.title}</Heading4>
-              <Text color={CV_SECONDARY_TEXT_COLOR} fontSize={CV_META_TEXT_SIZE}>
+              <Text
+                color={emphasizeOrganization ? "app.fg.muted" : CV_SECONDARY_TEXT_COLOR}
+                fontSize={CV_META_TEXT_SIZE}
+                fontWeight={emphasizeOrganization ? "medium" : "normal"}
+              >
                 · {item.organization}
               </Text>
             </HStack>
@@ -127,12 +133,14 @@ export default function CvTimelineSection({
   primaryColorPalette,
   accentColorPalette,
   presentWhenEndMissing,
+  emphasizeOrganization,
 }: {
   section: CvSectionBase & { items: CvTimelineItem[] };
   titleIcon?: ElementType;
   primaryColorPalette?: AppPalette;
   accentColorPalette?: AppAccentPalette;
   presentWhenEndMissing?: boolean;
+  emphasizeOrganization?: boolean;
 }) {
   if (!section || section.items.length === 0) return null;
   const resolvedAccentPalette =
@@ -183,6 +191,7 @@ export default function CvTimelineSection({
               accentColorPalette={resolvedAccentPalette}
               tagColor={tagColor}
               presentWhenEndMissing={presentWhenEndMissing}
+              emphasizeOrganization={emphasizeOrganization}
             />
             {index < section.items.length - 1 ? (
               <Box pl={8}>
