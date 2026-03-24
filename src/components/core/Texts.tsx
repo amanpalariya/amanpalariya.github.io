@@ -117,7 +117,6 @@ export function ParagraphText({
 
   return (
     <Text
-      {...textProps}
       color={"app.fg.muted"}
       fontFamily={"'CMU Sans Serif', 'Noto Sans', sans-serif"}
       fontSize={fontSize}
@@ -127,6 +126,7 @@ export function ParagraphText({
       textAlign={justifyText ? "justify" : "left"}
       hyphens={justifyText ? "auto" : undefined}
       css={justifyText ? { WebkitHyphens: "auto", textWrap: "pretty" } : undefined}
+      {...textProps}
     >
       {children}
     </Text>
