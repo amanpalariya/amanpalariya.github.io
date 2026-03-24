@@ -4,6 +4,7 @@ import type { ElementType } from "react";
 import { Tooltip } from "@components/ui/tooltip";
 import CvSection from "./CvSection";
 import type { AppAccentPalette, AppPalette } from "theme/colors/types";
+import { CV_CMU_FONT_FAMILY, CV_META_TEXT_SIZE } from "./cvStyleTokens";
 
 const LEVEL_SCALE: Record<string, number> = {
   beginner: 1,
@@ -73,11 +74,12 @@ export default function CvSkillsSection({
         {section.items.map((group) => (
           <VStack key={group.group} align="stretch" gap={3}>
             <Text
-              fontSize="sm"
+              fontSize={CV_META_TEXT_SIZE}
               fontWeight="bold"
               color="app.fg.muted"
               letterSpacing="wider"
               textTransform="uppercase"
+              fontFamily={CV_CMU_FONT_FAMILY}
             >
               {group.group}
             </Text>
@@ -106,9 +108,10 @@ export default function CvSkillsSection({
                       transition="all 0.2s ease"
                     >
                       <Text
-                        fontSize="sm"
+                        fontSize={CV_META_TEXT_SIZE}
                         fontWeight="semibold"
                         color="app.fg.default"
+                        fontFamily={CV_CMU_FONT_FAMILY}
                       >
                         {item.name}
                       </Text>

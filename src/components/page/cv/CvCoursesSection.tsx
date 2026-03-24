@@ -5,7 +5,11 @@ import type { ElementType } from "react";
 import type { AppAccentPalette, AppPalette } from "theme/colors/types";
 import CvSection from "./CvSection";
 import { formatCvDate } from "./cvRenderUtils";
-import { CV_META_TEXT_SIZE, CV_SECONDARY_TEXT_COLOR } from "./cvStyleTokens";
+import {
+  CV_CMU_FONT_FAMILY,
+  CV_META_TEXT_SIZE,
+  CV_SECONDARY_TEXT_COLOR,
+} from "./cvStyleTokens";
 
 export default function CvCoursesSection({
   section,
@@ -66,7 +70,7 @@ export default function CvCoursesSection({
                     </Heading4>
                     {item.courseCode && (
                       <Text
-                        fontSize="xs"
+                        fontSize="17px"
                         px={2}
                         py={0.5}
                         borderRadius="md"
@@ -74,6 +78,7 @@ export default function CvCoursesSection({
                         color={badgeColor}
                         whiteSpace="nowrap"
                         fontWeight="medium"
+                        fontFamily={CV_CMU_FONT_FAMILY}
                       >
                         {item.courseCode}
                       </Text>
@@ -85,6 +90,7 @@ export default function CvCoursesSection({
                       fontSize={CV_META_TEXT_SIZE}
                       fontWeight="medium"
                       color="app.fg.muted"
+                      fontFamily={CV_CMU_FONT_FAMILY}
                     >
                       {item.institution}
                     </Text>
@@ -94,7 +100,11 @@ export default function CvCoursesSection({
                 <Box mt="auto">
                   <HStack justify="space-between" align="center" pt={1}>
                     {timeframe ? (
-                      <Text fontSize={CV_META_TEXT_SIZE} color={mutedColor}>
+                      <Text
+                        fontSize={CV_META_TEXT_SIZE}
+                        color={mutedColor}
+                        fontFamily={CV_CMU_FONT_FAMILY}
+                      >
                         {timeframe}
                       </Text>
                     ) : (
@@ -105,6 +115,7 @@ export default function CvCoursesSection({
                       <Text
                         fontSize={CV_META_TEXT_SIZE}
                         fontWeight="bold"
+                        fontFamily={CV_CMU_FONT_FAMILY}
                         color={
                           accentColorPalette
                             ? `${accentColorPalette}.fg`

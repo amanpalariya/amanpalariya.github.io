@@ -17,8 +17,10 @@ import CvSection from "./CvSection";
 import { formatCvDateRange } from "./cvRenderUtils";
 import type { AppAccentPalette, AppPalette } from "theme/colors/types";
 import {
+  CV_BULLET_ITEM_GAP,
   CV_BULLET_TEXT_COLOR,
   CV_CMU_BULLET_FONT_FAMILY,
+  CV_CMU_FONT_FAMILY,
   CV_BULLET_LINE_HEIGHT,
   CV_BULLET_TEXT_SIZE,
   CV_META_TEXT_SIZE,
@@ -54,7 +56,11 @@ function ProjectCard({
             ) : null}
           </HStack>
           {hasMetaLine ? (
-            <Text fontSize={CV_META_TEXT_SIZE} color={CV_SECONDARY_TEXT_COLOR}>
+            <Text
+              fontSize={CV_META_TEXT_SIZE}
+              color={CV_SECONDARY_TEXT_COLOR}
+              fontFamily={CV_CMU_FONT_FAMILY}
+            >
               {timeframe}
             </Text>
           ) : null}
@@ -64,7 +70,7 @@ function ProjectCard({
             href={item.url}
             target="_blank"
             rel="noopener noreferrer"
-            fontFamily="ui"
+            fontFamily={CV_CMU_FONT_FAMILY}
             fontSize={CV_META_TEXT_SIZE}
             color={CV_SECONDARY_TEXT_COLOR}
           >
@@ -76,7 +82,7 @@ function ProjectCard({
         ) : null}
       </HStack>
       {item.highlights && item.highlights.length > 0 ? (
-        <VStack align="stretch" gap={0.5}>
+        <VStack align="stretch" gap={CV_BULLET_ITEM_GAP}>
           {item.highlights.map((highlight, index) => (
             <HStack key={index} align="start" gap={2}>
               <Text

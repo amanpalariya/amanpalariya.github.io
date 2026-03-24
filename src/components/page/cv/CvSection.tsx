@@ -4,6 +4,7 @@ import { HEADER_OFFSET_HEIGHT } from "@components/page/common/Header";
 import type { ReactNode } from "react";
 import type { ElementType } from "react";
 import type { AppAccentPalette, AppPalette } from "theme/colors/types";
+import { CV_CMU_FONT_FAMILY, CV_META_TEXT_SIZE } from "./cvStyleTokens";
 
 export default function CvSection({
   id,
@@ -33,7 +34,11 @@ export default function CvSection({
       >
         <VStack align={"stretch"} gap={3}>
           {description ? (
-            <Text fontSize="sm" color={"app.fg.subtle"}>
+            <Text
+              fontSize={CV_META_TEXT_SIZE}
+              color={"app.fg.subtle"}
+              fontFamily={CV_CMU_FONT_FAMILY}
+            >
               {description}
             </Text>
           ) : null}
