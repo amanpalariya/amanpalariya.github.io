@@ -1,5 +1,5 @@
 import {
-  ClipboardEvent,
+  type ClipboardEvent as ReactClipboardEvent,
   createElement,
   type ReactNode,
   useCallback,
@@ -116,7 +116,8 @@ export type UseEpubMakerReturn = EpubMakerState & {
   effectiveFileName: string;
   addPageFromClipboard: () => Promise<void>;
   addPagesFromFiles: (files: FileList | File[]) => Promise<void>;
-  onPasteInput: (event: ClipboardEvent<HTMLTextAreaElement>) => void;
+  onPasteInput: (event: ReactClipboardEvent<HTMLTextAreaElement>) => void;
+  onGlobalPaste: (event: ClipboardEvent) => void;
   addFromFallbackText: () => void;
   removePage: (id: string) => void;
   renamePage: (id: string, title: string) => void;
@@ -588,37 +589,54 @@ export function useEpubMaker(): UseEpubMakerReturn {
     }
   }
 
-  function onPasteInput(event: ClipboardEvent<HTMLTextAreaElement>) {
-    if (event.clipboardData.files.length > 0) {
-      event.preventDefault();
-      void addPagesFromFiles(event.clipboardData.files);
-      return;
+  function handlePasteData(clipboardData: DataTransfer | null) {
+    if (!clipboardData) {
+      return false;
     }
 
-    const html = event.clipboardData.getData("text/html");
+    if (clipboardData.files.length > 0) {
+      void addPagesFromFiles(clipboardData.files);
+      return true;
+    }
+
+    const html = clipboardData.getData("text/html");
     if (html?.trim()) {
-      event.preventDefault();
       addInputAsPage(html);
-      return;
+      return true;
     }
 
-    const text = event.clipboardData.getData("text/plain");
+    const text = clipboardData.getData("text/plain");
     if (text?.trim()) {
-      event.preventDefault();
       addInputAsPage(text);
-      return;
+      return true;
     }
 
-    const imageFile = Array.from(event.clipboardData.items).find((item) =>
+    const imageFile = Array.from(clipboardData.items).find((item) =>
       item.type.startsWith("image/"),
     );
     const imageBlob = imageFile?.getAsFile();
     if (imageBlob) {
-      event.preventDefault();
       void clipboardImageBlobToHtml(imageBlob).then((imageHtml) => {
         addInputAsPage(imageHtml);
       });
+      return true;
     }
+
+    return false;
+  }
+
+  function onPasteInput(event: ReactClipboardEvent<HTMLTextAreaElement>) {
+    if (!handlePasteData(event.clipboardData)) {
+      return;
+    }
+    event.preventDefault();
+  }
+
+  function onGlobalPaste(event: ClipboardEvent) {
+    if (!handlePasteData(event.clipboardData)) {
+      return;
+    }
+    event.preventDefault();
   }
 
   function addFromFallbackText() {
@@ -759,6 +777,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     addPageFromClipboard,
     addPagesFromFiles,
     onPasteInput,
+    onGlobalPaste,
     addFromFallbackText,
     removePage,
     renamePage,

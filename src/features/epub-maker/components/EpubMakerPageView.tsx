@@ -56,6 +56,18 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
     };
   }, [props.canRedo, props.canUndo, props.redoPages, props.undoPages]);
 
+  useEffect(() => {
+    function handleWindowPaste(event: ClipboardEvent) {
+      if (isEditableTarget(event.target)) return;
+      props.onGlobalPaste(event);
+    }
+
+    window.addEventListener("paste", handleWindowPaste);
+    return () => {
+      window.removeEventListener("paste", handleWindowPaste);
+    };
+  }, [props.onGlobalPaste]);
+
   function hasFiles(event: DragEvent<HTMLElement>) {
     return Array.from(event.dataTransfer?.types ?? []).includes("Files");
   }
