@@ -104,16 +104,16 @@ export default function ExternalLinksRow({
               rel="noreferrer"
               display="inline-flex"
               alignItems="center"
-              gap={2}
-              px={3}
-              py={1.5}
+              gap={1.5}
+              px={2.5}
+              py={1}
               borderWidth="1px"
               borderColor="app.border.default"
               rounded="full"
               bg="app.bg.default"
               color="app.fg.default"
               textDecoration="none"
-              fontSize="sm"
+              fontSize="xs"
               transition="all 0.16s ease"
               _hover={{
                 textDecoration: "none",
@@ -122,9 +122,9 @@ export default function ExternalLinksRow({
                 transform: "translateY(-1px)",
               }}
             >
-              <Icon as={getLinkIcon(link)} boxSize={3.5} color="app.fg.icon" />
+              <Icon as={getLinkIcon(link)} boxSize={3} color="app.fg.icon" />
               <Text as="span">{link.label}</Text>
-              <Icon as={FiArrowUpRight} boxSize={3.5} color="app.fg.icon" />
+              <Icon as={FiArrowUpRight} boxSize={3} color="app.fg.icon" />
             </Link>
           </WrapItem>
         ))}
