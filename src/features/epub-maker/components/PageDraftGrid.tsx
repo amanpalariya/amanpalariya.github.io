@@ -174,7 +174,9 @@ export function PageDraftGrid({
                 w={"full"}
                 rounded={"none"}
                 m={0}
-                display={"block"}
+                display={"inline-flex"}
+                justifyContent={"center"}
+                gap={1.5}
                 variant={"subtle"}
                 loading={isAdding}
                 onClick={() => ghostUploadInputRef.current?.click()}

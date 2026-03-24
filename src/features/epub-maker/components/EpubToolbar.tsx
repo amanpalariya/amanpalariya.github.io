@@ -23,6 +23,7 @@ import {
   LuUndo2,
   LuUpload,
 } from "react-icons/lu";
+import { Tooltip } from "@components/ui/tooltip";
 
 export function EpubToolbar({
   isAdding,
@@ -126,19 +127,21 @@ export function EpubToolbar({
               ref={uploadInputRef}
               onChange={handleUploadInputChange}
             />
-            <IconButton
-              {...actionButtonProps}
-              aria-label={"Upload files"}
-              rounded={0}
-              borderLeftWidth={"1px"}
-              borderLeftColor={"app.epub.button.primary.divider"}
-              bg={"app.epub.button.primary.bg"}
-              color={"app.epub.button.primary.fg"}
-              _hover={{ bg: "app.epub.button.primary.hoverBg" }}
-              onClick={() => uploadInputRef.current?.click()}
-            >
-              <LuUpload />
-            </IconButton>
+            <Tooltip content={"Upload files"}>
+              <IconButton
+                {...actionButtonProps}
+                aria-label={"Upload files"}
+                rounded={0}
+                borderLeftWidth={"1px"}
+                borderLeftColor={"app.epub.button.primary.divider"}
+                bg={"app.epub.button.primary.bg"}
+                color={"app.epub.button.primary.fg"}
+                _hover={{ bg: "app.epub.button.primary.hoverBg" }}
+                onClick={() => uploadInputRef.current?.click()}
+              >
+                <LuUpload />
+              </IconButton>
+            </Tooltip>
           </FileUpload.Root>
 
           <IconButton
@@ -244,20 +247,22 @@ export function EpubToolbar({
           Undo
         </Button>
 
-        <IconButton
-          {...actionButtonProps}
-          aria-label={"Redo page change"}
-          onClick={onRedoPages}
-          disabled={!canRedo}
-          roundedLeft={0}
-          borderLeftWidth={"1px"}
-          borderLeftColor={"app.epub.border.default"}
-          bg={"app.epub.button.subtle.bg"}
-          color={"app.epub.button.subtle.fg"}
-          _hover={{ bg: "app.epub.button.subtle.hoverBg" }}
-        >
-          <LuRedo2 />
-        </IconButton>
+        <Tooltip content={"Redo"}>
+          <IconButton
+            {...actionButtonProps}
+            aria-label={"Redo page change"}
+            onClick={onRedoPages}
+            disabled={!canRedo}
+            roundedLeft={0}
+            borderLeftWidth={"1px"}
+            borderLeftColor={"app.epub.border.default"}
+            bg={"app.epub.button.subtle.bg"}
+            color={"app.epub.button.subtle.fg"}
+            _hover={{ bg: "app.epub.button.subtle.hoverBg" }}
+          >
+            <LuRedo2 />
+          </IconButton>
+        </Tooltip>
       </HStack>
     </HStack>
   );
