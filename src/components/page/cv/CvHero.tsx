@@ -1,4 +1,5 @@
 import {
+  Clipboard,
   HStack,
   VStack,
   Link,
@@ -21,14 +22,12 @@ import {
 } from "react-icons/fi";
 import { FaXTwitter } from "react-icons/fa6";
 import { Tooltip } from "@components/ui/tooltip";
-import { useState } from "react";
 import PersonalData from "../../../data/Personal";
 import { CV_CMU_FONT_FAMILY } from "./cvStyleTokens";
 
 export default function CvHero({ profile }: { profile: CvProfile }) {
   const secondaryColor = "app.fg.muted";
   const contactTextSize = "19px";
-  const [emailCopied, setEmailCopied] = useState(false);
 
   function getSocialIcon(label: string) {
     const normalized = label.toLowerCase();
@@ -50,13 +49,6 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
     if (normalized === "x") return `@${PersonalData.x.username}`;
 
     return url;
-  }
-
-  async function copyEmail() {
-    if (!profile.email || emailCopied) return;
-    await navigator.clipboard.writeText(profile.email);
-    setEmailCopied(true);
-    setTimeout(() => setEmailCopied(false), 1200);
   }
 
   const profileLinks = [
@@ -110,25 +102,27 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
               </HStack>
             </WrapItem>
             <WrapItem>
-              <Tooltip
-                content={emailCopied ? "Copied" : "Copy email"}
-                showArrow
-              >
-                <Link
-                  as="button"
-                  fontSize="17px"
-                  color={secondaryColor}
-                  fontFamily={CV_CMU_FONT_FAMILY}
-                  fontWeight="medium"
-                  onClick={() => {
-                    void copyEmail();
-                  }}
-                >
-                  <HStack gap={1}>
-                    <Icon as={emailCopied ? FiCheck : FiCopy} />
-                    <Text>{emailCopied ? "Copied" : "Copy"}</Text>
-                  </HStack>
-                </Link>
+              <Tooltip content={"Copy email"} showArrow>
+                <Clipboard.Root value={profile.email} timeout={1200}>
+                  <Clipboard.Trigger asChild>
+                    <Link
+                      as="button"
+                      fontSize="17px"
+                      color={secondaryColor}
+                      fontFamily={CV_CMU_FONT_FAMILY}
+                      fontWeight="medium"
+                    >
+                      <HStack gap={1}>
+                        <Clipboard.Indicator copied={<Icon as={FiCheck} />}>
+                          <Icon as={FiCopy} />
+                        </Clipboard.Indicator>
+                        <Clipboard.Indicator copied={"Copied"}>
+                          <Text>Copy</Text>
+                        </Clipboard.Indicator>
+                      </HStack>
+                    </Link>
+                  </Clipboard.Trigger>
+                </Clipboard.Root>
               </Tooltip>
             </WrapItem>
           </Wrap>
