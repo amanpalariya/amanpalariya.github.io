@@ -1,6 +1,6 @@
 import { Box, Icon, Text, VStack } from "@chakra-ui/react";
 import HighlightedSection from "@components/page/common/HighlightedSection";
-import { useState, type DragEvent } from "react";
+import { useEffect, useState, type DragEvent } from "react";
 import { LuFilePlus } from "react-icons/lu";
 import type { UseEpubMakerReturn } from "../hooks/useEpubMaker";
 import { EpubToolbar } from "./EpubToolbar";
@@ -8,9 +8,65 @@ import { EpubMetadataForm } from "./EpubMetadataForm";
 import { PageDraftGrid } from "./PageDraftGrid";
 import { TopRightNotifications } from "./TopRightNotifications";
 
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+
+  if (target.isContentEditable) return true;
+
+  const tagName = target.tagName.toLowerCase();
+  if (tagName === "input" || tagName === "textarea" || tagName === "select") {
+    return true;
+  }
+
+  return false;
+}
+
 export function EpubMakerPageView(props: UseEpubMakerReturn) {
   const [isFileDragOver, setIsFileDragOver] = useState(false);
   const [dragDepth, setDragDepth] = useState(0);
+
+  useEffect(() => {
+    function handleUndoRedoHotkeys(event: KeyboardEvent) {
+      if (isEditableTarget(event.target)) return;
+      if (event.altKey) return;
+      if (!event.metaKey && !event.ctrlKey) return;
+
+      const key = event.key.toLowerCase();
+      const isUndoKey = key === "z" && !event.shiftKey;
+      const isRedoKey =
+        (key === "z" && event.shiftKey) || (!event.metaKey && key === "y");
+
+      if (isUndoKey) {
+        if (!props.canUndo) return;
+        event.preventDefault();
+        props.undoPages();
+        return;
+      }
+
+      if (isRedoKey) {
+        if (!props.canRedo) return;
+        event.preventDefault();
+        props.redoPages();
+      }
+    }
+
+    window.addEventListener("keydown", handleUndoRedoHotkeys);
+    return () => {
+      window.removeEventListener("keydown", handleUndoRedoHotkeys);
+    };
+  }, [props.canRedo, props.canUndo, props.redoPages, props.undoPages]);
+
+  useEffect(() => {
+    function handleWindowPaste(event: ClipboardEvent) {
+      if (isEditableTarget(event.target)) return;
+      props.onGlobalPaste(event);
+    }
+
+    window.addEventListener("paste", handleWindowPaste);
+    return () => {
+      window.removeEventListener("paste", handleWindowPaste);
+    };
+  }, [props.onGlobalPaste]);
 
   function hasFiles(event: DragEvent<HTMLElement>) {
     return Array.from(event.dataTransfer?.types ?? []).includes("Files");
@@ -69,6 +125,10 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
             onAddFromClipboard={props.addPageFromClipboard}
             onAddFromFiles={props.addPagesFromFiles}
             onGenerate={props.generateEpub}
+            onUndoPages={props.undoPages}
+            onRedoPages={props.redoPages}
+            canUndo={props.canUndo}
+            canRedo={props.canRedo}
             onPastedInputChange={props.setPastedInput}
             onPaste={props.onPasteInput}
             onAddFromFallback={props.addFromFallbackText}

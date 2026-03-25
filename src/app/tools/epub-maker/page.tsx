@@ -2,6 +2,7 @@
 
 import { EpubMakerPageView, useEpubMaker } from "features/epub-maker";
 import { getToolById, ToolDetailsSection } from "features/tools";
+import { EpubHelpButton } from "features/epub-maker/components/EpubHelpButton";
 
 export default function EpubMakerPage() {
   const epubMaker = useEpubMaker();
@@ -9,7 +10,7 @@ export default function EpubMakerPage() {
 
   return (
     <>
-      {tool ? <ToolDetailsSection tool={tool} /> : null}
+      {tool ? <ToolDetailsSection tool={tool} titleAction={<EpubHelpButton />} /> : null}
       <EpubMakerPageView {...epubMaker} />
     </>
   );
