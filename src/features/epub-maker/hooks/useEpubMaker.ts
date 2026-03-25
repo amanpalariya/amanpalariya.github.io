@@ -155,6 +155,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
   const [generationProgress, setGenerationProgress] = useState<number | null>(
     null,
   );
+  const [showDownloadCompleteIcon, setShowDownloadCompleteIcon] = useState(false);
   const [activeGenerationPageId, setActiveGenerationPageId] = useState<
     string | null
   >(null);
@@ -176,6 +177,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
   const isFileImportInProgressRef = useRef(false);
   const generationStatusFadeTimerRef = useRef<number | null>(null);
   const generationStatusClearTimerRef = useRef<number | null>(null);
+  const downloadCompleteIconTimerRef = useRef<number | null>(null);
   const pages = pageHistory.present;
 
   const canUndo = pageHistory.past.length > 0;
@@ -199,8 +201,22 @@ export function useEpubMaker(): UseEpubMakerReturn {
       if (generationStatusClearTimerRef.current) {
         window.clearTimeout(generationStatusClearTimerRef.current);
       }
+      if (downloadCompleteIconTimerRef.current) {
+        window.clearTimeout(downloadCompleteIconTimerRef.current);
+      }
     };
   }, []);
+
+  function showDownloadCompleteIconTemporarily(durationMs = 2200) {
+    if (downloadCompleteIconTimerRef.current) {
+      window.clearTimeout(downloadCompleteIconTimerRef.current);
+    }
+    setShowDownloadCompleteIcon(true);
+    downloadCompleteIconTimerRef.current = window.setTimeout(() => {
+      setShowDownloadCompleteIcon(false);
+      downloadCompleteIconTimerRef.current = null;
+    }, durationMs);
+  }
 
   function scheduleGenerationStatusCleanup() {
     if (generationStatusFadeTimerRef.current) {
@@ -791,6 +807,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
     setIsGenerating(true);
     setGenerationProgress(0);
+    setShowDownloadCompleteIcon(false);
     setActiveGenerationPageId(null);
     setIsGenerationStatusFading(false);
     setWarnings([]);
@@ -850,6 +867,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
       downloadBlob(result.blob, effectiveFileName);
       scheduleGenerationStatusCleanup();
+      showDownloadCompleteIconTemporarily();
       setWarnings(result.warnings);
       setSummary(
         `Generated and downloaded “${effectiveFileName}” with ${result.summary.chapterCount} page(s), ${result.summary.embeddedImageCount} embedded image(s), and ${result.summary.externalImageCount} external image reference(s).`,
@@ -871,6 +889,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
       const message = `Unexpected error while generating EPUB: ${String(error)}`;
       setErrors([message]);
       notify("error", "EPUB generation failed", message);
+      setShowDownloadCompleteIcon(false);
       setGenerationChapterStatusByPageId({});
       setIsGenerationStatusFading(false);
     } finally {
@@ -885,6 +904,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     isAdding,
     isGenerating,
     generationProgress,
+    showDownloadCompleteIcon,
     activeGenerationPageId,
     generationChapterStatusByPageId,
     isGenerationStatusFading,

@@ -16,6 +16,7 @@ import {
 } from "react";
 import {
   LuBookDown,
+  LuCheck,
   LuChevronDown,
   LuFilePlus,
   LuChevronUp,
@@ -29,6 +30,7 @@ export function EpubToolbar({
   isAdding,
   isGenerating,
   generationProgress,
+  showDownloadCompleteIcon,
   pageCount,
   pastedInput,
   onAddFromClipboard,
@@ -45,6 +47,7 @@ export function EpubToolbar({
   isAdding: boolean;
   isGenerating: boolean;
   generationProgress: number | null;
+  showDownloadCompleteIcon: boolean;
   pageCount: number;
   pastedInput: string;
   onAddFromClipboard: () => Promise<void>;
@@ -249,7 +252,7 @@ export function EpubToolbar({
       >
         <HStack gap={1.5} position={"relative"} zIndex={1}>
           <Icon>
-            <LuBookDown />
+            {showDownloadCompleteIcon && !isGenerating ? <LuCheck /> : <LuBookDown />}
           </Icon>
           <Box as={"span"}>Save EPUB</Box>
         </HStack>

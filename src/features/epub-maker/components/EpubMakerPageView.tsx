@@ -122,6 +122,7 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
             isAdding={props.isAdding}
             isGenerating={props.isGenerating}
             generationProgress={props.generationProgress}
+            showDownloadCompleteIcon={props.showDownloadCompleteIcon}
             pageCount={props.pages.length}
             pastedInput={props.pastedInput}
             onAddFromClipboard={props.addPageFromClipboard}

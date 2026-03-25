@@ -109,6 +109,7 @@ export interface EpubMakerState {
   isAdding: boolean;
   isGenerating: boolean;
   generationProgress: number | null;
+  showDownloadCompleteIcon: boolean;
   activeGenerationPageId: PageId | null;
   generationChapterStatusByPageId: Record<PageId, ChapterGenerationStatus>;
   isGenerationStatusFading: boolean;
