@@ -1,4 +1,5 @@
 import {
+  AspectRatio,
   Box,
   Button,
   HStack,
@@ -155,89 +156,91 @@ export function PageDraftCard({
           />
         </InputGroup>
       </Box>
-      <Box
+      <AspectRatio
         position={"relative"}
-        h={"300px"}
+        ratio={1 / 1.4142}
         bg={"app.epub.bg.preview"}
         cursor={isInteractionDisabled ? "default" : "grab"}
         draggable={!isInteractionDisabled}
         onDragStart={() => onDragStart(page.id)}
         onDragEnd={onDragEnd}
       >
-        <iframe
-          title={`preview-${page.id}`}
-          srcDoc={page.previewHtml}
-          sandbox=""
-          style={{
-            width: "100%",
-            height: "100%",
-            border: "none",
-            pointerEvents: "none",
-            filter: isInteractionDisabled
-              ? "blur(1px) grayscale(0.35) saturate(0.75) brightness(0.82)"
-              : "none",
-            transition: "filter 0.2s ease",
-          }}
-        />
-
-        {isInteractionDisabled ? (
-          <Box
-            position={"absolute"}
-            inset={0}
-            pointerEvents={"none"}
-            bg={"app.epub.overlay.preview"}
+        <Box position={"relative"} w={"full"} h={"full"}>
+          <iframe
+            title={`preview-${page.id}`}
+            srcDoc={page.previewHtml}
+            sandbox=""
+            style={{
+              width: "100%",
+              height: "100%",
+              border: "none",
+              pointerEvents: "none",
+              filter: isInteractionDisabled
+                ? "blur(1px) grayscale(0.35) saturate(0.75) brightness(0.82)"
+                : "none",
+              transition: "filter 0.2s ease",
+            }}
           />
-        ) : null}
 
-        {showGenerationStatus ? (
-          <Box
-            position={"absolute"}
-            inset={0}
-            display={"flex"}
-            alignItems={"center"}
-            justifyContent={"center"}
-            pointerEvents={"none"}
-            opacity={isGenerationStatusFading ? 0 : 1}
-            transition={"opacity 0.3s ease"}
-            zIndex={4}
-          >
-            <HStack
-              gap={2}
-              px={3}
-              py={1.5}
-              rounded={"full"}
-              borderWidth={"1px"}
-              borderColor={"app.epub.border.default"}
-              bg={"app.epub.bg.card"}
-              color={statusTextColor}
-              boxShadow={"sm"}
+          {isInteractionDisabled ? (
+            <Box
+              position={"absolute"}
+              inset={0}
+              pointerEvents={"none"}
+              bg={"app.epub.overlay.preview"}
+            />
+          ) : null}
+
+          {showGenerationStatus ? (
+            <Box
+              position={"absolute"}
+              inset={0}
+              display={"flex"}
+              alignItems={"center"}
+              justifyContent={"center"}
+              pointerEvents={"none"}
+              opacity={isGenerationStatusFading ? 0 : 1}
+              transition={"opacity 0.3s ease"}
+              zIndex={4}
             >
-              <Icon
-                animation={
-                  effectiveGenerationStatus === "processing"
-                    ? "spin 1s linear infinite"
-                    : undefined
-                }
+              <HStack
+                gap={2}
+                px={3}
+                py={1.5}
+                rounded={"full"}
+                borderWidth={"1px"}
+                borderColor={"app.epub.border.default"}
+                bg={"app.epub.bg.card"}
+                color={statusTextColor}
+                boxShadow={"sm"}
               >
-                {effectiveGenerationStatus === "completed" ? (
-                  <LuCheck />
-                ) : effectiveGenerationStatus === "processing" ? (
-                  <LuLoaderCircle />
-                ) : (
-                  <LuClock3 />
-                )}
-              </Icon>
-              <Text fontFamily={"ui"} fontSize={"xs"} fontWeight={"semibold"}>
-                {effectiveGenerationStatus === "completed"
-                  ? "Processed"
-                  : effectiveGenerationStatus === "processing"
-                    ? "Processing..."
-                    : "Pending"}
-              </Text>
-            </HStack>
-          </Box>
-        ) : null}
-      </Box>
+                <Icon
+                  animation={
+                    effectiveGenerationStatus === "processing"
+                      ? "spin 1s linear infinite"
+                      : undefined
+                  }
+                >
+                  {effectiveGenerationStatus === "completed" ? (
+                    <LuCheck />
+                  ) : effectiveGenerationStatus === "processing" ? (
+                    <LuLoaderCircle />
+                  ) : (
+                    <LuClock3 />
+                  )}
+                </Icon>
+                <Text fontFamily={"ui"} fontSize={"xs"} fontWeight={"semibold"}>
+                  {effectiveGenerationStatus === "completed"
+                    ? "Processed"
+                    : effectiveGenerationStatus === "processing"
+                      ? "Processing..."
+                      : "Pending"}
+                </Text>
+              </HStack>
+            </Box>
+          ) : null}
+        </Box>
+      </AspectRatio>
     </Box>
   );
 }
