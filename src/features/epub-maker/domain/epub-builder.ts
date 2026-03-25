@@ -90,10 +90,16 @@ export async function buildEpub(input: BuildEpubInput): Promise<BuildEpubResult>
       completedPageIds: [...completedPageIds],
     });
   };
+  const throwIfAborted = () => {
+    if (!input.signal?.aborted) return;
+    throw new DOMException("EPUB generation was cancelled.", "AbortError");
+  };
 
+  throwIfAborted();
   emitProgress(5, "preparing");
 
   for (let i = 0; i < input.pages.length; i += 1) {
+    throwIfAborted();
     const page = input.pages[i];
     emitProgress(Math.min(85, Math.round(5 + progressStep * i)), "processing_chapter", i, page.id);
     const title = page.title || `Page ${i + 1}`;
@@ -108,6 +114,7 @@ export async function buildEpub(input: BuildEpubInput): Promise<BuildEpubResult>
 
       const imageNodes = Array.from(parsed.body.querySelectorAll("img"));
       for (const node of imageNodes) {
+        throwIfAborted();
         const src = node.getAttribute("src") || "";
         if (!src) continue;
         const result = await registerImageAsset({
@@ -115,6 +122,7 @@ export async function buildEpub(input: BuildEpubInput): Promise<BuildEpubResult>
           baseUrl: page.baseUrl,
           pageId: page.id,
           embedRemoteImages: input.sanitizePolicy.embedRemoteImages,
+          signal: input.signal,
           imagesByKey,
           nextImageNumber,
         });
@@ -248,6 +256,7 @@ export async function buildEpub(input: BuildEpubInput): Promise<BuildEpubResult>
 
   emitProgress(90, "finalizing");
 
+  throwIfAborted();
   const zip = new JSZip();
   zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
   zip.file(
@@ -279,11 +288,13 @@ export async function buildEpub(input: BuildEpubInput): Promise<BuildEpubResult>
 
   emitProgress(95, "finalizing");
 
+  throwIfAborted();
   const blob = await zip.generateAsync({
     type: "blob",
     mimeType: "application/epub+zip",
   });
 
+  throwIfAborted();
   emitProgress(100, "done");
 
   return {

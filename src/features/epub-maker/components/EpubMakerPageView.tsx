@@ -121,6 +121,7 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
           <EpubToolbar
             isAdding={props.isAdding}
             isGenerating={props.isGenerating}
+            isCancellingGeneration={props.isCancellingGeneration}
             generationProgress={props.generationProgress}
             showDownloadCompleteIcon={props.showDownloadCompleteIcon}
             pageCount={props.pages.length}
@@ -128,6 +129,7 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
             onAddFromClipboard={props.addPageFromClipboard}
             onAddFromFiles={props.addPagesFromFiles}
             onGenerate={props.generateEpub}
+            onCancelGeneration={props.cancelGeneration}
             onUndoPages={props.undoPages}
             onRedoPages={props.redoPages}
             canUndo={props.canUndo}
@@ -157,8 +159,11 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
         onDragLeave={handleFileDragLeave}
         onDrop={handleFileDrop}
       >
-        <HighlightedSection>
-          <Box minH={"340px"} px={0} py={4}>
+        <HighlightedSection
+          contentPx={{ base: 2, sm: 3, md: 4, lg: 6 }}
+          contentPy={{ base: 2, sm: 3, md: 4, lg: 6 }}
+        >
+          <Box minH={"340px"} px={0} py={0}>
             <PageDraftGrid
               pages={props.pages}
               isAdding={props.isAdding}
@@ -166,6 +171,7 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
               generationChapterStatusByPageId={props.generationChapterStatusByPageId}
               activeGenerationPageId={props.activeGenerationPageId}
               isGenerationStatusFading={props.isGenerationStatusFading}
+              pageFlashById={props.pageFlashById}
               onRemove={props.removePage}
               onRename={props.renamePage}
               onReorder={props.reorderPages}

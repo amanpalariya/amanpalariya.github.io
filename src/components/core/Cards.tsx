@@ -42,6 +42,8 @@ export function InnerBgCardWithHeader({
   accentColorPalette,
   useAccentForHeader = false,
   separateHeader = false,
+  contentPx = [4, 6],
+  contentPy = 2,
   ...boxProps
 }: BoxProps & {
   header?: React.ReactNode;
@@ -51,6 +53,8 @@ export function InnerBgCardWithHeader({
   accentColorPalette?: string;
   useAccentForHeader?: boolean;
   separateHeader?: boolean;
+  contentPx?: BoxProps["px"];
+  contentPy?: BoxProps["py"];
 }) {
   const resolvedPrimaryPalette = primaryColorPalette ?? colorPalette ?? "gray";
   const resolvedAccentPalette = accentColorPalette ?? resolvedPrimaryPalette;
@@ -83,7 +87,7 @@ export function InnerBgCardWithHeader({
         </Box>
       ) : null}
 
-      <Box px={[4, 6]} py={2}>
+      <Box px={contentPx} py={contentPy}>
         {children}
       </Box>
     </Box>

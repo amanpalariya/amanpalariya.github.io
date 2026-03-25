@@ -20,15 +20,18 @@ import {
   LuChevronDown,
   LuFilePlus,
   LuChevronUp,
+  LuLoaderCircle,
   LuRedo2,
   LuUndo2,
   LuUpload,
+  LuX,
 } from "react-icons/lu";
 import { Tooltip } from "@components/ui/tooltip";
 
 export function EpubToolbar({
   isAdding,
   isGenerating,
+  isCancellingGeneration,
   generationProgress,
   showDownloadCompleteIcon,
   pageCount,
@@ -36,6 +39,7 @@ export function EpubToolbar({
   onAddFromClipboard,
   onAddFromFiles,
   onGenerate,
+  onCancelGeneration,
   onUndoPages,
   onRedoPages,
   canUndo,
@@ -46,6 +50,7 @@ export function EpubToolbar({
 }: {
   isAdding: boolean;
   isGenerating: boolean;
+  isCancellingGeneration: boolean;
   generationProgress: number | null;
   showDownloadCompleteIcon: boolean;
   pageCount: number;
@@ -53,6 +58,7 @@ export function EpubToolbar({
   onAddFromClipboard: () => Promise<void>;
   onAddFromFiles: (files: FileList | File[]) => Promise<void>;
   onGenerate: () => Promise<void>;
+  onCancelGeneration: () => void;
   onUndoPages: () => void;
   onRedoPages: () => void;
   canUndo: boolean;
@@ -230,9 +236,9 @@ export function EpubToolbar({
 
       <Button
         {...actionButtonProps}
-        onClick={onGenerate}
-        loading={isGenerating}
-        disabled={pageCount === 0}
+        onClick={isGenerating ? onCancelGeneration : onGenerate}
+        loading={false}
+        disabled={!isGenerating && pageCount === 0}
         position={"relative"}
         overflow={"hidden"}
         _before={{
@@ -246,9 +252,11 @@ export function EpubToolbar({
           opacity: isGenerating ? 1 : 0,
           transition: "width 0.2s linear",
         }}
-        bg={"app.epub.button.success.bg"}
-        color={"app.epub.button.success.fg"}
-        _hover={{ bg: "app.epub.button.success.hoverBg" }}
+        bg={isGenerating ? "red.500" : "app.epub.button.success.bg"}
+        color={isGenerating ? "white" : "app.epub.button.success.fg"}
+        _hover={{
+          bg: isGenerating ? "red.600" : "app.epub.button.success.hoverBg",
+        }}
       >
         <Box position={"relative"} zIndex={1}>
           <HStack
@@ -256,15 +264,31 @@ export function EpubToolbar({
             visibility={
               showDownloadCompleteIcon && !isGenerating
                 ? "hidden"
-                : isGenerating
-                  ? "hidden"
-                  : "visible"
+                : "visible"
             }
           >
-            <Icon>
-              <LuBookDown />
+            <Icon
+              animation={
+                isGenerating && isCancellingGeneration
+                  ? "spin 1s linear infinite"
+                  : undefined
+              }
+            >
+              {isGenerating ? (
+                isCancellingGeneration ? (
+                  <LuLoaderCircle />
+                ) : (
+                  <LuX />
+                )
+              ) : (
+                <LuBookDown />
+              )}
             </Icon>
-            <Box as={"span"}>Save EPUB</Box>
+            <Box as={"span"}>
+              {isGenerating
+                ? `${isCancellingGeneration ? "Cancelling" : "Cancel"} (${saveProgressPercent}%)`
+                : "Save EPUB"}
+            </Box>
           </HStack>
           {showDownloadCompleteIcon && !isGenerating ? (
             <Box

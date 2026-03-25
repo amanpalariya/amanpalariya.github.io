@@ -15,6 +15,8 @@ export default function HighlightedSection({
   accentColorPalette,
   useAccentForHeader = false,
   separateHeader = false,
+  contentPx,
+  contentPy,
   children,
 }: {
   title?: string;
@@ -26,6 +28,8 @@ export default function HighlightedSection({
   accentColorPalette?: string;
   useAccentForHeader?: boolean;
   separateHeader?: boolean;
+  contentPx?: Parameters<typeof InnerBgCardWithHeader>[0]["contentPx"];
+  contentPy?: Parameters<typeof InnerBgCardWithHeader>[0]["contentPy"];
   children: JSX.Element;
 }) {
   const resolvedPrimaryPalette = primaryColorPalette ?? accentColor ?? "gray";
@@ -62,6 +66,8 @@ export default function HighlightedSection({
       primaryColorPalette={resolvedPrimaryPalette}
       accentColorPalette={resolvedAccentPalette}
       useAccentForHeader={useAccentForHeader}
+      contentPx={contentPx}
+      contentPy={contentPy}
     >
       <VStack align={"stretch"} gap={3}>
         {children}

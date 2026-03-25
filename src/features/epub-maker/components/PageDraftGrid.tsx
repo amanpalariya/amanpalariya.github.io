@@ -1,4 +1,5 @@
 import {
+  AspectRatio,
   Box,
   Button,
   FileUpload,
@@ -9,10 +10,26 @@ import {
   Textarea,
   VStack,
 } from "@chakra-ui/react";
-import { type ChangeEvent, type ClipboardEvent, useRef, useState } from "react";
+import {
+  type ChangeEvent,
+  type ClipboardEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { LuFilePlus, LuUpload } from "react-icons/lu";
 import type { ChapterGenerationStatus, PageDraft } from "../types";
 import { PageDraftCard } from "./PageDraftCard";
+type PageFlashKind = "added" | "duplicate";
+type PageFlashEntry = { kind: PageFlashKind; token: number };
+type DragPreviewAnchor = {
+  clientX: number;
+  clientY: number;
+  offsetX: number;
+  offsetY: number;
+  width: number;
+};
+type DragMode = "mouse" | "touch" | null;
 
 export function PageDraftGrid({
   pages,
@@ -21,6 +38,7 @@ export function PageDraftGrid({
   generationChapterStatusByPageId,
   activeGenerationPageId,
   isGenerationStatusFading,
+  pageFlashById,
   onRemove,
   onRename,
   onReorder,
@@ -37,6 +55,7 @@ export function PageDraftGrid({
   generationChapterStatusByPageId: Record<string, ChapterGenerationStatus>;
   activeGenerationPageId: string | null;
   isGenerationStatusFading: boolean;
+  pageFlashById: Record<string, PageFlashEntry>;
   onRemove: (id: string) => void;
   onRename: (id: string, value: string) => void;
   onReorder: (draggedId: string, targetIndex: number) => void;
@@ -50,13 +69,20 @@ export function PageDraftGrid({
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [isGhostDropTarget, setIsGhostDropTarget] = useState(false);
+  const [dragPreviewAnchor, setDragPreviewAnchor] =
+    useState<DragPreviewAnchor | null>(null);
+  const [dragMode, setDragMode] = useState<DragMode>(null);
   const ghostUploadInputRef = useRef<HTMLInputElement | null>(null);
+  const draggedIdRef = useRef<string | null>(null);
+  const dropIndexRef = useRef<number | null>(null);
+  const touchMoveRafRef = useRef<number | null>(null);
+  const pendingTouchPointRef = useRef<{ x: number; y: number } | null>(null);
   const isInteractionDisabled = isGenerating;
   const isGenerationStatusVisible =
     isGenerating || Object.keys(generationChapterStatusByPageId).length > 0;
-  const completedPageCount = Object.values(generationChapterStatusByPageId).filter(
-    (status) => status === "completed",
-  ).length;
+  const completedPageCount = Object.values(
+    generationChapterStatusByPageId,
+  ).filter((status) => status === "completed").length;
 
   function handleGhostUploadChange(event: ChangeEvent<HTMLInputElement>) {
     if (isInteractionDisabled) return;
@@ -70,11 +96,14 @@ export function PageDraftGrid({
     draggedId == null ? -1 : pages.findIndex((page) => page.id === draggedId);
 
   const previewPages =
-    draggedId && dropIndex !== null && dragIndex >= 0
+    dragMode === "mouse" && draggedId && dropIndex !== null && dragIndex >= 0
       ? (() => {
           const draggedPage = pages[dragIndex];
           const remaining = pages.filter((page) => page.id !== draggedId);
-          const insertionIndex = Math.max(0, Math.min(dropIndex, remaining.length));
+          const insertionIndex = Math.max(
+            0,
+            Math.min(dropIndex, remaining.length),
+          );
           const next = [...remaining];
           next.splice(insertionIndex, 0, draggedPage);
           return next;
@@ -83,17 +112,123 @@ export function PageDraftGrid({
 
   function handleDrop() {
     if (isInteractionDisabled) return;
-    if (!draggedId) return;
-    onReorder(draggedId, dropIndex ?? dragIndex);
+    const activeDraggedId = draggedIdRef.current ?? draggedId;
+    if (!activeDraggedId) return;
+    const targetIndex = dropIndexRef.current ?? dropIndex ?? dragIndex;
+    onReorder(activeDraggedId, targetIndex);
     setDraggedId(null);
     setDropIndex(null);
+    setDragMode(null);
+    draggedIdRef.current = null;
+    dropIndexRef.current = null;
   }
 
   function handleDragEnd() {
     setDraggedId(null);
     setDropIndex(null);
+    setDragMode(null);
+    draggedIdRef.current = null;
+    dropIndexRef.current = null;
+    setDragPreviewAnchor(null);
+    setIsGhostDropTarget(false);
+    pendingTouchPointRef.current = null;
+    if (touchMoveRafRef.current != null) {
+      window.cancelAnimationFrame(touchMoveRafRef.current);
+      touchMoveRafRef.current = null;
+    }
+  }
+
+  function updateDropIndexFromPoint(clientX: number, clientY: number) {
+    const hitTarget = document.elementFromPoint(clientX, clientY) as
+      | HTMLElement
+      | null;
+    const dropIndexElement = hitTarget?.closest<HTMLElement>("[data-drop-index]");
+    if (dropIndexElement?.dataset.dropIndex) {
+      const nextIndex = Number(dropIndexElement.dataset.dropIndex);
+      if (!Number.isNaN(nextIndex)) {
+        setDropIndex(nextIndex);
+        dropIndexRef.current = nextIndex;
+      }
+      return;
+    }
+
+    const isOverGhost = Boolean(hitTarget?.closest("[data-ghost-drop-target]"));
+    if (isOverGhost) {
+      setDropIndex(pages.length);
+      dropIndexRef.current = pages.length;
+      setIsGhostDropTarget(true);
+      return;
+    }
     setIsGhostDropTarget(false);
   }
+
+  function maybeAutoScroll(clientY: number) {
+    const edgeThreshold = 64;
+    const scrollStep = 14;
+    if (clientY < edgeThreshold) {
+      window.scrollBy(0, -scrollStep);
+      return;
+    }
+    if (clientY > window.innerHeight - edgeThreshold) {
+      window.scrollBy(0, scrollStep);
+    }
+  }
+
+  function handleTouchDragStart(id: string, anchor: DragPreviewAnchor) {
+    if (isInteractionDisabled) return;
+    const currentIndex = pages.findIndex((page) => page.id === id);
+    if (currentIndex < 0) return;
+    setDraggedId(id);
+    setDropIndex(currentIndex);
+    setDragMode("touch");
+    draggedIdRef.current = id;
+    dropIndexRef.current = currentIndex;
+    setDragPreviewAnchor(anchor);
+    updateDropIndexFromPoint(anchor.clientX, anchor.clientY);
+  }
+
+  function handleTouchDragMove(clientX: number, clientY: number) {
+    if (!draggedIdRef.current) return;
+    pendingTouchPointRef.current = { x: clientX, y: clientY };
+    if (touchMoveRafRef.current != null) return;
+    touchMoveRafRef.current = window.requestAnimationFrame(() => {
+      touchMoveRafRef.current = null;
+      const point = pendingTouchPointRef.current;
+      if (!point) return;
+      setDragPreviewAnchor((prev) =>
+        prev
+          ? {
+              ...prev,
+              clientX: point.x,
+              clientY: point.y,
+            }
+          : prev,
+      );
+      updateDropIndexFromPoint(point.x, point.y);
+      maybeAutoScroll(point.y);
+    });
+  }
+
+  function handleTouchDragEnd() {
+    if (isInteractionDisabled) return;
+    const activeDraggedId = draggedIdRef.current ?? draggedId;
+    if (!activeDraggedId) return;
+    const targetIndex = dropIndexRef.current ?? dropIndex ?? dragIndex;
+    onReorder(activeDraggedId, targetIndex);
+    handleDragEnd();
+  }
+
+  function handleTouchDragCancel() {
+    handleDragEnd();
+  }
+
+  useEffect(() => {
+    return () => {
+      if (touchMoveRafRef.current != null) {
+        window.cancelAnimationFrame(touchMoveRafRef.current);
+      }
+    };
+  }, []);
 
   function effectiveDropIndex(index: number) {
     if (!draggedId) return null;
@@ -110,100 +245,133 @@ export function PageDraftGrid({
   return (
     <Box position={"relative"}>
       <SimpleGrid
-        columns={{ base: 2, md: 2, lg: 3 }}
+        columns={1}
+        onDragOver={(event) => {
+          if (!draggedId || !dragPreviewAnchor) return;
+          if (event.clientX <= 0 && event.clientY <= 0) return;
+          setDragPreviewAnchor((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  clientX: event.clientX,
+                  clientY: event.clientY,
+                }
+              : prev,
+          );
+        }}
         css={{
-          "@media (max-width: 359px)": {
-            gridTemplateColumns: "repeat(1, minmax(0, 1fr))",
+          "@media (min-width: 360px)": {
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+          },
+          "@media (min-width: 620px)": {
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
           },
         }}
         gap={2}
         alignItems={"start"}
       >
-      {previewPages.map((page, index) => {
-        const isDraggedCard = draggedId === page.id;
-        const isDropTarget = effectiveDropIndex(index) !== null;
+        {previewPages.map((page, index) => {
+          const isDraggedCard = draggedId === page.id;
+          const isDropTarget = effectiveDropIndex(index) !== null;
 
-        return (
-          <Box
-            key={page.id}
-            onDragOver={(event) => {
-              if (isInteractionDisabled) return;
-              event.preventDefault();
-              if (!draggedId) return;
-              if (draggedId === page.id) return;
-              setDropIndex(index);
-            }}
-            onDrop={(event) => {
-              if (isInteractionDisabled) return;
-              event.preventDefault();
-              handleDrop();
-            }}
-          >
-            <PageDraftCard
-              page={page}
-              chapterNumber={index + 1}
-              onRemove={onRemove}
-              onRename={onRename}
-              onDragStart={(id) => {
-                if (isInteractionDisabled) return;
-                setDraggedId(id);
-                setDropIndex(index);
-              }}
-              onDragEnd={isInteractionDisabled ? () => {} : handleDragEnd}
+          return (
+            <Box
+              key={page.id}
+              data-drop-index={index}
               onDragOver={(event) => {
                 if (isInteractionDisabled) return;
                 event.preventDefault();
+                if (!draggedId) return;
+                if (draggedId === page.id) return;
+                setDropIndex(index);
+                dropIndexRef.current = index;
               }}
-              onDrop={handleDrop}
-              isDragging={!isInteractionDisabled && isDraggedCard}
-              isDropTarget={!isInteractionDisabled && isDropTarget}
-              isInteractionDisabled={isInteractionDisabled}
-              isGenerationStatusFading={isGenerationStatusFading}
-              generationStatus={
-                isGenerationStatusVisible
-                  ? (generationChapterStatusByPageId[page.id] ??
-                    (activeGenerationPageId === page.id ? "processing" : "pending"))
-                  : undefined
-              }
-            />
-          </Box>
-        );
-      })}
+              onDrop={(event) => {
+                if (isInteractionDisabled) return;
+                event.preventDefault();
+                handleDrop();
+              }}
+            >
+              <PageDraftCard
+                page={page}
+                chapterNumber={index + 1}
+                onRemove={onRemove}
+                onRename={onRename}
+                onDragStart={(id, anchor) => {
+                  if (isInteractionDisabled) return;
+                  setDraggedId(id);
+                  setDropIndex(index);
+                  setDragMode("mouse");
+                  draggedIdRef.current = id;
+                  dropIndexRef.current = index;
+                  setDragPreviewAnchor(anchor);
+                }}
+                onTouchDragStart={handleTouchDragStart}
+                onTouchDragMove={handleTouchDragMove}
+                onTouchDragEnd={handleTouchDragEnd}
+                onTouchDragCancel={handleTouchDragCancel}
+                onDragEnd={isInteractionDisabled ? () => {} : handleDragEnd}
+                onDragOver={(event) => {
+                  if (isInteractionDisabled) return;
+                  event.preventDefault();
+                }}
+                onDrop={handleDrop}
+                isDragging={!isInteractionDisabled && isDraggedCard}
+                isDropTarget={!isInteractionDisabled && isDropTarget}
+                isInteractionDisabled={isInteractionDisabled}
+                isGenerationStatusFading={isGenerationStatusFading}
+                pageFlashKind={pageFlashById[page.id]?.kind}
+                pageFlashToken={pageFlashById[page.id]?.token}
+                generationStatus={
+                  isGenerationStatusVisible
+                    ? (generationChapterStatusByPageId[page.id] ??
+                      (activeGenerationPageId === page.id
+                        ? "processing"
+                        : "pending"))
+                    : undefined
+                }
+              />
+            </Box>
+          );
+        })}
 
-      <Box
-        w={"full"}
-        borderWidth={isGhostDropTarget ? "3px" : "2px"}
-        borderStyle={"dashed"}
-        borderColor={
-          isGhostDropTarget ? "app.epub.border.accent" : "app.epub.border.default"
-        }
-        rounded={"2xl"}
-        overflow={"hidden"}
-        bg={"app.epub.bg.preview"}
-        transition={"all 0.2s ease"}
-        _hover={{
-          borderColor: isInteractionDisabled
-            ? "app.epub.border.default"
-            : "app.epub.border.accent",
-        }}
-        onDragOver={(event) => {
-          if (isInteractionDisabled) return;
-          event.preventDefault();
-          setIsGhostDropTarget(true);
-        }}
-        onDragLeave={(event) => {
-          const nextTarget = event.relatedTarget as Node | null;
-          if (nextTarget && event.currentTarget.contains(nextTarget)) return;
-          setIsGhostDropTarget(false);
-        }}
-        onDrop={(event) => {
-          if (isInteractionDisabled) return;
-          event.preventDefault();
-          event.stopPropagation();
-          void handleGhostDrop(event.dataTransfer.files);
-        }}
-      >
-        <Box h={"336px"} display={"flex"} flexDirection={"column"}>
+        <Box
+          data-ghost-drop-target={true}
+          w={"full"}
+          borderWidth={isGhostDropTarget ? "3px" : "2px"}
+          borderStyle={"dashed"}
+          borderColor={
+            isGhostDropTarget
+              ? "app.epub.border.accent"
+              : "app.epub.border.default"
+          }
+          rounded={"2xl"}
+          overflow={"hidden"}
+          bg={"app.epub.bg.preview"}
+          transition={"all 0.2s ease"}
+          _hover={{
+            borderColor: isInteractionDisabled
+              ? "app.epub.border.default"
+              : "app.epub.border.accent",
+          }}
+          onDragOver={(event) => {
+            if (isInteractionDisabled) return;
+            event.preventDefault();
+            setIsGhostDropTarget(true);
+            dropIndexRef.current = pages.length;
+          }}
+          onDragLeave={(event) => {
+            const nextTarget = event.relatedTarget as Node | null;
+            if (nextTarget && event.currentTarget.contains(nextTarget)) return;
+            setIsGhostDropTarget(false);
+          }}
+          onDrop={(event) => {
+            if (isInteractionDisabled) return;
+            event.preventDefault();
+            event.stopPropagation();
+            void handleGhostDrop(event.dataTransfer.files);
+          }}
+        >
           <Box borderBottomWidth={"1px"} borderColor={"app.epub.border.muted"}>
             <FileUpload.Root maxFiles={50}>
               <FileUpload.HiddenInput
@@ -211,7 +379,7 @@ export function PageDraftGrid({
                 onChange={handleGhostUploadChange}
               />
               <Button
-                size={"xs"}
+                size={"sm"}
                 w={"full"}
                 rounded={"none"}
                 m={0}
@@ -234,72 +402,170 @@ export function PageDraftGrid({
             </FileUpload.Root>
           </Box>
 
-          <VStack
-            flex={1}
-            align={"center"}
-            justify={"center"}
-            gap={2}
-            color={"app.epub.fg.subtle"}
-            opacity={0.9}
-            textAlign={"center"}
-            px={4}
-            cursor={isInteractionDisabled || isAdding ? "not-allowed" : "pointer"}
-            onClick={() => {
-              if (isInteractionDisabled || isAdding) return;
-              void onAddFromClipboard();
-            }}
-          >
-            <Icon boxSize={8}>
-              <LuFilePlus />
-            </Icon>
-            <Text fontFamily={"ui"} fontSize={"xs"} fontWeight={"semibold"}>
-              Add page
-            </Text>
-            <Text fontFamily={"ui"} fontSize={"xs"} color={"app.epub.fg.subtle"}>
-              Click to import clipboard content, upload files, or drop files.
-            </Text>
-          </VStack>
-
-          <Box
-            flex={1}
-            borderTopWidth={"1px"}
-            borderColor={"app.epub.border.muted"}
-            display={"flex"}
-            flexDirection={"column"}
-          >
-            <Textarea
-              value={pastedInput}
-              onChange={(event) => onPastedInputChange(event.target.value)}
-              onPaste={onPaste}
-              disabled={isInteractionDisabled}
-              flex={1}
-              minH={0}
-              rounded={"none"}
-              borderWidth={0}
-              resize={"none"}
-              bg={"app.epub.bg.card"}
-              color={"app.epub.fg.default"}
-              _placeholder={{ color: "app.epub.fg.subtle" }}
-              placeholder={"Paste HTML, text, or image here"}
-            />
-            <Button
-              size={"xs"}
-              w={"full"}
-              rounded={"none"}
-              mt={0}
-              variant={"subtle"}
-              onClick={onAddFromFallback}
-              disabled={isInteractionDisabled}
-              bg={"app.epub.button.subtle.bg"}
-              color={"app.epub.button.subtle.fg"}
-              _hover={{ bg: "app.epub.button.subtle.hoverBg" }}
+          <AspectRatio ratio={1 / 1.4142}>
+            <Box
+              h={"full"}
+              display={"flex"}
+              flexDirection={"column"}
+              overflow={"hidden"}
             >
-              Add pasted content
-            </Button>
-          </Box>
+              <VStack
+                flex={1}
+                minH={0}
+                overflow={"hidden"}
+                align={"center"}
+                justify={"center"}
+                gap={2}
+                py={2}
+                color={"app.epub.fg.subtle"}
+                opacity={0.9}
+                textAlign={"center"}
+                px={4}
+                cursor={
+                  isInteractionDisabled || isAdding ? "not-allowed" : "pointer"
+                }
+                onClick={() => {
+                  if (isInteractionDisabled || isAdding) return;
+                  void onAddFromClipboard();
+                }}
+              >
+                <Icon boxSize={8}>
+                  <LuFilePlus />
+                </Icon>
+                <Text fontFamily={"ui"} fontSize={"xs"} fontWeight={"semibold"}>
+                  Add page
+                </Text>
+                <Text
+                  fontFamily={"ui"}
+                  fontSize={"xs"}
+                  color={"app.epub.fg.subtle"}
+                  lineClamp={2}
+                >
+                  Click to import clipboard content, or drop files.
+                </Text>
+              </VStack>
+
+              <Box
+                w={"full"}
+                flex={"0 0 40%"}
+                mt={"auto"}
+                minH={0}
+                borderTopWidth={"1px"}
+                borderColor={"app.epub.border.muted"}
+                display={"flex"}
+                flexDirection={"column"}
+              >
+                <Textarea
+                  value={pastedInput}
+                  onChange={(event) => onPastedInputChange(event.target.value)}
+                  onPaste={onPaste}
+                  disabled={isInteractionDisabled}
+                  w={"full"}
+                  flex={1}
+                  minH={0}
+                  rounded={"none"}
+                  borderWidth={0}
+                  resize={"none"}
+                  bg={"app.epub.bg.card"}
+                  color={"app.epub.fg.default"}
+                  _placeholder={{ color: "app.epub.fg.subtle" }}
+                  placeholder={"Paste HTML, text, or image here"}
+                />
+                <Button
+                  size={"xs"}
+                  w={"full"}
+                  rounded={"none"}
+                  mt={0}
+                  variant={"subtle"}
+                  onClick={onAddFromFallback}
+                  disabled={isInteractionDisabled}
+                  bg={"app.epub.button.subtle.bg"}
+                  color={"app.epub.button.subtle.fg"}
+                  _hover={{ bg: "app.epub.button.subtle.hoverBg" }}
+                >
+                  Add pasted content
+                </Button>
+              </Box>
+            </Box>
+          </AspectRatio>
         </Box>
-      </Box>
       </SimpleGrid>
+
+      {draggedId && dragPreviewAnchor ? (
+        (() => {
+          const draggedPage = pages.find((page) => page.id === draggedId);
+          if (!draggedPage) return null;
+
+          return (
+            <Box
+              position={"fixed"}
+              left={`${dragPreviewAnchor.clientX - dragPreviewAnchor.offsetX}px`}
+              top={`${dragPreviewAnchor.clientY - dragPreviewAnchor.offsetY}px`}
+              w={`${dragPreviewAnchor.width}px`}
+              pointerEvents={"none"}
+              zIndex={30}
+              opacity={0.95}
+              borderWidth={"1px"}
+              borderColor={"app.epub.border.accent"}
+              rounded={"2xl"}
+              overflow={"hidden"}
+              bg={"app.epub.bg.card"}
+              boxShadow={"2xl"}
+            >
+              <Box
+                bg={"app.epub.bg.card"}
+              >
+                <HStack
+                  h={"2rem"}
+                  gap={2}
+                  px={2}
+                  align={"center"}
+                  borderBottomWidth={"1px"}
+                  borderColor={"app.epub.border.muted"}
+                >
+                  <Box
+                    minW={"2.25rem"}
+                    display={"flex"}
+                    alignItems={"center"}
+                    justifyContent={"center"}
+                  >
+                    <Text
+                      fontFamily={"ui"}
+                      fontSize={"xs"}
+                      fontWeight={"semibold"}
+                      color={"app.epub.fg.muted"}
+                    >
+                      {pages.findIndex((page) => page.id === draggedPage.id) + 1}
+                    </Text>
+                  </Box>
+                  <Text
+                    flex={1}
+                    fontFamily={"ui"}
+                    fontSize={"sm"}
+                    color={"app.epub.fg.default"}
+                    lineClamp={1}
+                  >
+                    {draggedPage.title}
+                  </Text>
+                </HStack>
+              </Box>
+              <AspectRatio ratio={1 / 1.4142} bg={"app.epub.bg.preview"}>
+                <iframe
+                  title={`drag-preview-${draggedPage.id}`}
+                  srcDoc={draggedPage.previewHtml}
+                  sandbox=""
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    border: "none",
+                    pointerEvents: "none",
+                  }}
+                />
+              </AspectRatio>
+            </Box>
+          );
+        })()
+      ) : null}
 
       {isInteractionDisabled ? (
         <Box

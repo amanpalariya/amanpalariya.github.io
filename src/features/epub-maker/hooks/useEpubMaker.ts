@@ -18,6 +18,7 @@ import type {
   BuildEpubProgressUpdate,
   EpubMakerState,
   GenerationWarning,
+  PageId,
   PageDraft,
 } from "../types";
 import { buildAutoEpubFileName, buildEpubFileName } from "../utils/file-name";
@@ -36,6 +37,8 @@ import { downloadBlob } from "../services/download";
 import { renderMarkdownToHtml } from "@utils/markdown";
 
 const PAGE_HISTORY_LIMIT = 100;
+type PageFlashKind = "added" | "duplicate";
+type PageFlashEntry = { kind: PageFlashKind; token: number };
 
 interface PageHistoryState {
   past: PageDraft[][];
@@ -132,6 +135,9 @@ export type UseEpubMakerReturn = EpubMakerState & {
   canUndo: boolean;
   canRedo: boolean;
   generateEpub: () => Promise<void>;
+  cancelGeneration: () => void;
+  isCancellingGeneration: boolean;
+  pageFlashById: Record<PageId, PageFlashEntry>;
   setShowPasteFallback: (value: boolean) => void;
   setPastedInput: (value: string) => void;
   setWarnings: (value: GenerationWarning[]) => void;
@@ -152,6 +158,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
   });
   const [isAdding, setIsAdding] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isCancellingGeneration, setIsCancellingGeneration] = useState(false);
   const [generationProgress, setGenerationProgress] = useState<number | null>(
     null,
   );
@@ -171,6 +178,9 @@ export function useEpubMaker(): UseEpubMakerReturn {
   const [notifications, setNotifications] = useState<
     EpubMakerState["notifications"]
   >([]);
+  const [pageFlashById, setPageFlashById] = useState<
+    Record<PageId, PageFlashEntry>
+  >({});
   const [prefs, setPrefs] =
     useState<EpubMakerState["prefs"]>(readEpubMakerPrefs());
   const [isPrefsLoaded, setIsPrefsLoaded] = useState(false);
@@ -178,6 +188,9 @@ export function useEpubMaker(): UseEpubMakerReturn {
   const generationStatusFadeTimerRef = useRef<number | null>(null);
   const generationStatusClearTimerRef = useRef<number | null>(null);
   const downloadCompleteIconTimerRef = useRef<number | null>(null);
+  const pageFlashClearTimerRef = useRef<number | null>(null);
+  const flashSequenceRef = useRef(0);
+  const generationAbortControllerRef = useRef<AbortController | null>(null);
   const pages = pageHistory.present;
 
   const canUndo = pageHistory.past.length > 0;
@@ -204,8 +217,32 @@ export function useEpubMaker(): UseEpubMakerReturn {
       if (downloadCompleteIconTimerRef.current) {
         window.clearTimeout(downloadCompleteIconTimerRef.current);
       }
+      if (pageFlashClearTimerRef.current) {
+        window.clearTimeout(pageFlashClearTimerRef.current);
+      }
+      generationAbortControllerRef.current?.abort();
     };
   }, []);
+
+  function flashPages(ids: PageId[], kind: PageFlashKind, durationMs = 1200) {
+    if (ids.length === 0) return;
+    flashSequenceRef.current += 1;
+    const token = flashSequenceRef.current;
+    setPageFlashById((prev) => {
+      const next = { ...prev };
+      for (const id of ids) {
+        next[id] = { kind, token };
+      }
+      return next;
+    });
+    if (pageFlashClearTimerRef.current) {
+      window.clearTimeout(pageFlashClearTimerRef.current);
+    }
+    pageFlashClearTimerRef.current = window.setTimeout(() => {
+      setPageFlashById({});
+      pageFlashClearTimerRef.current = null;
+    }, durationMs);
+  }
 
   function showDownloadCompleteIconTemporarily(durationMs = 1100) {
     if (downloadCompleteIconTimerRef.current) {
@@ -367,7 +404,10 @@ export function useEpubMaker(): UseEpubMakerReturn {
       (page) => page.rawContent.trim() === trimmedContent,
     );
     if (isDuplicate) {
-      return { status: "duplicate" as const };
+      const duplicatePageIds = existingPages
+        .filter((page) => page.rawContent.trim() === trimmedContent)
+        .map((page) => page.id);
+      return { status: "duplicate" as const, duplicatePageIds };
     }
 
     const page = createPageDraftFromInput(
@@ -396,7 +436,10 @@ export function useEpubMaker(): UseEpubMakerReturn {
       (page) => page.rawContent.trim() === trimmedContent,
     );
     if (isDuplicate) {
-      return { status: "duplicate" as const };
+      const duplicatePageIds = existingPages
+        .filter((page) => page.rawContent.trim() === trimmedContent)
+        .map((page) => page.id);
+      return { status: "duplicate" as const, duplicatePageIds };
     }
 
     const page = createPageDraftFromInput(
@@ -429,6 +472,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
       };
       setWarnings((prev) => [...prev, duplicateWarning]);
       notify("warning", "Page already added", duplicateWarning.message);
+      flashPages(result.duplicatePageIds, "duplicate");
       return false;
     }
 
@@ -442,6 +486,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
     const page = result.page;
     commitPageChange((prev) => [...prev, page]);
+    flashPages([page.id], "added");
 
     setSummary("");
     setErrors([]);
@@ -480,6 +525,8 @@ export function useEpubMaker(): UseEpubMakerReturn {
     let addedCount = 0;
     let unsupportedCount = 0;
     let duplicateCount = 0;
+    const duplicatePageIds = new Set<PageId>();
+    const addedPageIds: PageId[] = [];
     let invalidCount = 0;
     let emptyCount = 0;
     const duplicateWarnings: GenerationWarning[] = [];
@@ -520,11 +567,15 @@ export function useEpubMaker(): UseEpubMakerReturn {
         if (result.status === "ok") {
           nextPages = [...nextPages, result.page];
           addedCount += 1;
+          addedPageIds.push(result.page.id);
           continue;
         }
 
         if (result.status === "duplicate") {
           duplicateCount += 1;
+          for (const pageId of result.duplicatePageIds) {
+            duplicatePageIds.add(pageId);
+          }
           duplicateWarnings.push({
             code: "EMPTY_PAGE_SKIPPED",
             message: "Duplicate page content detected and skipped.",
@@ -542,6 +593,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
       if (addedCount > 0) {
         commitPageChange(() => nextPages);
+        flashPages(addedPageIds, "added");
         setSummary("");
         setErrors([]);
         setPastedInput("");
@@ -570,6 +622,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
       }
 
       if (duplicateWarnings.length > 0) {
+        flashPages(Array.from(duplicatePageIds), "duplicate");
         setWarnings((prev) => [...prev, ...duplicateWarnings]);
         notify(
           "warning",
@@ -796,6 +849,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
   }
 
   async function generateEpub() {
+    if (isGenerating) return;
     if (generationStatusFadeTimerRef.current) {
       window.clearTimeout(generationStatusFadeTimerRef.current);
       generationStatusFadeTimerRef.current = null;
@@ -806,6 +860,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     }
 
     setIsGenerating(true);
+    setIsCancellingGeneration(false);
     setGenerationProgress(0);
     setShowDownloadCompleteIcon(false);
     setActiveGenerationPageId(null);
@@ -814,15 +869,20 @@ export function useEpubMaker(): UseEpubMakerReturn {
     setErrors([]);
     setSummary("");
 
+    const abortController = new AbortController();
+    generationAbortControllerRef.current = abortController;
+
     if (pages.length === 0) {
       const message =
         "Add at least one page from clipboard before generating EPUB.";
       setErrors([message]);
       notify("warning", "No pages added", message);
       setIsGenerating(false);
+      setIsCancellingGeneration(false);
       setGenerationProgress(null);
       setGenerationChapterStatusByPageId({});
       setIsGenerationStatusFading(false);
+      generationAbortControllerRef.current = null;
       return;
     }
 
@@ -844,6 +904,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
         downloadFileName: effectiveFileName,
         pages,
         sanitizePolicy,
+        signal: abortController.signal,
         onProgress: (update: BuildEpubProgressUpdate) => {
           setGenerationProgress(update.value);
           setActiveGenerationPageId(update.currentPageId);
@@ -886,6 +947,14 @@ export function useEpubMaker(): UseEpubMakerReturn {
         setPrefs((prev) => ({ ...prev, manualFileName: autoEpubFileName }));
       }
     } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        setSummary("EPUB generation cancelled.");
+        notify("info", "Generation cancelled", "EPUB generation was cancelled.");
+        setShowDownloadCompleteIcon(false);
+        setGenerationChapterStatusByPageId({});
+        setIsGenerationStatusFading(false);
+        return;
+      }
       const message = `Unexpected error while generating EPUB: ${String(error)}`;
       setErrors([message]);
       notify("error", "EPUB generation failed", message);
@@ -894,15 +963,25 @@ export function useEpubMaker(): UseEpubMakerReturn {
       setIsGenerationStatusFading(false);
     } finally {
       setIsGenerating(false);
+      setIsCancellingGeneration(false);
       setGenerationProgress(null);
       setActiveGenerationPageId(null);
+      generationAbortControllerRef.current = null;
     }
+  }
+
+  function cancelGeneration() {
+    if (!isGenerating) return;
+    if (generationAbortControllerRef.current?.signal.aborted) return;
+    setIsCancellingGeneration(true);
+    generationAbortControllerRef.current?.abort();
   }
 
   return {
     pages,
     isAdding,
     isGenerating,
+    isCancellingGeneration,
     generationProgress,
     showDownloadCompleteIcon,
     activeGenerationPageId,
@@ -914,6 +993,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     errors,
     summary,
     notifications,
+    pageFlashById,
     prefs,
     normalizedBookTitle,
     normalizedBookAuthor,
@@ -932,6 +1012,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     canUndo,
     canRedo,
     generateEpub,
+    cancelGeneration,
     setShowPasteFallback,
     setPastedInput,
     setWarnings,
