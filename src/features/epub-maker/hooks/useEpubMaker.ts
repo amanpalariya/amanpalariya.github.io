@@ -207,7 +207,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     };
   }, []);
 
-  function showDownloadCompleteIconTemporarily(durationMs = 2200) {
+  function showDownloadCompleteIconTemporarily(durationMs = 1100) {
     if (downloadCompleteIconTimerRef.current) {
       window.clearTimeout(downloadCompleteIconTimerRef.current);
     }

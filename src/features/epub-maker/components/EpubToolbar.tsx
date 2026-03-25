@@ -250,12 +250,36 @@ export function EpubToolbar({
         color={"app.epub.button.success.fg"}
         _hover={{ bg: "app.epub.button.success.hoverBg" }}
       >
-        <HStack gap={1.5} position={"relative"} zIndex={1}>
-          <Icon>
-            {showDownloadCompleteIcon && !isGenerating ? <LuCheck /> : <LuBookDown />}
-          </Icon>
-          <Box as={"span"}>Save EPUB</Box>
-        </HStack>
+        <Box position={"relative"} zIndex={1}>
+          <HStack
+            gap={1.5}
+            visibility={
+              showDownloadCompleteIcon && !isGenerating
+                ? "hidden"
+                : isGenerating
+                  ? "hidden"
+                  : "visible"
+            }
+          >
+            <Icon>
+              <LuBookDown />
+            </Icon>
+            <Box as={"span"}>Save EPUB</Box>
+          </HStack>
+          {showDownloadCompleteIcon && !isGenerating ? (
+            <Box
+              position={"absolute"}
+              inset={0}
+              display={"flex"}
+              alignItems={"center"}
+              justifyContent={"center"}
+            >
+              <Icon>
+                <LuCheck />
+              </Icon>
+            </Box>
+          ) : null}
+        </Box>
       </Button>
 
       <HStack gap={0} align={"stretch"}>
