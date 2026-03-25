@@ -16,6 +16,13 @@ import type { ChapterGenerationStatus, PageDraft } from "../types";
 import { PageDraftCard } from "./PageDraftCard";
 type PageFlashKind = "added" | "duplicate";
 type PageFlashEntry = { kind: PageFlashKind; token: number };
+type DragPreviewAnchor = {
+  clientX: number;
+  clientY: number;
+  offsetX: number;
+  offsetY: number;
+  width: number;
+};
 
 export function PageDraftGrid({
   pages,
@@ -55,6 +62,8 @@ export function PageDraftGrid({
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [isGhostDropTarget, setIsGhostDropTarget] = useState(false);
+  const [dragPreviewAnchor, setDragPreviewAnchor] =
+    useState<DragPreviewAnchor | null>(null);
   const ghostUploadInputRef = useRef<HTMLInputElement | null>(null);
   const isInteractionDisabled = isGenerating;
   const isGenerationStatusVisible =
@@ -100,6 +109,7 @@ export function PageDraftGrid({
   function handleDragEnd() {
     setDraggedId(null);
     setDropIndex(null);
+    setDragPreviewAnchor(null);
     setIsGhostDropTarget(false);
   }
 
@@ -119,6 +129,19 @@ export function PageDraftGrid({
     <Box position={"relative"}>
       <SimpleGrid
         columns={1}
+        onDragOver={(event) => {
+          if (!draggedId || !dragPreviewAnchor) return;
+          if (event.clientX <= 0 && event.clientY <= 0) return;
+          setDragPreviewAnchor((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  clientX: event.clientX,
+                  clientY: event.clientY,
+                }
+              : prev,
+          );
+        }}
         css={{
           "@media (min-width: 360px)": {
             gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
@@ -155,10 +178,11 @@ export function PageDraftGrid({
                 chapterNumber={index + 1}
                 onRemove={onRemove}
                 onRename={onRename}
-                onDragStart={(id) => {
+                onDragStart={(id, anchor) => {
                   if (isInteractionDisabled) return;
                   setDraggedId(id);
                   setDropIndex(index);
+                  setDragPreviewAnchor(anchor);
                 }}
                 onDragEnd={isInteractionDisabled ? () => {} : handleDragEnd}
                 onDragOver={(event) => {
@@ -338,6 +362,82 @@ export function PageDraftGrid({
           </AspectRatio>
         </Box>
       </SimpleGrid>
+
+      {draggedId && dragPreviewAnchor ? (
+        (() => {
+          const draggedPage = pages.find((page) => page.id === draggedId);
+          if (!draggedPage) return null;
+
+          return (
+            <Box
+              position={"fixed"}
+              left={`${dragPreviewAnchor.clientX - dragPreviewAnchor.offsetX}px`}
+              top={`${dragPreviewAnchor.clientY - dragPreviewAnchor.offsetY}px`}
+              w={`${dragPreviewAnchor.width}px`}
+              pointerEvents={"none"}
+              zIndex={30}
+              opacity={0.95}
+              borderWidth={"1px"}
+              borderColor={"app.epub.border.accent"}
+              rounded={"2xl"}
+              overflow={"hidden"}
+              bg={"app.epub.bg.card"}
+              boxShadow={"2xl"}
+            >
+              <Box
+                bg={"app.epub.bg.card"}
+              >
+                <HStack
+                  h={"2rem"}
+                  gap={2}
+                  px={2}
+                  align={"center"}
+                  borderBottomWidth={"1px"}
+                  borderColor={"app.epub.border.muted"}
+                >
+                  <Box
+                    minW={"2.25rem"}
+                    display={"flex"}
+                    alignItems={"center"}
+                    justifyContent={"center"}
+                  >
+                    <Text
+                      fontFamily={"ui"}
+                      fontSize={"xs"}
+                      fontWeight={"semibold"}
+                      color={"app.epub.fg.muted"}
+                    >
+                      {pages.findIndex((page) => page.id === draggedPage.id) + 1}
+                    </Text>
+                  </Box>
+                  <Text
+                    flex={1}
+                    fontFamily={"ui"}
+                    fontSize={"sm"}
+                    color={"app.epub.fg.default"}
+                    lineClamp={1}
+                  >
+                    {draggedPage.title}
+                  </Text>
+                </HStack>
+              </Box>
+              <AspectRatio ratio={1 / 1.4142} bg={"app.epub.bg.preview"}>
+                <iframe
+                  title={`drag-preview-${draggedPage.id}`}
+                  srcDoc={draggedPage.previewHtml}
+                  sandbox=""
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    border: "none",
+                    pointerEvents: "none",
+                  }}
+                />
+              </AspectRatio>
+            </Box>
+          );
+        })()
+      ) : null}
 
       {isInteractionDisabled ? (
         <Box

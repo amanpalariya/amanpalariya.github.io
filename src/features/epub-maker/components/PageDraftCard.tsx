@@ -9,7 +9,13 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { Tooltip } from "@components/ui/tooltip";
-import { LuCheck, LuClock3, LuLoaderCircle, LuTrash2 } from "react-icons/lu";
+import {
+  LuCheck,
+  LuClock3,
+  LuGripVertical,
+  LuLoaderCircle,
+  LuTrash2,
+} from "react-icons/lu";
 import {
   useEffect,
   useRef,
@@ -18,6 +24,14 @@ import {
   type KeyboardEvent,
 } from "react";
 import type { ChapterGenerationStatus, PageDraft } from "../types";
+
+type DragPreviewAnchor = {
+  clientX: number;
+  clientY: number;
+  offsetX: number;
+  offsetY: number;
+  width: number;
+};
 
 export function PageDraftCard({
   page,
@@ -40,7 +54,7 @@ export function PageDraftCard({
   chapterNumber: number;
   onRemove: (id: string) => void;
   onRename: (id: string, value: string) => void;
-  onDragStart: (id: string) => void;
+  onDragStart: (id: string, anchor: DragPreviewAnchor) => void;
   onDragEnd: () => void;
   onDragOver: (event: DragEvent<HTMLDivElement>) => void;
   onDrop: () => void;
@@ -53,6 +67,7 @@ export function PageDraftCard({
   generationStatus?: ChapterGenerationStatus;
 }) {
   const [titleDraft, setTitleDraft] = useState(page.title);
+  const cardRef = useRef<HTMLDivElement | null>(null);
   const [flashKind, setFlashKind] = useState<"added" | "duplicate" | null>(null);
   const [flashOpacity, setFlashOpacity] = useState(0);
   const clearFlashTimerRef = useRef<number | null>(null);
@@ -118,6 +133,33 @@ export function PageDraftCard({
     event.currentTarget.blur();
   }
 
+  function setCardDragPreview(event: DragEvent<HTMLElement>) {
+    const card = cardRef.current;
+    const transfer = event.dataTransfer;
+    if (!card || !transfer) return;
+
+    const rect = card.getBoundingClientRect();
+    const pointerOffsetX =
+      event.clientX > 0
+        ? Math.max(0, Math.min(rect.width, event.clientX - rect.left))
+        : rect.width - 20;
+    const pointerOffsetY =
+      event.clientY > 0
+        ? Math.max(0, Math.min(rect.height, event.clientY - rect.top))
+        : rect.height - 20;
+
+    transfer.effectAllowed = "move";
+    transfer.setData("text/plain", page.id);
+
+    onDragStart(page.id, {
+      clientX: event.clientX || rect.left + pointerOffsetX,
+      clientY: event.clientY || rect.top + pointerOffsetY,
+      offsetX: pointerOffsetX,
+      offsetY: pointerOffsetY,
+      width: rect.width,
+    });
+  }
+
   const controlInputProps = {
     fontFamily: "ui",
     fontSize: "sm",
@@ -132,6 +174,7 @@ export function PageDraftCard({
 
   return (
     <Box
+      ref={cardRef}
       w={"full"}
       borderWidth={isDropTarget ? "2px" : "1px"}
       borderStyle={isDropTarget ? "dashed" : "solid"}
@@ -216,12 +259,46 @@ export function PageDraftCard({
         position={"relative"}
         ratio={1 / 1.4142}
         bg={"app.epub.bg.preview"}
-        cursor={isInteractionDisabled ? "default" : "grab"}
-        draggable={!isInteractionDisabled}
-        onDragStart={() => onDragStart(page.id)}
-        onDragEnd={onDragEnd}
+        cursor={"default"}
       >
         <Box position={"relative"} w={"full"} h={"full"}>
+          <Tooltip content={"Drag to reorder"}>
+            <Button
+              variant={"subtle"}
+              position={"absolute"}
+              bottom={2}
+              right={2}
+              zIndex={5}
+              px={2}
+              minW={"auto"}
+              rounded={"full"}
+              cursor={isInteractionDisabled ? "not-allowed" : "grab"}
+              draggable={!isInteractionDisabled}
+              disabled={isInteractionDisabled}
+              touchAction={"none"}
+              bg={"blackAlpha.300"}
+              color={"app.epub.fg.muted"}
+              _hover={{
+                bg: "blackAlpha.400",
+                color: "app.epub.fg.default",
+              }}
+              onDragStart={(event) => {
+                if (isInteractionDisabled) return;
+                event.stopPropagation();
+                setCardDragPreview(event);
+              }}
+              onDragEnd={(event) => {
+                event.stopPropagation();
+                onDragEnd();
+              }}
+              aria-label={"Drag page"}
+            >
+              <Icon>
+                <LuGripVertical />
+              </Icon>
+            </Button>
+          </Tooltip>
+
           <iframe
             title={`preview-${page.id}`}
             srcDoc={page.previewHtml}
