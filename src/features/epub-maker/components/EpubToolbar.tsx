@@ -16,6 +16,7 @@ import {
 } from "react";
 import {
   LuBookDown,
+  LuCheck,
   LuChevronDown,
   LuFilePlus,
   LuChevronUp,
@@ -28,6 +29,8 @@ import { Tooltip } from "@components/ui/tooltip";
 export function EpubToolbar({
   isAdding,
   isGenerating,
+  generationProgress,
+  showDownloadCompleteIcon,
   pageCount,
   pastedInput,
   onAddFromClipboard,
@@ -43,6 +46,8 @@ export function EpubToolbar({
 }: {
   isAdding: boolean;
   isGenerating: boolean;
+  generationProgress: number | null;
+  showDownloadCompleteIcon: boolean;
   pageCount: number;
   pastedInput: string;
   onAddFromClipboard: () => Promise<void>;
@@ -66,6 +71,10 @@ export function EpubToolbar({
   const triggerGroupRef = useRef<HTMLDivElement | null>(null);
   const popoverRef = useRef<HTMLDivElement | null>(null);
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
+  const saveProgressPercent = Math.max(
+    0,
+    Math.min(100, Math.round(generationProgress ?? 0)),
+  );
 
   function handleUploadInputChange(event: ChangeEvent<HTMLInputElement>) {
     const files = event.target.files;
@@ -110,6 +119,7 @@ export function EpubToolbar({
             {...actionButtonProps}
             onClick={onAddFromClipboard}
             loading={isAdding}
+            disabled={isGenerating}
             roundedRight={0}
             borderRightWidth={"0"}
             bg={"app.epub.button.primary.bg"}
@@ -137,6 +147,7 @@ export function EpubToolbar({
                 bg={"app.epub.button.primary.bg"}
                 color={"app.epub.button.primary.fg"}
                 _hover={{ bg: "app.epub.button.primary.hoverBg" }}
+                disabled={isGenerating}
                 onClick={() => uploadInputRef.current?.click()}
               >
                 <LuUpload />
@@ -155,6 +166,7 @@ export function EpubToolbar({
             bg={"app.epub.button.primary.bg"}
             color={"app.epub.button.primary.fg"}
             _hover={{ bg: "app.epub.button.primary.hoverBg" }}
+            disabled={isGenerating}
             onClick={() => setIsManualPasteOpen((prev) => !prev)}
           >
             {isManualPasteOpen ? <LuChevronUp /> : <LuChevronDown />}
@@ -182,6 +194,7 @@ export function EpubToolbar({
               value={pastedInput}
               onChange={(event) => onPastedInputChange(event.target.value)}
               onPaste={onPaste}
+              disabled={isGenerating}
               minH={"140px"}
               m={0}
               display={"block"}
@@ -207,6 +220,7 @@ export function EpubToolbar({
               color={"app.epub.button.subtle.fg"}
               _hover={{ bg: "app.epub.button.subtle.hoverBg" }}
               onClick={onAddFromFallback}
+              disabled={isGenerating}
             >
               Add pasted content
             </Button>
@@ -219,14 +233,53 @@ export function EpubToolbar({
         onClick={onGenerate}
         loading={isGenerating}
         disabled={pageCount === 0}
+        position={"relative"}
+        overflow={"hidden"}
+        _before={{
+          content: '""',
+          position: "absolute",
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: isGenerating ? `${saveProgressPercent}%` : "0%",
+          bg: "rgba(255, 255, 255, 0.26)",
+          opacity: isGenerating ? 1 : 0,
+          transition: "width 0.2s linear",
+        }}
         bg={"app.epub.button.success.bg"}
         color={"app.epub.button.success.fg"}
         _hover={{ bg: "app.epub.button.success.hoverBg" }}
       >
-        <Icon>
-          <LuBookDown />
-        </Icon>
-        Save EPUB
+        <Box position={"relative"} zIndex={1}>
+          <HStack
+            gap={1.5}
+            visibility={
+              showDownloadCompleteIcon && !isGenerating
+                ? "hidden"
+                : isGenerating
+                  ? "hidden"
+                  : "visible"
+            }
+          >
+            <Icon>
+              <LuBookDown />
+            </Icon>
+            <Box as={"span"}>Save EPUB</Box>
+          </HStack>
+          {showDownloadCompleteIcon && !isGenerating ? (
+            <Box
+              position={"absolute"}
+              inset={0}
+              display={"flex"}
+              alignItems={"center"}
+              justifyContent={"center"}
+            >
+              <Icon>
+                <LuCheck />
+              </Icon>
+            </Box>
+          ) : null}
+        </Box>
       </Button>
 
       <HStack gap={0} align={"stretch"}>
@@ -234,7 +287,7 @@ export function EpubToolbar({
           {...actionButtonProps}
           aria-label={"Undo page change"}
           onClick={onUndoPages}
-          disabled={!canUndo}
+          disabled={!canUndo || isGenerating}
           roundedRight={0}
           borderRightWidth={"0"}
           bg={"app.epub.button.subtle.bg"}
@@ -252,7 +305,7 @@ export function EpubToolbar({
             {...actionButtonProps}
             aria-label={"Redo page change"}
             onClick={onRedoPages}
-            disabled={!canRedo}
+            disabled={!canRedo || isGenerating}
             roundedLeft={0}
             borderLeftWidth={"1px"}
             borderLeftColor={"app.epub.border.default"}

@@ -11,12 +11,16 @@ import {
 } from "@chakra-ui/react";
 import { type ChangeEvent, type ClipboardEvent, useRef, useState } from "react";
 import { LuFilePlus, LuUpload } from "react-icons/lu";
-import type { PageDraft } from "../types";
+import type { ChapterGenerationStatus, PageDraft } from "../types";
 import { PageDraftCard } from "./PageDraftCard";
 
 export function PageDraftGrid({
   pages,
   isAdding,
+  isGenerating,
+  generationChapterStatusByPageId,
+  activeGenerationPageId,
+  isGenerationStatusFading,
   onRemove,
   onRename,
   onReorder,
@@ -29,6 +33,10 @@ export function PageDraftGrid({
 }: {
   pages: PageDraft[];
   isAdding: boolean;
+  isGenerating: boolean;
+  generationChapterStatusByPageId: Record<string, ChapterGenerationStatus>;
+  activeGenerationPageId: string | null;
+  isGenerationStatusFading: boolean;
   onRemove: (id: string) => void;
   onRename: (id: string, value: string) => void;
   onReorder: (draggedId: string, targetIndex: number) => void;
@@ -43,8 +51,15 @@ export function PageDraftGrid({
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [isGhostDropTarget, setIsGhostDropTarget] = useState(false);
   const ghostUploadInputRef = useRef<HTMLInputElement | null>(null);
+  const isInteractionDisabled = isGenerating;
+  const isGenerationStatusVisible =
+    isGenerating || Object.keys(generationChapterStatusByPageId).length > 0;
+  const completedPageCount = Object.values(generationChapterStatusByPageId).filter(
+    (status) => status === "completed",
+  ).length;
 
   function handleGhostUploadChange(event: ChangeEvent<HTMLInputElement>) {
+    if (isInteractionDisabled) return;
     const files = event.target.files;
     if (!files || files.length === 0) return;
     void onAddFromFiles(files);
@@ -67,6 +82,7 @@ export function PageDraftGrid({
       : pages;
 
   function handleDrop() {
+    if (isInteractionDisabled) return;
     if (!draggedId) return;
     onReorder(draggedId, dropIndex ?? dragIndex);
     setDraggedId(null);
@@ -85,17 +101,24 @@ export function PageDraftGrid({
   }
 
   async function handleGhostDrop(files: FileList | null) {
+    if (isInteractionDisabled) return;
     setIsGhostDropTarget(false);
     if (!files || files.length === 0) return;
     await onAddFromFiles(files);
   }
 
   return (
-    <SimpleGrid
-      columns={{ base: 1, md: 2, lg: 3 }}
-      gap={2}
-      alignItems={"start"}
-    >
+    <Box position={"relative"}>
+      <SimpleGrid
+        columns={{ base: 2, md: 2, lg: 3 }}
+        css={{
+          "@media (max-width: 359px)": {
+            gridTemplateColumns: "repeat(1, minmax(0, 1fr))",
+          },
+        }}
+        gap={2}
+        alignItems={"start"}
+      >
       {previewPages.map((page, index) => {
         const isDraggedCard = draggedId === page.id;
         const isDropTarget = effectiveDropIndex(index) !== null;
@@ -104,12 +127,14 @@ export function PageDraftGrid({
           <Box
             key={page.id}
             onDragOver={(event) => {
+              if (isInteractionDisabled) return;
               event.preventDefault();
               if (!draggedId) return;
               if (draggedId === page.id) return;
               setDropIndex(index);
             }}
             onDrop={(event) => {
+              if (isInteractionDisabled) return;
               event.preventDefault();
               handleDrop();
             }}
@@ -120,14 +145,26 @@ export function PageDraftGrid({
               onRemove={onRemove}
               onRename={onRename}
               onDragStart={(id) => {
+                if (isInteractionDisabled) return;
                 setDraggedId(id);
                 setDropIndex(index);
               }}
-              onDragEnd={handleDragEnd}
-              onDragOver={(event) => event.preventDefault()}
+              onDragEnd={isInteractionDisabled ? () => {} : handleDragEnd}
+              onDragOver={(event) => {
+                if (isInteractionDisabled) return;
+                event.preventDefault();
+              }}
               onDrop={handleDrop}
-              isDragging={isDraggedCard}
-              isDropTarget={isDropTarget}
+              isDragging={!isInteractionDisabled && isDraggedCard}
+              isDropTarget={!isInteractionDisabled && isDropTarget}
+              isInteractionDisabled={isInteractionDisabled}
+              isGenerationStatusFading={isGenerationStatusFading}
+              generationStatus={
+                isGenerationStatusVisible
+                  ? (generationChapterStatusByPageId[page.id] ??
+                    (activeGenerationPageId === page.id ? "processing" : "pending"))
+                  : undefined
+              }
             />
           </Box>
         );
@@ -145,9 +182,12 @@ export function PageDraftGrid({
         bg={"app.epub.bg.preview"}
         transition={"all 0.2s ease"}
         _hover={{
-          borderColor: "app.epub.border.accent",
+          borderColor: isInteractionDisabled
+            ? "app.epub.border.default"
+            : "app.epub.border.accent",
         }}
         onDragOver={(event) => {
+          if (isInteractionDisabled) return;
           event.preventDefault();
           setIsGhostDropTarget(true);
         }}
@@ -157,6 +197,7 @@ export function PageDraftGrid({
           setIsGhostDropTarget(false);
         }}
         onDrop={(event) => {
+          if (isInteractionDisabled) return;
           event.preventDefault();
           event.stopPropagation();
           void handleGhostDrop(event.dataTransfer.files);
@@ -179,6 +220,7 @@ export function PageDraftGrid({
                 gap={1.5}
                 variant={"subtle"}
                 loading={isAdding}
+                disabled={isInteractionDisabled}
                 onClick={() => ghostUploadInputRef.current?.click()}
                 bg={"app.epub.button.subtle.bg"}
                 color={"app.epub.button.subtle.fg"}
@@ -201,9 +243,9 @@ export function PageDraftGrid({
             opacity={0.9}
             textAlign={"center"}
             px={4}
-            cursor={isAdding ? "progress" : "pointer"}
+            cursor={isInteractionDisabled || isAdding ? "not-allowed" : "pointer"}
             onClick={() => {
-              if (isAdding) return;
+              if (isInteractionDisabled || isAdding) return;
               void onAddFromClipboard();
             }}
           >
@@ -229,6 +271,7 @@ export function PageDraftGrid({
               value={pastedInput}
               onChange={(event) => onPastedInputChange(event.target.value)}
               onPaste={onPaste}
+              disabled={isInteractionDisabled}
               flex={1}
               minH={0}
               rounded={"none"}
@@ -246,6 +289,7 @@ export function PageDraftGrid({
               mt={0}
               variant={"subtle"}
               onClick={onAddFromFallback}
+              disabled={isInteractionDisabled}
               bg={"app.epub.button.subtle.bg"}
               color={"app.epub.button.subtle.fg"}
               _hover={{ bg: "app.epub.button.subtle.hoverBg" }}
@@ -255,6 +299,36 @@ export function PageDraftGrid({
           </Box>
         </Box>
       </Box>
-    </SimpleGrid>
+      </SimpleGrid>
+
+      {isInteractionDisabled ? (
+        <Box
+          position={"absolute"}
+          inset={0}
+          pointerEvents={"none"}
+          display={"flex"}
+          alignItems={"flex-start"}
+          justifyContent={"center"}
+          pt={2}
+          zIndex={2}
+        >
+          <HStack
+            gap={1.5}
+            px={3}
+            py={1.5}
+            rounded={"full"}
+            borderWidth={"1px"}
+            borderColor={"app.epub.border.default"}
+            bg={"app.epub.bg.card"}
+            color={"app.epub.fg.muted"}
+            boxShadow={"sm"}
+          >
+            <Text fontFamily={"ui"} fontSize={"xs"} fontWeight={"semibold"}>
+              {completedPageCount}/{pages.length} pages processed
+            </Text>
+          </HStack>
+        </Box>
+      ) : null}
+    </Box>
   );
 }

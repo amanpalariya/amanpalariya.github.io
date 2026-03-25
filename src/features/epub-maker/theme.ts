@@ -22,6 +22,11 @@ export const SEMANTIC_TOKENS = {
     subtle: semanticColor("{colors.gray.500}", "{colors.gray.300}"),
     accent: semanticColor("#687f96", "#94abc1"),
     danger: semanticColor("{colors.red.600}", "{colors.red.300}"),
+    status: {
+      completed: semanticColor("{colors.green.600}", "{colors.green.300}"),
+      processing: semanticColor("{colors.blue.600}", "{colors.blue.300}"),
+      pending: semanticColor("{colors.orange.600}", "{colors.orange.300}"),
+    },
   },
   border: {
     default: semanticColor("{colors.gray.300}", "{colors.gray.600}"),
@@ -53,5 +58,9 @@ export const SEMANTIC_TOKENS = {
     },
     thumb: semanticColor("{colors.white}", "#f3f6f9"),
     label: semanticColor("{colors.gray.700}", "{colors.gray.200}"),
+  },
+  overlay: {
+    section: semanticColor("{colors.blackAlpha.300}", "{colors.blackAlpha.450}"),
+    preview: semanticColor("{colors.blackAlpha.250}", "{colors.blackAlpha.400}"),
   },
 } as const;

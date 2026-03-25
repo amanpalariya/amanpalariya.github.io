@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 export type PageInputKind = "html" | "text";
 export type FileNameMode = "auto" | "manual";
 export type PageId = string;
+export type ChapterGenerationStatus = "pending" | "processing" | "completed";
 
 export interface PageDraft {
   id: PageId;
@@ -75,7 +76,15 @@ export interface BuildEpubInput {
   downloadFileName?: string;
   pages: PageDraft[];
   sanitizePolicy: SanitizationPolicy;
-  onProgress?: (value: number) => void;
+  onProgress?: (update: BuildEpubProgressUpdate) => void;
+}
+
+export interface BuildEpubProgressUpdate {
+  value: number;
+  phase: "preparing" | "processing_chapter" | "finalizing" | "done";
+  chapterIndex: number | null;
+  currentPageId: PageId | null;
+  completedPageIds: PageId[];
 }
 
 export interface BuildEpubResult {
@@ -100,6 +109,10 @@ export interface EpubMakerState {
   isAdding: boolean;
   isGenerating: boolean;
   generationProgress: number | null;
+  showDownloadCompleteIcon: boolean;
+  activeGenerationPageId: PageId | null;
+  generationChapterStatusByPageId: Record<PageId, ChapterGenerationStatus>;
+  isGenerationStatusFading: boolean;
   showPasteFallback: boolean;
   pastedInput: string;
   warnings: GenerationWarning[];

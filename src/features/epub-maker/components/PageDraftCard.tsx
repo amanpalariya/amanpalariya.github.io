@@ -1,8 +1,16 @@
-import { Box, Button, Icon, Input, InputGroup } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  HStack,
+  Icon,
+  Input,
+  InputGroup,
+  Text,
+} from "@chakra-ui/react";
 import { Tooltip } from "@components/ui/tooltip";
-import { LuTrash2 } from "react-icons/lu";
+import { LuCheck, LuClock3, LuLoaderCircle, LuTrash2 } from "react-icons/lu";
 import { useEffect, useState, type DragEvent, type KeyboardEvent } from "react";
-import type { PageDraft } from "../types";
+import type { ChapterGenerationStatus, PageDraft } from "../types";
 
 export function PageDraftCard({
   page,
@@ -15,6 +23,9 @@ export function PageDraftCard({
   onDrop,
   isDragging,
   isDropTarget,
+  isInteractionDisabled,
+  isGenerationStatusFading,
+  generationStatus,
 }: {
   page: PageDraft;
   chapterNumber: number;
@@ -26,8 +37,19 @@ export function PageDraftCard({
   onDrop: () => void;
   isDragging: boolean;
   isDropTarget: boolean;
+  isInteractionDisabled: boolean;
+  isGenerationStatusFading: boolean;
+  generationStatus?: ChapterGenerationStatus;
 }) {
   const [titleDraft, setTitleDraft] = useState(page.title);
+  const effectiveGenerationStatus = generationStatus ?? "pending";
+  const showGenerationStatus = generationStatus !== undefined;
+  const statusTextColor =
+    effectiveGenerationStatus === "completed"
+      ? "app.epub.fg.status.completed"
+      : effectiveGenerationStatus === "processing"
+        ? "app.epub.fg.status.processing"
+        : "app.epub.fg.status.pending";
 
   useEffect(() => {
     setTitleDraft(page.title);
@@ -92,6 +114,7 @@ export function PageDraftCard({
                 variant={"ghost"}
                 onClick={() => onRemove(page.id)}
                 aria-label={"Remove page"}
+                disabled={isInteractionDisabled}
                 px={2}
                 minW={"auto"}
                 rounded={"none"}
@@ -125,6 +148,7 @@ export function PageDraftCard({
             color={"app.epub.fg.default"}
             _placeholder={{ color: "app.epub.fg.subtle" }}
             value={titleDraft}
+            disabled={isInteractionDisabled}
             onChange={(event) => setTitleDraft(event.target.value)}
             onBlur={commitRenameIfChanged}
             onKeyDown={handleTitleKeyDown}
@@ -132,10 +156,11 @@ export function PageDraftCard({
         </InputGroup>
       </Box>
       <Box
+        position={"relative"}
         h={"300px"}
         bg={"app.epub.bg.preview"}
-        cursor={"grab"}
-        draggable
+        cursor={isInteractionDisabled ? "default" : "grab"}
+        draggable={!isInteractionDisabled}
         onDragStart={() => onDragStart(page.id)}
         onDragEnd={onDragEnd}
       >
@@ -148,8 +173,70 @@ export function PageDraftCard({
             height: "100%",
             border: "none",
             pointerEvents: "none",
+            filter: isInteractionDisabled
+              ? "blur(1px) grayscale(0.35) saturate(0.75) brightness(0.82)"
+              : "none",
+            transition: "filter 0.2s ease",
           }}
         />
+
+        {isInteractionDisabled ? (
+          <Box
+            position={"absolute"}
+            inset={0}
+            pointerEvents={"none"}
+            bg={"app.epub.overlay.preview"}
+          />
+        ) : null}
+
+        {showGenerationStatus ? (
+          <Box
+            position={"absolute"}
+            inset={0}
+            display={"flex"}
+            alignItems={"center"}
+            justifyContent={"center"}
+            pointerEvents={"none"}
+            opacity={isGenerationStatusFading ? 0 : 1}
+            transition={"opacity 0.3s ease"}
+            zIndex={4}
+          >
+            <HStack
+              gap={2}
+              px={3}
+              py={1.5}
+              rounded={"full"}
+              borderWidth={"1px"}
+              borderColor={"app.epub.border.default"}
+              bg={"app.epub.bg.card"}
+              color={statusTextColor}
+              boxShadow={"sm"}
+            >
+              <Icon
+                animation={
+                  effectiveGenerationStatus === "processing"
+                    ? "spin 1s linear infinite"
+                    : undefined
+                }
+              >
+                {effectiveGenerationStatus === "completed" ? (
+                  <LuCheck />
+                ) : effectiveGenerationStatus === "processing" ? (
+                  <LuLoaderCircle />
+                ) : (
+                  <LuClock3 />
+                )}
+              </Icon>
+              <Text fontFamily={"ui"} fontSize={"xs"} fontWeight={"semibold"}>
+                {effectiveGenerationStatus === "completed"
+                  ? "Processed"
+                  : effectiveGenerationStatus === "processing"
+                    ? "Processing..."
+                    : "Pending"}
+              </Text>
+            </HStack>
+          </Box>
+        ) : null}
       </Box>
     </Box>
   );
