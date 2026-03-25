@@ -105,6 +105,7 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
     event.preventDefault();
     setDragDepth(0);
     setIsFileDragOver(false);
+    if (props.isGenerating) return;
     void props.addPagesFromFiles(event.dataTransfer.files);
   }
 
@@ -120,6 +121,7 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
           <EpubToolbar
             isAdding={props.isAdding}
             isGenerating={props.isGenerating}
+            generationProgress={props.generationProgress}
             pageCount={props.pages.length}
             pastedInput={props.pastedInput}
             onAddFromClipboard={props.addPageFromClipboard}
@@ -159,6 +161,10 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
             <PageDraftGrid
               pages={props.pages}
               isAdding={props.isAdding}
+              isGenerating={props.isGenerating}
+              generationChapterStatusByPageId={props.generationChapterStatusByPageId}
+              activeGenerationPageId={props.activeGenerationPageId}
+              isGenerationStatusFading={props.isGenerationStatusFading}
               onRemove={props.removePage}
               onRename={props.renamePage}
               onReorder={props.reorderPages}
@@ -172,10 +178,23 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
           </Box>
         </HighlightedSection>
 
+        {props.isGenerating ? (
+          <Box
+            position={"absolute"}
+            inset={0}
+            rounded={"2xl"}
+            bg={"app.epub.overlay.section"}
+            backdropFilter={"blur(1.5px)"}
+            pointerEvents={"none"}
+            zIndex={1}
+          />
+        ) : null}
+
         {isFileDragOver ? (
           <Box
             position={"absolute"}
             inset={0}
+            zIndex={3}
             rounded={"2xl"}
             borderWidth={"2px"}
             borderStyle={"dashed"}

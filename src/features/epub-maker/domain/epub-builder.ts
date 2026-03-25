@@ -65,6 +65,7 @@ export async function buildEpub(input: BuildEpubInput): Promise<BuildEpubResult>
   const startedAt = Date.now();
   const warnings = [] as BuildEpubResult["warnings"];
   const imagesByKey = new Map<string, EpubImage>();
+  const completedPageIds: string[] = [];
   let imageCount = 0;
 
   const nextImageNumber = () => {
@@ -75,11 +76,26 @@ export async function buildEpub(input: BuildEpubInput): Promise<BuildEpubResult>
   const chapters: Chapter[] = [];
   const pageCount = input.pages.length || 1;
   const progressStep = 80 / pageCount;
+  const emitProgress = (
+    value: number,
+    phase: "preparing" | "processing_chapter" | "finalizing" | "done",
+    chapterIndex: number | null = null,
+    currentPageId: string | null = null,
+  ) => {
+    input.onProgress?.({
+      value,
+      phase,
+      chapterIndex,
+      currentPageId,
+      completedPageIds: [...completedPageIds],
+    });
+  };
 
-  input.onProgress?.(5);
+  emitProgress(5, "preparing");
 
   for (let i = 0; i < input.pages.length; i += 1) {
     const page = input.pages[i];
+    emitProgress(Math.min(85, Math.round(5 + progressStep * i)), "processing_chapter", i, page.id);
     const title = page.title || `Page ${i + 1}`;
     let chapterBody = chapterBodyFromPageDraft(page);
 
@@ -134,7 +150,8 @@ export async function buildEpub(input: BuildEpubInput): Promise<BuildEpubResult>
       content: xhtml,
     });
 
-    input.onProgress?.(Math.min(85, Math.round(5 + progressStep * (i + 1))));
+    completedPageIds.push(page.id);
+    emitProgress(Math.min(85, Math.round(5 + progressStep * (i + 1))), "processing_chapter", i, page.id);
   }
 
   const bookId =
@@ -229,7 +246,7 @@ export async function buildEpub(input: BuildEpubInput): Promise<BuildEpubResult>
   </navMap>
 </ncx>`;
 
-  input.onProgress?.(90);
+  emitProgress(90, "finalizing");
 
   const zip = new JSZip();
   zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
@@ -260,14 +277,14 @@ export async function buildEpub(input: BuildEpubInput): Promise<BuildEpubResult>
     oebps.file(image.href, image.bytes, { binary: true });
   }
 
-  input.onProgress?.(95);
+  emitProgress(95, "finalizing");
 
   const blob = await zip.generateAsync({
     type: "blob",
     mimeType: "application/epub+zip",
   });
 
-  input.onProgress?.(100);
+  emitProgress(100, "done");
 
   return {
     blob,

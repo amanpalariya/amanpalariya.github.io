@@ -14,7 +14,12 @@ import {
   createDefaultSanitizationPolicy,
   DEFAULT_BOOK_TITLE,
 } from "../constants";
-import type { EpubMakerState, GenerationWarning, PageDraft } from "../types";
+import type {
+  BuildEpubProgressUpdate,
+  EpubMakerState,
+  GenerationWarning,
+  PageDraft,
+} from "../types";
 import { buildAutoEpubFileName, buildEpubFileName } from "../utils/file-name";
 import { createPageDraftFromInput } from "../domain/page-draft";
 import {
@@ -150,6 +155,13 @@ export function useEpubMaker(): UseEpubMakerReturn {
   const [generationProgress, setGenerationProgress] = useState<number | null>(
     null,
   );
+  const [activeGenerationPageId, setActiveGenerationPageId] = useState<
+    string | null
+  >(null);
+  const [generationChapterStatusByPageId, setGenerationChapterStatusByPageId] =
+    useState<EpubMakerState["generationChapterStatusByPageId"]>({});
+  const [isGenerationStatusFading, setIsGenerationStatusFading] =
+    useState(false);
   const [showPasteFallback, setShowPasteFallback] = useState(false);
   const [pastedInput, setPastedInput] = useState("");
   const [warnings, setWarnings] = useState<GenerationWarning[]>([]);
@@ -162,6 +174,8 @@ export function useEpubMaker(): UseEpubMakerReturn {
     useState<EpubMakerState["prefs"]>(readEpubMakerPrefs());
   const [isPrefsLoaded, setIsPrefsLoaded] = useState(false);
   const isFileImportInProgressRef = useRef(false);
+  const generationStatusFadeTimerRef = useRef<number | null>(null);
+  const generationStatusClearTimerRef = useRef<number | null>(null);
   const pages = pageHistory.present;
 
   const canUndo = pageHistory.past.length > 0;
@@ -170,17 +184,54 @@ export function useEpubMaker(): UseEpubMakerReturn {
   const commitPageChange = useCallback(
     (updater: (previousPages: PageDraft[]) => PageDraft[]) => {
       dispatchPageHistory({ type: "commit", updater });
+      setGenerationChapterStatusByPageId({});
+      setActiveGenerationPageId(null);
+      setIsGenerationStatusFading(false);
     },
     [],
   );
 
-  const undoPages = useCallback(() => {
-    dispatchPageHistory({ type: "undo" });
+  useEffect(() => {
+    return () => {
+      if (generationStatusFadeTimerRef.current) {
+        window.clearTimeout(generationStatusFadeTimerRef.current);
+      }
+      if (generationStatusClearTimerRef.current) {
+        window.clearTimeout(generationStatusClearTimerRef.current);
+      }
+    };
   }, []);
 
+  function scheduleGenerationStatusCleanup() {
+    if (generationStatusFadeTimerRef.current) {
+      window.clearTimeout(generationStatusFadeTimerRef.current);
+    }
+    if (generationStatusClearTimerRef.current) {
+      window.clearTimeout(generationStatusClearTimerRef.current);
+    }
+
+    setIsGenerationStatusFading(false);
+    generationStatusFadeTimerRef.current = window.setTimeout(() => {
+      setIsGenerationStatusFading(true);
+    }, 700);
+    generationStatusClearTimerRef.current = window.setTimeout(() => {
+      setGenerationChapterStatusByPageId({});
+      setActiveGenerationPageId(null);
+      setIsGenerationStatusFading(false);
+      generationStatusFadeTimerRef.current = null;
+      generationStatusClearTimerRef.current = null;
+    }, 1100);
+  }
+
+  const undoPages = useCallback(() => {
+    if (isGenerating) return;
+    dispatchPageHistory({ type: "undo" });
+  }, [isGenerating]);
+
   const redoPages = useCallback(() => {
+    if (isGenerating) return;
     dispatchPageHistory({ type: "redo" });
-  }, []);
+  }, [isGenerating]);
 
   function dismissNotification(id: string) {
     setNotifications((prev) =>
@@ -388,6 +439,10 @@ export function useEpubMaker(): UseEpubMakerReturn {
   }
 
   async function addPagesFromFiles(files: FileList | File[]) {
+    if (isGenerating) {
+      return;
+    }
+
     if (isFileImportInProgressRef.current) {
       return;
     }
@@ -546,6 +601,10 @@ export function useEpubMaker(): UseEpubMakerReturn {
   }
 
   async function addPageFromClipboard() {
+    if (isGenerating) {
+      return;
+    }
+
     setIsAdding(true);
     setErrors([]);
     try {
@@ -590,6 +649,10 @@ export function useEpubMaker(): UseEpubMakerReturn {
   }
 
   function handlePasteData(clipboardData: DataTransfer | null) {
+    if (isGenerating) {
+      return false;
+    }
+
     if (!clipboardData) {
       return false;
     }
@@ -640,6 +703,10 @@ export function useEpubMaker(): UseEpubMakerReturn {
   }
 
   function addFromFallbackText() {
+    if (isGenerating) {
+      return;
+    }
+
     if (!pastedInput.trim()) {
       const message = "Paste HTML or text first, then add the page.";
       setErrors([message]);
@@ -650,6 +717,10 @@ export function useEpubMaker(): UseEpubMakerReturn {
   }
 
   function removePage(id: string) {
+    if (isGenerating) {
+      return;
+    }
+
     commitPageChange((prev) => {
       const nextPages = prev.filter((page) => page.id !== id);
       if (nextPages.length === prev.length) {
@@ -661,6 +732,10 @@ export function useEpubMaker(): UseEpubMakerReturn {
   }
 
   function renamePage(id: string, title: string) {
+    if (isGenerating) {
+      return;
+    }
+
     commitPageChange((prev) => {
       let hasChanged = false;
       const nextPages = prev.map((page) => {
@@ -682,6 +757,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
   }
 
   function reorderPages(draggedId: string, targetIndex: number) {
+    if (isGenerating) return;
     if (!draggedId || Number.isNaN(targetIndex)) return;
 
     commitPageChange((prev) => {
@@ -704,8 +780,19 @@ export function useEpubMaker(): UseEpubMakerReturn {
   }
 
   async function generateEpub() {
+    if (generationStatusFadeTimerRef.current) {
+      window.clearTimeout(generationStatusFadeTimerRef.current);
+      generationStatusFadeTimerRef.current = null;
+    }
+    if (generationStatusClearTimerRef.current) {
+      window.clearTimeout(generationStatusClearTimerRef.current);
+      generationStatusClearTimerRef.current = null;
+    }
+
     setIsGenerating(true);
     setGenerationProgress(0);
+    setActiveGenerationPageId(null);
+    setIsGenerationStatusFading(false);
     setWarnings([]);
     setErrors([]);
     setSummary("");
@@ -717,20 +804,52 @@ export function useEpubMaker(): UseEpubMakerReturn {
       notify("warning", "No pages added", message);
       setIsGenerating(false);
       setGenerationProgress(null);
+      setGenerationChapterStatusByPageId({});
+      setIsGenerationStatusFading(false);
       return;
     }
 
     try {
+      const pageIds = pages.map((page) => page.id);
+      setGenerationChapterStatusByPageId(() =>
+        pageIds.reduce<EpubMakerState["generationChapterStatusByPageId"]>(
+          (acc, id) => {
+            acc[id] = "pending";
+            return acc;
+          },
+          {},
+        ),
+      );
+
       const result = await buildEpub({
         bookTitle: normalizedBookTitle || DEFAULT_BOOK_TITLE,
         bookAuthor: normalizedBookAuthor,
         downloadFileName: effectiveFileName,
         pages,
         sanitizePolicy,
-        onProgress: setGenerationProgress,
+        onProgress: (update: BuildEpubProgressUpdate) => {
+          setGenerationProgress(update.value);
+          setActiveGenerationPageId(update.currentPageId);
+
+          const completed = new Set(update.completedPageIds);
+          setGenerationChapterStatusByPageId(() =>
+            pageIds.reduce<EpubMakerState["generationChapterStatusByPageId"]>(
+              (acc, id) => {
+                acc[id] = completed.has(id)
+                  ? "completed"
+                  : id === update.currentPageId
+                    ? "processing"
+                    : "pending";
+                return acc;
+              },
+              {},
+            ),
+          );
+        },
       });
 
       downloadBlob(result.blob, effectiveFileName);
+      scheduleGenerationStatusCleanup();
       setWarnings(result.warnings);
       setSummary(
         `Generated and downloaded “${effectiveFileName}” with ${result.summary.chapterCount} page(s), ${result.summary.embeddedImageCount} embedded image(s), and ${result.summary.externalImageCount} external image reference(s).`,
@@ -752,9 +871,12 @@ export function useEpubMaker(): UseEpubMakerReturn {
       const message = `Unexpected error while generating EPUB: ${String(error)}`;
       setErrors([message]);
       notify("error", "EPUB generation failed", message);
+      setGenerationChapterStatusByPageId({});
+      setIsGenerationStatusFading(false);
     } finally {
       setIsGenerating(false);
       setGenerationProgress(null);
+      setActiveGenerationPageId(null);
     }
   }
 
@@ -763,6 +885,9 @@ export function useEpubMaker(): UseEpubMakerReturn {
     isAdding,
     isGenerating,
     generationProgress,
+    activeGenerationPageId,
+    generationChapterStatusByPageId,
+    isGenerationStatusFading,
     showPasteFallback,
     pastedInput,
     warnings,
