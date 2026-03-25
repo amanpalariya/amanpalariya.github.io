@@ -10,7 +10,13 @@ import {
   Textarea,
   VStack,
 } from "@chakra-ui/react";
-import { type ChangeEvent, type ClipboardEvent, useRef, useState } from "react";
+import {
+  type ChangeEvent,
+  type ClipboardEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { LuFilePlus, LuUpload } from "react-icons/lu";
 import type { ChapterGenerationStatus, PageDraft } from "../types";
 import { PageDraftCard } from "./PageDraftCard";
@@ -23,6 +29,7 @@ type DragPreviewAnchor = {
   offsetY: number;
   width: number;
 };
+type DragMode = "mouse" | "touch" | null;
 
 export function PageDraftGrid({
   pages,
@@ -64,7 +71,12 @@ export function PageDraftGrid({
   const [isGhostDropTarget, setIsGhostDropTarget] = useState(false);
   const [dragPreviewAnchor, setDragPreviewAnchor] =
     useState<DragPreviewAnchor | null>(null);
+  const [dragMode, setDragMode] = useState<DragMode>(null);
   const ghostUploadInputRef = useRef<HTMLInputElement | null>(null);
+  const draggedIdRef = useRef<string | null>(null);
+  const dropIndexRef = useRef<number | null>(null);
+  const touchMoveRafRef = useRef<number | null>(null);
+  const pendingTouchPointRef = useRef<{ x: number; y: number } | null>(null);
   const isInteractionDisabled = isGenerating;
   const isGenerationStatusVisible =
     isGenerating || Object.keys(generationChapterStatusByPageId).length > 0;
@@ -84,7 +96,7 @@ export function PageDraftGrid({
     draggedId == null ? -1 : pages.findIndex((page) => page.id === draggedId);
 
   const previewPages =
-    draggedId && dropIndex !== null && dragIndex >= 0
+    dragMode === "mouse" && draggedId && dropIndex !== null && dragIndex >= 0
       ? (() => {
           const draggedPage = pages[dragIndex];
           const remaining = pages.filter((page) => page.id !== draggedId);
@@ -100,18 +112,123 @@ export function PageDraftGrid({
 
   function handleDrop() {
     if (isInteractionDisabled) return;
-    if (!draggedId) return;
-    onReorder(draggedId, dropIndex ?? dragIndex);
+    const activeDraggedId = draggedIdRef.current ?? draggedId;
+    if (!activeDraggedId) return;
+    const targetIndex = dropIndexRef.current ?? dropIndex ?? dragIndex;
+    onReorder(activeDraggedId, targetIndex);
     setDraggedId(null);
     setDropIndex(null);
+    setDragMode(null);
+    draggedIdRef.current = null;
+    dropIndexRef.current = null;
   }
 
   function handleDragEnd() {
     setDraggedId(null);
     setDropIndex(null);
+    setDragMode(null);
+    draggedIdRef.current = null;
+    dropIndexRef.current = null;
     setDragPreviewAnchor(null);
     setIsGhostDropTarget(false);
+    pendingTouchPointRef.current = null;
+    if (touchMoveRafRef.current != null) {
+      window.cancelAnimationFrame(touchMoveRafRef.current);
+      touchMoveRafRef.current = null;
+    }
   }
+
+  function updateDropIndexFromPoint(clientX: number, clientY: number) {
+    const hitTarget = document.elementFromPoint(clientX, clientY) as
+      | HTMLElement
+      | null;
+    const dropIndexElement = hitTarget?.closest<HTMLElement>("[data-drop-index]");
+    if (dropIndexElement?.dataset.dropIndex) {
+      const nextIndex = Number(dropIndexElement.dataset.dropIndex);
+      if (!Number.isNaN(nextIndex)) {
+        setDropIndex(nextIndex);
+        dropIndexRef.current = nextIndex;
+      }
+      return;
+    }
+
+    const isOverGhost = Boolean(hitTarget?.closest("[data-ghost-drop-target]"));
+    if (isOverGhost) {
+      setDropIndex(pages.length);
+      dropIndexRef.current = pages.length;
+      setIsGhostDropTarget(true);
+      return;
+    }
+    setIsGhostDropTarget(false);
+  }
+
+  function maybeAutoScroll(clientY: number) {
+    const edgeThreshold = 64;
+    const scrollStep = 14;
+    if (clientY < edgeThreshold) {
+      window.scrollBy(0, -scrollStep);
+      return;
+    }
+    if (clientY > window.innerHeight - edgeThreshold) {
+      window.scrollBy(0, scrollStep);
+    }
+  }
+
+  function handleTouchDragStart(id: string, anchor: DragPreviewAnchor) {
+    if (isInteractionDisabled) return;
+    const currentIndex = pages.findIndex((page) => page.id === id);
+    if (currentIndex < 0) return;
+    setDraggedId(id);
+    setDropIndex(currentIndex);
+    setDragMode("touch");
+    draggedIdRef.current = id;
+    dropIndexRef.current = currentIndex;
+    setDragPreviewAnchor(anchor);
+    updateDropIndexFromPoint(anchor.clientX, anchor.clientY);
+  }
+
+  function handleTouchDragMove(clientX: number, clientY: number) {
+    if (!draggedIdRef.current) return;
+    pendingTouchPointRef.current = { x: clientX, y: clientY };
+    if (touchMoveRafRef.current != null) return;
+    touchMoveRafRef.current = window.requestAnimationFrame(() => {
+      touchMoveRafRef.current = null;
+      const point = pendingTouchPointRef.current;
+      if (!point) return;
+      setDragPreviewAnchor((prev) =>
+        prev
+          ? {
+              ...prev,
+              clientX: point.x,
+              clientY: point.y,
+            }
+          : prev,
+      );
+      updateDropIndexFromPoint(point.x, point.y);
+      maybeAutoScroll(point.y);
+    });
+  }
+
+  function handleTouchDragEnd() {
+    if (isInteractionDisabled) return;
+    const activeDraggedId = draggedIdRef.current ?? draggedId;
+    if (!activeDraggedId) return;
+    const targetIndex = dropIndexRef.current ?? dropIndex ?? dragIndex;
+    onReorder(activeDraggedId, targetIndex);
+    handleDragEnd();
+  }
+
+  function handleTouchDragCancel() {
+    handleDragEnd();
+  }
+
+  useEffect(() => {
+    return () => {
+      if (touchMoveRafRef.current != null) {
+        window.cancelAnimationFrame(touchMoveRafRef.current);
+      }
+    };
+  }, []);
 
   function effectiveDropIndex(index: number) {
     if (!draggedId) return null;
@@ -160,12 +277,14 @@ export function PageDraftGrid({
           return (
             <Box
               key={page.id}
+              data-drop-index={index}
               onDragOver={(event) => {
                 if (isInteractionDisabled) return;
                 event.preventDefault();
                 if (!draggedId) return;
                 if (draggedId === page.id) return;
                 setDropIndex(index);
+                dropIndexRef.current = index;
               }}
               onDrop={(event) => {
                 if (isInteractionDisabled) return;
@@ -182,8 +301,15 @@ export function PageDraftGrid({
                   if (isInteractionDisabled) return;
                   setDraggedId(id);
                   setDropIndex(index);
+                  setDragMode("mouse");
+                  draggedIdRef.current = id;
+                  dropIndexRef.current = index;
                   setDragPreviewAnchor(anchor);
                 }}
+                onTouchDragStart={handleTouchDragStart}
+                onTouchDragMove={handleTouchDragMove}
+                onTouchDragEnd={handleTouchDragEnd}
+                onTouchDragCancel={handleTouchDragCancel}
                 onDragEnd={isInteractionDisabled ? () => {} : handleDragEnd}
                 onDragOver={(event) => {
                   if (isInteractionDisabled) return;
@@ -210,6 +336,7 @@ export function PageDraftGrid({
         })}
 
         <Box
+          data-ghost-drop-target={true}
           w={"full"}
           borderWidth={isGhostDropTarget ? "3px" : "2px"}
           borderStyle={"dashed"}
@@ -231,6 +358,7 @@ export function PageDraftGrid({
             if (isInteractionDisabled) return;
             event.preventDefault();
             setIsGhostDropTarget(true);
+            dropIndexRef.current = pages.length;
           }}
           onDragLeave={(event) => {
             const nextTarget = event.relatedTarget as Node | null;

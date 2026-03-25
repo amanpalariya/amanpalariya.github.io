@@ -22,6 +22,7 @@ import {
   useState,
   type DragEvent,
   type KeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
 } from "react";
 import type { ChapterGenerationStatus, PageDraft } from "../types";
 
@@ -39,6 +40,10 @@ export function PageDraftCard({
   onRemove,
   onRename,
   onDragStart,
+  onTouchDragStart,
+  onTouchDragMove,
+  onTouchDragEnd,
+  onTouchDragCancel,
   onDragEnd,
   onDragOver,
   onDrop,
@@ -55,6 +60,10 @@ export function PageDraftCard({
   onRemove: (id: string) => void;
   onRename: (id: string, value: string) => void;
   onDragStart: (id: string, anchor: DragPreviewAnchor) => void;
+  onTouchDragStart: (id: string, anchor: DragPreviewAnchor) => void;
+  onTouchDragMove: (clientX: number, clientY: number) => void;
+  onTouchDragEnd: () => void;
+  onTouchDragCancel: () => void;
   onDragEnd: () => void;
   onDragOver: (event: DragEvent<HTMLDivElement>) => void;
   onDrop: () => void;
@@ -68,6 +77,9 @@ export function PageDraftCard({
 }) {
   const [titleDraft, setTitleDraft] = useState(page.title);
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const activeTouchPointerIdRef = useRef<number | null>(null);
+  const touchStartPointRef = useRef<{ x: number; y: number } | null>(null);
+  const hasStartedTouchDragRef = useRef(false);
   const [flashKind, setFlashKind] = useState<"added" | "duplicate" | null>(null);
   const [flashOpacity, setFlashOpacity] = useState(0);
   const clearFlashTimerRef = useRef<number | null>(null);
@@ -158,6 +170,86 @@ export function PageDraftCard({
       offsetY: pointerOffsetY,
       width: rect.width,
     });
+  }
+
+  function buildDragAnchor(clientX: number, clientY: number): DragPreviewAnchor {
+    const card = cardRef.current;
+    if (!card) {
+      return {
+        clientX,
+        clientY,
+        offsetX: 0,
+        offsetY: 0,
+        width: 0,
+      };
+    }
+    const rect = card.getBoundingClientRect();
+    const offsetX = Math.max(0, Math.min(rect.width, clientX - rect.left));
+    const offsetY = Math.max(0, Math.min(rect.height, clientY - rect.top));
+    return {
+      clientX,
+      clientY,
+      offsetX,
+      offsetY,
+      width: rect.width,
+    };
+  }
+
+  function handleGripPointerDown(event: ReactPointerEvent<HTMLButtonElement>) {
+    if (isInteractionDisabled) return;
+    if (event.pointerType !== "touch" && event.pointerType !== "pen") return;
+    event.preventDefault();
+    event.stopPropagation();
+    activeTouchPointerIdRef.current = event.pointerId;
+    touchStartPointRef.current = { x: event.clientX, y: event.clientY };
+    hasStartedTouchDragRef.current = false;
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function handleGripPointerMove(event: ReactPointerEvent<HTMLButtonElement>) {
+    if (activeTouchPointerIdRef.current !== event.pointerId) return;
+    const startPoint = touchStartPointRef.current;
+    const movedEnough =
+      !!startPoint &&
+      Math.hypot(event.clientX - startPoint.x, event.clientY - startPoint.y) >= 8;
+    if (!hasStartedTouchDragRef.current && movedEnough) {
+      hasStartedTouchDragRef.current = true;
+      onTouchDragStart(page.id, buildDragAnchor(event.clientX, event.clientY));
+    }
+    if (!hasStartedTouchDragRef.current) return;
+    event.preventDefault();
+    event.stopPropagation();
+    onTouchDragMove(event.clientX, event.clientY);
+  }
+
+  function handleGripPointerEnd(event: ReactPointerEvent<HTMLButtonElement>) {
+    if (activeTouchPointerIdRef.current !== event.pointerId) return;
+    if (hasStartedTouchDragRef.current) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    activeTouchPointerIdRef.current = null;
+    touchStartPointRef.current = null;
+    if (hasStartedTouchDragRef.current) {
+      onTouchDragEnd();
+    }
+    hasStartedTouchDragRef.current = false;
+  }
+
+  function handleGripPointerCancel(event: ReactPointerEvent<HTMLButtonElement>) {
+    if (activeTouchPointerIdRef.current !== event.pointerId) return;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    activeTouchPointerIdRef.current = null;
+    touchStartPointRef.current = null;
+    if (hasStartedTouchDragRef.current) {
+      onTouchDragCancel();
+    }
+    hasStartedTouchDragRef.current = false;
   }
 
   const controlInputProps = {
@@ -284,6 +376,10 @@ export function PageDraftCard({
               }}
               onDragStart={(event) => {
                 if (isInteractionDisabled) return;
+                if (activeTouchPointerIdRef.current !== null) {
+                  event.preventDefault();
+                  return;
+                }
                 event.stopPropagation();
                 setCardDragPreview(event);
               }}
@@ -291,6 +387,10 @@ export function PageDraftCard({
                 event.stopPropagation();
                 onDragEnd();
               }}
+              onPointerDown={handleGripPointerDown}
+              onPointerMove={handleGripPointerMove}
+              onPointerUp={handleGripPointerEnd}
+              onPointerCancel={handleGripPointerCancel}
               aria-label={"Drag page"}
             >
               <Icon>
