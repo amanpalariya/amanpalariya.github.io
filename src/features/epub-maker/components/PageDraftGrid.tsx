@@ -110,7 +110,12 @@ export function PageDraftGrid({
   return (
     <Box position={"relative"}>
       <SimpleGrid
-        columns={{ base: 1, md: 2, lg: 3 }}
+        columns={{ base: 2, md: 2, lg: 3 }}
+        css={{
+          "@media (max-width: 359px)": {
+            gridTemplateColumns: "repeat(1, minmax(0, 1fr))",
+          },
+        }}
         gap={2}
         alignItems={"start"}
       >
