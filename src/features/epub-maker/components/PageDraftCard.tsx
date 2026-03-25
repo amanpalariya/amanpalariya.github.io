@@ -10,7 +10,13 @@ import {
 } from "@chakra-ui/react";
 import { Tooltip } from "@components/ui/tooltip";
 import { LuCheck, LuClock3, LuLoaderCircle, LuTrash2 } from "react-icons/lu";
-import { useEffect, useState, type DragEvent, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type DragEvent,
+  type KeyboardEvent,
+} from "react";
 import type { ChapterGenerationStatus, PageDraft } from "../types";
 
 export function PageDraftCard({
@@ -26,6 +32,8 @@ export function PageDraftCard({
   isDropTarget,
   isInteractionDisabled,
   isGenerationStatusFading,
+  pageFlashKind,
+  pageFlashToken,
   generationStatus,
 }: {
   page: PageDraft;
@@ -40,9 +48,14 @@ export function PageDraftCard({
   isDropTarget: boolean;
   isInteractionDisabled: boolean;
   isGenerationStatusFading: boolean;
+  pageFlashKind?: "added" | "duplicate";
+  pageFlashToken?: number;
   generationStatus?: ChapterGenerationStatus;
 }) {
   const [titleDraft, setTitleDraft] = useState(page.title);
+  const [flashKind, setFlashKind] = useState<"added" | "duplicate" | null>(null);
+  const [flashOpacity, setFlashOpacity] = useState(0);
+  const clearFlashTimerRef = useRef<number | null>(null);
   const effectiveGenerationStatus = generationStatus ?? "pending";
   const showGenerationStatus = generationStatus !== undefined;
   const statusTextColor =
@@ -51,10 +64,49 @@ export function PageDraftCard({
       : effectiveGenerationStatus === "processing"
         ? "app.epub.fg.status.processing"
         : "app.epub.fg.status.pending";
+  const flashColorBase =
+    flashKind === "added"
+      ? "34, 197, 94"
+      : flashKind === "duplicate"
+        ? "251, 146, 60"
+        : null;
+  const flashOverlayBg = flashColorBase ? `rgba(${flashColorBase}, 0.22)` : null;
+  const flashBorderColor = flashColorBase
+    ? `rgba(${flashColorBase}, ${Math.max(0.2, flashOpacity + 0.16)})`
+    : null;
+  const flashShadow = flashColorBase
+    ? `0 0 0 2px rgba(${flashColorBase}, ${flashOpacity * 0.62})`
+    : "none";
 
   useEffect(() => {
     setTitleDraft(page.title);
   }, [page.title]);
+
+  useEffect(() => {
+    if (!pageFlashKind) return;
+    if (clearFlashTimerRef.current) {
+      window.clearTimeout(clearFlashTimerRef.current);
+    }
+
+    setFlashKind(pageFlashKind);
+    setFlashOpacity(1);
+
+    const fadeTimer = window.setTimeout(() => {
+      setFlashOpacity(0);
+    }, 220);
+
+    clearFlashTimerRef.current = window.setTimeout(() => {
+      setFlashKind(null);
+      clearFlashTimerRef.current = null;
+    }, 820);
+
+    return () => {
+      window.clearTimeout(fadeTimer);
+      if (clearFlashTimerRef.current) {
+        window.clearTimeout(clearFlashTimerRef.current);
+      }
+    };
+  }, [pageFlashKind, pageFlashToken]);
 
   function commitRenameIfChanged() {
     if (titleDraft === page.title) return;
@@ -84,8 +136,12 @@ export function PageDraftCard({
       borderWidth={isDropTarget ? "2px" : "1px"}
       borderStyle={isDropTarget ? "dashed" : "solid"}
       borderColor={
-        isDropTarget ? "app.epub.border.accent" : "app.epub.border.default"
+        flashBorderColor ??
+        (isDropTarget ? "app.epub.border.accent" : "app.epub.border.default")
       }
+      position={"relative"}
+      boxShadow={flashShadow}
+      transition={"border-color 0.6s ease, box-shadow 0.6s ease"}
       rounded={"2xl"}
       overflow={"hidden"}
       bg={"app.epub.bg.card"}
@@ -241,6 +297,18 @@ export function PageDraftCard({
           ) : null}
         </Box>
       </AspectRatio>
+
+      {flashOverlayBg && flashKind ? (
+        <Box
+          position={"absolute"}
+          inset={0}
+          pointerEvents={"none"}
+          bg={flashOverlayBg}
+          opacity={flashOpacity}
+          transition={"opacity 0.6s ease"}
+          zIndex={6}
+        />
+      ) : null}
     </Box>
   );
 }

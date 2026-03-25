@@ -14,6 +14,8 @@ import { type ChangeEvent, type ClipboardEvent, useRef, useState } from "react";
 import { LuFilePlus, LuUpload } from "react-icons/lu";
 import type { ChapterGenerationStatus, PageDraft } from "../types";
 import { PageDraftCard } from "./PageDraftCard";
+type PageFlashKind = "added" | "duplicate";
+type PageFlashEntry = { kind: PageFlashKind; token: number };
 
 export function PageDraftGrid({
   pages,
@@ -22,6 +24,7 @@ export function PageDraftGrid({
   generationChapterStatusByPageId,
   activeGenerationPageId,
   isGenerationStatusFading,
+  pageFlashById,
   onRemove,
   onRename,
   onReorder,
@@ -38,6 +41,7 @@ export function PageDraftGrid({
   generationChapterStatusByPageId: Record<string, ChapterGenerationStatus>;
   activeGenerationPageId: string | null;
   isGenerationStatusFading: boolean;
+  pageFlashById: Record<string, PageFlashEntry>;
   onRemove: (id: string) => void;
   onRename: (id: string, value: string) => void;
   onReorder: (draggedId: string, targetIndex: number) => void;
@@ -166,6 +170,8 @@ export function PageDraftGrid({
                 isDropTarget={!isInteractionDisabled && isDropTarget}
                 isInteractionDisabled={isInteractionDisabled}
                 isGenerationStatusFading={isGenerationStatusFading}
+                pageFlashKind={pageFlashById[page.id]?.kind}
+                pageFlashToken={pageFlashById[page.id]?.token}
                 generationStatus={
                   isGenerationStatusVisible
                     ? (generationChapterStatusByPageId[page.id] ??

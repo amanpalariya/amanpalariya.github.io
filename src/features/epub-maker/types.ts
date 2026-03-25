@@ -76,6 +76,7 @@ export interface BuildEpubInput {
   downloadFileName?: string;
   pages: PageDraft[];
   sanitizePolicy: SanitizationPolicy;
+  signal?: AbortSignal;
   onProgress?: (update: BuildEpubProgressUpdate) => void;
 }
 

@@ -44,6 +44,7 @@ export type RegisterImageParams = {
   baseUrl: string | null;
   pageId?: PageId;
   embedRemoteImages: boolean;
+  signal?: AbortSignal;
   imagesByKey: Map<string, EpubImage>;
   nextImageNumber: () => number;
 };
@@ -62,6 +63,7 @@ export async function registerImageAsset(
     baseUrl,
     pageId,
     embedRemoteImages,
+    signal,
     imagesByKey,
     nextImageNumber,
   } = params;
@@ -116,7 +118,7 @@ export async function registerImageAsset(
   }
 
   try {
-    const response = await fetch(absoluteSrc);
+    const response = await fetch(absoluteSrc, { signal });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const blob = await response.blob();
     const mediaType = blob.type || "application/octet-stream";
@@ -133,7 +135,10 @@ export async function registerImageAsset(
     };
     imagesByKey.set(absoluteSrc, image);
     return { localHref: image.href, absoluteSrc };
-  } catch {
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw error;
+    }
     return {
       localHref: null,
       absoluteSrc,
