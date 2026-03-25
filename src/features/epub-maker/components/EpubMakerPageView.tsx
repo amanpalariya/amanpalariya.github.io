@@ -157,8 +157,11 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
         onDragLeave={handleFileDragLeave}
         onDrop={handleFileDrop}
       >
-        <HighlightedSection>
-          <Box minH={"340px"} px={0} py={4}>
+        <HighlightedSection
+          contentPx={{ base: 2, sm: 3, md: 4, lg: 6 }}
+          contentPy={{ base: 2, sm: 3, md: 4, lg: 6 }}
+        >
+          <Box minH={"340px"} px={0} py={0}>
             <PageDraftGrid
               pages={props.pages}
               isAdding={props.isAdding}
