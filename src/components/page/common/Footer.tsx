@@ -13,16 +13,8 @@ import { HeaderCard } from "@components/core/Cards";
 import { Tooltip } from "@components/ui/tooltip";
 import { homepageTabs } from "app/route-info";
 import { PersonalData } from "data";
-import {
-  FiGithub,
-  FiHeart,
-  FiInstagram,
-  FiLinkedin,
-  FiMail,
-  FiSun,
-} from "react-icons/fi";
+import { FiGithub, FiInstagram, FiLinkedin, FiMail } from "react-icons/fi";
 import { FaXTwitter } from "react-icons/fa6";
-import { IoSnowOutline } from "react-icons/io5";
 
 const footerLinkProps = {
   fontSize: "sm",
@@ -40,14 +32,6 @@ export default function Footer({
 }: {
   hideBottomPart?: boolean;
 }) {
-  const currentMonth = new Date().getMonth();
-  const seasonalArtifact =
-    currentMonth >= 11 || currentMonth <= 1
-      ? { label: "Winter artifact", icon: IoSnowOutline }
-      : currentMonth >= 2 && currentMonth <= 4
-        ? { label: "Spring artifact", icon: FiHeart }
-        : { label: "Sunny artifact", icon: FiSun };
-
   const socialLinks = [
     {
       label: "LinkedIn",
@@ -198,20 +182,14 @@ export default function Footer({
               py={3}
               borderBottomRadius={"2xl"}
             >
-              <HStack
-                justify={"center"}
-                gap={2}
+              <Text
                 fontSize={"sm"}
                 fontWeight={"normal"}
                 color={"app.fg.icon"}
+                textAlign={"center"}
               >
-                <Icon
-                  as={seasonalArtifact.icon}
-                  aria-label={seasonalArtifact.label}
-                  boxSize={4}
-                />
-                <Text as="span">{PersonalData.name.full}</Text>
-              </HStack>
+                {PersonalData.name.full}
+              </Text>
             </Box>
           )}
         </VStack>

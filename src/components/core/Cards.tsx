@@ -5,9 +5,6 @@ export function HeaderCard({ children }) {
   return (
     <Box
       background={"app.bg.cardHeader"}
-      backgroundImage={
-        "radial-gradient(circle at 20% 25%, rgba(56, 189, 248, 0.12) 0 2px, transparent 2px), radial-gradient(circle at 80% 70%, rgba(244, 114, 182, 0.1) 0 1.5px, transparent 1.5px), radial-gradient(circle at 45% 80%, rgba(34, 197, 94, 0.1) 0 1px, transparent 1px)"
-      }
       shadow={"sm"}
       borderWidth={0}
       borderColor={"app.border.default"}
@@ -24,9 +21,6 @@ export function MainCard({ children }) {
   return (
     <Box
       background={"app.bg.card"}
-      backgroundImage={
-        "radial-gradient(circle at 12% 18%, rgba(56, 189, 248, 0.08) 0 1.5px, transparent 1.5px), radial-gradient(circle at 88% 74%, rgba(251, 113, 133, 0.08) 0 1.5px, transparent 1.5px), radial-gradient(circle at 52% 62%, rgba(16, 185, 129, 0.08) 0 1px, transparent 1px)"
-      }
       borderWidth={0}
       borderColor={"app.border.default"}
       borderRadius={"2xl"}
