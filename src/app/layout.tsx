@@ -41,6 +41,9 @@ export default function RootLayout({
       <body
         className={`${notoSans.className} ${lexend.variable} ${notoSans.variable} ${handwritten.variable}`}
       >
+        <a className="skip-link" href="#main-content">
+          Skip to main content
+        </a>
         <Providers>{children}</Providers>
       </body>
     </html>

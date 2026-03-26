@@ -1,7 +1,6 @@
 import { Icon, IconButton } from "@chakra-ui/react";
 import NextLink from "next/link";
 import type { IconType } from "react-icons";
-import { useColorModeValue } from "@components/ui/color-mode";
 import { Tooltip } from "@components/ui/tooltip";
 
 export default function HeaderNavIconButton({
@@ -19,18 +18,23 @@ export default function HeaderNavIconButton({
 }) {
   return (
     <Tooltip content={label} closeOnScroll>
-      <NextLink href={url ?? ""} onClick={onClick}>
-        <IconButton
-          borderRadius={"full"}
-          borderWidth={isSelected ? "thin" : 0}
-          borderColor={"app.border.default"}
-          variant={isSelected ? "surface" : "ghost"}
-          color={isSelected ? "app.fg.default" : "app.fg.subtle"}
+      <IconButton
+        asChild
+        borderRadius={"full"}
+        borderWidth={isSelected ? "thin" : 0}
+        borderColor={"app.border.default"}
+        variant={isSelected ? "surface" : "ghost"}
+        color={isSelected ? "app.fg.default" : "app.fg.subtle"}
+      >
+        <NextLink
+          href={url ?? ""}
+          onClick={onClick}
           aria-label={label}
+          aria-current={isSelected ? "page" : undefined}
         >
           <Icon boxSize={6} as={icon} />
-        </IconButton>
-      </NextLink>
+        </NextLink>
+      </IconButton>
     </Tooltip>
   );
 }

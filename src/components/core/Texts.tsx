@@ -32,14 +32,14 @@ export function SectionText({
           <FaCircle />
         </Icon>
       )}
-      <Heading
-        as="h3"
+      <Text
+        as="p"
         color={useDefaultTextColor()}
         fontSize={"lg"}
         fontWeight={"normal"}
       >
         {children}
-      </Heading>
+      </Text>
     </HStack>
   );
 }
@@ -86,7 +86,7 @@ export const Heading3 = GetCustomHeading({
 });
 
 export const Heading4 = GetCustomHeading({
-  as: "h4",
+  as: "h2",
   fontSize: "lg",
   fontWeight: "medium",
 });

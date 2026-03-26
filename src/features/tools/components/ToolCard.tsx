@@ -1,7 +1,6 @@
 import { HStack, Icon, Text, VStack } from "@chakra-ui/react";
 import { CategoryBadge, FeaturedIndicator } from "@components/core/Badges";
 import { InnerBgCardWithHeader } from "@components/core/Cards";
-import { Heading5 } from "@components/core/Texts";
 import NextLink from "next/link";
 import { FiBookOpen, FiChevronRight, FiTool } from "react-icons/fi";
 import type { ToolDefinition } from "../types";
@@ -33,7 +32,9 @@ export function ToolCard({ tool }: { tool: ToolDefinition }) {
             <VStack align={"start"} gap={1}>
               <HStack gap={2} align={"center"}>
                 <Icon as={ToolIcon} boxSize={5} color={"app.fg.subtle"} />
-                <Heading5>{tool.name}</Heading5>
+                <Text fontSize={"md"} fontWeight={"medium"} color={"app.fg.default"}>
+                  {tool.name}
+                </Text>
                 {tool.isFeatured ? <FeaturedIndicator /> : null}
               </HStack>
               <Text color={"app.fg.subtle"} fontSize={"sm"}>

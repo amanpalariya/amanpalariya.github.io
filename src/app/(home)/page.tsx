@@ -1,6 +1,12 @@
 "use client";
 
-import { EmptyState, VStack, HStack, Box, Icon } from "@chakra-ui/react";
+import {
+  EmptyState,
+  VStack,
+  HStack,
+  Box,
+  Icon,
+} from "@chakra-ui/react";
 import { SectionText } from "@components/core/Texts";
 import {
   TileList,

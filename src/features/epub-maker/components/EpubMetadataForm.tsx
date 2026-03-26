@@ -157,6 +157,7 @@ export function EpubMetadataForm({
           >
             <Box
               as={"span"}
+              role={"img"}
               aria-label={"About embed remote images"}
               color={"app.epub.fg.muted"}
               cursor={"help"}
@@ -184,6 +185,7 @@ export function EpubMetadataForm({
           >
             <Box
               as={"span"}
+              role={"img"}
               aria-label={"About keep external links"}
               color={"app.epub.fg.muted"}
               cursor={"help"}

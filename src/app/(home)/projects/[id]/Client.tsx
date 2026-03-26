@@ -43,7 +43,7 @@ export default function Client({
   if (!project) return null;
 
   return (
-    <VStack align={"stretch"} gap={4}>
+    <VStack as="article" align={"stretch"} gap={4}>
       <DetailTitleBar title={project.title} />
       <MetaRow
         description={project.description}

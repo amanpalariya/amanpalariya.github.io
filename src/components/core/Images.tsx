@@ -21,7 +21,7 @@ export function ImageBlock({
         borderColor={"app.border.muted"}
         background={"app.bg.canvas"}
       >
-        <Image src={src} rounded={"xl"} alt={""} />
+        <Image src={src} rounded={"xl"} alt={alt ?? caption ?? ""} />
         {caption ? <Text>{caption}</Text> : null}
       </VStack>
     </Center>

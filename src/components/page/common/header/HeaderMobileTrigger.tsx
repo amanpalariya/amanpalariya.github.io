@@ -21,6 +21,8 @@ export default function HeaderMobileTrigger({
       borderWidth={2}
       variant={isOpen ? "surface" : "outline"}
       transition={"width 0.24s ease"}
+      aria-expanded={isOpen}
+      aria-controls={"mobile-navigation-menu"}
       aria-label={
         isOpen ? "Close mobile navigation menu" : "Open mobile navigation menu"
       }

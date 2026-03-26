@@ -148,6 +148,8 @@ export default function Header() {
 
   return (
     <Box
+      as="header"
+      role="banner"
       position={"fixed"}
       width={"100%"}
       maxW={"3xl"}
@@ -179,7 +181,7 @@ export default function Header() {
                 />
               </HStack>
             ) : (
-              <HStack gap={4}>
+              <HStack as={"nav"} aria-label={"Primary navigation"} gap={4}>
                 {navItems.map((item) => (
                   <HeaderNavIconButton
                     key={item.tab.pathname}
@@ -201,6 +203,7 @@ export default function Header() {
           {isMobile && !isPathnameDeep && isMobileMenuOpen ? (
             <Stack
               as={"nav"}
+              id={"mobile-navigation-menu"}
               aria-label={"Mobile navigation menu"}
               borderTopWidth={2}
               borderColor={"app.border.default"}
@@ -221,7 +224,10 @@ export default function Header() {
                     variant={isSelected ? "surface" : "ghost"}
                     color={isSelected ? "app.fg.default" : "app.fg.subtle"}
                   >
-                    <NextLink href={item.tab.pathname}>
+                    <NextLink
+                      href={item.tab.pathname}
+                      aria-current={isSelected ? "page" : undefined}
+                    >
                       <HStack gap={2}>
                         <Icon as={item.icon} boxSize={6} />
                         <Heading6>{item.tab.name}</Heading6>
