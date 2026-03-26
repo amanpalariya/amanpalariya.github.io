@@ -10,7 +10,15 @@ export default function WithBodyCard({
   containerProps?: BoxProps;
 }) {
   return (
-    <Box px={[1, 4]} pt={[1, 2]} pb={[1, 1]} {...containerProps}>
+    <Box
+      as="main"
+      id="main-content"
+      tabIndex={-1}
+      px={[1, 4]}
+      pt={[1, 2]}
+      pb={[1, 1]}
+      {...containerProps}
+    >
       <MainCard>
         <VStack align={"stretch"}>{children}</VStack>
       </MainCard>

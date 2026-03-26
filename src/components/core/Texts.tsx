@@ -32,14 +32,14 @@ export function SectionText({
           <FaCircle />
         </Icon>
       )}
-      <Heading
-        as="h3"
+      <Text
+        as="p"
         color={useDefaultTextColor()}
         fontSize={"lg"}
         fontWeight={"normal"}
       >
         {children}
-      </Heading>
+      </Text>
     </HStack>
   );
 }

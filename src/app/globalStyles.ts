@@ -54,6 +54,24 @@ const HANDWRITTEN_SQUIGGLE_STYLES: GlobalStyles = {
 
 export function getAppGlobalStyles(proseStyles: unknown): GlobalStyles {
   return {
+    ".skip-link": {
+      position: "fixed",
+      top: "12px",
+      left: "12px",
+      transform: "translateY(-140%)",
+      background: "var(--chakra-colors-app-bg-card)",
+      color: "var(--chakra-colors-app-fg-default)",
+      border: "2px solid var(--chakra-colors-app-border-default)",
+      borderRadius: "10px",
+      padding: "8px 12px",
+      zIndex: 999,
+      textDecoration: "none",
+      transition: "transform 0.16s ease",
+    },
+    ".skip-link:focus-visible": {
+      transform: "translateY(0%)",
+      outline: "none",
+    },
     ".prose-content": proseStyles,
     ...HANDWRITTEN_BASE_STYLES,
     ...HANDWRITTEN_SQUIGGLE_STYLES,

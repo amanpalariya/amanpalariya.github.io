@@ -179,7 +179,7 @@ export default function Header() {
                 />
               </HStack>
             ) : (
-              <HStack gap={4}>
+              <HStack as={"nav"} aria-label={"Primary navigation"} gap={4}>
                 {navItems.map((item) => (
                   <HeaderNavIconButton
                     key={item.tab.pathname}
@@ -201,6 +201,7 @@ export default function Header() {
           {isMobile && !isPathnameDeep && isMobileMenuOpen ? (
             <Stack
               as={"nav"}
+              id={"mobile-navigation-menu"}
               aria-label={"Mobile navigation menu"}
               borderTopWidth={2}
               borderColor={"app.border.default"}
