@@ -31,6 +31,12 @@ function formatDate(value?: string) {
   });
 }
 
+function parseDate(value?: string) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 function DateRow({
   published,
   updated,
@@ -38,18 +44,25 @@ function DateRow({
   published?: string;
   updated?: string;
 }) {
-  const publishedLabel = formatDate(published);
-  const updatedLabel = formatDate(updated);
-  if (!publishedLabel) return null;
+  const publishedDate = parseDate(published);
+  const updatedDate = parseDate(updated);
+  if (!publishedDate) return null;
+
+  const publishedLabel = formatDate(publishedDate.toISOString());
+  const updatedLabel = updatedDate
+    ? formatDate(updatedDate.toISOString())
+    : null;
+
   return (
     <HStack gap={3} px={[4, 6]} fontSize="sm" color="app.fg.muted">
-      <Text>
-        <Text as="span" color="app.fg.muted">
+      <Text as="p">
+        <Text as="time" dateTime={publishedDate.toISOString()} color="app.fg.muted">
           {publishedLabel}
         </Text>
-        {updatedLabel ? (
+        {updatedDate && updatedLabel ? (
           <Text
-            as="span"
+            as="time"
+            dateTime={updatedDate.toISOString()}
             color="app.fg.muted"
           >{` (updated on ${updatedLabel})`}</Text>
         ) : null}
@@ -88,7 +101,7 @@ export default function Client({ html, blog }: { html: string; blog: Blog }) {
   if (!blog) return null;
 
   return (
-    <VStack align={"stretch"} gap={4}>
+    <VStack as="article" align={"stretch"} gap={4}>
       <DetailTitleBar title={blog.title} />
       <DateRow published={blog.published} updated={blog.updated} />
       <TagRow tags={blog.tags} />

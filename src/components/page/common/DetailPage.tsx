@@ -9,7 +9,13 @@ import type { ReactNode } from "react";
 
 export function DetailTitleBar({ title }: { title: string }) {
   return (
-    <Box mx={[4, 6]} mt={4} letterSpacing={"wide"} position={"relative"}>
+    <Box
+      as="header"
+      mx={[4, 6]}
+      mt={4}
+      letterSpacing={"wide"}
+      position={"relative"}
+    >
       <Box pr={12}>
         <Heading1>{title}</Heading1>
       </Box>

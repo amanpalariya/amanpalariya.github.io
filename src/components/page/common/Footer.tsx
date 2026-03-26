@@ -96,32 +96,34 @@ export default function Footer({
                 >
                   Connect
                 </Text>
-                <HStack gap={3}>
-                  {socialLinks.map((social) => (
-                    <Tooltip
-                      key={social.label}
-                      content={social.tooltip}
-                      showArrow
-                    >
-                      <Link
-                        href={social.href}
-                        target={social.isExternal ? "_blank" : undefined}
-                        rel={
-                          social.isExternal ? "noopener noreferrer" : undefined
-                        }
-                        aria-label={
-                          social.isExternal
-                            ? `${social.label} (opens in a new tab)`
-                            : social.label
-                        }
-                        color={social.color}
-                        _hover={{ opacity: 0.85 }}
+                <Box as="address" fontStyle="normal" m={0}>
+                  <HStack gap={3}>
+                    {socialLinks.map((social) => (
+                      <Tooltip
+                        key={social.label}
+                        content={social.tooltip}
+                        showArrow
                       >
-                        <Icon as={social.icon} boxSize={5} />
-                      </Link>
-                    </Tooltip>
-                  ))}
-                </HStack>
+                        <Link
+                          href={social.href}
+                          target={social.isExternal ? "_blank" : undefined}
+                          rel={
+                            social.isExternal ? "noopener noreferrer" : undefined
+                          }
+                          aria-label={
+                            social.isExternal
+                              ? `${social.label} (opens in a new tab)`
+                              : social.label
+                          }
+                          color={social.color}
+                          _hover={{ opacity: 0.85 }}
+                        >
+                          <Icon as={social.icon} boxSize={5} />
+                        </Link>
+                      </Tooltip>
+                    ))}
+                  </HStack>
+                </Box>
               </VStack>
 
               <VStack align="flex-start" gap={2} flex={1} minW={0}>

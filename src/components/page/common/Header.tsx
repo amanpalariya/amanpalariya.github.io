@@ -148,6 +148,8 @@ export default function Header() {
 
   return (
     <Box
+      as="header"
+      role="banner"
       position={"fixed"}
       width={"100%"}
       maxW={"3xl"}

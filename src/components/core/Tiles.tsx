@@ -169,6 +169,12 @@ export function TitleDescriptionAvatarTile({
   );
 }
 
+function parseBlogDate(value?: string) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 function formatBlogDateLabel({
   published,
   updated,
@@ -176,10 +182,8 @@ function formatBlogDateLabel({
   published?: string;
   updated?: string;
 }) {
-  if (!published) return null;
-
-  const publishedDate = new Date(published);
-  if (Number.isNaN(publishedDate.getTime())) return null;
+  const publishedDate = parseBlogDate(published);
+  if (!publishedDate) return null;
 
   const publishedLabel = publishedDate.toLocaleDateString(undefined, {
     year: "numeric",
@@ -187,10 +191,14 @@ function formatBlogDateLabel({
     day: "numeric",
   });
 
-  if (!updated) return publishedLabel;
-
-  const updatedDate = new Date(updated);
-  if (Number.isNaN(updatedDate.getTime())) return publishedLabel;
+  const updatedDate = parseBlogDate(updated);
+  if (!updatedDate) {
+    return (
+      <Text as="time" dateTime={publishedDate.toISOString()} fontSize={"sm"}>
+        {publishedLabel}
+      </Text>
+    );
+  }
 
   const updatedLabel = updatedDate.toLocaleDateString(undefined, {
     year: "numeric",
@@ -198,7 +206,17 @@ function formatBlogDateLabel({
     day: "numeric",
   });
 
-  return `${publishedLabel} · Updated ${updatedLabel}`;
+  return (
+    <Text as="span" fontSize={"sm"}>
+      <Text as="time" dateTime={publishedDate.toISOString()}>
+        {publishedLabel}
+      </Text>
+      {" · Updated "}
+      <Text as="time" dateTime={updatedDate.toISOString()}>
+        {updatedLabel}
+      </Text>
+    </Text>
+  );
 }
 
 export function TitleDescriptionTile({
@@ -273,7 +291,7 @@ export function TitleDescriptionMetaTile({
           </HStack>
 
           {metadataLabel ? (
-            <Text fontSize={"sm"} color={metadataColor}>
+            <Text color={metadataColor}>
               {metadataLabel}
             </Text>
           ) : null}
