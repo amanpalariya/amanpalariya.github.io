@@ -24,7 +24,12 @@ export const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
         <ChakraAvatar.Fallback name={name}>
           {icon || fallback}
         </ChakraAvatar.Fallback>
-        <ChakraAvatar.Image src={src} srcSet={srcSet} loading={loading} />
+        <ChakraAvatar.Image
+          src={src}
+          srcSet={srcSet}
+          loading={loading}
+          alt={name ?? ""}
+        />
         {children}
       </ChakraAvatar.Root>
     )

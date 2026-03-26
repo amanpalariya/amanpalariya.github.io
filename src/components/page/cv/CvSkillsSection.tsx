@@ -29,7 +29,7 @@ function SkillLevel({
   const inactiveColor = "app.border.default";
 
   return (
-    <HStack gap={1} aria-label={`${label} proficiency`} title={label}>
+    <HStack gap={1} role="img" aria-label={`${label} proficiency`} title={label}>
       {Array.from({ length: 4 }).map((_, index) => {
         const isActive = index < activeCount;
         return (

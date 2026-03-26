@@ -86,6 +86,7 @@ function AccomplishmentCard({
                   href={item.url}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label={`Open ${item.title} credential (opens in a new tab)`}
                   fontSize={CV_META_TEXT_SIZE}
                   color={CV_SECONDARY_TEXT_COLOR}
                   fontFamily={CV_CMU_FONT_FAMILY}

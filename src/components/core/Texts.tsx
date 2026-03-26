@@ -86,7 +86,7 @@ export const Heading3 = GetCustomHeading({
 });
 
 export const Heading4 = GetCustomHeading({
-  as: "h4",
+  as: "h2",
   fontSize: "lg",
   fontWeight: "medium",
 });

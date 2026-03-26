@@ -30,7 +30,7 @@ export function DetailMetaSection({ children }: { children: ReactNode }) {
 
 export function DetailDescription({ description }: { description: string }) {
   return (
-    <Text fontSize="sm" color="gray.500">
+    <Text fontSize="sm" color="app.fg.muted">
       {description}
     </Text>
   );

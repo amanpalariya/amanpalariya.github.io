@@ -191,7 +191,7 @@ export default function Footer({
               <Text
                 fontSize={"sm"}
                 fontWeight={"normal"}
-                color={"app.fg.icon"}
+                color={"app.fg.default"}
                 textAlign={"center"}
               >
                 {PersonalData.name.full}

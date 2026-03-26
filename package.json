@@ -3,7 +3,8 @@
   "scripts": {
     "dev": "next",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test:a11y": "playwright test -c playwright.a11y.config.ts"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.2.4",
@@ -29,9 +30,12 @@
     "remark-toc": "^9.0.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.1",
+    "@playwright/test": "^1.58.2",
     "@types/node": "^22.10.2",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
+    "axe-core": "^4.11.1",
     "eslint": "9.17.0",
     "eslint-config-next": "16.1.6",
     "prettier": "^3.0.3",

@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, EmptyState, Heading, HStack, Icon, Text, VStack } from "@chakra-ui/react";
+import { Box, EmptyState, HStack, Icon, Text, VStack } from "@chakra-ui/react";
 import { CategoryBadge, FeaturedIndicator } from "@components/core/Badges";
 import { Heading1, SubtitleText } from "@components/core/Texts";
 import { TileList } from "@components/core/Tiles";
@@ -47,14 +47,14 @@ function ToolListTile({ tool }: { tool: ToolDefinition }) {
             <VStack align={"start"} gap={0}>
               <HStack gap={2} align={"center"}>
                 <Icon as={ToolIcon} boxSize={5} color={"app.fg.subtle"} />
-                <Heading
-                  as={"h4"}
+                <Text
                   fontSize={"lg"}
                   fontWeight={"medium"}
                   fontFamily={"heading"}
+                  color={"app.fg.default"}
                 >
                   {tool.name}
-                </Heading>
+                </Text>
                 {tool.isFeatured ? <FeaturedIndicator /> : null}
               </HStack>
               <Text color={"app.fg.subtle"} fontFamily={"body"}>

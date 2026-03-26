@@ -42,15 +42,15 @@ function DateRow({
   const updatedLabel = formatDate(updated);
   if (!publishedLabel) return null;
   return (
-    <HStack gap={3} px={[4, 6]} fontSize="sm" color="gray.500">
+    <HStack gap={3} px={[4, 6]} fontSize="sm" color="app.fg.muted">
       <Text>
-        <Text as="span" color="gray.500">
+        <Text as="span" color="app.fg.muted">
           {publishedLabel}
         </Text>
         {updatedLabel ? (
           <Text
             as="span"
-            color="gray.500"
+            color="app.fg.muted"
           >{` (updated on ${updatedLabel})`}</Text>
         ) : null}
       </Text>

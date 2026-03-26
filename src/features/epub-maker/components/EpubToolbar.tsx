@@ -141,6 +141,7 @@ export function EpubToolbar({
           <FileUpload.Root maxFiles={50}>
             <FileUpload.HiddenInput
               ref={uploadInputRef}
+              aria-label={"Upload files"}
               onChange={handleUploadInputChange}
             />
             <Tooltip content={"Upload files"}>

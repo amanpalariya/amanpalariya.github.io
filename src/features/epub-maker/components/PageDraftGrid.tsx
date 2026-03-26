@@ -376,6 +376,7 @@ export function PageDraftGrid({
             <FileUpload.Root maxFiles={50}>
               <FileUpload.HiddenInput
                 ref={ghostUploadInputRef}
+                aria-label={"Upload files"}
                 onChange={handleGhostUploadChange}
               />
               <Button

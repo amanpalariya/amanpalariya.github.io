@@ -51,6 +51,7 @@ export default function CopyLinkSecondaryButton({
                 bg: "app.bg.subtle",
                 transform: "translateY(-1px)",
               }}
+              aria-label="Copy link"
             >
               <Clipboard.Indicator copied={<FiCheck />}>
                 <FiLink />

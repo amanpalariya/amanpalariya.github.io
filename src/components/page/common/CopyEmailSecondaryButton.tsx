@@ -25,6 +25,7 @@ export default function CopyEmailButton() {
               shadow="xs"
               rounded="xl"
               variant="subtle"
+              aria-label="Copy Email"
             >
               <Clipboard.Indicator copied={<Icon as={FiCheck} />}>
                 <Icon as={FiCopy} />
