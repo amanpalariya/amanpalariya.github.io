@@ -106,8 +106,14 @@ export default function Footer({
                       <Link
                         href={social.href}
                         target={social.isExternal ? "_blank" : undefined}
-                        rel={social.isExternal ? "noreferrer" : undefined}
-                        aria-label={social.label}
+                        rel={
+                          social.isExternal ? "noopener noreferrer" : undefined
+                        }
+                        aria-label={
+                          social.isExternal
+                            ? `${social.label} (opens in a new tab)`
+                            : social.label
+                        }
                         color={social.color}
                         _hover={{ opacity: 0.85 }}
                       >

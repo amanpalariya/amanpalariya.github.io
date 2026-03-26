@@ -222,7 +222,10 @@ export default function Header() {
                     variant={isSelected ? "surface" : "ghost"}
                     color={isSelected ? "app.fg.default" : "app.fg.subtle"}
                   >
-                    <NextLink href={item.tab.pathname}>
+                    <NextLink
+                      href={item.tab.pathname}
+                      aria-current={isSelected ? "page" : undefined}
+                    >
                       <HStack gap={2}>
                         <Icon as={item.icon} boxSize={6} />
                         <Heading6>{item.tab.name}</Heading6>

@@ -16,7 +16,7 @@ export default function LinkedInButton() {
         href={PersonalData.linkedIn.url}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label={"Open LinkedIn profile"}
+        aria-label={"Open LinkedIn profile (opens in a new tab)"}
         icon={FaLinkedin}
         backgroundColor={"app.brand.linkedin.solid"}
       >
@@ -40,7 +40,7 @@ export function LinkedInButtonSmall() {
         rel="noopener noreferrer"
         rounded={"full"}
         colorScheme="blue"
-        aria-label={"Open LinkedIn profile"}
+        aria-label={"Open LinkedIn profile (opens in a new tab)"}
       >
         <Icon>
           <FaLinkedin />

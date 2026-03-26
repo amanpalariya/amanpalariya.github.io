@@ -72,6 +72,11 @@ export function getAppGlobalStyles(proseStyles: unknown): GlobalStyles {
       transform: "translateY(0%)",
       outline: "none",
     },
+    "a:focus-visible, button:focus-visible, [role='button']:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible":
+      {
+        outline: "2px solid var(--chakra-colors-blue-500)",
+        outlineOffset: "2px",
+      },
     ".prose-content": proseStyles,
     ...HANDWRITTEN_BASE_STYLES,
     ...HANDWRITTEN_SQUIGGLE_STYLES,

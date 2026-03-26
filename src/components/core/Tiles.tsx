@@ -95,7 +95,7 @@ function LinkOverlayIfUrlPresent({
       <a
         href={url}
         target="_blank"
-        rel="noreferrer"
+        rel="noopener noreferrer"
         style={{ display: "block" }}
       >
         {children}
