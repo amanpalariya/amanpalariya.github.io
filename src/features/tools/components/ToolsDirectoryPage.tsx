@@ -6,7 +6,7 @@ import { Heading1, SubtitleText } from "@components/core/Texts";
 import { TileList } from "@components/core/Tiles";
 import HighlightedSection from "@components/page/common/HighlightedSection";
 import NextLink from "next/link";
-import { FiBookOpen, FiChevronRight, FiTool } from "react-icons/fi";
+import { FiBookOpen, FiCalendar, FiChevronRight, FiTool } from "react-icons/fi";
 import FeatureFlagsData from "data/features";
 import { useFeatureFlag } from "utils/features";
 import { getToolsPageContent } from "../data/content";
@@ -33,6 +33,7 @@ const statusColorMap = {
 
 function getToolIcon(icon?: string) {
   if (icon === "book") return FiBookOpen;
+  if (icon === "calendar") return FiCalendar;
   return FiTool;
 }
 

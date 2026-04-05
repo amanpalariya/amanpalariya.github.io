@@ -2,7 +2,7 @@ import { Box, HStack, Icon, Text, VStack } from "@chakra-ui/react";
 import { CategoryBadge } from "@components/core/Badges";
 import { Heading1 } from "@components/core/Texts";
 import type { ReactNode } from "react";
-import { FiBookOpen, FiTool } from "react-icons/fi";
+import { FiBookOpen, FiCalendar, FiTool } from "react-icons/fi";
 import type { ToolDefinition } from "../types";
 
 const statusColorMap = {
@@ -18,6 +18,7 @@ function formatStatus(value: ToolDefinition["status"]): string {
 
 function getToolIcon(icon?: string) {
   if (icon === "book") return FiBookOpen;
+  if (icon === "calendar") return FiCalendar;
   return FiTool;
 }
 

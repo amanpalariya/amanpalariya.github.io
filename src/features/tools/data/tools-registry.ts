@@ -5,6 +5,24 @@ type ToolSeed = Omit<ToolDefinition, "searchText">;
 
 const TOOL_SEEDS: ToolSeed[] = [
   {
+    id: "doomsday-algorithm",
+    name: "Doomsday Algorithm Trainer",
+    tagline: "Learn and practice weekday prediction for any date",
+    description:
+      "Interactive training tool for the Doomsday algorithm with step-by-step learning and a randomized practice mode.",
+    category: "experimental",
+    status: "beta",
+    tags: [
+      { id: "calendar", label: "Calendar Math" },
+      { id: "mental-math", label: "Mental Math" },
+    ],
+    path: "/tools/doomsday-algorithm/",
+    sortOrder: 8,
+    isFeatured: true,
+    icon: "calendar",
+    updatedAt: "2026-04-05",
+  },
+  {
     id: "epub-maker",
     name: "EPUB Maker",
     tagline: "Convert pasted HTML, text, or images into clean EPUB files",
