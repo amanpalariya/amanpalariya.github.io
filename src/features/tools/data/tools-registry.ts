@@ -9,7 +9,7 @@ const TOOL_SEEDS: ToolSeed[] = [
     name: "Doomsday Algorithm Trainer",
     tagline: "Learn and practice weekday prediction for any date",
     description:
-      "Interactive training tool for the Doomsday algorithm with step-by-step learning and a randomized practice mode.",
+      "Practice weekday prediction for any date using the Doomsday algorithm.",
     category: "experimental",
     status: "beta",
     tags: [

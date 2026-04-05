@@ -2,28 +2,34 @@
 
 import {
   Badge,
+  Box,
   Button,
   Card,
+  Dialog,
   Field,
   Grid,
   HStack,
   Icon,
+  IconButton,
   NumberInput,
-  ProgressCircle,
+  Progress,
   SimpleGrid,
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { useMemo, useState } from "react";
+import { DialogCloseTrigger, DialogContent } from "@components/ui/dialog";
+import { useEffect, useMemo, useState } from "react";
 import {
   LuCalendarRange,
   LuCircleCheck,
   LuClock3,
   LuFlag,
-  LuHash,
   LuPlay,
   LuRotateCcw,
+  LuSettings2,
   LuTarget,
+  LuCircleHelp,
+  LuKeyboard,
 } from "react-icons/lu";
 import type { IconType } from "react-icons";
 import { calculateDoomsdaySteps, type DateParts, WEEKDAYS } from "../domain/doomsday";
@@ -31,7 +37,6 @@ import { calculateDoomsdaySteps, type DateParts, WEEKDAYS } from "../domain/doom
 type PracticeSettings = {
   minYear: number;
   maxYear: number;
-  questionCount: number;
 };
 
 type PracticeQuestion = {
@@ -39,7 +44,6 @@ type PracticeQuestion = {
   choices: Array<{ value: string; label: string }>;
   correctValue: string;
   prompt: string;
-  helper: string;
 };
 
 type PracticeStats = {
@@ -56,19 +60,22 @@ type AnswerState = {
   responseMs: number;
 };
 
-type SessionStatus = "idle" | "running" | "finished";
+type HistoryItem = {
+  id: string;
+  dateLabel: string;
+  selectedLabel: string;
+  correctLabel: string;
+  isCorrect: boolean;
+  responseMs: number;
+};
+
+type SessionStatus = "idle" | "running";
 
 const MIN_ALLOWED_YEAR = 1600;
 const MAX_ALLOWED_YEAR = 2399;
-const MIN_QUESTIONS = 3;
-const MAX_QUESTIONS = 50;
 
 function clampYear(value: number): number {
   return Math.max(MIN_ALLOWED_YEAR, Math.min(MAX_ALLOWED_YEAR, value));
-}
-
-function clampQuestionCount(value: number): number {
-  return Math.max(MIN_QUESTIONS, Math.min(MAX_QUESTIONS, value));
 }
 
 function normalizeYearRange(minYear: number, maxYear: number): { minYear: number; maxYear: number } {
@@ -86,6 +93,15 @@ function formatDate(parts: DateParts): string {
   return `${parts.year}-${pad(parts.month)}-${pad(parts.day)}`;
 }
 
+function formatDateHuman(parts: DateParts): string {
+  return new Date(Date.UTC(parts.year, parts.month - 1, parts.day)).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+
 function getRandomDate(minYear: number, maxYear: number): DateParts {
   const { minYear: boundedMin, maxYear: boundedMax } = normalizeYearRange(minYear, maxYear);
   const year = Math.floor(Math.random() * (boundedMax - boundedMin + 1)) + boundedMin;
@@ -96,10 +112,7 @@ function getRandomDate(minYear: number, maxYear: number): DateParts {
 }
 
 function weekdayChoices(): Array<{ value: string; label: string }> {
-  return WEEKDAYS.map((dayName, index) => ({
-    value: String(index),
-    label: dayName,
-  }));
+  return WEEKDAYS.map((dayName, index) => ({ value: String(index), label: dayName }));
 }
 
 function buildQuestion(settings: PracticeSettings): PracticeQuestion {
@@ -110,8 +123,7 @@ function buildQuestion(settings: PracticeSettings): PracticeQuestion {
     date,
     choices: weekdayChoices(),
     correctValue: String(steps.weekdayIndex),
-    prompt: `Weekday for ${formatDate(date)}?`,
-    helper: "Full solve from century anchor to day offset.",
+    prompt: `Weekday for ${formatDateHuman(date)}?`,
   };
 }
 
@@ -119,15 +131,7 @@ function formatMs(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
-function StatCard({
-  icon,
-  label,
-  value,
-}: {
-  icon: IconType;
-  label: string;
-  value: string;
-}) {
+function StatCard({ icon, label, value }: { icon: IconType; label: string; value: string }) {
   return (
     <Card.Root variant={"outline"}>
       <Card.Body>
@@ -147,17 +151,22 @@ function StatCard({
 
 export function DoomsdayTrainerPage() {
   const [settingsDraft, setSettingsDraft] = useState<PracticeSettings>({
-    minYear: 1900,
-    maxYear: 2099,
-    questionCount: 10,
+    minYear: 2000,
+    maxYear: new Date().getFullYear(),
   });
 
   const [settings, setSettings] = useState<PracticeSettings>(settingsDraft);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+
   const [status, setStatus] = useState<SessionStatus>("idle");
   const [questionIndex, setQuestionIndex] = useState(0);
   const [question, setQuestion] = useState<PracticeQuestion | null>(null);
   const [questionStartedAt, setQuestionStartedAt] = useState<number>(0);
   const [answerState, setAnswerState] = useState<AnswerState | null>(null);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [prefix, setPrefix] = useState("");
+
   const [stats, setStats] = useState<PracticeStats>({
     attempts: 0,
     correct: 0,
@@ -168,9 +177,6 @@ export function DoomsdayTrainerPage() {
 
   const accuracy = stats.attempts > 0 ? Math.round((stats.correct / stats.attempts) * 100) : 0;
   const avgResponseMs = stats.attempts > 0 ? Math.round(stats.totalResponseMs / stats.attempts) : 0;
-  const remaining = Math.max(0, settings.questionCount - stats.attempts);
-  const progressPercent =
-    settings.questionCount > 0 ? Math.round((stats.attempts / settings.questionCount) * 100) : 0;
 
   const questionSteps = useMemo(() => {
     if (!question) return null;
@@ -182,7 +188,6 @@ export function DoomsdayTrainerPage() {
     const nextSettings: PracticeSettings = {
       ...settingsDraft,
       ...normalizedRange,
-      questionCount: clampQuestionCount(settingsDraft.questionCount),
     };
 
     setSettings(nextSettings);
@@ -190,6 +195,8 @@ export function DoomsdayTrainerPage() {
     setStats({ attempts: 0, correct: 0, streak: 0, bestStreak: 0, totalResponseMs: 0 });
     setQuestionIndex(0);
     setAnswerState(null);
+    setHistory([]);
+    setPrefix("");
 
     const first = buildQuestion(nextSettings);
     setQuestion(first);
@@ -202,6 +209,10 @@ export function DoomsdayTrainerPage() {
 
     const responseMs = Math.max(1, Date.now() - questionStartedAt);
     const isCorrect = choiceValue === question.correctValue;
+    const selectedLabel = question.choices.find((choice) => choice.value === choiceValue)?.label ?? choiceValue;
+    const correctLabel =
+      question.choices.find((choice) => choice.value === question.correctValue)?.label ??
+      question.correctValue;
 
     setAnswerState({ selectedValue: choiceValue, isCorrect, responseMs });
     setStats((current) => {
@@ -212,23 +223,92 @@ export function DoomsdayTrainerPage() {
       const totalResponseMs = current.totalResponseMs + responseMs;
       return { attempts, correct, streak, bestStreak, totalResponseMs };
     });
+
+    setHistory((current) => [
+      {
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        dateLabel: formatDateHuman(question.date),
+        selectedLabel,
+        correctLabel,
+        isCorrect,
+        responseMs,
+      },
+      ...current,
+    ]);
+
+    setPrefix("");
   }
 
   function nextQuestion() {
     if (!question || !answerState) return;
-
-    const isLast = stats.attempts >= settings.questionCount;
-    if (isLast) {
-      setStatus("finished");
-      return;
-    }
 
     const next = buildQuestion(settings);
     setQuestion(next);
     setQuestionIndex((current) => current + 1);
     setQuestionStartedAt(Date.now());
     setAnswerState(null);
+    setPrefix("");
   }
+
+  useEffect(() => {
+    if (status !== "running" || !question || answerState || settingsOpen || helpOpen) return;
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+
+      if (event.key === "Backspace") {
+        event.preventDefault();
+        setPrefix((current) => current.slice(0, -1));
+        return;
+      }
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setPrefix("");
+        return;
+      }
+
+      if (!/^[a-zA-Z]$/.test(event.key)) return;
+
+      event.preventDefault();
+      const nextPrefix = `${prefix}${event.key.toLowerCase()}`;
+      setPrefix(nextPrefix);
+
+      const matches = question.choices.filter((choice) =>
+        choice.label.toLowerCase().startsWith(nextPrefix),
+      );
+
+      if (matches.length === 1) {
+        submitAnswer(matches[0].value);
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [status, question, answerState, prefix, settingsOpen, helpOpen]);
+
+  useEffect(() => {
+    if (settingsOpen || helpOpen) return;
+
+    function onGlobalEnter(event: KeyboardEvent) {
+      if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+      if (event.key !== "Enter") return;
+
+      event.preventDefault();
+
+      if (status === "idle") {
+        startSession();
+        return;
+      }
+
+      if (status === "running" && answerState) {
+        nextQuestion();
+      }
+    }
+
+    window.addEventListener("keydown", onGlobalEnter);
+    return () => window.removeEventListener("keydown", onGlobalEnter);
+  }, [status, answerState, settingsOpen, helpOpen]);
 
   return (
     <VStack align={"stretch"} gap={5} px={[4, 6]} pb={6}>
@@ -239,167 +319,223 @@ export function DoomsdayTrainerPage() {
               <Icon as={LuTarget} color={"app.fg.subtle"} />
               <Text fontWeight={"semibold"}>Doomsday Practice</Text>
             </HStack>
-            <Badge>{status === "running" ? "In Session" : status === "finished" ? "Finished" : "Ready"}</Badge>
+            <HStack>
+              <Dialog.Root open={helpOpen} onOpenChange={(details) => setHelpOpen(details.open)}>
+                <Dialog.Trigger asChild>
+                  <IconButton aria-label={"Help"} variant={"outline"} size={"sm"}>
+                    <LuCircleHelp />
+                  </IconButton>
+                </Dialog.Trigger>
+                <DialogContent maxW={"560px"} rounded={"xl"}>
+                  <Dialog.Header>
+                    <Dialog.Title>
+                      <HStack>
+                        <Icon as={LuKeyboard} />
+                        <Text>Keyboard & Input Help</Text>
+                      </HStack>
+                    </Dialog.Title>
+                  </Dialog.Header>
+                  <Dialog.Body>
+                    <VStack align={"stretch"} gap={3}>
+                      <Text fontSize={"sm"} color={"app.fg.muted"}>
+                        Type weekday letters directly: for example `t` then `h` targets Thursday.
+                      </Text>
+                      <Text fontSize={"sm"} color={"app.fg.muted"}>
+                        Backspace removes one letter. Escape clears the full prefix.
+                      </Text>
+                      <Text fontSize={"sm"} color={"app.fg.muted"}>
+                        When the prefix matches exactly one weekday, the answer is auto-submitted.
+                      </Text>
+                      <Text fontSize={"sm"} color={"app.fg.muted"}>
+                        Press Enter to start a session, and Enter again after answering to go next.
+                      </Text>
+                    </VStack>
+                  </Dialog.Body>
+                  <DialogCloseTrigger />
+                </DialogContent>
+              </Dialog.Root>
+
+              <Dialog.Root open={settingsOpen} onOpenChange={(details) => setSettingsOpen(details.open)}>
+                <Dialog.Trigger asChild>
+                  <IconButton aria-label={"Settings"} variant={"outline"} size={"sm"}>
+                    <LuSettings2 />
+                  </IconButton>
+                </Dialog.Trigger>
+                <DialogContent maxW={"640px"} rounded={"xl"}>
+                  <Dialog.Header>
+                    <Dialog.Title>
+                      <HStack>
+                        <Icon as={LuFlag} />
+                        <Text>Session Settings</Text>
+                      </HStack>
+                    </Dialog.Title>
+                  </Dialog.Header>
+                  <Dialog.Body>
+                    <VStack align={"stretch"} gap={4}>
+                      <Grid templateColumns={["1fr", "1fr 1fr"]} gap={3}>
+                        <Field.Root>
+                          <Field.Label>
+                            <HStack gap={2}>
+                              <Icon as={LuCalendarRange} />
+                              <Text>From Year</Text>
+                            </HStack>
+                          </Field.Label>
+                          <NumberInput.Root
+                            value={String(settingsDraft.minYear)}
+                            min={MIN_ALLOWED_YEAR}
+                            max={MAX_ALLOWED_YEAR}
+                            onValueChange={(details) => {
+                              const parsed = Number(details.value);
+                              if (!Number.isNaN(parsed)) {
+                                setSettingsDraft((current) => ({ ...current, minYear: clampYear(parsed) }));
+                              }
+                            }}
+                          >
+                            <NumberInput.Control />
+                            <NumberInput.Input />
+                          </NumberInput.Root>
+                        </Field.Root>
+
+                        <Field.Root>
+                          <Field.Label>
+                            <HStack gap={2}>
+                              <Icon as={LuCalendarRange} />
+                              <Text>To Year</Text>
+                            </HStack>
+                          </Field.Label>
+                          <NumberInput.Root
+                            value={String(settingsDraft.maxYear)}
+                            min={MIN_ALLOWED_YEAR}
+                            max={MAX_ALLOWED_YEAR}
+                            onValueChange={(details) => {
+                              const parsed = Number(details.value);
+                              if (!Number.isNaN(parsed)) {
+                                setSettingsDraft((current) => ({ ...current, maxYear: clampYear(parsed) }));
+                              }
+                            }}
+                          >
+                            <NumberInput.Control />
+                            <NumberInput.Input />
+                          </NumberInput.Root>
+                        </Field.Root>
+                      </Grid>
+
+                      <HStack justify={"space-between"} wrap={"wrap"}>
+                        <Button
+                          variant={"outline"}
+                          onClick={() => {
+                            const currentYear = new Date().getFullYear();
+                            setSettingsDraft((current) => ({
+                              ...current,
+                              minYear: currentYear,
+                              maxYear: currentYear,
+                            }));
+                          }}
+                        >
+                          Reset to Current Year
+                        </Button>
+                        <Button onClick={() => setSettingsOpen(false)} colorPalette={"blue"}>
+                          Save
+                        </Button>
+                      </HStack>
+                    </VStack>
+                  </Dialog.Body>
+                  <DialogCloseTrigger />
+                </DialogContent>
+              </Dialog.Root>
+
+              <Badge>{status === "running" ? "In Session" : "Ready"}</Badge>
+            </HStack>
           </HStack>
         </Card.Body>
       </Card.Root>
 
-      <Card.Root variant={"outline"}>
-        <Card.Body>
-          <VStack align={"stretch"} gap={4}>
-            <HStack>
-              <Icon as={LuFlag} />
-              <Text fontWeight={"semibold"}>Session Settings</Text>
-            </HStack>
-
-            <Grid templateColumns={["1fr", "1fr 1fr"]} gap={3}>
-              <Field.Root>
-                <Field.Label>
-                  <HStack gap={2}>
-                    <Icon as={LuCalendarRange} />
-                    <Text>From Year</Text>
-                  </HStack>
-                </Field.Label>
-                <NumberInput.Root
-                  value={String(settingsDraft.minYear)}
-                  min={MIN_ALLOWED_YEAR}
-                  max={MAX_ALLOWED_YEAR}
-                  onValueChange={(details) => {
-                    const parsed = Number(details.value);
-                    if (!Number.isNaN(parsed)) {
-                      setSettingsDraft((current) => ({ ...current, minYear: clampYear(parsed) }));
-                    }
-                  }}
-                >
-                  <NumberInput.Control />
-                  <NumberInput.Input />
-                </NumberInput.Root>
-              </Field.Root>
-
-              <Field.Root>
-                <Field.Label>
-                  <HStack gap={2}>
-                    <Icon as={LuCalendarRange} />
-                    <Text>To Year</Text>
-                  </HStack>
-                </Field.Label>
-                <NumberInput.Root
-                  value={String(settingsDraft.maxYear)}
-                  min={MIN_ALLOWED_YEAR}
-                  max={MAX_ALLOWED_YEAR}
-                  onValueChange={(details) => {
-                    const parsed = Number(details.value);
-                    if (!Number.isNaN(parsed)) {
-                      setSettingsDraft((current) => ({ ...current, maxYear: clampYear(parsed) }));
-                    }
-                  }}
-                >
-                  <NumberInput.Control />
-                  <NumberInput.Input />
-                </NumberInput.Root>
-              </Field.Root>
-            </Grid>
-            <Field.Root maxW={"280px"}>
-              <Field.Label>
-                <HStack gap={2}>
-                  <Icon as={LuHash} />
-                  <Text>Questions</Text>
-                </HStack>
-              </Field.Label>
-              <NumberInput.Root
-                value={String(settingsDraft.questionCount)}
-                min={MIN_QUESTIONS}
-                max={MAX_QUESTIONS}
-                onValueChange={(details) => {
-                  const parsed = Number(details.value);
-                  if (!Number.isNaN(parsed)) {
-                    setSettingsDraft((current) => ({
-                      ...current,
-                      questionCount: clampQuestionCount(parsed),
-                    }));
-                  }
-                }}
-              >
-                <NumberInput.Control />
-                <NumberInput.Input />
-              </NumberInput.Root>
-            </Field.Root>
-
-            <HStack justify={"space-between"} wrap={"wrap"}>
-              <Text color={"app.fg.muted"} fontSize={"sm"}>
-                Full-date mode | Years {settingsDraft.minYear}-{settingsDraft.maxYear} |{" "}
-                {settingsDraft.questionCount} questions
-              </Text>
-              <Button onClick={startSession} colorPalette={"blue"}>
-                <Icon as={LuPlay} />
-                Start Test
-              </Button>
-            </HStack>
-          </VStack>
-        </Card.Body>
-      </Card.Root>
-
       <SimpleGrid columns={[1, 3]} gap={3}>
-        <StatCard
-          icon={LuCircleCheck}
-          label={"Score"}
-          value={`${stats.correct}/${settings.questionCount} (${accuracy}%)`}
-        />
-        <StatCard
-          icon={LuClock3}
-          label={"Avg Time"}
-          value={avgResponseMs > 0 ? formatMs(avgResponseMs) : "-"}
-        />
         <Card.Root variant={"outline"}>
           <Card.Body>
             <HStack justify={"space-between"}>
-              <Icon as={LuFlag} color={"app.fg.subtle"} />
+              <Icon as={LuCircleCheck} color={"app.fg.subtle"} />
               <Text fontSize={"xs"} color={"app.fg.subtle"}>
-                Progress
+                Score
               </Text>
             </HStack>
-            <HStack mt={1} justify={"space-between"}>
-              <Text fontWeight={"semibold"} fontSize={"lg"}>
-                {stats.attempts}/{settings.questionCount}
-              </Text>
-              <ProgressCircle.Root value={progressPercent} size="xs" colorPalette={"blue"}>
-                <ProgressCircle.Circle>
-                  <ProgressCircle.Track />
-                  <ProgressCircle.Range />
-                </ProgressCircle.Circle>
-              </ProgressCircle.Root>
-            </HStack>
+            <Text fontWeight={"semibold"} fontSize={"lg"} mt={1}>
+              {stats.correct}/{stats.attempts || 0} ({accuracy}%)
+            </Text>
+            <Box mt={2}>
+              <Progress.Root
+                value={accuracy}
+                colorPalette={accuracy >= 80 ? "green" : accuracy >= 60 ? "yellow" : "red"}
+              >
+                <Progress.Track>
+                  <Progress.Range />
+                </Progress.Track>
+              </Progress.Root>
+            </Box>
           </Card.Body>
         </Card.Root>
+
+        <StatCard icon={LuClock3} label={"Avg Time"} value={avgResponseMs > 0 ? formatMs(avgResponseMs) : "-"} />
+
+        <StatCard icon={LuFlag} label={"Answered"} value={`${stats.attempts}`} />
       </SimpleGrid>
 
       {status === "idle" ? (
-        <Card.Root variant={"subtle"}>
-          <Card.Body>
-            <Text color={"app.fg.muted"}>Configure settings and start a question-count test.</Text>
-          </Card.Body>
-        </Card.Root>
-      ) : null}
-
-      {status !== "idle" && question ? (
         <Card.Root borderColor={"app.border.default"}>
           <Card.Body>
             <VStack align={"stretch"} gap={4}>
               <HStack justify={"space-between"} wrap={"wrap"}>
-                <Badge>Q {Math.min(questionIndex + 1, settings.questionCount)} / {settings.questionCount}</Badge>
-                <Text fontSize={"sm"} color={"app.fg.muted"}>{question.helper}</Text>
+                <Badge>Practice Ready</Badge>
+                <Text fontSize={"sm"} color={"app.fg.muted"}>
+                  Full-date mode
+                </Text>
+              </HStack>
+              <Text fontSize={"2xl"} fontWeight={"semibold"}>
+                Weekday for Oct 12, 2026?
+              </Text>
+              <Text color={"app.fg.muted"}>
+                Years {settingsDraft.minYear}-{settingsDraft.maxYear}. Infinite questions.
+              </Text>
+              <HStack>
+                <Button onClick={startSession} colorPalette={"blue"}>
+                  <Icon as={LuPlay} />
+                  Start Test
+                </Button>
+              </HStack>
+            </VStack>
+          </Card.Body>
+        </Card.Root>
+      ) : null}
+
+      {status === "running" && question ? (
+        <Card.Root borderColor={"app.border.default"}>
+          <Card.Body>
+            <VStack align={"stretch"} gap={4}>
+              <HStack justify={"space-between"} wrap={"wrap"}>
+                <Badge>Q {questionIndex + 1}</Badge>
               </HStack>
 
-              <Text fontSize={"xl"} fontWeight={"semibold"}>{question.prompt}</Text>
+              <Text fontSize={"2xl"} fontWeight={"semibold"}>
+                {question.prompt}
+              </Text>
+
+              <HStack>
+                <Icon as={LuKeyboard} color={"app.fg.subtle"} />
+                <Text fontSize={"sm"} color={"app.fg.muted"}>
+                  Keyboard: type weekday letters, Enter for next.
+                </Text>
+              </HStack>
 
               <Grid templateColumns={["repeat(2, 1fr)", "repeat(4, 1fr)"]} gap={3}>
                 {question.choices.map((choice) => {
                   const hasAnswered = Boolean(answerState);
                   const isCorrectChoice = choice.value === question.correctValue;
                   const isSelected = answerState?.selectedValue === choice.value;
+                  const hasPrefix = prefix.length > 0;
+                  const matchesPrefix = choice.label.toLowerCase().startsWith(prefix.toLowerCase());
 
                   let variant: "outline" | "subtle" | "solid" = "outline";
-                  let colorPalette: "gray" | "green" | "red" = "gray";
+                  let colorPalette: "gray" | "green" | "red" | "yellow" = "gray";
 
                   if (hasAnswered && isCorrectChoice) {
                     variant = "solid";
@@ -407,13 +543,20 @@ export function DoomsdayTrainerPage() {
                   } else if (hasAnswered && isSelected && !isCorrectChoice) {
                     variant = "subtle";
                     colorPalette = "red";
+                  } else if (!hasAnswered && hasPrefix && matchesPrefix) {
+                    variant = "subtle";
+                    colorPalette = "yellow";
                   }
 
                   return (
                     <Button
                       key={choice.value}
                       onClick={() => submitAnswer(choice.value)}
-                      disabled={hasAnswered || status !== "running"}
+                      disabled={
+                        hasAnswered ||
+                        status !== "running" ||
+                        (hasPrefix && !matchesPrefix)
+                      }
                       variant={variant}
                       colorPalette={colorPalette}
                     >
@@ -437,7 +580,7 @@ export function DoomsdayTrainerPage() {
                       </Text>
 
                       <Text color={"app.fg.muted"} fontSize={"sm"}>
-                        Response time: {formatMs(answerState.responseMs)} | Remaining: {remaining}
+                        Response time: {formatMs(answerState.responseMs)}
                       </Text>
 
                       {questionSteps ? (
@@ -451,7 +594,7 @@ export function DoomsdayTrainerPage() {
                       <HStack>
                         <Button onClick={nextQuestion}>
                           <Icon as={LuPlay} />
-                          {stats.attempts >= settings.questionCount ? "Finish" : "Next"}
+                          Next
                         </Button>
                         <Button variant={"outline"} onClick={startSession}>
                           <Icon as={LuRotateCcw} />
@@ -467,35 +610,41 @@ export function DoomsdayTrainerPage() {
         </Card.Root>
       ) : null}
 
-      {status === "finished" ? (
-        <Card.Root variant={"subtle"}>
-          <Card.Body>
-            <VStack align={"stretch"} gap={2}>
-              <Text fontWeight={"semibold"}>Session complete</Text>
-              <Text color={"app.fg.muted"}>
-                Score: {stats.correct}/{settings.questionCount} | Accuracy: {accuracy}% | Avg time: {avgResponseMs > 0 ? formatMs(avgResponseMs) : "-"}
-              </Text>
-              <HStack>
-                <Button onClick={startSession}>
-                  <Icon as={LuPlay} />
-                  New Session
-                </Button>
-              </HStack>
-            </VStack>
-          </Card.Body>
-        </Card.Root>
-      ) : null}
-
-      <Card.Root variant={"subtle"}>
-        <Card.Body>
-          <HStack gap={2}>
-            <Icon as={LuClock3} color={"app.fg.subtle"} />
-            <Text color={"app.fg.muted"} fontSize={"sm"}>
-              Timed mode is intentionally disabled. This tool runs question-count sessions only.
-            </Text>
+      {history.length > 0 ? (
+        <VStack align={"stretch"} gap={3}>
+          <HStack>
+            <Icon as={LuFlag} color={"app.fg.subtle"} />
+            <Text fontWeight={"semibold"}>Question History</Text>
           </HStack>
-        </Card.Body>
-      </Card.Root>
+          {history.slice(0, 10).map((item) => (
+            <Card.Root key={item.id} variant={"outline"}>
+              <Card.Body>
+                <HStack justify={"space-between"} align={"start"} wrap={"wrap"}>
+                  <VStack align={"start"} gap={1}>
+                    <Text fontWeight={"medium"}>{item.dateLabel}</Text>
+                    <Text fontSize={"sm"} color={item.isCorrect ? "green.600" : "red.600"}>
+                      Your answer: {item.selectedLabel}
+                    </Text>
+                    {!item.isCorrect ? (
+                      <Text fontSize={"sm"} color={"app.fg.muted"}>
+                        Correct: {item.correctLabel}
+                      </Text>
+                    ) : null}
+                  </VStack>
+                  <VStack align={"end"} gap={1}>
+                    <Badge colorPalette={item.isCorrect ? "green" : "red"}>
+                      {item.isCorrect ? "Correct" : "Wrong"}
+                    </Badge>
+                    <Text fontSize={"sm"} color={"app.fg.muted"}>
+                      {formatMs(item.responseMs)}
+                    </Text>
+                  </VStack>
+                </HStack>
+              </Card.Body>
+            </Card.Root>
+          ))}
+        </VStack>
+      ) : null}
     </VStack>
   );
 }
