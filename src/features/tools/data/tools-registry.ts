@@ -18,7 +18,6 @@ const TOOL_SEEDS: ToolSeed[] = [
     ],
     path: "/tools/doomsday-algorithm/",
     sortOrder: 8,
-    isFeatured: true,
     icon: "calendar",
     updatedAt: "2026-04-05",
   },
