@@ -2,6 +2,13 @@
 
 This repository contains code for a personal website.
 
+## Features
+
+- Home, About, CV, Blogs, Projects, and Tools sections
+- Blog posts authored in Markdown (`src/data/blogs/markdown`)
+- Project detail pages authored in Markdown (`src/data/projects/markdown`)
+- Dedicated tools area for utility pages
+
 ## Stack
 
 Built with [Next.js](https://nextjs.org/) 16, [React](https://react.dev/) 19, [Chakra UI](https://chakra-ui.com/) v3, and TypeScript.
@@ -20,6 +27,12 @@ The main code lives in:
 
 `next.config.ts` is configured for static export (`output: "export"`).
 Running `next build` generates static files that can be hosted on any static file server.
+
+This repo deploys to GitHub Pages via GitHub Actions (`.github/workflows/nextjs.yml`):
+
+- Trigger: pushes to `main` (and manual `workflow_dispatch`)
+- Build: install dependencies and run `next build`
+- Publish: upload `./out` as Pages artifact and deploy with `actions/deploy-pages`
 
 ## Design
 
