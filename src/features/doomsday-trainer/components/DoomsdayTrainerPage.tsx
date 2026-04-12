@@ -27,16 +27,12 @@ import {
 } from "react-icons/lu";
 import type { IconType } from "react-icons";
 import { getWeekdayForDate, type DateParts, type WeekdayIndex, WEEKDAYS } from "../domain/doomsday";
-
-type WeekStartDay = "sunday" | "monday";
-type FirstDayNumberBase = 0 | 1;
-
-type PracticeSettings = {
-  minYear: number;
-  maxYear: number;
-  weekStartDay: WeekStartDay;
-  firstDayNumberBase: FirstDayNumberBase;
-};
+import {
+  createDefaultPracticeSettings,
+  readCalendarDrillSettings,
+  writeCalendarDrillSettings,
+} from "../services/settings-storage";
+import type { PracticeSettings } from "../types";
 
 type WeekdayChoice = {
   value: string;
@@ -182,14 +178,12 @@ function ShortcutHint({ label, icon }: { label: string; icon?: IconType }) {
 }
 
 export function WeekdayGuesserPage() {
-  const [settingsDraft, setSettingsDraft] = useState<PracticeSettings>({
-    minYear: 2000,
-    maxYear: new Date().getFullYear(),
-    weekStartDay: "sunday",
-    firstDayNumberBase: 1,
-  });
+  const [settingsDraft, setSettingsDraft] = useState<PracticeSettings>(
+    createDefaultPracticeSettings,
+  );
 
   const [settings, setSettings] = useState<PracticeSettings>(settingsDraft);
+  const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
 
   const [status, setStatus] = useState<SessionStatus>("idle");
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -213,6 +207,18 @@ export function WeekdayGuesserPage() {
   const accuracy = stats.attempts > 0 ? Math.round((stats.correct / stats.attempts) * 100) : 0;
   const avgResponseMs = stats.attempts > 0 ? Math.round(stats.totalResponseMs / stats.attempts) : 0;
   const displayedAvgResponseMs = avgResponseMs > 0 ? toDisplayedAvgMs(avgResponseMs) : 0;
+
+  useEffect(() => {
+    const savedSettings = readCalendarDrillSettings();
+    setSettingsDraft(savedSettings);
+    setSettings(savedSettings);
+    setIsSettingsLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isSettingsLoaded) return;
+    writeCalendarDrillSettings(settingsDraft);
+  }, [isSettingsLoaded, settingsDraft]);
 
   function startSession() {
     const normalizedRange = normalizeYearRange(settingsDraft.minYear, settingsDraft.maxYear);
