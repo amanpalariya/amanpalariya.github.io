@@ -39,7 +39,9 @@ export function LinkedInButtonSmall() {
         target="_blank"
         rel="noopener noreferrer"
         rounded={"full"}
-        colorScheme="blue"
+        color={"app.brand.linkedin.contrast"}
+        backgroundColor={"app.brand.linkedin.solid"}
+        _hover={{ opacity: 0.9 }}
         aria-label={"Open LinkedIn profile (opens in a new tab)"}
       >
         <Icon>
