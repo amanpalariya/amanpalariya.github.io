@@ -113,6 +113,10 @@ function formatMs(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
+function toDisplayedAvgMs(avgMs: number): number {
+  return Math.round(avgMs / 100) * 100;
+}
+
 function formatSignedPercent(delta: number): string {
   if (delta === 0) return "0%";
   return `${delta > 0 ? "+" : ""}${delta}%`;
@@ -164,6 +168,7 @@ export function WeekdayGuesserPage() {
 
   const accuracy = stats.attempts > 0 ? Math.round((stats.correct / stats.attempts) * 100) : 0;
   const avgResponseMs = stats.attempts > 0 ? Math.round(stats.totalResponseMs / stats.attempts) : 0;
+  const displayedAvgResponseMs = avgResponseMs > 0 ? toDisplayedAvgMs(avgResponseMs) : 0;
 
   function startSession() {
     const normalizedRange = normalizeYearRange(settingsDraft.minYear, settingsDraft.maxYear);
@@ -194,8 +199,8 @@ export function WeekdayGuesserPage() {
 
     const previousAccuracy =
       stats.attempts > 0 ? Math.round((stats.correct / stats.attempts) * 100) : null;
-    const previousAvgResponseMs =
-      stats.attempts > 0 ? Math.round(stats.totalResponseMs / stats.attempts) : null;
+    const previousAvgResponseDisplayMs =
+      stats.attempts > 0 ? toDisplayedAvgMs(Math.round(stats.totalResponseMs / stats.attempts)) : null;
 
     const attempts = stats.attempts + 1;
     const correct = stats.correct + (isCorrect ? 1 : 0);
@@ -205,14 +210,18 @@ export function WeekdayGuesserPage() {
     const nextStats: PracticeStats = { attempts, correct, streak, bestStreak, totalResponseMs };
 
     const nextAccuracy = Math.round((nextStats.correct / nextStats.attempts) * 100);
-    const nextAvgResponseMs = Math.round(nextStats.totalResponseMs / nextStats.attempts);
+    const nextAvgResponseDisplayMs = toDisplayedAvgMs(
+      Math.round(nextStats.totalResponseMs / nextStats.attempts),
+    );
 
     setAnswerState({ selectedValue: choiceValue, isCorrect, responseMs });
     setStats(nextStats);
     setTrends({
       accuracyDelta: previousAccuracy === null ? null : nextAccuracy - previousAccuracy,
       avgResponseDeltaMs:
-        previousAvgResponseMs === null ? null : nextAvgResponseMs - previousAvgResponseMs,
+        previousAvgResponseDisplayMs === null
+          ? null
+          : nextAvgResponseDisplayMs - previousAvgResponseDisplayMs,
     });
 
     setPrefix("");
@@ -337,7 +346,7 @@ export function WeekdayGuesserPage() {
                 <Stat.Root>
                   <Stat.Label>Avg Time</Stat.Label>
                   <HStack align={"center"} gap={2}>
-                    <Stat.ValueText>{avgResponseMs > 0 ? formatMs(avgResponseMs) : "-"}</Stat.ValueText>
+                    <Stat.ValueText>{avgResponseMs > 0 ? formatMs(displayedAvgResponseMs) : "-"}</Stat.ValueText>
                     <Box minW={"58px"}>
                       {trends.avgResponseDeltaMs !== null && trends.avgResponseDeltaMs !== 0 ? (
                         <HStack
