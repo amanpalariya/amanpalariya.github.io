@@ -11,7 +11,6 @@ import {
   Icon,
   NumberInput,
   Stat,
-  StatGroup,
   Text,
   VStack,
 } from "@chakra-ui/react";
@@ -313,18 +312,18 @@ export function WeekdayGuesserPage() {
         <VStack align={"stretch"} gap={4}>
           <Card.Root variant={"outline"} rounded={"2xl"}>
             <Card.Body>
-              <StatGroup>
-                <Stat.Root>
+              <Grid templateColumns={["repeat(2, minmax(0, 1fr))", "repeat(4, minmax(0, 1fr))"]} gap={3}>
+                <Stat.Root minW={0}>
                   <Stat.Label>Accuracy</Stat.Label>
-                  <HStack align={"center"} gap={2}>
+                  <HStack align={"center"} gap={1.5} wrap={"nowrap"}>
                     <Stat.ValueText>{accuracy}%</Stat.ValueText>
-                    <Box minW={"58px"}>
+                    <Box minW={{ base: "48px", md: "58px" }}>
                       {trends.accuracyDelta !== null && trends.accuracyDelta !== 0 ? (
                         <HStack
                           as={"span"}
                           gap={0.5}
                           color={getSignalColorPalette(trends.accuracyDelta, true)}
-                          fontSize={"xs"}
+                          fontSize={{ base: "2xs", md: "xs" }}
                           fontWeight={"medium"}
                           lineHeight={"short"}
                           align={"center"}
@@ -339,21 +338,21 @@ export function WeekdayGuesserPage() {
                     </Box>
                   </HStack>
                 </Stat.Root>
-                <Stat.Root>
+                <Stat.Root minW={0}>
                   <Stat.Label>Answered</Stat.Label>
                   <Stat.ValueText>{stats.attempts}</Stat.ValueText>
                 </Stat.Root>
-                <Stat.Root>
+                <Stat.Root minW={0}>
                   <Stat.Label>Avg Time</Stat.Label>
-                  <HStack align={"center"} gap={2}>
+                  <HStack align={"center"} gap={1.5} wrap={"nowrap"}>
                     <Stat.ValueText>{avgResponseMs > 0 ? formatMs(displayedAvgResponseMs) : "-"}</Stat.ValueText>
-                    <Box minW={"58px"}>
+                    <Box minW={{ base: "48px", md: "58px" }}>
                       {trends.avgResponseDeltaMs !== null && trends.avgResponseDeltaMs !== 0 ? (
                         <HStack
                           as={"span"}
                           gap={0.5}
                           color={getSignalColorPalette(trends.avgResponseDeltaMs, false)}
-                          fontSize={"xs"}
+                          fontSize={{ base: "2xs", md: "xs" }}
                           fontWeight={"medium"}
                           lineHeight={"short"}
                           align={"center"}
@@ -372,11 +371,11 @@ export function WeekdayGuesserPage() {
                     </Box>
                   </HStack>
                 </Stat.Root>
-                <Stat.Root>
+                <Stat.Root minW={0}>
                   <Stat.Label>Streak</Stat.Label>
                   <Stat.ValueText>{stats.streak}</Stat.ValueText>
                 </Stat.Root>
-              </StatGroup>
+              </Grid>
             </Card.Body>
           </Card.Root>
 
