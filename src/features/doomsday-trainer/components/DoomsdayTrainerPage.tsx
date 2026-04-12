@@ -387,7 +387,7 @@ export function WeekdayGuesserPage() {
                     {status === "running" && question ? (
                       <VStack align={"stretch"} gap={4}>
                         <HStack justify={"space-between"} align={"center"} gap={3} wrap={"wrap"}>
-                          <HStack align={"baseline"} gap={2} wrap={"wrap"}>
+                          <HStack align={"center"} gap={2} wrap={"wrap"}>
                             <Box
                               as={"span"}
                               minW={8}
