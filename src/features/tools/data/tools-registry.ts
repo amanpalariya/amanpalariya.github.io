@@ -5,7 +5,7 @@ type ToolSeed = Omit<ToolDefinition, "searchText">;
 
 const TOOL_SEEDS: ToolSeed[] = [
   {
-    id: "doomsday-algorithm",
+    id: "weekday-guesser",
     name: "Weekday Guesser",
     tagline: "Guess the weekday for random dates",
     description:
@@ -16,7 +16,7 @@ const TOOL_SEEDS: ToolSeed[] = [
       { id: "calendar", label: "Calendar Math" },
       { id: "mental-math", label: "Mental Math" },
     ],
-    path: "/tools/doomsday-algorithm/",
+    path: "/tools/weekday-guesser/",
     sortOrder: 8,
     icon: "calendar",
     updatedAt: "2026-04-05",

@@ -4,7 +4,7 @@ import { WeekdayGuesserPage } from "features/doomsday-trainer";
 import { ToolDetailsSection, getToolById } from "features/tools";
 
 export default function WeekdayGuesserToolPage() {
-  const tool = getToolById("doomsday-algorithm");
+  const tool = getToolById("weekday-guesser");
 
   return (
     <>
