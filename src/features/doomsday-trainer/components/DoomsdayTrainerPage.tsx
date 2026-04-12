@@ -14,26 +14,39 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
+import { Switch } from "@components/ui/switch";
 import HighlightedSection from "@components/page/common/HighlightedSection";
 import { useEffect, useState } from "react";
 import {
   LuCalendarRange,
   LuCircleCheck,
   LuCircleX,
-  LuFlag,
+  LuCornerDownLeft,
   LuPlay,
   LuRotateCcw,
 } from "react-icons/lu";
-import { getWeekdayForDate, type DateParts, WEEKDAYS } from "../domain/doomsday";
+import type { IconType } from "react-icons";
+import { getWeekdayForDate, type DateParts, type WeekdayIndex, WEEKDAYS } from "../domain/doomsday";
+
+type WeekStartDay = "sunday" | "monday";
+type FirstDayNumberBase = 0 | 1;
 
 type PracticeSettings = {
   minYear: number;
   maxYear: number;
+  weekStartDay: WeekStartDay;
+  firstDayNumberBase: FirstDayNumberBase;
+};
+
+type WeekdayChoice = {
+  value: string;
+  label: string;
+  shortcutKey: string;
 };
 
 type PracticeQuestion = {
   date: DateParts;
-  choices: Array<{ value: string; label: string }>;
+  choices: WeekdayChoice[];
   correctValue: string;
   prompt: string;
 };
@@ -61,6 +74,9 @@ type SessionStatus = "idle" | "running";
 
 const MIN_ALLOWED_YEAR = 1600;
 const MAX_ALLOWED_YEAR = 2399;
+
+const SUNDAY_FIRST_ORDER: WeekdayIndex[] = [0, 1, 2, 3, 4, 5, 6];
+const MONDAY_FIRST_ORDER: WeekdayIndex[] = [1, 2, 3, 4, 5, 6, 0];
 
 function clampYear(value: number): number {
   return Math.max(MIN_ALLOWED_YEAR, Math.min(MAX_ALLOWED_YEAR, value));
@@ -91,8 +107,14 @@ function getRandomDate(minYear: number, maxYear: number): DateParts {
   return { year, month, day };
 }
 
-function weekdayChoices(): Array<{ value: string; label: string }> {
-  return WEEKDAYS.map((dayName, index) => ({ value: String(index), label: dayName }));
+function weekdayChoices(settings: PracticeSettings): WeekdayChoice[] {
+  const weekdayOrder = settings.weekStartDay === "monday" ? MONDAY_FIRST_ORDER : SUNDAY_FIRST_ORDER;
+
+  return weekdayOrder.map((weekdayIndex, displayIndex) => ({
+    value: String(weekdayIndex),
+    label: WEEKDAYS[weekdayIndex],
+    shortcutKey: String(displayIndex + settings.firstDayNumberBase),
+  }));
 }
 
 function buildQuestion(settings: PracticeSettings): PracticeQuestion {
@@ -102,7 +124,7 @@ function buildQuestion(settings: PracticeSettings): PracticeQuestion {
 
   return {
     date,
-    choices: weekdayChoices(),
+    choices: weekdayChoices(settings),
     correctValue: String(correctIndex),
     prompt: `Weekday for ${formatDateHuman(date)}?`,
   };
@@ -138,10 +160,33 @@ function getSignalColorPalette(
   return isPositiveSignal ? "green.500" : "red.500";
 }
 
+function ShortcutHint({ label, icon }: { label: string; icon?: IconType }) {
+  return (
+    <HStack
+      minH={"1.5rem"}
+      px={1.5}
+      rounded={"md"}
+      borderWidth={"1px"}
+      borderColor={"currentColor"}
+      opacity={0.75}
+      fontSize={"2xs"}
+      fontWeight={"semibold"}
+      gap={1}
+      lineHeight={1}
+      flexShrink={0}
+    >
+      {icon ? <Icon as={icon} boxSize={3} /> : null}
+      <Text as={"span"}>{label}</Text>
+    </HStack>
+  );
+}
+
 export function WeekdayGuesserPage() {
   const [settingsDraft, setSettingsDraft] = useState<PracticeSettings>({
     minYear: 2000,
     maxYear: new Date().getFullYear(),
+    weekStartDay: "sunday",
+    firstDayNumberBase: 1,
   });
 
   const [settings, setSettings] = useState<PracticeSettings>(settingsDraft);
@@ -254,6 +299,17 @@ export function WeekdayGuesserPage() {
     function onKeyDown(event: KeyboardEvent) {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
 
+      const pressedKey = event.key.toLowerCase();
+
+      if (/^[0-9]$/.test(pressedKey)) {
+        const shortcutMatch = activeQuestion.choices.find((choice) => choice.shortcutKey === pressedKey);
+        if (shortcutMatch) {
+          event.preventDefault();
+          submitAnswer(shortcutMatch.value);
+        }
+        return;
+      }
+
       if (event.key === "Backspace") {
         event.preventDefault();
         setPrefix((current) => current.slice(0, -1));
@@ -266,10 +322,10 @@ export function WeekdayGuesserPage() {
         return;
       }
 
-      if (!/^[a-zA-Z]$/.test(event.key)) return;
+      if (!/^[a-z]$/.test(pressedKey)) return;
 
       event.preventDefault();
-      const nextPrefix = `${prefix}${event.key.toLowerCase()}`;
+      const nextPrefix = `${prefix}${pressedKey}`;
       setPrefix(nextPrefix);
 
       const matches = activeQuestion.choices.filter((choice) =>
@@ -459,10 +515,51 @@ export function WeekdayGuesserPage() {
                                 }
                                 variant={variant}
                                 colorPalette={colorPalette}
+                                justifyContent={"flex-start"}
+                                ps={3}
+                                pe={11}
+                                position={"relative"}
                               >
-                                {choice.label}
-                                {hasAnswered && isCorrectChoice ? <Icon as={LuCircleCheck} /> : null}
-                                {hasAnswered && isSelected && !isCorrectChoice ? <Icon as={LuCircleX} /> : null}
+                                <Text>{choice.label}</Text>
+
+                                {!hasAnswered ? (
+                                  <Box
+                                    position={"absolute"}
+                                    insetY={0}
+                                    insetEnd={0}
+                                    minW={8}
+                                    px={2}
+                                    display={"inline-flex"}
+                                    alignItems={"center"}
+                                    justifyContent={"center"}
+                                    _before={{
+                                      content: '""',
+                                      position: "absolute",
+                                      insetInlineStart: 0,
+                                      insetBlock: "20%",
+                                      w: "1px",
+                                      bg: "currentColor",
+                                      opacity: 0.2,
+                                    }}
+                                    opacity={0.8}
+                                    fontSize={"xs"}
+                                    fontWeight={"semibold"}
+                                    roundedEnd={"xl"}
+                                  >
+                                    {choice.shortcutKey}
+                                  </Box>
+                                ) : null}
+
+                                {hasAnswered && isCorrectChoice ? (
+                                  <Box position={"absolute"} insetEnd={3}>
+                                    <Icon as={LuCircleCheck} />
+                                  </Box>
+                                ) : null}
+                                {hasAnswered && isSelected && !isCorrectChoice ? (
+                                  <Box position={"absolute"} insetEnd={3}>
+                                    <Icon as={LuCircleX} />
+                                  </Box>
+                                ) : null}
                               </Button>
                             );
                           })}
@@ -478,64 +575,92 @@ export function WeekdayGuesserPage() {
                           </HStack>
                         </Fieldset.Legend>
                         <Fieldset.Content>
-                          <Grid templateColumns={["1fr", "1fr 1fr auto"]} gap={3} alignItems={"end"}>
-                            <Field.Root>
-                              <Field.Label>From Year</Field.Label>
-                              <NumberInput.Root
-                                value={String(settingsDraft.minYear)}
-                                min={MIN_ALLOWED_YEAR}
-                                max={MAX_ALLOWED_YEAR}
-                                onValueChange={(details) => {
-                                  const parsed = Number(details.value);
-                                  if (!Number.isNaN(parsed)) {
-                                    setSettingsDraft((current) => ({
-                                      ...current,
-                                      minYear: clampYear(parsed),
-                                    }));
-                                  }
+                          <VStack align={"stretch"} gap={4}>
+                            <Grid templateColumns={["1fr", "1fr 1fr auto"]} gap={3} alignItems={"end"}>
+                              <Field.Root>
+                                <Field.Label>From Year</Field.Label>
+                                <NumberInput.Root
+                                  value={String(settingsDraft.minYear)}
+                                  min={MIN_ALLOWED_YEAR}
+                                  max={MAX_ALLOWED_YEAR}
+                                  onValueChange={(details) => {
+                                    const parsed = Number(details.value);
+                                    if (!Number.isNaN(parsed)) {
+                                      setSettingsDraft((current) => ({
+                                        ...current,
+                                        minYear: clampYear(parsed),
+                                      }));
+                                    }
+                                  }}
+                                >
+                                  <NumberInput.Control />
+                                  <NumberInput.Input rounded={"xl"} />
+                                </NumberInput.Root>
+                              </Field.Root>
+
+                              <Field.Root>
+                                <Field.Label>To Year</Field.Label>
+                                <NumberInput.Root
+                                  value={String(settingsDraft.maxYear)}
+                                  min={MIN_ALLOWED_YEAR}
+                                  max={MAX_ALLOWED_YEAR}
+                                  onValueChange={(details) => {
+                                    const parsed = Number(details.value);
+                                    if (!Number.isNaN(parsed)) {
+                                      setSettingsDraft((current) => ({
+                                        ...current,
+                                        maxYear: clampYear(parsed),
+                                      }));
+                                    }
+                                  }}
+                                >
+                                  <NumberInput.Control />
+                                  <NumberInput.Input rounded={"xl"} />
+                                </NumberInput.Root>
+                              </Field.Root>
+
+                              <Button
+                                rounded={"xl"}
+                                variant={"outline"}
+                                onClick={() => {
+                                  const currentYear = new Date().getFullYear();
+                                  setSettingsDraft((current) => ({
+                                    ...current,
+                                    minYear: currentYear,
+                                    maxYear: currentYear,
+                                  }));
                                 }}
                               >
-                                <NumberInput.Control />
-                                <NumberInput.Input rounded={"xl"} />
-                              </NumberInput.Root>
-                            </Field.Root>
+                                Current Year
+                              </Button>
+                            </Grid>
 
-                            <Field.Root>
-                              <Field.Label>To Year</Field.Label>
-                              <NumberInput.Root
-                                value={String(settingsDraft.maxYear)}
-                                min={MIN_ALLOWED_YEAR}
-                                max={MAX_ALLOWED_YEAR}
-                                onValueChange={(details) => {
-                                  const parsed = Number(details.value);
-                                  if (!Number.isNaN(parsed)) {
-                                    setSettingsDraft((current) => ({
-                                      ...current,
-                                      maxYear: clampYear(parsed),
-                                    }));
-                                  }
+                            <HStack gap={6} wrap={"wrap"}>
+                              <Switch
+                                checked={settingsDraft.weekStartDay === "monday"}
+                                onCheckedChange={(details) => {
+                                  setSettingsDraft((current) => ({
+                                    ...current,
+                                    weekStartDay: details.checked ? "monday" : "sunday",
+                                  }));
                                 }}
                               >
-                                <NumberInput.Control />
-                                <NumberInput.Input rounded={"xl"} />
-                              </NumberInput.Root>
-                            </Field.Root>
+                                Monday as first day
+                              </Switch>
 
-                            <Button
-                              rounded={"xl"}
-                              variant={"outline"}
-                              onClick={() => {
-                                const currentYear = new Date().getFullYear();
-                                setSettingsDraft((current) => ({
-                                  ...current,
-                                  minYear: currentYear,
-                                  maxYear: currentYear,
-                                }));
-                              }}
-                            >
-                              Current Year
-                            </Button>
-                          </Grid>
+                              <Switch
+                                checked={settingsDraft.firstDayNumberBase === 0}
+                                onCheckedChange={(details) => {
+                                  setSettingsDraft((current) => ({
+                                    ...current,
+                                    firstDayNumberBase: details.checked ? 0 : 1,
+                                  }));
+                                }}
+                              >
+                                First day starts at 0
+                              </Switch>
+                            </HStack>
+                          </VStack>
                         </Fieldset.Content>
                       </Fieldset.Root>
                     )}
@@ -550,9 +675,19 @@ export function WeekdayGuesserPage() {
                         onClick={nextQuestion}
                         disabled={!answerState}
                         colorPalette={"blue"}
+                        justifyContent={"center"}
+                        px={4}
+                        position={"relative"}
                       >
-                        <Icon as={LuPlay} />
-                        Next
+                        <HStack gap={2}>
+                          <Icon as={LuPlay} />
+                          <Text>Next</Text>
+                        </HStack>
+                        {answerState ? (
+                          <Box position={"absolute"} insetEnd={4}>
+                            <ShortcutHint icon={LuCornerDownLeft} label={"Enter"} />
+                          </Box>
+                        ) : null}
                       </Button>
                       <Button flex={1} rounded={0} variant={"subtle"} colorPalette={"gray"} onClick={resetSession}>
                         <Icon as={LuRotateCcw} />
@@ -560,9 +695,22 @@ export function WeekdayGuesserPage() {
                       </Button>
                     </HStack>
                   ) : (
-                    <Button w={"full"} rounded={0} onClick={startSession} colorPalette={"blue"}>
-                      <Icon as={LuPlay} />
-                      Start
+                    <Button
+                      w={"full"}
+                      rounded={0}
+                      onClick={startSession}
+                      colorPalette={"blue"}
+                      justifyContent={"center"}
+                      px={4}
+                      position={"relative"}
+                    >
+                      <HStack gap={2}>
+                        <Icon as={LuPlay} />
+                        <Text>Start</Text>
+                      </HStack>
+                      <Box position={"absolute"} insetEnd={4}>
+                        <ShortcutHint icon={LuCornerDownLeft} label={"Enter"} />
+                      </Box>
                     </Button>
                   )}
                 </Card.Footer>
