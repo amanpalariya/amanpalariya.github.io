@@ -8,8 +8,7 @@ const TOOL_SEEDS: ToolSeed[] = [
     id: "weekday-guesser",
     name: "Weekday Guesser",
     tagline: "Guess the weekday for random dates",
-    description:
-      "Practice guessing weekdays for random dates with instant feedback.",
+    description: "Guess weekdays for random dates.",
     category: "experimental",
     status: "beta",
     tags: [

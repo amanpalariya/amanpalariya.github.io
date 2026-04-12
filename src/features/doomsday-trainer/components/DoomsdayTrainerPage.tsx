@@ -5,19 +5,16 @@ import {
   Box,
   Button,
   Card,
-  Dialog,
   Field,
   Grid,
   HStack,
   Icon,
-  IconButton,
   NumberInput,
-  Progress,
-  SimpleGrid,
+  Stat,
+  StatGroup,
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { DialogCloseTrigger, DialogContent } from "@components/ui/dialog";
 import { useEffect, useState } from "react";
 import {
   LuCalendarRange,
@@ -26,12 +23,7 @@ import {
   LuFlag,
   LuPlay,
   LuRotateCcw,
-  LuSettings2,
-  LuTarget,
-  LuCircleHelp,
-  LuKeyboard,
 } from "react-icons/lu";
-import type { IconType } from "react-icons";
 import { getWeekdayForDate, type DateParts, WEEKDAYS } from "../domain/doomsday";
 
 type PracticeSettings = {
@@ -115,24 +107,6 @@ function formatMs(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
-function StatCard({ icon, label, value }: { icon: IconType; label: string; value: string }) {
-  return (
-    <Card.Root variant={"outline"}>
-      <Card.Body>
-        <HStack justify={"space-between"}>
-          <Icon as={icon} color={"app.fg.subtle"} />
-          <Text fontSize={"xs"} color={"app.fg.subtle"}>
-            {label}
-          </Text>
-        </HStack>
-        <Text fontWeight={"semibold"} fontSize={"lg"} mt={1}>
-          {value}
-        </Text>
-      </Card.Body>
-    </Card.Root>
-  );
-}
-
 export function WeekdayGuesserPage() {
   const [settingsDraft, setSettingsDraft] = useState<PracticeSettings>({
     minYear: 2000,
@@ -140,8 +114,6 @@ export function WeekdayGuesserPage() {
   });
 
   const [settings, setSettings] = useState<PracticeSettings>(settingsDraft);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [helpOpen, setHelpOpen] = useState(false);
 
   const [status, setStatus] = useState<SessionStatus>("idle");
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -210,8 +182,17 @@ export function WeekdayGuesserPage() {
     setPrefix("");
   }
 
+  function resetSession() {
+    setStatus("idle");
+    setQuestion(null);
+    setQuestionIndex(0);
+    setAnswerState(null);
+    setPrefix("");
+    setStats({ attempts: 0, correct: 0, streak: 0, bestStreak: 0, totalResponseMs: 0 });
+  }
+
   useEffect(() => {
-    if (status !== "running" || !question || answerState || settingsOpen || helpOpen) return;
+    if (status !== "running" || !question || answerState) return;
     const activeQuestion = question;
 
     function onKeyDown(event: KeyboardEvent) {
@@ -246,11 +227,9 @@ export function WeekdayGuesserPage() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [status, question, answerState, prefix, settingsOpen, helpOpen]);
+  }, [status, question, answerState, prefix]);
 
   useEffect(() => {
-    if (settingsOpen || helpOpen) return;
-
     function onGlobalEnter(event: KeyboardEvent) {
       if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
       if (event.key !== "Enter") return;
@@ -269,198 +248,107 @@ export function WeekdayGuesserPage() {
 
     window.addEventListener("keydown", onGlobalEnter);
     return () => window.removeEventListener("keydown", onGlobalEnter);
-  }, [status, answerState, settingsOpen, helpOpen]);
+  }, [status, answerState]);
 
   return (
     <VStack align={"stretch"} gap={5} px={[4, 6]} pb={6}>
-      <Card.Root variant={"subtle"}>
+      <Card.Root variant={"outline"}>
         <Card.Body>
-          <HStack justify={"space-between"} wrap={"wrap"}>
-            <HStack>
-              <Icon as={LuTarget} color={"app.fg.subtle"} />
-              <Text fontWeight={"semibold"}>Weekday Guesser</Text>
-            </HStack>
-            <HStack>
-              <Dialog.Root open={helpOpen} onOpenChange={(details) => setHelpOpen(details.open)}>
-                <Dialog.Trigger asChild>
-                  <IconButton aria-label={"Help"} variant={"outline"} size={"sm"}>
-                    <LuCircleHelp />
-                  </IconButton>
-                </Dialog.Trigger>
-                <DialogContent maxW={"560px"} rounded={"xl"}>
-                  <Dialog.Header>
-                    <Dialog.Title>
-                      <HStack>
-                        <Icon as={LuKeyboard} />
-                        <Text>Keyboard & Input Help</Text>
-                      </HStack>
-                    </Dialog.Title>
-                  </Dialog.Header>
-                  <Dialog.Body>
-                    <VStack align={"stretch"} gap={3}>
-                      <Text fontSize={"sm"} color={"app.fg.muted"}>
-                        Type weekday letters directly: for example `t` then `h` targets Thursday.
-                      </Text>
-                      <Text fontSize={"sm"} color={"app.fg.muted"}>
-                        Backspace removes one letter. Escape clears the full prefix.
-                      </Text>
-                      <Text fontSize={"sm"} color={"app.fg.muted"}>
-                        When the prefix matches exactly one weekday, the answer is auto-submitted.
-                      </Text>
-                      <Text fontSize={"sm"} color={"app.fg.muted"}>
-                        Press Enter to start a session, and Enter again after answering to go next.
-                      </Text>
-                    </VStack>
-                  </Dialog.Body>
-                  <DialogCloseTrigger />
-                </DialogContent>
-              </Dialog.Root>
-
-              <Dialog.Root open={settingsOpen} onOpenChange={(details) => setSettingsOpen(details.open)}>
-                <Dialog.Trigger asChild>
-                  <IconButton aria-label={"Settings"} variant={"outline"} size={"sm"}>
-                    <LuSettings2 />
-                  </IconButton>
-                </Dialog.Trigger>
-                <DialogContent maxW={"640px"} rounded={"xl"}>
-                  <Dialog.Header>
-                    <Dialog.Title>
-                      <HStack>
-                        <Icon as={LuFlag} />
-                        <Text>Session Settings</Text>
-                      </HStack>
-                    </Dialog.Title>
-                  </Dialog.Header>
-                  <Dialog.Body>
-                    <VStack align={"stretch"} gap={4}>
-                      <Grid templateColumns={["1fr", "1fr 1fr"]} gap={3}>
-                        <Field.Root>
-                          <Field.Label>
-                            <HStack gap={2}>
-                              <Icon as={LuCalendarRange} />
-                              <Text>From Year</Text>
-                            </HStack>
-                          </Field.Label>
-                          <NumberInput.Root
-                            value={String(settingsDraft.minYear)}
-                            min={MIN_ALLOWED_YEAR}
-                            max={MAX_ALLOWED_YEAR}
-                            onValueChange={(details) => {
-                              const parsed = Number(details.value);
-                              if (!Number.isNaN(parsed)) {
-                                setSettingsDraft((current) => ({ ...current, minYear: clampYear(parsed) }));
-                              }
-                            }}
-                          >
-                            <NumberInput.Control />
-                            <NumberInput.Input />
-                          </NumberInput.Root>
-                        </Field.Root>
-
-                        <Field.Root>
-                          <Field.Label>
-                            <HStack gap={2}>
-                              <Icon as={LuCalendarRange} />
-                              <Text>To Year</Text>
-                            </HStack>
-                          </Field.Label>
-                          <NumberInput.Root
-                            value={String(settingsDraft.maxYear)}
-                            min={MIN_ALLOWED_YEAR}
-                            max={MAX_ALLOWED_YEAR}
-                            onValueChange={(details) => {
-                              const parsed = Number(details.value);
-                              if (!Number.isNaN(parsed)) {
-                                setSettingsDraft((current) => ({ ...current, maxYear: clampYear(parsed) }));
-                              }
-                            }}
-                          >
-                            <NumberInput.Control />
-                            <NumberInput.Input />
-                          </NumberInput.Root>
-                        </Field.Root>
-                      </Grid>
-
-                      <HStack justify={"space-between"} wrap={"wrap"}>
-                        <Button
-                          variant={"outline"}
-                          onClick={() => {
-                            const currentYear = new Date().getFullYear();
-                            setSettingsDraft((current) => ({
-                              ...current,
-                              minYear: currentYear,
-                              maxYear: currentYear,
-                            }));
-                          }}
-                        >
-                          Reset to Current Year
-                        </Button>
-                        <Button onClick={() => setSettingsOpen(false)} colorPalette={"blue"}>
-                          Save
-                        </Button>
-                      </HStack>
-                    </VStack>
-                  </Dialog.Body>
-                  <DialogCloseTrigger />
-                </DialogContent>
-              </Dialog.Root>
-
-              <Badge>{status === "running" ? "In Session" : "Ready"}</Badge>
-            </HStack>
-          </HStack>
+          <VStack align={"stretch"} gap={3}>
+            <StatGroup>
+              <Stat.Root>
+                <Stat.Label>Accuracy</Stat.Label>
+                <Stat.ValueText>{accuracy}%</Stat.ValueText>
+              </Stat.Root>
+              <Stat.Root>
+                <Stat.Label>Answered</Stat.Label>
+                <Stat.ValueText>{stats.attempts}</Stat.ValueText>
+              </Stat.Root>
+              <Stat.Root>
+                <Stat.Label>Avg Time</Stat.Label>
+                <Stat.ValueText>{avgResponseMs > 0 ? formatMs(avgResponseMs) : "-"}</Stat.ValueText>
+              </Stat.Root>
+              <Stat.Root>
+                <Stat.Label>Streak</Stat.Label>
+                <Stat.ValueText>{stats.streak}</Stat.ValueText>
+              </Stat.Root>
+            </StatGroup>
+          </VStack>
         </Card.Body>
       </Card.Root>
-
-      <SimpleGrid columns={[1, 3]} gap={3}>
-        <Card.Root variant={"outline"}>
-          <Card.Body>
-            <HStack justify={"space-between"}>
-              <Icon as={LuCircleCheck} color={"app.fg.subtle"} />
-              <Text fontSize={"xs"} color={"app.fg.subtle"}>
-                Score
-              </Text>
-            </HStack>
-            <Text fontWeight={"semibold"} fontSize={"lg"} mt={1}>
-              {stats.correct}/{stats.attempts || 0} ({accuracy}%)
-            </Text>
-            <Box mt={2}>
-              <Progress.Root
-                value={accuracy}
-                colorPalette={accuracy >= 80 ? "green" : accuracy >= 60 ? "yellow" : "red"}
-              >
-                <Progress.Track>
-                  <Progress.Range />
-                </Progress.Track>
-              </Progress.Root>
-            </Box>
-          </Card.Body>
-        </Card.Root>
-
-        <StatCard icon={LuClock3} label={"Avg Time"} value={avgResponseMs > 0 ? formatMs(avgResponseMs) : "-"} />
-
-        <StatCard icon={LuFlag} label={"Answered"} value={`${stats.attempts}`} />
-      </SimpleGrid>
 
       {status === "idle" ? (
         <Card.Root borderColor={"app.border.default"}>
           <Card.Body>
             <VStack align={"stretch"} gap={4}>
-              <HStack justify={"space-between"} wrap={"wrap"}>
-                <Badge>Practice Ready</Badge>
-                <Text fontSize={"sm"} color={"app.fg.muted"}>
-                  Random full-date mode
-                </Text>
-              </HStack>
-              <Text fontSize={"2xl"} fontWeight={"semibold"}>
-                Weekday for Oct 12, 2026?
-              </Text>
-              <Text color={"app.fg.muted"}>
-                Years {settingsDraft.minYear}-{settingsDraft.maxYear}. Infinite questions.
-              </Text>
+              <Grid templateColumns={["1fr", "1fr 1fr"]} gap={3}>
+                <Field.Root>
+                  <Field.Label>
+                    <HStack gap={2}>
+                      <Icon as={LuCalendarRange} />
+                      <Text>From Year</Text>
+                    </HStack>
+                  </Field.Label>
+                  <NumberInput.Root
+                    value={String(settingsDraft.minYear)}
+                    min={MIN_ALLOWED_YEAR}
+                    max={MAX_ALLOWED_YEAR}
+                    onValueChange={(details) => {
+                      const parsed = Number(details.value);
+                      if (!Number.isNaN(parsed)) {
+                        setSettingsDraft((current) => ({ ...current, minYear: clampYear(parsed) }));
+                      }
+                    }}
+                  >
+                    <NumberInput.Control />
+                    <NumberInput.Input />
+                  </NumberInput.Root>
+                </Field.Root>
+
+                <Field.Root>
+                  <Field.Label>
+                    <HStack gap={2}>
+                      <Icon as={LuCalendarRange} />
+                      <Text>To Year</Text>
+                    </HStack>
+                  </Field.Label>
+                  <NumberInput.Root
+                    value={String(settingsDraft.maxYear)}
+                    min={MIN_ALLOWED_YEAR}
+                    max={MAX_ALLOWED_YEAR}
+                    onValueChange={(details) => {
+                      const parsed = Number(details.value);
+                      if (!Number.isNaN(parsed)) {
+                        setSettingsDraft((current) => ({ ...current, maxYear: clampYear(parsed) }));
+                      }
+                    }}
+                  >
+                    <NumberInput.Control />
+                    <NumberInput.Input />
+                  </NumberInput.Root>
+                </Field.Root>
+              </Grid>
+
               <HStack>
+                <Button
+                  variant={"outline"}
+                  onClick={() => {
+                    const currentYear = new Date().getFullYear();
+                    setSettingsDraft((current) => ({
+                      ...current,
+                      minYear: currentYear,
+                      maxYear: currentYear,
+                    }));
+                  }}
+                >
+                  Current Year
+                </Button>
                 <Button onClick={startSession} colorPalette={"blue"}>
                   <Icon as={LuPlay} />
-                  Start Guessing
+                  Start
+                </Button>
+                <Button variant={"ghost"} onClick={resetSession}>
+                  Reset
                 </Button>
               </HStack>
             </VStack>
@@ -472,19 +360,39 @@ export function WeekdayGuesserPage() {
         <Card.Root borderColor={"app.border.default"}>
           <Card.Body>
             <VStack align={"stretch"} gap={4}>
-              <HStack justify={"space-between"} wrap={"wrap"}>
-                <Badge>Q {questionIndex + 1}</Badge>
-              </HStack>
-
-              <Text fontSize={"2xl"} fontWeight={"semibold"}>
-                {question.prompt}
-              </Text>
-
-              <HStack>
-                <Icon as={LuKeyboard} color={"app.fg.subtle"} />
-                <Text fontSize={"sm"} color={"app.fg.muted"}>
-                  Keyboard: type weekday letters, Enter for next.
-                </Text>
+              <HStack justify={"space-between"} align={"center"} gap={3} wrap={"wrap"}>
+                <HStack align={"baseline"} gap={2} wrap={"wrap"}>
+                  <Box
+                    as={"span"}
+                    minW={8}
+                    h={8}
+                    display={"inline-flex"}
+                    alignItems={"center"}
+                    justifyContent={"center"}
+                    rounded={"full"}
+                    borderWidth={"1px"}
+                    borderColor={"app.border.default"}
+                    color={"app.fg.subtle"}
+                    fontSize={"sm"}
+                    fontWeight={"medium"}
+                  >
+                    {questionIndex + 1}
+                  </Box>
+                  <Text fontSize={"2xl"} fontWeight={"normal"}>
+                    <Text as={"span"} color={"app.fg.muted"} fontWeight={"normal"}>
+                      Weekday for
+                    </Text>{" "}
+                    <Text as={"span"} fontWeight={"semibold"}>
+                      {formatDateHuman(question.date)}
+                    </Text>
+                    <Text as={"span"} color={"app.fg.muted"} fontWeight={"normal"}>
+                      ?
+                    </Text>
+                  </Text>
+                </HStack>
+                <Button variant={"ghost"} size={"sm"} onClick={resetSession}>
+                  Reset
+                </Button>
               </HStack>
 
               <Grid templateColumns={["repeat(2, 1fr)", "repeat(4, 1fr)"]} gap={3}>
@@ -538,10 +446,6 @@ export function WeekdayGuesserPage() {
                               question.choices.find((choice) => choice.value === question.correctValue)
                                 ?.label ?? question.correctValue
                             }`}
-                      </Text>
-
-                      <Text color={"app.fg.muted"} fontSize={"sm"}>
-                        Response time: {formatMs(answerState.responseMs)}
                       </Text>
 
                       <HStack>
