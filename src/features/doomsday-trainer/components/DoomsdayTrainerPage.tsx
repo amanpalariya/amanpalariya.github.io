@@ -21,6 +21,7 @@ import { useEffect, useState } from "react";
 import {
   LuCalendarRange,
   LuCircleCheck,
+  LuCircleX,
   LuClock3,
   LuFlag,
   LuPlay,
@@ -443,6 +444,8 @@ export function WeekdayGuesserPage() {
                               colorPalette={colorPalette}
                             >
                               {choice.label}
+                              {hasAnswered && isCorrectChoice ? <Icon as={LuCircleCheck} /> : null}
+                              {hasAnswered && isSelected && !isCorrectChoice ? <Icon as={LuCircleX} /> : null}
                             </Button>
                           );
                         })}
@@ -452,15 +455,6 @@ export function WeekdayGuesserPage() {
                         <Card.Root variant={"subtle"} rounded={"2xl"}>
                           <Card.Body>
                             <VStack align={"stretch"} gap={2}>
-                              <Text fontWeight={"semibold"}>
-                                {answerState.isCorrect
-                                  ? "Correct"
-                                  : `Correct answer: ${
-                                      question.choices.find((choice) => choice.value === question.correctValue)
-                                        ?.label ?? question.correctValue
-                                    }`}
-                              </Text>
-
                               <HStack>
                                 <Button rounded={"xl"} onClick={nextQuestion}>
                                   <Icon as={LuPlay} />
