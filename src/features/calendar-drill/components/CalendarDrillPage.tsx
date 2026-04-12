@@ -245,6 +245,7 @@ export function CalendarDrillPage() {
       <Box w={"full"} px={[4, 6]}>
         <VStack align={"stretch"} gap={4}>
           <SessionStatsCard
+            showPlaceholderStats={status === "idle"}
             accuracy={accuracy}
             attempts={stats.attempts}
             avgResponseMs={avgResponseMs}
