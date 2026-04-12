@@ -5,12 +5,26 @@ type ToolSeed = Omit<ToolDefinition, "searchText">;
 
 const TOOL_SEEDS: ToolSeed[] = [
   {
+    id: "calendar-drill",
+    name: "Calendar Drill",
+    tagline: "Practice weekdays for random dates",
+    description: "Guess weekdays for random dates.",
+    status: "stable",
+    tags: [
+      { id: "calendar", label: "Calendar" },
+      { id: "math", label: "Math" },
+    ],
+    path: "/tools/calendar-drill/",
+    sortOrder: 8,
+    icon: "calendar",
+    updatedAt: "2026-04-05",
+  },
+  {
     id: "epub-maker",
     name: "EPUB Maker",
     tagline: "Convert pasted HTML, text, or images into clean EPUB files",
     description:
       "Paste HTML pages, plain text, or images, reorder chapters, set metadata, and generate a downloadable EPUB.",
-    category: "conversion",
     status: "beta",
     tags: [{ id: "epub", label: "EPUB" }],
     path: "/tools/epub-maker/",

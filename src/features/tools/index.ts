@@ -6,7 +6,6 @@ export { getAllTools, getToolById } from "./data/tools-registry";
 export { getToolsPageContent } from "./data/content";
 
 export type {
-  ToolCategory,
   ToolDefinition,
   ToolFiltersState,
   ToolSearchResult,

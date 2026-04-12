@@ -3,7 +3,7 @@
 import { Box, Button, HStack, Text, VStack } from "@chakra-ui/react";
 import { FeaturedIndicator } from "@components/core/Badges";
 import { Switch } from "@components/ui/switch";
-import type { ToolCategory, ToolFiltersState, ToolStatus } from "../types";
+import type { ToolFiltersState, ToolStatus } from "../types";
 
 function FilterRow<T extends string>({
   label,
@@ -53,25 +53,15 @@ function FilterRow<T extends string>({
 
 export function ToolsFilters({
   filters,
-  categories,
   statuses,
   onChange,
 }: {
   filters: ToolFiltersState;
-  categories: ToolCategory[];
   statuses: ToolStatus[];
   onChange: (next: ToolFiltersState) => void;
 }) {
   return (
     <VStack align={"stretch"} gap={3}>
-      <FilterRow<ToolCategory>
-        label={"Category"}
-        allLabel={"All categories"}
-        options={categories}
-        currentValue={filters.category}
-        onChange={(category) => onChange({ ...filters, category })}
-      />
-
       <FilterRow<ToolStatus>
         label={"Status"}
         allLabel={"All status"}

@@ -6,7 +6,7 @@ import { Heading1, SubtitleText } from "@components/core/Texts";
 import { TileList } from "@components/core/Tiles";
 import HighlightedSection from "@components/page/common/HighlightedSection";
 import NextLink from "next/link";
-import { FiBookOpen, FiChevronRight, FiTool } from "react-icons/fi";
+import { FiBookOpen, FiCalendar, FiChevronRight, FiTool } from "react-icons/fi";
 import FeatureFlagsData from "data/features";
 import { useFeatureFlag } from "utils/features";
 import { getToolsPageContent } from "../data/content";
@@ -19,20 +19,13 @@ import { useMemo, useState } from "react";
 
 const defaultFilters: ToolFiltersState = {
   query: "",
-  category: "all",
   status: "all",
   featuredOnly: false,
 };
 
-const statusColorMap = {
-  stable: "green",
-  beta: "blue",
-  alpha: "purple",
-  archived: "gray",
-} as const;
-
 function getToolIcon(icon?: string) {
   if (icon === "book") return FiBookOpen;
+  if (icon === "calendar") return FiCalendar;
   return FiTool;
 }
 
@@ -67,8 +60,10 @@ function ToolListTile({ tool }: { tool: ToolDefinition }) {
           </HStack>
 
           <HStack gap={2} wrap={"wrap"}>
-            <CategoryBadge color={statusColorMap[tool.status]}>{tool.status}</CategoryBadge>
-            <CategoryBadge>{tool.category}</CategoryBadge>
+            {tool.status === "beta" ? <CategoryBadge color={"blue"}>Beta</CategoryBadge> : null}
+            {tool.tags.map((tag) => (
+              <CategoryBadge key={tag.id}>{tag.label}</CategoryBadge>
+            ))}
           </HStack>
         </VStack>
       </Box>
@@ -83,7 +78,6 @@ function Main({
   showFilters,
   filters,
   onFiltersChange,
-  categories,
   statuses,
   searchPlaceholder,
 }: {
@@ -93,7 +87,6 @@ function Main({
   showFilters: boolean;
   filters: ToolFiltersState;
   onFiltersChange: (next: ToolFiltersState) => void;
-  categories: Array<ToolDefinition["category"]>;
   statuses: Array<ToolDefinition["status"]>;
   searchPlaceholder: string;
 }) {
@@ -115,7 +108,6 @@ function Main({
         {showFilters ? (
           <ToolsFilters
             filters={filters}
-            categories={categories}
             statuses={statuses}
             onChange={onFiltersChange}
           />
@@ -133,11 +125,6 @@ export function ToolsDirectoryPage() {
   );
   const [filters, setFilters] = useState<ToolFiltersState>(defaultFilters);
 
-  const categories = useMemo(
-    () => Array.from(new Set(tools.map((tool) => tool.category))),
-    [tools],
-  );
-
   const statuses = useMemo(
     () => Array.from(new Set(tools.map((tool) => tool.status))),
     [tools],
@@ -146,7 +133,7 @@ export function ToolsDirectoryPage() {
   const filteredTools = useMemo(() => filterTools(tools, filters), [tools, filters]);
   const visibleTools = forceEmptyStates ? [] : filteredTools;
   const showSearch = tools.length > 1;
-  const showFilters = categories.length > 1 || statuses.length > 1;
+  const showFilters = statuses.length > 1;
 
   return (
     <VStack align={"stretch"} gap={0}>
@@ -157,7 +144,6 @@ export function ToolsDirectoryPage() {
         showFilters={showFilters}
         filters={filters}
         onFiltersChange={setFilters}
-        categories={categories}
         statuses={statuses}
         searchPlaceholder={content.searchPlaceholder}
       />

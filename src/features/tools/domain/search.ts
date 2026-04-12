@@ -1,5 +1,4 @@
 import type {
-  ToolCategory,
   ToolDefinition,
   ToolFiltersState,
   ToolSearchResult,
@@ -17,7 +16,6 @@ export function buildToolSearchText(tool: ToolDefinition): string {
       tool.name,
       tool.tagline,
       tool.description,
-      tool.category,
       tool.status,
       ...tool.tags.map((tag) => `${tag.id} ${tag.label}`),
     ].join(SEARCHABLE_SEPARATOR),
@@ -42,7 +40,6 @@ export function rankTools(tools: ToolDefinition[], query: string): ToolSearchRes
       const name = normalize(tool.name);
       const tagline = normalize(tool.tagline);
       const description = normalize(tool.description);
-      const category = normalize(tool.category);
       const tags = tool.tags.map((tag) => normalize(`${tag.id} ${tag.label}`));
 
       if (name.includes(normalizedQuery)) {
@@ -58,11 +55,6 @@ export function rankTools(tools: ToolDefinition[], query: string): ToolSearchRes
       if (description.includes(normalizedQuery)) {
         fields.push("description");
         score += 3;
-      }
-
-      if (category.includes(normalizedQuery)) {
-        fields.push("category");
-        score += 2;
       }
 
       if (tags.some((tag) => tag.includes(normalizedQuery))) {
@@ -95,10 +87,6 @@ export function filterTools(
   const ranked = rankTools(tools, filters.query).map((result) => result.tool);
 
   return ranked.filter((tool) => {
-    if (filters.category !== "all" && tool.category !== filters.category) {
-      return false;
-    }
-
     if (filters.status !== "all" && tool.status !== filters.status) {
       return false;
     }
@@ -109,23 +97,4 @@ export function filterTools(
 
     return true;
   });
-}
-
-export function groupToolsByCategory(
-  tools: ToolDefinition[],
-): Record<ToolCategory, ToolDefinition[]> {
-  const groups: Record<ToolCategory, ToolDefinition[]> = {
-    conversion: [],
-    text: [],
-    media: [],
-    dev: [],
-    writing: [],
-    experimental: [],
-  };
-
-  for (const tool of tools) {
-    groups[tool.category].push(tool);
-  }
-
-  return groups;
 }

@@ -109,6 +109,20 @@ export const APP_SEMANTIC_COLOR_TOKENS = {
       number: semanticColor("{colors.orange.500}", "{colors.orange.500}"),
       function: semanticColor("{colors.blue.600}", "{colors.blue.400}"),
     },
+    calendarDrill: {
+      signal: {
+        positive: semanticColor("{colors.green.500}", "{colors.green.400}"),
+        negative: semanticColor("{colors.red.500}", "{colors.red.400}"),
+        neutral: semanticColor("{colors.gray.700}", "{colors.gray.300}"),
+      },
+      button: {
+        primary: {
+          bg: semanticColor("{colors.blue.500}", "{colors.blue.400}"),
+          hoverBg: semanticColor("{colors.blue.600}", "{colors.blue.500}"),
+          fg: semanticColor("{colors.white}", "{colors.gray.900}"),
+        },
+      },
+    },
     epub: EPUB_MAKER_SEMANTIC_COLOR_TOKENS,
   },
 } as const;

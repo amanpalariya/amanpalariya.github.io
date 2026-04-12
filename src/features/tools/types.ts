@@ -1,11 +1,3 @@
-export type ToolCategory =
-  | "conversion"
-  | "text"
-  | "media"
-  | "dev"
-  | "writing"
-  | "experimental";
-
 export type ToolStatus = "stable" | "beta" | "alpha" | "archived";
 
 export interface ToolTag {
@@ -18,7 +10,6 @@ export interface ToolDefinition {
   name: string;
   tagline: string;
   description: string;
-  category: ToolCategory;
   status: ToolStatus;
   tags: ToolTag[];
   path: string;
@@ -39,7 +30,6 @@ export interface ToolsPageContent {
 
 export interface ToolFiltersState {
   query: string;
-  category: "all" | ToolCategory;
   status: "all" | ToolStatus;
   featuredOnly: boolean;
 }
@@ -47,5 +37,5 @@ export interface ToolFiltersState {
 export interface ToolSearchResult {
   tool: ToolDefinition;
   score: number;
-  matchedFields: Array<"name" | "tagline" | "description" | "tags" | "category">;
+  matchedFields: Array<"name" | "tagline" | "description" | "tags">;
 }
