@@ -5,7 +5,7 @@ import { getToolById } from "features/tools/data/tools-registry";
 const doomsdayTool = getToolById("doomsday-algorithm");
 
 export const metadata: Metadata = {
-  title: getPageTitle(doomsdayTool?.name ?? "Doomsday Algorithm Trainer"),
+  title: getPageTitle(doomsdayTool?.name ?? "Weekday Guesser"),
 };
 
 export default function DoomsdayAlgorithmLayout({

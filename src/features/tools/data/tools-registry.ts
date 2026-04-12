@@ -6,10 +6,10 @@ type ToolSeed = Omit<ToolDefinition, "searchText">;
 const TOOL_SEEDS: ToolSeed[] = [
   {
     id: "doomsday-algorithm",
-    name: "Doomsday Algorithm Trainer",
-    tagline: "Learn and practice weekday prediction for any date",
+    name: "Weekday Guesser",
+    tagline: "Guess the weekday for random dates",
     description:
-      "Practice weekday prediction for any date using the Doomsday algorithm.",
+      "Practice guessing weekdays for random dates with instant feedback.",
     category: "experimental",
     status: "beta",
     tags: [

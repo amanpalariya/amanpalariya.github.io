@@ -18,7 +18,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { DialogCloseTrigger, DialogContent } from "@components/ui/dialog";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   LuCalendarRange,
   LuCircleCheck,
@@ -32,7 +32,7 @@ import {
   LuKeyboard,
 } from "react-icons/lu";
 import type { IconType } from "react-icons";
-import { calculateDoomsdaySteps, type DateParts, WEEKDAYS } from "../domain/doomsday";
+import { getWeekdayForDate, type DateParts, WEEKDAYS } from "../domain/doomsday";
 
 type PracticeSettings = {
   minYear: number;
@@ -60,15 +60,6 @@ type AnswerState = {
   responseMs: number;
 };
 
-type HistoryItem = {
-  id: string;
-  dateLabel: string;
-  selectedLabel: string;
-  correctLabel: string;
-  isCorrect: boolean;
-  responseMs: number;
-};
-
 type SessionStatus = "idle" | "running";
 
 const MIN_ALLOWED_YEAR = 1600;
@@ -83,14 +74,6 @@ function normalizeYearRange(minYear: number, maxYear: number): { minYear: number
   const safeMax = clampYear(maxYear);
   if (safeMin <= safeMax) return { minYear: safeMin, maxYear: safeMax };
   return { minYear: safeMax, maxYear: safeMin };
-}
-
-function pad(value: number): string {
-  return value.toString().padStart(2, "0");
-}
-
-function formatDate(parts: DateParts): string {
-  return `${parts.year}-${pad(parts.month)}-${pad(parts.day)}`;
 }
 
 function formatDateHuman(parts: DateParts): string {
@@ -117,12 +100,13 @@ function weekdayChoices(): Array<{ value: string; label: string }> {
 
 function buildQuestion(settings: PracticeSettings): PracticeQuestion {
   const date = getRandomDate(settings.minYear, settings.maxYear);
-  const steps = calculateDoomsdaySteps(date);
+  const correctWeekday = getWeekdayForDate(date);
+  const correctIndex = WEEKDAYS.findIndex((weekday) => weekday === correctWeekday);
 
   return {
     date,
     choices: weekdayChoices(),
-    correctValue: String(steps.weekdayIndex),
+    correctValue: String(correctIndex),
     prompt: `Weekday for ${formatDateHuman(date)}?`,
   };
 }
@@ -149,7 +133,7 @@ function StatCard({ icon, label, value }: { icon: IconType; label: string; value
   );
 }
 
-export function DoomsdayTrainerPage() {
+export function WeekdayGuesserPage() {
   const [settingsDraft, setSettingsDraft] = useState<PracticeSettings>({
     minYear: 2000,
     maxYear: new Date().getFullYear(),
@@ -164,7 +148,6 @@ export function DoomsdayTrainerPage() {
   const [question, setQuestion] = useState<PracticeQuestion | null>(null);
   const [questionStartedAt, setQuestionStartedAt] = useState<number>(0);
   const [answerState, setAnswerState] = useState<AnswerState | null>(null);
-  const [history, setHistory] = useState<HistoryItem[]>([]);
   const [prefix, setPrefix] = useState("");
 
   const [stats, setStats] = useState<PracticeStats>({
@@ -178,11 +161,6 @@ export function DoomsdayTrainerPage() {
   const accuracy = stats.attempts > 0 ? Math.round((stats.correct / stats.attempts) * 100) : 0;
   const avgResponseMs = stats.attempts > 0 ? Math.round(stats.totalResponseMs / stats.attempts) : 0;
 
-  const questionSteps = useMemo(() => {
-    if (!question) return null;
-    return calculateDoomsdaySteps(question.date);
-  }, [question]);
-
   function startSession() {
     const normalizedRange = normalizeYearRange(settingsDraft.minYear, settingsDraft.maxYear);
     const nextSettings: PracticeSettings = {
@@ -195,7 +173,6 @@ export function DoomsdayTrainerPage() {
     setStats({ attempts: 0, correct: 0, streak: 0, bestStreak: 0, totalResponseMs: 0 });
     setQuestionIndex(0);
     setAnswerState(null);
-    setHistory([]);
     setPrefix("");
 
     const first = buildQuestion(nextSettings);
@@ -209,11 +186,6 @@ export function DoomsdayTrainerPage() {
 
     const responseMs = Math.max(1, Date.now() - questionStartedAt);
     const isCorrect = choiceValue === question.correctValue;
-    const selectedLabel = question.choices.find((choice) => choice.value === choiceValue)?.label ?? choiceValue;
-    const correctLabel =
-      question.choices.find((choice) => choice.value === question.correctValue)?.label ??
-      question.correctValue;
-
     setAnswerState({ selectedValue: choiceValue, isCorrect, responseMs });
     setStats((current) => {
       const attempts = current.attempts + 1;
@@ -223,18 +195,6 @@ export function DoomsdayTrainerPage() {
       const totalResponseMs = current.totalResponseMs + responseMs;
       return { attempts, correct, streak, bestStreak, totalResponseMs };
     });
-
-    setHistory((current) => [
-      {
-        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-        dateLabel: formatDateHuman(question.date),
-        selectedLabel,
-        correctLabel,
-        isCorrect,
-        responseMs,
-      },
-      ...current,
-    ]);
 
     setPrefix("");
   }
@@ -252,6 +212,7 @@ export function DoomsdayTrainerPage() {
 
   useEffect(() => {
     if (status !== "running" || !question || answerState || settingsOpen || helpOpen) return;
+    const activeQuestion = question;
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
@@ -274,7 +235,7 @@ export function DoomsdayTrainerPage() {
       const nextPrefix = `${prefix}${event.key.toLowerCase()}`;
       setPrefix(nextPrefix);
 
-      const matches = question.choices.filter((choice) =>
+      const matches = activeQuestion.choices.filter((choice) =>
         choice.label.toLowerCase().startsWith(nextPrefix),
       );
 
@@ -317,7 +278,7 @@ export function DoomsdayTrainerPage() {
           <HStack justify={"space-between"} wrap={"wrap"}>
             <HStack>
               <Icon as={LuTarget} color={"app.fg.subtle"} />
-              <Text fontWeight={"semibold"}>Doomsday Practice</Text>
+              <Text fontWeight={"semibold"}>Weekday Guesser</Text>
             </HStack>
             <HStack>
               <Dialog.Root open={helpOpen} onOpenChange={(details) => setHelpOpen(details.open)}>
@@ -487,7 +448,7 @@ export function DoomsdayTrainerPage() {
               <HStack justify={"space-between"} wrap={"wrap"}>
                 <Badge>Practice Ready</Badge>
                 <Text fontSize={"sm"} color={"app.fg.muted"}>
-                  Full-date mode
+                  Random full-date mode
                 </Text>
               </HStack>
               <Text fontSize={"2xl"} fontWeight={"semibold"}>
@@ -499,7 +460,7 @@ export function DoomsdayTrainerPage() {
               <HStack>
                 <Button onClick={startSession} colorPalette={"blue"}>
                   <Icon as={LuPlay} />
-                  Start Test
+                  Start Guessing
                 </Button>
               </HStack>
             </VStack>
@@ -583,14 +544,6 @@ export function DoomsdayTrainerPage() {
                         Response time: {formatMs(answerState.responseMs)}
                       </Text>
 
-                      {questionSteps ? (
-                        <Text color={"app.fg.muted"} fontSize={"sm"}>
-                          Date: {formatDate(question.date)} | Century: {WEEKDAYS[questionSteps.centuryAnchor]} |
-                          Year: {WEEKDAYS[questionSteps.yearAnchor]} | Month ref: {question.date.month}/
-                          {questionSteps.monthDoomsdayDay}
-                        </Text>
-                      ) : null}
-
                       <HStack>
                         <Button onClick={nextQuestion}>
                           <Icon as={LuPlay} />
@@ -608,42 +561,6 @@ export function DoomsdayTrainerPage() {
             </VStack>
           </Card.Body>
         </Card.Root>
-      ) : null}
-
-      {history.length > 0 ? (
-        <VStack align={"stretch"} gap={3}>
-          <HStack>
-            <Icon as={LuFlag} color={"app.fg.subtle"} />
-            <Text fontWeight={"semibold"}>Question History</Text>
-          </HStack>
-          {history.slice(0, 10).map((item) => (
-            <Card.Root key={item.id} variant={"outline"}>
-              <Card.Body>
-                <HStack justify={"space-between"} align={"start"} wrap={"wrap"}>
-                  <VStack align={"start"} gap={1}>
-                    <Text fontWeight={"medium"}>{item.dateLabel}</Text>
-                    <Text fontSize={"sm"} color={item.isCorrect ? "green.600" : "red.600"}>
-                      Your answer: {item.selectedLabel}
-                    </Text>
-                    {!item.isCorrect ? (
-                      <Text fontSize={"sm"} color={"app.fg.muted"}>
-                        Correct: {item.correctLabel}
-                      </Text>
-                    ) : null}
-                  </VStack>
-                  <VStack align={"end"} gap={1}>
-                    <Badge colorPalette={item.isCorrect ? "green" : "red"}>
-                      {item.isCorrect ? "Correct" : "Wrong"}
-                    </Badge>
-                    <Text fontSize={"sm"} color={"app.fg.muted"}>
-                      {formatMs(item.responseMs)}
-                    </Text>
-                  </VStack>
-                </HStack>
-              </Card.Body>
-            </Card.Root>
-          ))}
-        </VStack>
       ) : null}
     </VStack>
   );
