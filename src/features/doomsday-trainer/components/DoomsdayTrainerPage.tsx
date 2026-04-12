@@ -282,7 +282,7 @@ export function WeekdayGuesserPage() {
           {status === "idle" ? (
             <Box mx={{ base: -4, md: -6 }}>
               <HighlightedSection contentPx={{ base: 3, md: 4 }} contentPy={{ base: 3, md: 4 }}>
-                <Card.Root borderColor={"app.border.default"} rounded={"2xl"}>
+                <Card.Root borderColor={"app.border.default"} rounded={"2xl"} overflow={"hidden"}>
                   <Card.Body>
                     <VStack align={"stretch"} gap={4}>
                       <Fieldset.Root>
@@ -353,15 +353,14 @@ export function WeekdayGuesserPage() {
                           </Grid>
                         </Fieldset.Content>
                       </Fieldset.Root>
-
-                      <HStack justify={"flex-start"}>
-                        <Button rounded={"xl"} onClick={startSession} colorPalette={"blue"}>
-                          <Icon as={LuPlay} />
-                          Start
-                        </Button>
-                      </HStack>
                     </VStack>
                   </Card.Body>
+                  <Card.Footer p={0} w={"full"}>
+                    <Button w={"full"} rounded={0} onClick={startSession} colorPalette={"blue"}>
+                      <Icon as={LuPlay} />
+                      Start
+                    </Button>
+                  </Card.Footer>
                 </Card.Root>
               </HighlightedSection>
             </Box>
