@@ -280,12 +280,90 @@ export function WeekdayGuesserPage() {
             </Card.Body>
           </Card.Root>
 
-          {status === "idle" ? (
-            <Box mx={{ base: -4, md: -6 }}>
-              <HighlightedSection contentPx={{ base: 3, md: 4 }} contentPy={{ base: 3, md: 4 }}>
-                <Card.Root borderColor={"app.border.default"} rounded={"2xl"} overflow={"hidden"}>
-                  <Card.Body>
-                    <VStack align={"stretch"} gap={4}>
+          <Box mx={{ base: -4, md: -6 }}>
+            <HighlightedSection contentPx={{ base: 3, md: 4 }} contentPy={{ base: 3, md: 4 }}>
+              <Card.Root borderColor={"app.border.default"} rounded={"2xl"} overflow={"hidden"}>
+                <Card.Body>
+                  <VStack align={"stretch"} gap={4}>
+                    {status === "running" && question ? (
+                      <VStack align={"stretch"} gap={4}>
+                        <HStack justify={"space-between"} align={"center"} gap={3} wrap={"wrap"}>
+                          <HStack align={"baseline"} gap={2} wrap={"wrap"}>
+                            <Box
+                              as={"span"}
+                              minW={8}
+                              h={8}
+                              display={"inline-flex"}
+                              alignItems={"center"}
+                              justifyContent={"center"}
+                              rounded={"full"}
+                              borderWidth={"1px"}
+                              borderColor={"app.border.default"}
+                              color={"app.fg.subtle"}
+                              fontSize={"sm"}
+                              fontWeight={"medium"}
+                            >
+                              {questionIndex + 1}
+                            </Box>
+                            <Text fontSize={"2xl"} fontWeight={"normal"}>
+                              <Text as={"span"} color={"app.fg.muted"} fontWeight={"normal"}>
+                                Weekday for
+                              </Text>{" "}
+                              <Text as={"span"} fontWeight={"semibold"}>
+                                {formatDateHuman(question.date)}
+                              </Text>
+                              <Text as={"span"} color={"app.fg.muted"} fontWeight={"normal"}>
+                                ?
+                              </Text>
+                            </Text>
+                          </HStack>
+                        </HStack>
+
+                        <Grid templateColumns={["repeat(2, 1fr)", "repeat(4, 1fr)"]} gap={3}>
+                          {question.choices.map((choice) => {
+                            const hasAnswered = Boolean(answerState);
+                            const isCorrectChoice = choice.value === question.correctValue;
+                            const isSelected = answerState?.selectedValue === choice.value;
+                            const hasPrefix = prefix.length > 0;
+                            const matchesPrefix = choice.label.toLowerCase().startsWith(prefix.toLowerCase());
+
+                            let variant: "outline" | "subtle" | "solid" = "outline";
+                            let colorPalette: "gray" | "green" | "red" | "yellow" = "gray";
+
+                            if (hasAnswered && isCorrectChoice) {
+                              variant = "solid";
+                              colorPalette = "green";
+                            } else if (hasAnswered && isSelected && !isCorrectChoice) {
+                              variant = "subtle";
+                              colorPalette = "red";
+                            } else if (!hasAnswered && hasPrefix && matchesPrefix) {
+                              variant = "subtle";
+                              colorPalette = "yellow";
+                            }
+
+                            return (
+                              <Button
+                                rounded={"xl"}
+                                key={choice.value}
+                                onClick={() => submitAnswer(choice.value)}
+                                disabled={
+                                  hasAnswered ||
+                                  status !== "running" ||
+                                  (hasPrefix && !matchesPrefix)
+                                }
+                                variant={variant}
+                                colorPalette={colorPalette}
+                              >
+                                {choice.label}
+                                {hasAnswered && isCorrectChoice ? <Icon as={LuCircleCheck} /> : null}
+                                {hasAnswered && isSelected && !isCorrectChoice ? <Icon as={LuCircleX} /> : null}
+                              </Button>
+                            );
+                          })}
+                        </Grid>
+
+                      </VStack>
+                    ) : (
                       <Fieldset.Root>
                         <Fieldset.Legend>
                           <HStack gap={2}>
@@ -354,127 +432,37 @@ export function WeekdayGuesserPage() {
                           </Grid>
                         </Fieldset.Content>
                       </Fieldset.Root>
-                    </VStack>
-                  </Card.Body>
-                  <Card.Footer p={0} w={"full"}>
+                    )}
+                  </VStack>
+                </Card.Body>
+                <Card.Footer p={0} w={"full"}>
+                  {status === "running" ? (
+                    <HStack w={"full"} gap={0}>
+                      <Button
+                        flex={1}
+                        rounded={0}
+                        onClick={nextQuestion}
+                        disabled={!answerState}
+                        colorPalette={"blue"}
+                      >
+                        <Icon as={LuPlay} />
+                        Next
+                      </Button>
+                      <Button flex={1} rounded={0} variant={"subtle"} colorPalette={"gray"} onClick={resetSession}>
+                        <Icon as={LuRotateCcw} />
+                        Reset
+                      </Button>
+                    </HStack>
+                  ) : (
                     <Button w={"full"} rounded={0} onClick={startSession} colorPalette={"blue"}>
                       <Icon as={LuPlay} />
                       Start
                     </Button>
-                  </Card.Footer>
-                </Card.Root>
-              </HighlightedSection>
-            </Box>
-          ) : null}
-
-          {status === "running" && question ? (
-            <Box mx={{ base: -4, md: -6 }}>
-              <HighlightedSection contentPx={{ base: 3, md: 4 }} contentPy={{ base: 3, md: 4 }}>
-                <Card.Root borderColor={"app.border.default"} rounded={"2xl"}>
-                  <Card.Body>
-                    <VStack align={"stretch"} gap={4}>
-                      <HStack justify={"space-between"} align={"center"} gap={3} wrap={"wrap"}>
-                        <HStack align={"baseline"} gap={2} wrap={"wrap"}>
-                  <Box
-                    as={"span"}
-                    minW={8}
-                    h={8}
-                    display={"inline-flex"}
-                    alignItems={"center"}
-                    justifyContent={"center"}
-                    rounded={"full"}
-                    borderWidth={"1px"}
-                    borderColor={"app.border.default"}
-                    color={"app.fg.subtle"}
-                    fontSize={"sm"}
-                    fontWeight={"medium"}
-                  >
-                    {questionIndex + 1}
-                  </Box>
-                  <Text fontSize={"2xl"} fontWeight={"normal"}>
-                    <Text as={"span"} color={"app.fg.muted"} fontWeight={"normal"}>
-                      Weekday for
-                    </Text>{" "}
-                    <Text as={"span"} fontWeight={"semibold"}>
-                      {formatDateHuman(question.date)}
-                    </Text>
-                    <Text as={"span"} color={"app.fg.muted"} fontWeight={"normal"}>
-                      ?
-                    </Text>
-                  </Text>
-                        </HStack>
-                        <Button rounded={"xl"} variant={"ghost"} size={"sm"} onClick={resetSession}>
-                          Reset
-                        </Button>
-                      </HStack>
-
-                      <Grid templateColumns={["repeat(2, 1fr)", "repeat(4, 1fr)"]} gap={3}>
-                        {question.choices.map((choice) => {
-                  const hasAnswered = Boolean(answerState);
-                  const isCorrectChoice = choice.value === question.correctValue;
-                  const isSelected = answerState?.selectedValue === choice.value;
-                  const hasPrefix = prefix.length > 0;
-                  const matchesPrefix = choice.label.toLowerCase().startsWith(prefix.toLowerCase());
-
-                  let variant: "outline" | "subtle" | "solid" = "outline";
-                  let colorPalette: "gray" | "green" | "red" | "yellow" = "gray";
-
-                  if (hasAnswered && isCorrectChoice) {
-                    variant = "solid";
-                    colorPalette = "green";
-                  } else if (hasAnswered && isSelected && !isCorrectChoice) {
-                    variant = "subtle";
-                    colorPalette = "red";
-                  } else if (!hasAnswered && hasPrefix && matchesPrefix) {
-                    variant = "subtle";
-                    colorPalette = "yellow";
-                  }
-
-                          return (
-                            <Button
-                              rounded={"xl"}
-                              key={choice.value}
-                              onClick={() => submitAnswer(choice.value)}
-                              disabled={
-                                hasAnswered ||
-                                status !== "running" ||
-                                (hasPrefix && !matchesPrefix)
-                              }
-                              variant={variant}
-                              colorPalette={colorPalette}
-                            >
-                              {choice.label}
-                              {hasAnswered && isCorrectChoice ? <Icon as={LuCircleCheck} /> : null}
-                              {hasAnswered && isSelected && !isCorrectChoice ? <Icon as={LuCircleX} /> : null}
-                            </Button>
-                          );
-                        })}
-                      </Grid>
-
-                      {answerState ? (
-                        <Card.Root variant={"subtle"} rounded={"2xl"}>
-                          <Card.Body>
-                            <VStack align={"stretch"} gap={2}>
-                              <HStack>
-                                <Button rounded={"xl"} onClick={nextQuestion}>
-                                  <Icon as={LuPlay} />
-                                  Next
-                                </Button>
-                                <Button rounded={"xl"} variant={"outline"} onClick={startSession}>
-                                  <Icon as={LuRotateCcw} />
-                                  Restart
-                                </Button>
-                              </HStack>
-                            </VStack>
-                          </Card.Body>
-                        </Card.Root>
-                      ) : null}
-                    </VStack>
-                  </Card.Body>
-                </Card.Root>
-              </HighlightedSection>
-            </Box>
-          ) : null}
+                  )}
+                </Card.Footer>
+              </Card.Root>
+            </HighlightedSection>
+          </Box>
 
         </VStack>
       </Box>
