@@ -15,6 +15,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
+import HighlightedSection from "@components/page/common/HighlightedSection";
 import { useEffect, useState } from "react";
 import {
   LuCalendarRange,
@@ -251,36 +252,38 @@ export function WeekdayGuesserPage() {
   }, [status, answerState]);
 
   return (
-    <VStack align={"stretch"} gap={5} px={[4, 6]} pb={6}>
-      <Card.Root variant={"outline"}>
-        <Card.Body>
-          <VStack align={"stretch"} gap={3}>
-            <StatGroup>
-              <Stat.Root>
-                <Stat.Label>Accuracy</Stat.Label>
-                <Stat.ValueText>{accuracy}%</Stat.ValueText>
-              </Stat.Root>
-              <Stat.Root>
-                <Stat.Label>Answered</Stat.Label>
-                <Stat.ValueText>{stats.attempts}</Stat.ValueText>
-              </Stat.Root>
-              <Stat.Root>
-                <Stat.Label>Avg Time</Stat.Label>
-                <Stat.ValueText>{avgResponseMs > 0 ? formatMs(avgResponseMs) : "-"}</Stat.ValueText>
-              </Stat.Root>
-              <Stat.Root>
-                <Stat.Label>Streak</Stat.Label>
-                <Stat.ValueText>{stats.streak}</Stat.ValueText>
-              </Stat.Root>
-            </StatGroup>
-          </VStack>
-        </Card.Body>
-      </Card.Root>
+    <VStack align={"stretch"} gap={4} pt={4} pb={0}>
+      <Box w={"full"} px={[4, 6]}>
+        <VStack align={"stretch"} gap={4}>
+          <Card.Root variant={"outline"} rounded={"2xl"}>
+            <Card.Body>
+              <StatGroup>
+                <Stat.Root>
+                  <Stat.Label>Accuracy</Stat.Label>
+                  <Stat.ValueText>{accuracy}%</Stat.ValueText>
+                </Stat.Root>
+                <Stat.Root>
+                  <Stat.Label>Answered</Stat.Label>
+                  <Stat.ValueText>{stats.attempts}</Stat.ValueText>
+                </Stat.Root>
+                <Stat.Root>
+                  <Stat.Label>Avg Time</Stat.Label>
+                  <Stat.ValueText>{avgResponseMs > 0 ? formatMs(avgResponseMs) : "-"}</Stat.ValueText>
+                </Stat.Root>
+                <Stat.Root>
+                  <Stat.Label>Streak</Stat.Label>
+                  <Stat.ValueText>{stats.streak}</Stat.ValueText>
+                </Stat.Root>
+              </StatGroup>
+            </Card.Body>
+          </Card.Root>
 
-      {status === "idle" ? (
-        <Card.Root borderColor={"app.border.default"}>
-          <Card.Body>
-            <VStack align={"stretch"} gap={4}>
+          {status === "idle" ? (
+            <Box mx={{ base: -4, md: -6 }}>
+              <HighlightedSection contentPx={{ base: 3, md: 4 }} contentPy={{ base: 3, md: 4 }}>
+                <Card.Root borderColor={"app.border.default"} rounded={"2xl"}>
+                  <Card.Body>
+                    <VStack align={"stretch"} gap={4}>
               <Grid templateColumns={["1fr", "1fr 1fr"]} gap={3}>
                 <Field.Root>
                   <Field.Label>
@@ -301,7 +304,7 @@ export function WeekdayGuesserPage() {
                     }}
                   >
                     <NumberInput.Control />
-                    <NumberInput.Input />
+                    <NumberInput.Input rounded={"xl"} />
                   </NumberInput.Root>
                 </Field.Root>
 
@@ -324,44 +327,49 @@ export function WeekdayGuesserPage() {
                     }}
                   >
                     <NumberInput.Control />
-                    <NumberInput.Input />
+                    <NumberInput.Input rounded={"xl"} />
                   </NumberInput.Root>
                 </Field.Root>
               </Grid>
 
-              <HStack>
-                <Button
-                  variant={"outline"}
-                  onClick={() => {
-                    const currentYear = new Date().getFullYear();
-                    setSettingsDraft((current) => ({
-                      ...current,
-                      minYear: currentYear,
-                      maxYear: currentYear,
-                    }));
-                  }}
-                >
-                  Current Year
-                </Button>
-                <Button onClick={startSession} colorPalette={"blue"}>
-                  <Icon as={LuPlay} />
-                  Start
-                </Button>
-                <Button variant={"ghost"} onClick={resetSession}>
-                  Reset
-                </Button>
-              </HStack>
-            </VStack>
-          </Card.Body>
-        </Card.Root>
-      ) : null}
+                      <HStack>
+                    <Button
+                      rounded={"xl"}
+                      variant={"outline"}
+                      onClick={() => {
+                        const currentYear = new Date().getFullYear();
+                        setSettingsDraft((current) => ({
+                          ...current,
+                          minYear: currentYear,
+                          maxYear: currentYear,
+                        }));
+                      }}
+                    >
+                      Current Year
+                    </Button>
+                    <Button rounded={"xl"} onClick={startSession} colorPalette={"blue"}>
+                      <Icon as={LuPlay} />
+                      Start
+                    </Button>
+                    <Button rounded={"xl"} variant={"ghost"} onClick={resetSession}>
+                      Reset
+                    </Button>
+                      </HStack>
+                    </VStack>
+                  </Card.Body>
+                </Card.Root>
+              </HighlightedSection>
+            </Box>
+          ) : null}
 
-      {status === "running" && question ? (
-        <Card.Root borderColor={"app.border.default"}>
-          <Card.Body>
-            <VStack align={"stretch"} gap={4}>
-              <HStack justify={"space-between"} align={"center"} gap={3} wrap={"wrap"}>
-                <HStack align={"baseline"} gap={2} wrap={"wrap"}>
+          {status === "running" && question ? (
+            <Box mx={{ base: -4, md: -6 }}>
+              <HighlightedSection contentPx={{ base: 3, md: 4 }} contentPy={{ base: 3, md: 4 }}>
+                <Card.Root borderColor={"app.border.default"} rounded={"2xl"}>
+                  <Card.Body>
+                    <VStack align={"stretch"} gap={4}>
+                      <HStack justify={"space-between"} align={"center"} gap={3} wrap={"wrap"}>
+                        <HStack align={"baseline"} gap={2} wrap={"wrap"}>
                   <Box
                     as={"span"}
                     minW={8}
@@ -389,14 +397,14 @@ export function WeekdayGuesserPage() {
                       ?
                     </Text>
                   </Text>
-                </HStack>
-                <Button variant={"ghost"} size={"sm"} onClick={resetSession}>
-                  Reset
-                </Button>
-              </HStack>
+                        </HStack>
+                        <Button rounded={"xl"} variant={"ghost"} size={"sm"} onClick={resetSession}>
+                          Reset
+                        </Button>
+                      </HStack>
 
-              <Grid templateColumns={["repeat(2, 1fr)", "repeat(4, 1fr)"]} gap={3}>
-                {question.choices.map((choice) => {
+                      <Grid templateColumns={["repeat(2, 1fr)", "repeat(4, 1fr)"]} gap={3}>
+                        {question.choices.map((choice) => {
                   const hasAnswered = Boolean(answerState);
                   const isCorrectChoice = choice.value === question.correctValue;
                   const isSelected = answerState?.selectedValue === choice.value;
@@ -417,55 +425,61 @@ export function WeekdayGuesserPage() {
                     colorPalette = "yellow";
                   }
 
-                  return (
-                    <Button
-                      key={choice.value}
-                      onClick={() => submitAnswer(choice.value)}
-                      disabled={
-                        hasAnswered ||
-                        status !== "running" ||
-                        (hasPrefix && !matchesPrefix)
-                      }
-                      variant={variant}
-                      colorPalette={colorPalette}
-                    >
-                      {choice.label}
-                    </Button>
-                  );
-                })}
-              </Grid>
+                          return (
+                            <Button
+                              rounded={"xl"}
+                              key={choice.value}
+                              onClick={() => submitAnswer(choice.value)}
+                              disabled={
+                                hasAnswered ||
+                                status !== "running" ||
+                                (hasPrefix && !matchesPrefix)
+                              }
+                              variant={variant}
+                              colorPalette={colorPalette}
+                            >
+                              {choice.label}
+                            </Button>
+                          );
+                        })}
+                      </Grid>
 
-              {answerState ? (
-                <Card.Root variant={"subtle"}>
-                  <Card.Body>
-                    <VStack align={"stretch"} gap={2}>
-                      <Text fontWeight={"semibold"}>
-                        {answerState.isCorrect
-                          ? "Correct"
-                          : `Correct answer: ${
-                              question.choices.find((choice) => choice.value === question.correctValue)
-                                ?.label ?? question.correctValue
-                            }`}
-                      </Text>
+                      {answerState ? (
+                        <Card.Root variant={"subtle"} rounded={"2xl"}>
+                          <Card.Body>
+                            <VStack align={"stretch"} gap={2}>
+                              <Text fontWeight={"semibold"}>
+                                {answerState.isCorrect
+                                  ? "Correct"
+                                  : `Correct answer: ${
+                                      question.choices.find((choice) => choice.value === question.correctValue)
+                                        ?.label ?? question.correctValue
+                                    }`}
+                              </Text>
 
-                      <HStack>
-                        <Button onClick={nextQuestion}>
-                          <Icon as={LuPlay} />
-                          Next
-                        </Button>
-                        <Button variant={"outline"} onClick={startSession}>
-                          <Icon as={LuRotateCcw} />
-                          Restart
-                        </Button>
-                      </HStack>
+                              <HStack>
+                                <Button rounded={"xl"} onClick={nextQuestion}>
+                                  <Icon as={LuPlay} />
+                                  Next
+                                </Button>
+                                <Button rounded={"xl"} variant={"outline"} onClick={startSession}>
+                                  <Icon as={LuRotateCcw} />
+                                  Restart
+                                </Button>
+                              </HStack>
+                            </VStack>
+                          </Card.Body>
+                        </Card.Root>
+                      ) : null}
                     </VStack>
                   </Card.Body>
                 </Card.Root>
-              ) : null}
-            </VStack>
-          </Card.Body>
-        </Card.Root>
-      ) : null}
+              </HighlightedSection>
+            </Box>
+          ) : null}
+
+        </VStack>
+      </Box>
     </VStack>
   );
 }
