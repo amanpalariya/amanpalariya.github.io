@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   Field,
+  Fieldset,
   Grid,
   HStack,
   Icon,
@@ -284,76 +285,80 @@ export function WeekdayGuesserPage() {
                 <Card.Root borderColor={"app.border.default"} rounded={"2xl"}>
                   <Card.Body>
                     <VStack align={"stretch"} gap={4}>
-              <Grid templateColumns={["1fr", "1fr 1fr"]} gap={3}>
-                <Field.Root>
-                  <Field.Label>
-                    <HStack gap={2}>
-                      <Icon as={LuCalendarRange} />
-                      <Text>From Year</Text>
-                    </HStack>
-                  </Field.Label>
-                  <NumberInput.Root
-                    value={String(settingsDraft.minYear)}
-                    min={MIN_ALLOWED_YEAR}
-                    max={MAX_ALLOWED_YEAR}
-                    onValueChange={(details) => {
-                      const parsed = Number(details.value);
-                      if (!Number.isNaN(parsed)) {
-                        setSettingsDraft((current) => ({ ...current, minYear: clampYear(parsed) }));
-                      }
-                    }}
-                  >
-                    <NumberInput.Control />
-                    <NumberInput.Input rounded={"xl"} />
-                  </NumberInput.Root>
-                </Field.Root>
+                      <Fieldset.Root>
+                        <Fieldset.Legend>
+                          <HStack gap={2}>
+                            <Icon as={LuCalendarRange} />
+                            <Text>Year Range</Text>
+                          </HStack>
+                        </Fieldset.Legend>
+                        <Fieldset.Content>
+                          <Grid templateColumns={["1fr", "1fr 1fr auto"]} gap={3} alignItems={"end"}>
+                            <Field.Root>
+                              <Field.Label>From Year</Field.Label>
+                              <NumberInput.Root
+                                value={String(settingsDraft.minYear)}
+                                min={MIN_ALLOWED_YEAR}
+                                max={MAX_ALLOWED_YEAR}
+                                onValueChange={(details) => {
+                                  const parsed = Number(details.value);
+                                  if (!Number.isNaN(parsed)) {
+                                    setSettingsDraft((current) => ({
+                                      ...current,
+                                      minYear: clampYear(parsed),
+                                    }));
+                                  }
+                                }}
+                              >
+                                <NumberInput.Control />
+                                <NumberInput.Input rounded={"xl"} />
+                              </NumberInput.Root>
+                            </Field.Root>
 
-                <Field.Root>
-                  <Field.Label>
-                    <HStack gap={2}>
-                      <Icon as={LuCalendarRange} />
-                      <Text>To Year</Text>
-                    </HStack>
-                  </Field.Label>
-                  <NumberInput.Root
-                    value={String(settingsDraft.maxYear)}
-                    min={MIN_ALLOWED_YEAR}
-                    max={MAX_ALLOWED_YEAR}
-                    onValueChange={(details) => {
-                      const parsed = Number(details.value);
-                      if (!Number.isNaN(parsed)) {
-                        setSettingsDraft((current) => ({ ...current, maxYear: clampYear(parsed) }));
-                      }
-                    }}
-                  >
-                    <NumberInput.Control />
-                    <NumberInput.Input rounded={"xl"} />
-                  </NumberInput.Root>
-                </Field.Root>
-              </Grid>
+                            <Field.Root>
+                              <Field.Label>To Year</Field.Label>
+                              <NumberInput.Root
+                                value={String(settingsDraft.maxYear)}
+                                min={MIN_ALLOWED_YEAR}
+                                max={MAX_ALLOWED_YEAR}
+                                onValueChange={(details) => {
+                                  const parsed = Number(details.value);
+                                  if (!Number.isNaN(parsed)) {
+                                    setSettingsDraft((current) => ({
+                                      ...current,
+                                      maxYear: clampYear(parsed),
+                                    }));
+                                  }
+                                }}
+                              >
+                                <NumberInput.Control />
+                                <NumberInput.Input rounded={"xl"} />
+                              </NumberInput.Root>
+                            </Field.Root>
 
-                      <HStack>
-                    <Button
-                      rounded={"xl"}
-                      variant={"outline"}
-                      onClick={() => {
-                        const currentYear = new Date().getFullYear();
-                        setSettingsDraft((current) => ({
-                          ...current,
-                          minYear: currentYear,
-                          maxYear: currentYear,
-                        }));
-                      }}
-                    >
-                      Current Year
-                    </Button>
-                    <Button rounded={"xl"} onClick={startSession} colorPalette={"blue"}>
-                      <Icon as={LuPlay} />
-                      Start
-                    </Button>
-                    <Button rounded={"xl"} variant={"ghost"} onClick={resetSession}>
-                      Reset
-                    </Button>
+                            <Button
+                              rounded={"xl"}
+                              variant={"outline"}
+                              onClick={() => {
+                                const currentYear = new Date().getFullYear();
+                                setSettingsDraft((current) => ({
+                                  ...current,
+                                  minYear: currentYear,
+                                  maxYear: currentYear,
+                                }));
+                              }}
+                            >
+                              Current Year
+                            </Button>
+                          </Grid>
+                        </Fieldset.Content>
+                      </Fieldset.Root>
+
+                      <HStack justify={"flex-start"}>
+                        <Button rounded={"xl"} onClick={startSession} colorPalette={"blue"}>
+                          <Icon as={LuPlay} />
+                          Start
+                        </Button>
                       </HStack>
                     </VStack>
                   </Card.Body>
