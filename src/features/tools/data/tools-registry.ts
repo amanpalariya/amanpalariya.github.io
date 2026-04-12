@@ -5,16 +5,16 @@ type ToolSeed = Omit<ToolDefinition, "searchText">;
 
 const TOOL_SEEDS: ToolSeed[] = [
   {
-    id: "weekday-guesser",
-    name: "Weekday Guesser",
-    tagline: "Guess the weekday for random dates",
+    id: "calendar-drill",
+    name: "Calendar Drill",
+    tagline: "Practice weekdays for random dates",
     description: "Guess weekdays for random dates.",
     status: "stable",
     tags: [
       { id: "calendar", label: "Calendar" },
       { id: "math", label: "Math" },
     ],
-    path: "/tools/weekday-guesser/",
+    path: "/tools/calendar-drill/",
     sortOrder: 8,
     icon: "calendar",
     updatedAt: "2026-04-05",

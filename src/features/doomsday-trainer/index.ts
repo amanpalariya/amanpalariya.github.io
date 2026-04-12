@@ -1,1 +1,1 @@
-export { WeekdayGuesserPage } from "./components/DoomsdayTrainerPage";
+export { WeekdayGuesserPage as CalendarDrillPage } from "./components/DoomsdayTrainerPage";
