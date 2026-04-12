@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDrillPage } from "features/doomsday-trainer";
+import { CalendarDrillPage } from "features/calendar-drill";
 import { ToolDetailsSection, getToolById } from "features/tools";
 
 export default function CalendarDrillToolPage() {
