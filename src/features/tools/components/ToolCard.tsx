@@ -5,17 +5,6 @@ import NextLink from "next/link";
 import { FiBookOpen, FiChevronRight, FiTool } from "react-icons/fi";
 import type { ToolDefinition } from "../types";
 
-const statusColorMap = {
-  stable: "green",
-  beta: "blue",
-  alpha: "purple",
-  archived: "gray",
-} as const;
-
-function formatStatus(value: ToolDefinition["status"]): string {
-  return value[0].toUpperCase() + value.slice(1);
-}
-
 function getToolIcon(icon?: string) {
   if (icon === "book") return FiBookOpen;
   return FiTool;
@@ -49,10 +38,10 @@ export function ToolCard({ tool }: { tool: ToolDefinition }) {
 
           <HStack justify={"space-between"} align={"center"} wrap={"wrap"}>
             <HStack gap={2} wrap={"wrap"}>
-              <CategoryBadge color={statusColorMap[tool.status]}>
-                {formatStatus(tool.status)}
-              </CategoryBadge>
-              <CategoryBadge>{tool.category}</CategoryBadge>
+              {tool.status === "beta" ? <CategoryBadge color={"blue"}>Beta</CategoryBadge> : null}
+              {tool.tags.map((tag) => (
+                <CategoryBadge key={tag.id}>{tag.label}</CategoryBadge>
+              ))}
             </HStack>
           </HStack>
         </VStack>

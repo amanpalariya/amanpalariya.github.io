@@ -9,11 +9,10 @@ const TOOL_SEEDS: ToolSeed[] = [
     name: "Weekday Guesser",
     tagline: "Guess the weekday for random dates",
     description: "Guess weekdays for random dates.",
-    category: "experimental",
-    status: "beta",
+    status: "stable",
     tags: [
-      { id: "calendar", label: "Calendar Math" },
-      { id: "mental-math", label: "Mental Math" },
+      { id: "calendar", label: "Calendar" },
+      { id: "math", label: "Math" },
     ],
     path: "/tools/weekday-guesser/",
     sortOrder: 8,
@@ -26,7 +25,6 @@ const TOOL_SEEDS: ToolSeed[] = [
     tagline: "Convert pasted HTML, text, or images into clean EPUB files",
     description:
       "Paste HTML pages, plain text, or images, reorder chapters, set metadata, and generate a downloadable EPUB.",
-    category: "conversion",
     status: "beta",
     tags: [{ id: "epub", label: "EPUB" }],
     path: "/tools/epub-maker/",

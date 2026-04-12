@@ -5,17 +5,6 @@ import type { ReactNode } from "react";
 import { FiBookOpen, FiCalendar, FiTool } from "react-icons/fi";
 import type { ToolDefinition } from "../types";
 
-const statusColorMap = {
-  stable: "green",
-  beta: "blue",
-  alpha: "purple",
-  archived: "gray",
-} as const;
-
-function formatStatus(value: ToolDefinition["status"]): string {
-  return value[0].toUpperCase() + value.slice(1);
-}
-
 function getToolIcon(icon?: string) {
   if (icon === "book") return FiBookOpen;
   if (icon === "calendar") return FiCalendar;
@@ -44,10 +33,7 @@ export function ToolDetailsSection({
       </Box>
 
       <HStack gap={3} wrap={"wrap"} align={"center"} px={[4, 6]}>
-        <CategoryBadge color={statusColorMap[tool.status]}>
-          {formatStatus(tool.status)}
-        </CategoryBadge>
-        <CategoryBadge>{tool.category}</CategoryBadge>
+        {tool.status === "beta" ? <CategoryBadge color={"blue"}>Beta</CategoryBadge> : null}
         {tool.tags.map((tag) => (
           <CategoryBadge key={tag.id}>{tag.label}</CategoryBadge>
         ))}
