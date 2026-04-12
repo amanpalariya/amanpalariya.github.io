@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Badge,
   Box,
   Button,
   Card,
@@ -22,7 +21,6 @@ import {
   LuCalendarRange,
   LuCircleCheck,
   LuCircleX,
-  LuClock3,
   LuFlag,
   LuPlay,
   LuRotateCcw,
@@ -47,6 +45,11 @@ type PracticeStats = {
   streak: number;
   bestStreak: number;
   totalResponseMs: number;
+};
+
+type PracticeTrends = {
+  accuracyDelta: number | null;
+  avgResponseDeltaMs: number | null;
 };
 
 type AnswerState = {
@@ -110,6 +113,28 @@ function formatMs(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
+function formatSignedPercent(delta: number): string {
+  if (delta === 0) return "0%";
+  return `${delta > 0 ? "+" : ""}${delta}%`;
+}
+
+function formatSignedMsDelta(deltaMs: number): string {
+  const seconds = (Math.abs(deltaMs) / 1000).toFixed(1);
+  if (deltaMs === 0) return "0.0s";
+  return `${deltaMs > 0 ? "+" : "-"}${seconds}s`;
+}
+
+function getSignalColorPalette(
+  delta: number,
+  isIncreasePositiveSignal: boolean,
+): "green.500" | "red.500" | "app.fg.muted" {
+  if (delta === 0) return "app.fg.muted";
+
+  const isUptrend = delta > 0;
+  const isPositiveSignal = isUptrend === isIncreasePositiveSignal;
+  return isPositiveSignal ? "green.500" : "red.500";
+}
+
 export function WeekdayGuesserPage() {
   const [settingsDraft, setSettingsDraft] = useState<PracticeSettings>({
     minYear: 2000,
@@ -132,6 +157,10 @@ export function WeekdayGuesserPage() {
     bestStreak: 0,
     totalResponseMs: 0,
   });
+  const [trends, setTrends] = useState<PracticeTrends>({
+    accuracyDelta: null,
+    avgResponseDeltaMs: null,
+  });
 
   const accuracy = stats.attempts > 0 ? Math.round((stats.correct / stats.attempts) * 100) : 0;
   const avgResponseMs = stats.attempts > 0 ? Math.round(stats.totalResponseMs / stats.attempts) : 0;
@@ -146,6 +175,7 @@ export function WeekdayGuesserPage() {
     setSettings(nextSettings);
     setSettingsDraft(nextSettings);
     setStats({ attempts: 0, correct: 0, streak: 0, bestStreak: 0, totalResponseMs: 0 });
+    setTrends({ accuracyDelta: null, avgResponseDeltaMs: null });
     setQuestionIndex(0);
     setAnswerState(null);
     setPrefix("");
@@ -161,14 +191,28 @@ export function WeekdayGuesserPage() {
 
     const responseMs = Math.max(1, Date.now() - questionStartedAt);
     const isCorrect = choiceValue === question.correctValue;
+
+    const previousAccuracy =
+      stats.attempts > 0 ? Math.round((stats.correct / stats.attempts) * 100) : null;
+    const previousAvgResponseMs =
+      stats.attempts > 0 ? Math.round(stats.totalResponseMs / stats.attempts) : null;
+
+    const attempts = stats.attempts + 1;
+    const correct = stats.correct + (isCorrect ? 1 : 0);
+    const streak = isCorrect ? stats.streak + 1 : 0;
+    const bestStreak = Math.max(stats.bestStreak, streak);
+    const totalResponseMs = stats.totalResponseMs + responseMs;
+    const nextStats: PracticeStats = { attempts, correct, streak, bestStreak, totalResponseMs };
+
+    const nextAccuracy = Math.round((nextStats.correct / nextStats.attempts) * 100);
+    const nextAvgResponseMs = Math.round(nextStats.totalResponseMs / nextStats.attempts);
+
     setAnswerState({ selectedValue: choiceValue, isCorrect, responseMs });
-    setStats((current) => {
-      const attempts = current.attempts + 1;
-      const correct = current.correct + (isCorrect ? 1 : 0);
-      const streak = isCorrect ? current.streak + 1 : 0;
-      const bestStreak = Math.max(current.bestStreak, streak);
-      const totalResponseMs = current.totalResponseMs + responseMs;
-      return { attempts, correct, streak, bestStreak, totalResponseMs };
+    setStats(nextStats);
+    setTrends({
+      accuracyDelta: previousAccuracy === null ? null : nextAccuracy - previousAccuracy,
+      avgResponseDeltaMs:
+        previousAvgResponseMs === null ? null : nextAvgResponseMs - previousAvgResponseMs,
     });
 
     setPrefix("");
@@ -192,6 +236,7 @@ export function WeekdayGuesserPage() {
     setAnswerState(null);
     setPrefix("");
     setStats({ attempts: 0, correct: 0, streak: 0, bestStreak: 0, totalResponseMs: 0 });
+    setTrends({ accuracyDelta: null, avgResponseDeltaMs: null });
   }
 
   useEffect(() => {
@@ -262,7 +307,28 @@ export function WeekdayGuesserPage() {
               <StatGroup>
                 <Stat.Root>
                   <Stat.Label>Accuracy</Stat.Label>
-                  <Stat.ValueText>{accuracy}%</Stat.ValueText>
+                  <HStack align={"center"} gap={2}>
+                    <Stat.ValueText>{accuracy}%</Stat.ValueText>
+                    <Box minW={"58px"}>
+                      {trends.accuracyDelta !== null && trends.accuracyDelta !== 0 ? (
+                        <HStack
+                          as={"span"}
+                          gap={0.5}
+                          color={getSignalColorPalette(trends.accuracyDelta, true)}
+                          fontSize={"xs"}
+                          fontWeight={"medium"}
+                          lineHeight={"short"}
+                          align={"center"}
+                        >
+                          {trends.accuracyDelta > 0 ? <Stat.UpIndicator /> : null}
+                          {trends.accuracyDelta < 0 ? <Stat.DownIndicator /> : null}
+                          <Text as={"span"} color={"currentColor"}>
+                            {formatSignedPercent(trends.accuracyDelta)}
+                          </Text>
+                        </HStack>
+                      ) : null}
+                    </Box>
+                  </HStack>
                 </Stat.Root>
                 <Stat.Root>
                   <Stat.Label>Answered</Stat.Label>
@@ -270,7 +336,32 @@ export function WeekdayGuesserPage() {
                 </Stat.Root>
                 <Stat.Root>
                   <Stat.Label>Avg Time</Stat.Label>
-                  <Stat.ValueText>{avgResponseMs > 0 ? formatMs(avgResponseMs) : "-"}</Stat.ValueText>
+                  <HStack align={"center"} gap={2}>
+                    <Stat.ValueText>{avgResponseMs > 0 ? formatMs(avgResponseMs) : "-"}</Stat.ValueText>
+                    <Box minW={"58px"}>
+                      {trends.avgResponseDeltaMs !== null && trends.avgResponseDeltaMs !== 0 ? (
+                        <HStack
+                          as={"span"}
+                          gap={0.5}
+                          color={getSignalColorPalette(trends.avgResponseDeltaMs, false)}
+                          fontSize={"xs"}
+                          fontWeight={"medium"}
+                          lineHeight={"short"}
+                          align={"center"}
+                        >
+                          {trends.avgResponseDeltaMs > 0 ? (
+                            <Stat.UpIndicator color={getSignalColorPalette(trends.avgResponseDeltaMs, false)} />
+                          ) : null}
+                          {trends.avgResponseDeltaMs < 0 ? (
+                            <Stat.DownIndicator color={getSignalColorPalette(trends.avgResponseDeltaMs, false)} />
+                          ) : null}
+                          <Text as={"span"} color={"currentColor"}>
+                            {formatSignedMsDelta(trends.avgResponseDeltaMs)}
+                          </Text>
+                        </HStack>
+                      ) : null}
+                    </Box>
+                  </HStack>
                 </Stat.Root>
                 <Stat.Root>
                   <Stat.Label>Streak</Stat.Label>
