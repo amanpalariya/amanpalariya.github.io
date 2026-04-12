@@ -373,7 +373,14 @@ export function WeekdayGuesserPage() {
                 </Stat.Root>
                 <Stat.Root minW={0}>
                   <Stat.Label>Streak</Stat.Label>
-                  <Stat.ValueText>{stats.streak}</Stat.ValueText>
+                  <HStack align={"center"} gap={1.5}>
+                    <Stat.ValueText>{stats.streak}</Stat.ValueText>
+                    {stats.streak >= 5 ? (
+                      <Text as={"span"} fontSize={"lg"} lineHeight={1} role={"img"} aria-label={"fire"}>
+                        🔥
+                      </Text>
+                    ) : null}
+                  </HStack>
                 </Stat.Root>
               </Grid>
             </Card.Body>
