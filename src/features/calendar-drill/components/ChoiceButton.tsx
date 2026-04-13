@@ -52,7 +52,7 @@ export function ChoiceButton({
       borderWidth={"2px"}
       justifyContent={"flex-start"}
       ps={3}
-      pe={11}
+      pe={10}
       position={"relative"}
     >
       <Text>{choice.label}</Text>
@@ -62,11 +62,12 @@ export function ChoiceButton({
           position={"absolute"}
           insetY={0}
           insetEnd={0}
-          w={10}
+          w={9}
           px={0}
           display={"inline-flex"}
           alignItems={"center"}
           justifyContent={"center"}
+          opacity={0.65}
           roundedEnd={"xl"}
         >
           <ShortcutHint label={choice.shortcutKey} shape={"square"} />

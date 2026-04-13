@@ -12,22 +12,24 @@ export function ShortcutHint({ label, icon, shape = "default" }: ShortcutHintPro
 
   if (isSquare) {
     return (
-      <AspectRatio ratio={1} w={"1.5rem"} flexShrink={0}>
+      <AspectRatio ratio={1} w={"1.35rem"} flexShrink={0}>
         <Box
           w={"full"}
           h={"full"}
           display={"inline-flex"}
           alignItems={"center"}
           justifyContent={"center"}
-          rounded={"sm"}
+          rounded={"md"}
           borderWidth={"1px"}
-          borderColor={"currentColor"}
-          opacity={0.75}
-          fontSize={"2xs"}
+          borderColor={"inherit"}
+          color={"inherit"}
+          fontSize={"xs"}
           fontWeight={"semibold"}
           lineHeight={1}
         >
-          <Text as={"span"}>{label}</Text>
+          <Text as={"span"} color={"inherit"}>
+            {label}
+          </Text>
         </Box>
       </AspectRatio>
     );
