@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, HStack, Input } from "@chakra-ui/react";
+import { CloseButton, Group, Input } from "@chakra-ui/react";
 
 export function ToolsSearchBar({
   value,
@@ -14,21 +14,24 @@ export function ToolsSearchBar({
   onClear: () => void;
 }) {
   return (
-    <HStack gap={2} align={"stretch"}>
+    <Group attached w={"full"}>
       <Input
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         background={"app.bg.card"}
+        rounded={"2xl"}
+        roundedRight={0}
       />
-      <Button
-        variant={"surface"}
-        borderRadius={"lg"}
+      <CloseButton
+        aria-label={"Clear search"}
+        variant={"outline"}
+        rounded={"2xl"}
+        roundedLeft={0}
+        background={"app.bg.card"}
         onClick={onClear}
         disabled={!value}
-      >
-        Clear
-      </Button>
-    </HStack>
+      />
+    </Group>
   );
 }

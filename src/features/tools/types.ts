@@ -30,8 +30,6 @@ export interface ToolsPageContent {
 
 export interface ToolFiltersState {
   query: string;
-  status: "all" | ToolStatus;
-  featuredOnly: boolean;
 }
 
 export interface ToolSearchResult {

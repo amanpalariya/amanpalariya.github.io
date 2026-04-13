@@ -13,14 +13,11 @@ import { getToolsPageContent } from "../data/content";
 import { getAllTools } from "../data/tools-registry";
 import { filterTools } from "../domain/search";
 import type { ToolDefinition, ToolFiltersState } from "../types";
-import { ToolsFilters } from "./ToolsFilters";
 import { ToolsSearchBar } from "./ToolsSearchBar";
 import { useMemo, useState } from "react";
 
 const defaultFilters: ToolFiltersState = {
   query: "",
-  status: "all",
-  featuredOnly: false,
 };
 
 function getToolIcon(icon?: string) {
@@ -75,19 +72,15 @@ function Main({
   title,
   subtitle,
   showSearch,
-  showFilters,
   filters,
   onFiltersChange,
-  statuses,
   searchPlaceholder,
 }: {
   title: string;
   subtitle: string;
   showSearch: boolean;
-  showFilters: boolean;
   filters: ToolFiltersState;
   onFiltersChange: (next: ToolFiltersState) => void;
-  statuses: Array<ToolDefinition["status"]>;
   searchPlaceholder: string;
 }) {
   return (
@@ -105,13 +98,6 @@ function Main({
           />
         ) : null}
 
-        {showFilters ? (
-          <ToolsFilters
-            filters={filters}
-            statuses={statuses}
-            onChange={onFiltersChange}
-          />
-        ) : null}
       </VStack>
     </Box>
   );
@@ -125,15 +111,9 @@ export function ToolsDirectoryPage() {
   );
   const [filters, setFilters] = useState<ToolFiltersState>(defaultFilters);
 
-  const statuses = useMemo(
-    () => Array.from(new Set(tools.map((tool) => tool.status))),
-    [tools],
-  );
-
   const filteredTools = useMemo(() => filterTools(tools, filters), [tools, filters]);
   const visibleTools = forceEmptyStates ? [] : filteredTools;
   const showSearch = tools.length > 1;
-  const showFilters = statuses.length > 1;
 
   return (
     <VStack align={"stretch"} gap={0}>
@@ -141,10 +121,8 @@ export function ToolsDirectoryPage() {
         title={content.title}
         subtitle={content.subtitle}
         showSearch={showSearch}
-        showFilters={showFilters}
         filters={filters}
         onFiltersChange={setFilters}
-        statuses={statuses}
         searchPlaceholder={content.searchPlaceholder}
       />
 

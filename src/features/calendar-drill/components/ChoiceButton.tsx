@@ -1,9 +1,11 @@
 import { Box, Button, Icon, Text } from "@chakra-ui/react";
 import { LuCircleCheck, LuCircleX } from "react-icons/lu";
 import type { WeekdayChoice } from "./models";
+import { ShortcutHint } from "./ShortcutHint";
 
 type ChoiceButtonProps = {
   choice: WeekdayChoice;
+  requiredPrefixLength: number;
   correctValue: string;
   selectedValue?: string;
   hasAnswered: boolean;
@@ -15,6 +17,7 @@ type ChoiceButtonProps = {
 
 export function ChoiceButton({
   choice,
+  requiredPrefixLength,
   correctValue,
   selectedValue,
   hasAnswered,
@@ -26,6 +29,18 @@ export function ChoiceButton({
   const isCorrectChoice = choice.value === correctValue;
   const isSelected = selectedValue === choice.value;
   const matchesPrefix = choice.label.toLowerCase().startsWith(prefix.toLowerCase());
+  const safeRequiredPrefixLength = Math.min(
+    Math.max(1, requiredPrefixLength),
+    choice.label.length,
+  );
+  const showPrefixHints = !hasAnswered && isSessionRunning;
+  const typedPrefixLength =
+    showPrefixHints && hasPrefix && matchesPrefix ? Math.min(prefix.length, choice.label.length) : 0;
+
+  const requiredPrefixText = choice.label.slice(0, safeRequiredPrefixLength);
+  const typedPrefixText = choice.label.slice(0, typedPrefixLength);
+  const remainingRequiredPrefixText = choice.label.slice(typedPrefixLength, safeRequiredPrefixLength);
+  const remainderText = choice.label.slice(Math.max(typedPrefixLength, safeRequiredPrefixLength));
 
   let variant: "outline" | "subtle" | "solid" = "outline";
   let colorPalette: "gray" | "green" | "red" | "yellow" = "gray";
@@ -48,38 +63,63 @@ export function ChoiceButton({
       disabled={hasAnswered || !isSessionRunning || (hasPrefix && !matchesPrefix)}
       variant={variant}
       colorPalette={colorPalette}
+      borderWidth={"2px"}
       justifyContent={"flex-start"}
       ps={3}
-      pe={11}
+      pe={10}
       position={"relative"}
     >
-      <Text>{choice.label}</Text>
+      <Text>
+        {showPrefixHints ? (
+          typedPrefixLength > 0 ? (
+            <>
+              <Text as={"span"} bg={"colorPalette.emphasized"} color={"colorPalette.fg"}>
+                {typedPrefixText}
+              </Text>
+              {remainingRequiredPrefixText ? (
+                <Text
+                  as={"span"}
+                  textDecoration={"underline"}
+                  textDecorationThickness={"1px"}
+                  textDecorationColor={"app.fg.subtle"}
+                >
+                  {remainingRequiredPrefixText}
+                </Text>
+              ) : null}
+              <Text as={"span"}>{remainderText}</Text>
+            </>
+          ) : (
+            <>
+              <Text
+                as={"span"}
+                textDecoration={"underline"}
+                textDecorationThickness={"1px"}
+                textDecorationColor={"app.fg.subtle"}
+              >
+                {requiredPrefixText}
+              </Text>
+              <Text as={"span"}>{choice.label.slice(safeRequiredPrefixLength)}</Text>
+            </>
+          )
+        ) : (
+          choice.label
+        )}
+      </Text>
 
       {!hasAnswered ? (
         <Box
           position={"absolute"}
           insetY={0}
           insetEnd={0}
-          minW={8}
-          px={2}
+          w={9}
+          px={0}
           display={"inline-flex"}
           alignItems={"center"}
           justifyContent={"center"}
-          _before={{
-            content: '""',
-            position: "absolute",
-            insetInlineStart: 0,
-            insetBlock: "20%",
-            w: "1px",
-            bg: "currentColor",
-            opacity: 0.2,
-          }}
-          opacity={0.8}
-          fontSize={"xs"}
-          fontWeight={"semibold"}
+          opacity={0.65}
           roundedEnd={"xl"}
         >
-          {choice.shortcutKey}
+          <ShortcutHint label={choice.shortcutKey} shape={"square"} />
         </Box>
       ) : null}
 
