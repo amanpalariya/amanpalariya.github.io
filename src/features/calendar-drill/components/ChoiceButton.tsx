@@ -1,6 +1,7 @@
 import { Box, Button, Icon, Text } from "@chakra-ui/react";
 import { LuCircleCheck, LuCircleX } from "react-icons/lu";
 import type { WeekdayChoice } from "./models";
+import { ShortcutHint } from "./ShortcutHint";
 
 type ChoiceButtonProps = {
   choice: WeekdayChoice;
@@ -66,14 +67,9 @@ export function ChoiceButton({
           display={"inline-flex"}
           alignItems={"center"}
           justifyContent={"center"}
-          borderInlineStartWidth={"2px"}
-          borderInlineStartColor={"inherit"}
-          fontSize={"xs"}
-          fontWeight={"semibold"}
-          lineHeight={1}
           roundedEnd={"xl"}
         >
-          {choice.shortcutKey}
+          <ShortcutHint label={choice.shortcutKey} shape={"square"} />
         </Box>
       ) : null}
 
