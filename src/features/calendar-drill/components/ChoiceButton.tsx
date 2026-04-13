@@ -48,6 +48,7 @@ export function ChoiceButton({
       disabled={hasAnswered || !isSessionRunning || (hasPrefix && !matchesPrefix)}
       variant={variant}
       colorPalette={colorPalette}
+      borderWidth={"2px"}
       justifyContent={"flex-start"}
       ps={3}
       pe={11}
@@ -60,23 +61,16 @@ export function ChoiceButton({
           position={"absolute"}
           insetY={0}
           insetEnd={0}
-          minW={8}
-          px={2}
+          w={10}
+          px={0}
           display={"inline-flex"}
           alignItems={"center"}
           justifyContent={"center"}
-          _before={{
-            content: '""',
-            position: "absolute",
-            insetInlineStart: 0,
-            insetBlock: "20%",
-            w: "1px",
-            bg: "currentColor",
-            opacity: 0.2,
-          }}
-          opacity={0.8}
+          borderInlineStartWidth={"2px"}
+          borderInlineStartColor={"inherit"}
           fontSize={"xs"}
           fontWeight={"semibold"}
+          lineHeight={1}
           roundedEnd={"xl"}
         >
           {choice.shortcutKey}

@@ -421,6 +421,7 @@ export function CalendarDrillPage() {
                       <Button
                         flex={1}
                         rounded={0}
+                        h={12}
                         onClick={nextQuestion}
                         disabled={!answerState}
                         {...CALENDAR_DRILL_PRIMARY_ACTION_BUTTON_STYLES}
@@ -438,7 +439,14 @@ export function CalendarDrillPage() {
                           </Box>
                         ) : null}
                       </Button>
-                      <Button flex={1} rounded={0} variant={"subtle"} colorPalette={"gray"} onClick={resetSession}>
+                      <Button
+                        flex={1}
+                        rounded={0}
+                        h={12}
+                        variant={"subtle"}
+                        colorPalette={"gray"}
+                        onClick={resetSession}
+                      >
                         <Icon as={LuRotateCcw} />
                         Reset
                       </Button>
@@ -447,6 +455,7 @@ export function CalendarDrillPage() {
                     <Button
                       w={"full"}
                       rounded={0}
+                      h={12}
                       onClick={startSession}
                       {...CALENDAR_DRILL_PRIMARY_ACTION_BUTTON_STYLES}
                       justifyContent={"center"}
