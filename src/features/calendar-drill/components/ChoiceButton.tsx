@@ -5,6 +5,7 @@ import { ShortcutHint } from "./ShortcutHint";
 
 type ChoiceButtonProps = {
   choice: WeekdayChoice;
+  requiredPrefixLength: number;
   correctValue: string;
   selectedValue?: string;
   hasAnswered: boolean;
@@ -16,6 +17,7 @@ type ChoiceButtonProps = {
 
 export function ChoiceButton({
   choice,
+  requiredPrefixLength,
   correctValue,
   selectedValue,
   hasAnswered,
@@ -27,6 +29,18 @@ export function ChoiceButton({
   const isCorrectChoice = choice.value === correctValue;
   const isSelected = selectedValue === choice.value;
   const matchesPrefix = choice.label.toLowerCase().startsWith(prefix.toLowerCase());
+  const safeRequiredPrefixLength = Math.min(
+    Math.max(1, requiredPrefixLength),
+    choice.label.length,
+  );
+  const showPrefixHints = !hasAnswered && isSessionRunning;
+  const typedPrefixLength =
+    showPrefixHints && hasPrefix && matchesPrefix ? Math.min(prefix.length, choice.label.length) : 0;
+
+  const requiredPrefixText = choice.label.slice(0, safeRequiredPrefixLength);
+  const typedPrefixText = choice.label.slice(0, typedPrefixLength);
+  const remainingRequiredPrefixText = choice.label.slice(typedPrefixLength, safeRequiredPrefixLength);
+  const remainderText = choice.label.slice(Math.max(typedPrefixLength, safeRequiredPrefixLength));
 
   let variant: "outline" | "subtle" | "solid" = "outline";
   let colorPalette: "gray" | "green" | "red" | "yellow" = "gray";
@@ -55,7 +69,42 @@ export function ChoiceButton({
       pe={10}
       position={"relative"}
     >
-      <Text>{choice.label}</Text>
+      <Text>
+        {showPrefixHints ? (
+          typedPrefixLength > 0 ? (
+            <>
+              <Text as={"span"} bg={"colorPalette.emphasized"} color={"colorPalette.fg"}>
+                {typedPrefixText}
+              </Text>
+              {remainingRequiredPrefixText ? (
+                <Text
+                  as={"span"}
+                  textDecoration={"underline"}
+                  textDecorationThickness={"1px"}
+                  textDecorationColor={"app.fg.subtle"}
+                >
+                  {remainingRequiredPrefixText}
+                </Text>
+              ) : null}
+              <Text as={"span"}>{remainderText}</Text>
+            </>
+          ) : (
+            <>
+              <Text
+                as={"span"}
+                textDecoration={"underline"}
+                textDecorationThickness={"1px"}
+                textDecorationColor={"app.fg.subtle"}
+              >
+                {requiredPrefixText}
+              </Text>
+              <Text as={"span"}>{choice.label.slice(safeRequiredPrefixLength)}</Text>
+            </>
+          )
+        ) : (
+          choice.label
+        )}
+      </Text>
 
       {!hasAnswered ? (
         <Box

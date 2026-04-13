@@ -15,7 +15,7 @@ import {
 } from "@chakra-ui/react";
 import { Switch } from "@components/ui/switch";
 import HighlightedSection from "@components/page/common/HighlightedSection";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   LuCalendarRange,
   LuCornerDownLeft,
@@ -79,6 +79,36 @@ export function CalendarDrillPage() {
   const accuracy = stats.attempts > 0 ? Math.round((stats.correct / stats.attempts) * 100) : 0;
   const avgResponseMs = stats.attempts > 0 ? Math.round(stats.totalResponseMs / stats.attempts) : 0;
   const displayedAvgResponseMs = avgResponseMs > 0 ? toDisplayedAvgMs(avgResponseMs) : 0;
+
+  const requiredPrefixLengthByChoiceValue = useMemo(() => {
+    if (!question) return new Map<string, number>();
+
+    const result = new Map<string, number>();
+    const choices = question.choices;
+
+    for (const choice of choices) {
+      const lowerLabel = choice.label.toLowerCase();
+      let requiredLength = lowerLabel.length;
+
+      for (let prefixLength = 1; prefixLength <= lowerLabel.length; prefixLength += 1) {
+        const prefixSlice = lowerLabel.slice(0, prefixLength);
+        const isUnique = choices.every(
+          (otherChoice) =>
+            otherChoice.value === choice.value ||
+            !otherChoice.label.toLowerCase().startsWith(prefixSlice),
+        );
+
+        if (isUnique) {
+          requiredLength = prefixLength;
+          break;
+        }
+      }
+
+      result.set(choice.value, requiredLength);
+    }
+
+    return result;
+  }, [question]);
 
   useEffect(() => {
     const savedSettings = readCalendarDrillSettings();
@@ -180,9 +210,9 @@ export function CalendarDrillPage() {
       const pressedKey = event.key.toLowerCase();
 
       if (/^[0-9]$/.test(pressedKey)) {
+        event.preventDefault();
         const shortcutMatch = activeQuestion.choices.find((choice) => choice.shortcutKey === pressedKey);
         if (shortcutMatch) {
-          event.preventDefault();
           submitAnswer(shortcutMatch.value);
         }
         return;
@@ -204,11 +234,13 @@ export function CalendarDrillPage() {
 
       event.preventDefault();
       const nextPrefix = `${prefix}${pressedKey}`;
-      setPrefix(nextPrefix);
-
       const matches = activeQuestion.choices.filter((choice) =>
         choice.label.toLowerCase().startsWith(nextPrefix),
       );
+
+      if (matches.length === 0) return;
+
+      setPrefix(nextPrefix);
 
       if (matches.length === 1) {
         submitAnswer(matches[0].value);
@@ -302,6 +334,9 @@ export function CalendarDrillPage() {
                               <ChoiceButton
                                 key={choice.value}
                                 choice={choice}
+                                requiredPrefixLength={
+                                  requiredPrefixLengthByChoiceValue.get(choice.value) ?? 1
+                                }
                                 correctValue={question.correctValue}
                                 selectedValue={answerState?.selectedValue}
                                 hasAnswered={hasAnswered}
