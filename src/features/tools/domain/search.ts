@@ -16,7 +16,6 @@ export function buildToolSearchText(tool: ToolDefinition): string {
       tool.name,
       tool.tagline,
       tool.description,
-      tool.status,
       ...tool.tags.map((tag) => `${tag.id} ${tag.label}`),
     ].join(SEARCHABLE_SEPARATOR),
   );
@@ -84,17 +83,5 @@ export function filterTools(
   tools: ToolDefinition[],
   filters: ToolFiltersState,
 ): ToolDefinition[] {
-  const ranked = rankTools(tools, filters.query).map((result) => result.tool);
-
-  return ranked.filter((tool) => {
-    if (filters.status !== "all" && tool.status !== filters.status) {
-      return false;
-    }
-
-    if (filters.featuredOnly && !tool.isFeatured) {
-      return false;
-    }
-
-    return true;
-  });
+  return rankTools(tools, filters.query).map((result) => result.tool);
 }
