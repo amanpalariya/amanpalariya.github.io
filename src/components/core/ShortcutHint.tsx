@@ -5,9 +5,15 @@ type ShortcutHintProps = {
   label: string;
   icon?: IconType;
   shape?: "default" | "square";
+  pressed?: boolean;
 };
 
-export function ShortcutHint({ label, icon, shape = "default" }: ShortcutHintProps) {
+export function ShortcutHint({
+  label,
+  icon,
+  shape = "default",
+  pressed = false,
+}: ShortcutHintProps) {
   const isSquare = shape === "square";
 
   const content = (
@@ -31,7 +37,7 @@ export function ShortcutHint({ label, icon, shape = "default" }: ShortcutHintPro
           justifyContent={"center"}
           rounded={"md"}
           borderWidth={"1px"}
-          borderBottomWidth={"3px"}
+          borderBottomWidth={pressed ? "1px" : "3px"}
           borderColor={"currentColor"}
           bg={"color-mix(in srgb, currentColor 10%, transparent)"}
           color={"inherit"}
@@ -40,6 +46,8 @@ export function ShortcutHint({ label, icon, shape = "default" }: ShortcutHintPro
           lineHeight={1}
           letterSpacing={"tight"}
           userSelect={"none"}
+          transform={pressed ? "translateY(2px)" : undefined}
+          transition={"transform 0.12s ease, border-bottom-width 0.12s ease"}
         >
           {content}
         </Box>
@@ -54,7 +62,7 @@ export function ShortcutHint({ label, icon, shape = "default" }: ShortcutHintPro
       px={1.5}
       rounded={"md"}
       borderWidth={"1px"}
-      borderBottomWidth={"3px"}
+      borderBottomWidth={pressed ? "1px" : "3px"}
       borderColor={"currentColor"}
       bg={"color-mix(in srgb, currentColor 10%, transparent)"}
       opacity={0.85}
@@ -65,6 +73,8 @@ export function ShortcutHint({ label, icon, shape = "default" }: ShortcutHintPro
       flexShrink={0}
       letterSpacing={"tight"}
       userSelect={"none"}
+      transform={pressed ? "translateY(2px)" : undefined}
+      transition={"transform 0.12s ease, border-bottom-width 0.12s ease"}
     >
       {content}
     </HStack>
