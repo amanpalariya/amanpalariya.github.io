@@ -13,6 +13,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
+import { ShortcutHint } from "@components/core/ShortcutHint";
 import { Switch } from "@components/ui/switch";
 import HighlightedSection from "@components/page/common/HighlightedSection";
 import { useEffect, useMemo, useState } from "react";
@@ -48,7 +49,6 @@ import {
 } from "./practice-utils";
 import { ChoiceButton } from "./ChoiceButton";
 import { SessionStatsCard } from "./SessionStatsCard";
-import { ShortcutHint } from "./ShortcutHint";
 
 const CALENDAR_DRILL_PRIMARY_ACTION_BUTTON_STYLES = {
   bg: "app.calendarDrill.button.primary.bg",

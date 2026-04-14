@@ -1,7 +1,7 @@
 import { Box, Button, Icon, Text } from "@chakra-ui/react";
+import { ShortcutHint } from "@components/core/ShortcutHint";
 import { LuCircleCheck, LuCircleX } from "react-icons/lu";
 import type { WeekdayChoice } from "./models";
-import { ShortcutHint } from "./ShortcutHint";
 
 type ChoiceButtonProps = {
   choice: WeekdayChoice;
