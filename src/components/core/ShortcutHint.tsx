@@ -10,10 +10,20 @@ type ShortcutHintProps = {
 export function ShortcutHint({ label, icon, shape = "default" }: ShortcutHintProps) {
   const isSquare = shape === "square";
 
+  const content = (
+    <>
+      {icon ? <Icon as={icon} boxSize={3} /> : null}
+      <Text as={"span"} color={"inherit"} textTransform={"uppercase"} lineHeight={1}>
+        {label}
+      </Text>
+    </>
+  );
+
   if (isSquare) {
     return (
       <AspectRatio ratio={1} w={"1.35rem"} flexShrink={0}>
         <Box
+          as={"kbd"}
           w={"full"}
           h={"full"}
           display={"inline-flex"}
@@ -21,15 +31,17 @@ export function ShortcutHint({ label, icon, shape = "default" }: ShortcutHintPro
           justifyContent={"center"}
           rounded={"md"}
           borderWidth={"1px"}
-          borderColor={"inherit"}
+          borderBottomWidth={"3px"}
+          borderColor={"currentColor"}
+          bg={"color-mix(in srgb, currentColor 10%, transparent)"}
           color={"inherit"}
           fontSize={"xs"}
           fontWeight={"semibold"}
           lineHeight={1}
+          letterSpacing={"tight"}
+          userSelect={"none"}
         >
-          <Text as={"span"} color={"inherit"}>
-            {label}
-          </Text>
+          {content}
         </Box>
       </AspectRatio>
     );
@@ -37,20 +49,24 @@ export function ShortcutHint({ label, icon, shape = "default" }: ShortcutHintPro
 
   return (
     <HStack
-      minH={"1.5rem"}
+      as={"kbd"}
+      minH={"1.6rem"}
       px={1.5}
       rounded={"md"}
       borderWidth={"1px"}
+      borderBottomWidth={"3px"}
       borderColor={"currentColor"}
-      opacity={0.75}
+      bg={"color-mix(in srgb, currentColor 10%, transparent)"}
+      opacity={0.85}
       fontSize={"2xs"}
       fontWeight={"semibold"}
       gap={1}
       lineHeight={1}
       flexShrink={0}
+      letterSpacing={"tight"}
+      userSelect={"none"}
     >
-      {icon ? <Icon as={icon} boxSize={3} /> : null}
-      <Text as={"span"}>{label}</Text>
+      {content}
     </HStack>
   );
 }
