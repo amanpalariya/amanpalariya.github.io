@@ -16,7 +16,7 @@ import {
 import { ShortcutHint } from "@components/core/ShortcutHint";
 import { Switch } from "@components/ui/switch";
 import HighlightedSection from "@components/page/common/HighlightedSection";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   LuCalendarRange,
   LuCornerDownLeft,
@@ -57,6 +57,36 @@ const CALENDAR_DRILL_PRIMARY_ACTION_BUTTON_STYLES = {
     bg: "app.calendarDrill.button.primary.hoverBg",
   },
 } as const;
+
+function isTextEntryInputElement(input: HTMLInputElement): boolean {
+  const inputType = input.type.toLowerCase();
+
+  return inputType !== "checkbox" && inputType !== "radio";
+}
+
+function isKeyboardEventFromInteractiveElement(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  if (target.isContentEditable) return true;
+
+  if (target instanceof HTMLInputElement) {
+    return isTextEntryInputElement(target);
+  }
+
+  if (target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) {
+    return true;
+  }
+
+  const closestInput = target.closest("input");
+  if (closestInput instanceof HTMLInputElement) {
+    return isTextEntryInputElement(closestInput);
+  }
+
+  return Boolean(
+    target.closest(
+      "textarea, select, button, a[href], [role='button'], [contenteditable='true']",
+    ),
+  );
+}
 
 export function CalendarDrillPage() {
   const [settingsDraft, setSettingsDraft] = useState<PracticeSettings>(
@@ -122,7 +152,7 @@ export function CalendarDrillPage() {
     writeCalendarDrillSettings(settingsDraft);
   }, [isSettingsLoaded, settingsDraft]);
 
-  function startSession() {
+  const startSession = useCallback(() => {
     const normalizedRange = normalizeYearRange(settingsDraft.minYear, settingsDraft.maxYear);
     const nextSettings: PracticeSettings = {
       ...settingsDraft,
@@ -141,7 +171,7 @@ export function CalendarDrillPage() {
     setQuestion(first);
     setQuestionStartedAt(Date.now());
     setStatus("running");
-  }
+  }, [settingsDraft]);
 
   function submitAnswer(choiceValue: string) {
     if (!question || status !== "running" || answerState) return;
@@ -179,7 +209,7 @@ export function CalendarDrillPage() {
     setPrefix("");
   }
 
-  function nextQuestion() {
+  const nextQuestion = useCallback(() => {
     if (!question || !answerState) return;
 
     const next = buildQuestion(settings);
@@ -188,7 +218,7 @@ export function CalendarDrillPage() {
     setQuestionStartedAt(Date.now());
     setAnswerState(null);
     setPrefix("");
-  }
+  }, [answerState, question, settings]);
 
   function resetSession() {
     setStatus("idle");
@@ -255,22 +285,23 @@ export function CalendarDrillPage() {
     function onGlobalEnter(event: KeyboardEvent) {
       if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
       if (event.key !== "Enter") return;
-
-      event.preventDefault();
+      if (isKeyboardEventFromInteractiveElement(event.target)) return;
 
       if (status === "idle") {
+        event.preventDefault();
         startSession();
         return;
       }
 
       if (status === "running" && answerState) {
+        event.preventDefault();
         nextQuestion();
       }
     }
 
     window.addEventListener("keydown", onGlobalEnter);
     return () => window.removeEventListener("keydown", onGlobalEnter);
-  }, [status, answerState]);
+  }, [status, answerState, nextQuestion, startSession]);
 
   return (
     <VStack align={"stretch"} gap={4} pt={4} pb={0}>
@@ -360,10 +391,15 @@ export function CalendarDrillPage() {
                         </Fieldset.Legend>
                         <Fieldset.Content>
                           <VStack align={"stretch"} gap={4}>
-                            <Grid templateColumns={["1fr", "1fr 1fr auto"]} gap={3} alignItems={"end"}>
-                              <Field.Root>
+                            <Grid
+                              templateColumns={["1fr", "repeat(3, minmax(0, 1fr))"]}
+                              gap={3}
+                              alignItems={"end"}
+                            >
+                              <Field.Root w={"full"}>
                                 <Field.Label>From Year</Field.Label>
                                 <NumberInput.Root
+                                  w={"full"}
                                   value={String(settingsDraft.minYear)}
                                   min={MIN_ALLOWED_YEAR}
                                   max={MAX_ALLOWED_YEAR}
@@ -378,13 +414,14 @@ export function CalendarDrillPage() {
                                   }}
                                 >
                                   <NumberInput.Control />
-                                  <NumberInput.Input rounded={"xl"} />
+                                  <NumberInput.Input rounded={"xl"} w={"full"} />
                                 </NumberInput.Root>
                               </Field.Root>
 
-                              <Field.Root>
+                              <Field.Root w={"full"}>
                                 <Field.Label>To Year</Field.Label>
                                 <NumberInput.Root
+                                  w={"full"}
                                   value={String(settingsDraft.maxYear)}
                                   min={MIN_ALLOWED_YEAR}
                                   max={MAX_ALLOWED_YEAR}
@@ -399,11 +436,12 @@ export function CalendarDrillPage() {
                                   }}
                                 >
                                   <NumberInput.Control />
-                                  <NumberInput.Input rounded={"xl"} />
+                                  <NumberInput.Input rounded={"xl"} w={"full"} />
                                 </NumberInput.Root>
                               </Field.Root>
 
                               <Button
+                                w={"full"}
                                 rounded={"xl"}
                                 variant={"outline"}
                                 onClick={() => {
@@ -469,8 +507,13 @@ export function CalendarDrillPage() {
                           <Text>Next</Text>
                         </HStack>
                         {answerState ? (
-                          <Box position={"absolute"} insetEnd={4}>
-                            <ShortcutHint icon={LuCornerDownLeft} label={"Enter"} />
+                          <Box position={"absolute"} insetEnd={{ base: 2, sm: 4 }}>
+                            <Box display={{ base: "none", sm: "block" }}>
+                              <ShortcutHint icon={LuCornerDownLeft} label={"Enter"} />
+                            </Box>
+                            <Box display={{ base: "block", sm: "none" }}>
+                              <ShortcutHint icon={LuCornerDownLeft} label={""} />
+                            </Box>
                           </Box>
                         ) : null}
                       </Button>
@@ -501,8 +544,13 @@ export function CalendarDrillPage() {
                         <Icon as={LuPlay} />
                         <Text>Start</Text>
                       </HStack>
-                      <Box position={"absolute"} insetEnd={4}>
-                        <ShortcutHint icon={LuCornerDownLeft} label={"Enter"} />
+                      <Box position={"absolute"} insetEnd={{ base: 2, sm: 4 }}>
+                        <Box display={{ base: "none", sm: "block" }}>
+                          <ShortcutHint icon={LuCornerDownLeft} label={"Enter"} />
+                        </Box>
+                        <Box display={{ base: "block", sm: "none" }}>
+                          <ShortcutHint icon={LuCornerDownLeft} label={""} />
+                        </Box>
                       </Box>
                     </Button>
                   )}
