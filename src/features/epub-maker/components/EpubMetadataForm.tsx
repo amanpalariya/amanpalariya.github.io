@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  FileUpload,
   Group,
   HStack,
   Icon,
@@ -10,16 +9,13 @@ import {
 } from "@chakra-ui/react";
 import { Switch } from "@components/ui/switch";
 import { Tooltip } from "@components/ui/tooltip";
-import { type ChangeEvent, useRef } from "react";
-import { LuCircleHelp, LuRefreshCw, LuSettings2, LuUpload } from "react-icons/lu";
+import { LuCircleHelp, LuSettings2 } from "react-icons/lu";
 import type { EpubMakerState } from "../types";
 
 export function EpubMetadataForm({
   prefs,
   autoEpubFileName,
   coverEnabled,
-  coverMode,
-  hasCustomCover,
   onTitleChange,
   onAuthorChange,
   onManualFileNameChange,
@@ -27,14 +23,10 @@ export function EpubMetadataForm({
   onEmbedRemoteImagesChange,
   onAllowExternalLinksChange,
   onCoverEnabledChange,
-  onReplaceCoverFromFiles,
-  onResetCoverToAuto,
 }: {
   prefs: EpubMakerState["prefs"];
   autoEpubFileName: string;
   coverEnabled: boolean;
-  coverMode: EpubMakerState["coverMode"];
-  hasCustomCover: boolean;
   onTitleChange: (value: string) => void;
   onAuthorChange: (value: string) => void;
   onManualFileNameChange: (value: string) => void;
@@ -42,8 +34,6 @@ export function EpubMetadataForm({
   onEmbedRemoteImagesChange: (value: boolean) => void;
   onAllowExternalLinksChange: (value: boolean) => void;
   onCoverEnabledChange: (value: boolean) => void;
-  onReplaceCoverFromFiles: (files: FileList | File[]) => Promise<void>;
-  onResetCoverToAuto: () => void;
 }) {
   const controlInputProps = {
     fontFamily: "ui",
@@ -69,15 +59,6 @@ export function EpubMetadataForm({
       color: "app.epub.switch.label",
     },
   } as const;
-
-  const coverUploadInputRef = useRef<HTMLInputElement | null>(null);
-
-  function handleCoverUploadChange(event: ChangeEvent<HTMLInputElement>) {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
-    void onReplaceCoverFromFiles(files);
-    event.target.value = "";
-  }
 
   return (
     <>
@@ -228,50 +209,6 @@ export function EpubMetadataForm({
           >
             Include cover
           </Switch>
-          <Text fontSize={"xs"} color={"app.epub.fg.subtle"}>
-            {coverMode === "custom" ? "Custom" : "Auto"}
-          </Text>
-        </HStack>
-
-        <HStack gap={2} align={"center"}>
-          <FileUpload.Root maxFiles={1}>
-            <FileUpload.HiddenInput
-              ref={coverUploadInputRef}
-              aria-label={"Upload cover image"}
-              accept={"image/*"}
-              onChange={handleCoverUploadChange}
-            />
-            <Button
-              {...actionButtonProps}
-              size={"sm"}
-              variant={"subtle"}
-              bg={"app.epub.button.subtle.bg"}
-              color={"app.epub.button.subtle.fg"}
-              _hover={{ bg: "app.epub.button.subtle.hoverBg" }}
-              onClick={() => coverUploadInputRef.current?.click()}
-            >
-              <Icon>
-                <LuUpload />
-              </Icon>
-              Replace cover
-            </Button>
-          </FileUpload.Root>
-
-          <Button
-            {...actionButtonProps}
-            size={"sm"}
-            variant={"subtle"}
-            disabled={!hasCustomCover}
-            bg={"app.epub.button.subtle.bg"}
-            color={"app.epub.button.subtle.fg"}
-            _hover={{ bg: "app.epub.button.subtle.hoverBg" }}
-            onClick={onResetCoverToAuto}
-          >
-            <Icon>
-              <LuRefreshCw />
-            </Icon>
-            Reset cover
-          </Button>
         </HStack>
       </HStack>
     </>

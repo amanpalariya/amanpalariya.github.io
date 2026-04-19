@@ -19,6 +19,28 @@ async function blobToDataUrl(blob: Blob): Promise<string> {
   return `data:${mediaType};base64,${base64}`;
 }
 
+export async function readClipboardImageBlob(): Promise<Blob> {
+  if (typeof navigator === "undefined" || !navigator.clipboard) {
+    throw new Error("Clipboard API unavailable");
+  }
+
+  if (!("read" in navigator.clipboard)) {
+    throw new Error("Clipboard image read is not supported in this browser.");
+  }
+
+  const items = await navigator.clipboard.read();
+  for (const item of items) {
+    const imageType = imageTypeFromClipboardItemTypes(item.types);
+    if (!imageType) continue;
+    const imageBlob = await item.getType(imageType);
+    if (imageBlob.size > 0) {
+      return imageBlob;
+    }
+  }
+
+  throw new Error("Clipboard does not contain an image.");
+}
+
 export async function clipboardImageBlobToHtml(blob: Blob): Promise<string> {
   const dataUrl = await blobToDataUrl(blob);
   return `<figure><img src="${dataUrl}" alt="Pasted image" /></figure>`;

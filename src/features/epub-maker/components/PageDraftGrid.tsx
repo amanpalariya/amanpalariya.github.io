@@ -35,6 +35,7 @@ export function PageDraftGrid({
   pages,
   coverEnabled,
   coverPreviewHtml,
+  hasCustomCover,
   isAdding,
   isGenerating,
   generationChapterStatusByPageId,
@@ -44,6 +45,9 @@ export function PageDraftGrid({
   onRemove,
   onRename,
   onReorder,
+  onReplaceCoverFromFiles,
+  onReplaceCoverFromClipboard,
+  onResetCoverToAuto,
   onAddFromClipboard,
   onAddFromFiles,
   pastedInput,
@@ -54,6 +58,7 @@ export function PageDraftGrid({
   pages: PageDraft[];
   coverEnabled: boolean;
   coverPreviewHtml: string;
+  hasCustomCover: boolean;
   isAdding: boolean;
   isGenerating: boolean;
   generationChapterStatusByPageId: Record<string, ChapterGenerationStatus>;
@@ -63,6 +68,9 @@ export function PageDraftGrid({
   onRemove: (id: string) => void;
   onRename: (id: string, value: string) => void;
   onReorder: (draggedId: string, targetIndex: number) => void;
+  onReplaceCoverFromFiles: (files: FileList | File[]) => Promise<void>;
+  onReplaceCoverFromClipboard: () => Promise<void>;
+  onResetCoverToAuto: () => void;
   onAddFromClipboard: () => Promise<void>;
   onAddFromFiles: (files: FileList | File[]) => Promise<void>;
   pastedInput: string;
@@ -323,6 +331,10 @@ export function PageDraftGrid({
               page={coverPage}
               chapterNumber={"C"}
               isCover={true}
+              hasCustomCover={hasCustomCover}
+              onReplaceCoverFromFiles={onReplaceCoverFromFiles}
+              onReplaceCoverFromClipboard={onReplaceCoverFromClipboard}
+              onResetCoverToAuto={onResetCoverToAuto}
               onRemove={onRemove}
               onRename={onRename}
               onDragStart={() => {}}
@@ -337,7 +349,7 @@ export function PageDraftGrid({
               }}
               onDrop={handleDrop}
               isDragging={false}
-              isDropTarget={!isInteractionDisabled && effectiveDropIndex(0) !== null}
+              isDropTarget={false}
               isInteractionDisabled={isInteractionDisabled}
               isGenerationStatusFading={isGenerationStatusFading}
               generationStatus={undefined}

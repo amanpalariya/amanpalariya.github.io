@@ -18,6 +18,10 @@ function extractSpacedText(root: Element | null | undefined): string {
   return parts.join(" ");
 }
 
+interface PreviewDocumentOptions {
+  variant?: "default" | "cover";
+}
+
 export function inferTitleFromHtml(value: string, fallback: string): string {
   try {
     const parser = new DOMParser();
@@ -39,8 +43,17 @@ export function inferTitleFromHtml(value: string, fallback: string): string {
   }
 }
 
-function createPreviewDocument(body: string): string {
-  return `<!doctype html><html><head><meta charset="utf-8" /><meta name="color-scheme" content="light" /><style>:root{color-scheme:light}html,body{margin:0;padding:0;overflow:hidden;background:#fff;color:#111}body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:12px;line-height:1.35;padding:10px}img{max-width:100%;height:auto}h1,h2,h3,h4,h5,h6{margin:8px 0 4px}p,li,blockquote,pre{margin:4px 0}a{color:#2563eb;text-decoration:none}*{scrollbar-width:none}*::-webkit-scrollbar{width:0;height:0}</style></head><body>${body}</body></html>`;
+function createPreviewDocument(
+  body: string,
+  options?: PreviewDocumentOptions,
+): string {
+  const variant = options?.variant ?? "default";
+  const coverStyles =
+    variant === "cover"
+      ? "body{padding:0;font-size:0;line-height:0;height:100%}body>*{margin:0}figure{margin:0;width:100%;height:100%}img{display:block;width:100%;height:100%;object-fit:cover}"
+      : "body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:12px;line-height:1.35;padding:10px}img{max-width:100%;height:auto}h1,h2,h3,h4,h5,h6{margin:8px 0 4px}p,li,blockquote,pre{margin:4px 0}a{color:#2563eb;text-decoration:none}";
+
+  return `<!doctype html><html><head><meta charset="utf-8" /><meta name="color-scheme" content="light" /><style>:root{color-scheme:light}html,body{margin:0;padding:0;overflow:hidden;background:#fff;color:#111;height:100%}${coverStyles}*{scrollbar-width:none}*::-webkit-scrollbar{width:0;height:0}</style></head><body>${body}</body></html>`;
 }
 
 function appendSanitizedNode(
@@ -118,6 +131,7 @@ export function sanitizeHtmlContent(
   html: string,
   fallbackPageTitle: string,
   policy: SanitizationPolicy,
+  previewOptions?: PreviewDocumentOptions,
 ): SanitizedHtmlResult {
   const parser = new DOMParser();
   const parsed = parser.parseFromString(html, "text/html");
@@ -160,7 +174,7 @@ export function sanitizeHtmlContent(
     title,
     baseUrl,
     chapterBodyHtml: container.innerHTML,
-    previewHtml: createPreviewDocument(previewContainer.innerHTML),
+    previewHtml: createPreviewDocument(previewContainer.innerHTML, previewOptions),
     stats,
   };
 }

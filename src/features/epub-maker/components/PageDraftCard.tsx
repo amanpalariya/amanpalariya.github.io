@@ -2,6 +2,7 @@ import {
   AspectRatio,
   Box,
   Button,
+  FileUpload,
   HStack,
   Icon,
   Input,
@@ -11,15 +12,19 @@ import {
 import { Tooltip } from "@components/ui/tooltip";
 import {
   LuCheck,
+  LuClipboardPaste,
   LuClock3,
   LuGripVertical,
   LuLoaderCircle,
+  LuRefreshCw,
   LuTrash2,
+  LuUpload,
 } from "react-icons/lu";
 import {
   useEffect,
   useRef,
   useState,
+  type ChangeEvent,
   type DragEvent,
   type KeyboardEvent,
   type PointerEvent as ReactPointerEvent,
@@ -38,6 +43,10 @@ export function PageDraftCard({
   page,
   chapterNumber,
   isCover,
+  hasCustomCover,
+  onReplaceCoverFromFiles,
+  onReplaceCoverFromClipboard,
+  onResetCoverToAuto,
   onRemove,
   onRename,
   onDragStart,
@@ -59,6 +68,10 @@ export function PageDraftCard({
   page: PageDraft;
   chapterNumber: number | string;
   isCover?: boolean;
+  hasCustomCover?: boolean;
+  onReplaceCoverFromFiles?: (files: FileList | File[]) => Promise<void>;
+  onReplaceCoverFromClipboard?: () => Promise<void>;
+  onResetCoverToAuto?: () => void;
   onRemove: (id: string) => void;
   onRename: (id: string, value: string) => void;
   onDragStart: (id: string, anchor: DragPreviewAnchor) => void;
@@ -79,6 +92,7 @@ export function PageDraftCard({
 }) {
   const [titleDraft, setTitleDraft] = useState(page.title);
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const coverUploadInputRef = useRef<HTMLInputElement | null>(null);
   const activeTouchPointerIdRef = useRef<number | null>(null);
   const touchStartPointRef = useRef<{ x: number; y: number } | null>(null);
   const hasStartedTouchDragRef = useRef(false);
@@ -269,6 +283,14 @@ export function PageDraftCard({
   const isTitleDisabled = isInteractionDisabled || isCover;
   const canDrag = !isInteractionDisabled && !isCover;
 
+  function handleCoverUploadChange(event: ChangeEvent<HTMLInputElement>) {
+    if (!isCover || !onReplaceCoverFromFiles) return;
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+    void onReplaceCoverFromFiles(files);
+    event.target.value = "";
+  }
+
   return (
     <Box
       ref={cardRef}
@@ -361,6 +383,71 @@ export function PageDraftCard({
         cursor={"default"}
       >
         <Box position={"relative"} w={"full"} h={"full"}>
+          {isCover ? (
+            <HStack
+              position={"absolute"}
+              top={2}
+              left={2}
+              zIndex={6}
+              gap={1}
+              flexWrap={"wrap"}
+              maxW={"calc(100% - 1rem)"}
+            >
+              <FileUpload.Root maxFiles={1}>
+                <FileUpload.HiddenInput
+                  ref={coverUploadInputRef}
+                  aria-label={"Upload cover image"}
+                  accept={"image/*"}
+                  onChange={handleCoverUploadChange}
+                />
+                <Button
+                  size={"xs"}
+                  variant={"solid"}
+                  bg={"blackAlpha.600"}
+                  color={"white"}
+                  _hover={{ bg: "blackAlpha.700" }}
+                  onClick={() => coverUploadInputRef.current?.click()}
+                  disabled={isInteractionDisabled}
+                >
+                  <Icon>
+                    <LuUpload />
+                  </Icon>
+                  Upload
+                </Button>
+              </FileUpload.Root>
+
+              <Button
+                size={"xs"}
+                variant={"solid"}
+                bg={"blackAlpha.600"}
+                color={"white"}
+                _hover={{ bg: "blackAlpha.700" }}
+                onClick={() => void onReplaceCoverFromClipboard?.()}
+                disabled={isInteractionDisabled}
+              >
+                <Icon>
+                  <LuClipboardPaste />
+                </Icon>
+                Paste
+              </Button>
+
+              <Button
+                size={"xs"}
+                variant={"solid"}
+                bg={"blackAlpha.600"}
+                color={"white"}
+                _hover={{ bg: "blackAlpha.700" }}
+                onClick={onResetCoverToAuto}
+                disabled={isInteractionDisabled || !hasCustomCover}
+              >
+                <Icon>
+                  <LuRefreshCw />
+                </Icon>
+                Reset
+              </Button>
+            </HStack>
+          ) : null}
+
           {!isCover ? (
             <Tooltip content={"Drag to reorder"}>
               <Button

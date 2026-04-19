@@ -29,6 +29,7 @@ import { createPageDraftFromInput } from "../domain/page-draft";
 import { sanitizeHtmlContent } from "../domain/html-sanitizer";
 import {
   clipboardImageBlobToHtml,
+  readClipboardImageBlob,
   readClipboardPageInput,
 } from "../services/clipboard";
 import {
@@ -208,8 +209,9 @@ function createAutoCoverSvgDataUrl(title: string, author: string): string {
 }
 
 function createAutoCoverHtml(title: string, author: string): string {
+  const safeTitle = title || DEFAULT_BOOK_TITLE;
   const coverSrc = createAutoCoverSvgDataUrl(title, author);
-  return `<figure><img src="${coverSrc}" alt="Cover for ${escapeXmlText(title)}" /></figure>`;
+  return `<figure><img src="${coverSrc}" alt="Cover for ${escapeXmlText(safeTitle)}" /></figure>`;
 }
 
 function buildCoverDraft(
@@ -217,7 +219,9 @@ function buildCoverDraft(
   mode: CoverMode,
   sanitizePolicy: SanitizationPolicy,
 ): CoverDraft {
-  const sanitized = sanitizeHtmlContent(rawHtml, "Cover", sanitizePolicy);
+  const sanitized = sanitizeHtmlContent(rawHtml, "Cover", sanitizePolicy, {
+    variant: "cover",
+  });
   return {
     mode,
     title: "Cover",
@@ -259,6 +263,7 @@ export type UseEpubMakerReturn = EpubMakerState & {
   setAllowExternalLinks: (value: boolean) => void;
   setCoverEnabled: (value: boolean) => void;
   replaceCoverFromFiles: (files: FileList | File[]) => Promise<void>;
+  replaceCoverFromClipboard: () => Promise<void>;
   resetCoverToAuto: () => void;
 };
 
@@ -1012,6 +1017,39 @@ export function useEpubMaker(): UseEpubMakerReturn {
     }
   }
 
+  async function replaceCoverFromClipboard() {
+    if (isGenerating) return;
+
+    setIsAdding(true);
+    try {
+      const imageBlob = await readClipboardImageBlob();
+      const coverHtml = await clipboardImageBlobToHtml(imageBlob);
+      setCustomCoverHtml(coverHtml);
+      setSummary("");
+      notify("success", "Cover updated", "Custom cover set from clipboard image.");
+    } catch (error) {
+      const rawMessage = String(error);
+      const normalizedMessage = rawMessage.toLowerCase();
+      if (
+        normalizedMessage.includes("clipboard") ||
+        normalizedMessage.includes("not supported")
+      ) {
+        notify(
+          "warning",
+          "No clipboard image found",
+          "Copy an image first, then use Paste cover.",
+        );
+        return;
+      }
+
+      const message = `Could not paste cover image: ${rawMessage}`;
+      setErrors([message]);
+      notify("error", "Couldn’t update cover", message);
+    } finally {
+      setIsAdding(false);
+    }
+  }
+
   function resetCoverToAuto() {
     setCustomCoverHtml(null);
     setSummary("");
@@ -1230,6 +1268,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
       setSummary("");
     },
     replaceCoverFromFiles,
+    replaceCoverFromClipboard,
     resetCoverToAuto,
   };
 }

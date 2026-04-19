@@ -144,8 +144,6 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
             prefs={props.prefs}
             autoEpubFileName={props.autoEpubFileName}
             coverEnabled={props.coverEnabled}
-            coverMode={props.coverMode}
-            hasCustomCover={props.hasCustomCover}
             onTitleChange={props.setTitle}
             onAuthorChange={props.setAuthor}
             onManualFileNameChange={props.setManualFileName}
@@ -153,8 +151,6 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
             onEmbedRemoteImagesChange={props.setEmbedRemoteImages}
             onAllowExternalLinksChange={props.setAllowExternalLinks}
             onCoverEnabledChange={props.setCoverEnabled}
-            onReplaceCoverFromFiles={props.replaceCoverFromFiles}
-            onResetCoverToAuto={props.resetCoverToAuto}
           />
         </VStack>
       </Box>
@@ -175,6 +171,7 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
               pages={props.pages}
               coverEnabled={props.coverEnabled}
               coverPreviewHtml={props.coverPreviewHtml}
+              hasCustomCover={props.hasCustomCover}
               isAdding={props.isAdding}
               isGenerating={props.isGenerating}
               generationChapterStatusByPageId={props.generationChapterStatusByPageId}
@@ -184,6 +181,9 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
               onRemove={props.removePage}
               onRename={props.renamePage}
               onReorder={props.reorderPages}
+              onReplaceCoverFromFiles={props.replaceCoverFromFiles}
+              onReplaceCoverFromClipboard={props.replaceCoverFromClipboard}
+              onResetCoverToAuto={props.resetCoverToAuto}
               onAddFromClipboard={props.addPageFromClipboard}
               onAddFromFiles={props.addPagesFromFiles}
               pastedInput={props.pastedInput}
