@@ -289,6 +289,8 @@ export function PageDraftCard({
   const isTitleDisabled = isInteractionDisabled || isCover;
   const canDrag = !isInteractionDisabled && !isCover;
   const isEffectiveCoverEnabled = isCoverEnabled ?? true;
+  const isCoverExportDisabled = Boolean(isCover && !isEffectiveCoverEnabled);
+  const isCoverToolDisabled = isInteractionDisabled || isCoverExportDisabled;
 
   function handleCoverUploadChange(event: ChangeEvent<HTMLInputElement>) {
     if (!isCover || !onReplaceCoverFromFiles) return;
@@ -296,6 +298,15 @@ export function PageDraftCard({
     if (!files || files.length === 0) return;
     void onReplaceCoverFromFiles(files);
     event.target.value = "";
+  }
+
+  function handleCoverDisabledOverlayKeyDown(
+    event: KeyboardEvent<HTMLDivElement>,
+  ) {
+    if (!isCoverExportDisabled || isInteractionDisabled) return;
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    onToggleCoverEnabled?.();
   }
 
   return (
@@ -343,7 +354,7 @@ export function PageDraftCard({
                     size={"xs"}
                     variant={"ghost"}
                     onClick={() => coverUploadInputRef.current?.click()}
-                    disabled={isInteractionDisabled}
+                    disabled={isCoverToolDisabled}
                     aria-label={"Upload cover"}
                     minW={"auto"}
                     px={2}
@@ -360,7 +371,7 @@ export function PageDraftCard({
                   size={"xs"}
                   variant={"ghost"}
                   onClick={() => void onReplaceCoverFromClipboard?.()}
-                  disabled={isInteractionDisabled}
+                  disabled={isCoverToolDisabled}
                   aria-label={"Paste cover"}
                   minW={"auto"}
                   px={2}
@@ -376,7 +387,7 @@ export function PageDraftCard({
                   size={"xs"}
                   variant={"ghost"}
                   onClick={() => onResetCoverToAuto?.()}
-                  disabled={isInteractionDisabled || !hasCustomCover}
+                  disabled={isCoverToolDisabled || !hasCustomCover}
                   aria-label={"Reset cover"}
                   minW={"auto"}
                   px={2}
@@ -538,21 +549,41 @@ export function PageDraftCard({
               border: "none",
               pointerEvents: "none",
               filter:
-                isInteractionDisabled || (isCover && !isEffectiveCoverEnabled)
+                isInteractionDisabled || isCoverExportDisabled
                   ? "blur(1px) grayscale(0.35) saturate(0.75) brightness(0.82)"
                   : "none",
               transition: "filter 0.2s ease",
             }}
           />
 
-          {isInteractionDisabled || (isCover && !isEffectiveCoverEnabled) ? (
+          {isInteractionDisabled || isCoverExportDisabled ? (
             <Box
               position={"absolute"}
               inset={0}
-              pointerEvents={"none"}
+              pointerEvents={
+                isCoverExportDisabled && !isInteractionDisabled ? "auto" : "none"
+              }
               bg={"app.epub.overlay.preview"}
+              cursor={
+                isCoverExportDisabled && !isInteractionDisabled
+                  ? "pointer"
+                  : "default"
+              }
+              role={
+                isCoverExportDisabled && !isInteractionDisabled
+                  ? "button"
+                  : undefined
+              }
+              tabIndex={
+                isCoverExportDisabled && !isInteractionDisabled ? 0 : undefined
+              }
+              onClick={() => {
+                if (!isCoverExportDisabled || isInteractionDisabled) return;
+                onToggleCoverEnabled?.();
+              }}
+              onKeyDown={handleCoverDisabledOverlayKeyDown}
             >
-              {isCover && !isEffectiveCoverEnabled ? (
+              {isCoverExportDisabled ? (
                 <Box
                   position={"absolute"}
                   inset={0}
@@ -561,11 +592,8 @@ export function PageDraftCard({
                   justifyContent={"center"}
                   px={3}
                 >
-                  <Text
-                    fontFamily={"ui"}
-                    fontSize={"xs"}
-                    fontWeight={"semibold"}
-                    color={"app.epub.fg.default"}
+                  <HStack
+                    gap={1.5}
                     bg={"app.epub.bg.card"}
                     borderWidth={"1px"}
                     borderColor={"app.epub.border.default"}
@@ -573,8 +601,19 @@ export function PageDraftCard({
                     px={3}
                     py={1.5}
                   >
-                    Cover disabled for export
-                  </Text>
+                    <Icon boxSize={3.5} color={"app.epub.fg.default"}>
+                      <LuEyeOff />
+                    </Icon>
+                    <Text
+                      fontFamily={"ui"}
+                      fontSize={"xs"}
+                      fontWeight={"semibold"}
+                      color={"app.epub.fg.default"}
+                      lineHeight={1.1}
+                    >
+                      Enable cover
+                    </Text>
+                  </HStack>
                 </Box>
               ) : null}
             </Box>
