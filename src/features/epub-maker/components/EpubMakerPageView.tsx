@@ -166,6 +166,9 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
           <Box minH={"340px"} px={0} py={0}>
             <PageDraftGrid
               pages={props.pages}
+              coverPreviewHtml={props.coverPreviewHtml}
+              hasCustomCover={props.hasCustomCover}
+              isCoverEnabled={props.isCoverEnabled}
               isAdding={props.isAdding}
               isGenerating={props.isGenerating}
               generationChapterStatusByPageId={props.generationChapterStatusByPageId}
@@ -175,6 +178,10 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
               onRemove={props.removePage}
               onRename={props.renamePage}
               onReorder={props.reorderPages}
+              onReplaceCoverFromFiles={props.replaceCoverFromFiles}
+              onReplaceCoverFromClipboard={props.replaceCoverFromClipboard}
+              onResetCoverToAuto={props.resetCoverToAuto}
+              onToggleCoverEnabled={props.toggleCoverEnabled}
               onAddFromClipboard={props.addPageFromClipboard}
               onAddFromFiles={props.addPagesFromFiles}
               pastedInput={props.pastedInput}

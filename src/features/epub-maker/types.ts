@@ -4,6 +4,7 @@ export type PageInputKind = "html" | "text";
 export type FileNameMode = "auto" | "manual";
 export type PageId = string;
 export type ChapterGenerationStatus = "pending" | "processing" | "completed";
+export type CoverMode = "auto" | "custom";
 
 export interface PageDraft {
   id: PageId;
@@ -50,6 +51,7 @@ export interface GenerationWarning {
 export interface GenerationSummary {
   fileName: string;
   chapterCount: number;
+  coverIncluded: boolean;
   embeddedImageCount: number;
   externalImageCount: number;
   durationMs: number;
@@ -70,11 +72,19 @@ export interface SanitizationPolicy {
   maxPreviewNodes: number;
 }
 
+export interface CoverDraft {
+  mode: CoverMode;
+  title: string;
+  rawHtml: string;
+  previewHtml: string;
+}
+
 export interface BuildEpubInput {
   bookTitle: string;
   bookAuthor?: string;
   downloadFileName?: string;
   pages: PageDraft[];
+  cover?: CoverDraft;
   sanitizePolicy: SanitizationPolicy;
   signal?: AbortSignal;
   onProgress?: (update: BuildEpubProgressUpdate) => void;
@@ -107,6 +117,10 @@ export interface EpubMakerPrefs {
 
 export interface EpubMakerState {
   pages: PageDraft[];
+  coverMode: CoverMode;
+  isCoverEnabled: boolean;
+  coverPreviewHtml: string;
+  hasCustomCover: boolean;
   isAdding: boolean;
   isGenerating: boolean;
   generationProgress: number | null;

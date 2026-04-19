@@ -2,6 +2,7 @@ import {
   AspectRatio,
   Box,
   Button,
+  FileUpload,
   HStack,
   Icon,
   Input,
@@ -11,15 +12,21 @@ import {
 import { Tooltip } from "@components/ui/tooltip";
 import {
   LuCheck,
+  LuClipboardPaste,
   LuClock3,
+  LuEye,
+  LuEyeOff,
   LuGripVertical,
   LuLoaderCircle,
+  LuRefreshCw,
   LuTrash2,
+  LuUpload,
 } from "react-icons/lu";
 import {
   useEffect,
   useRef,
   useState,
+  type ChangeEvent,
   type DragEvent,
   type KeyboardEvent,
   type PointerEvent as ReactPointerEvent,
@@ -37,6 +44,13 @@ type DragPreviewAnchor = {
 export function PageDraftCard({
   page,
   chapterNumber,
+  isCover,
+  hasCustomCover,
+  isCoverEnabled,
+  onReplaceCoverFromFiles,
+  onReplaceCoverFromClipboard,
+  onResetCoverToAuto,
+  onToggleCoverEnabled,
   onRemove,
   onRename,
   onDragStart,
@@ -56,7 +70,14 @@ export function PageDraftCard({
   generationStatus,
 }: {
   page: PageDraft;
-  chapterNumber: number;
+  chapterNumber: number | string;
+  isCover?: boolean;
+  hasCustomCover?: boolean;
+  isCoverEnabled?: boolean;
+  onReplaceCoverFromFiles?: (files: FileList | File[]) => Promise<void>;
+  onReplaceCoverFromClipboard?: () => Promise<void>;
+  onResetCoverToAuto?: () => void;
+  onToggleCoverEnabled?: () => void;
   onRemove: (id: string) => void;
   onRename: (id: string, value: string) => void;
   onDragStart: (id: string, anchor: DragPreviewAnchor) => void;
@@ -77,6 +98,7 @@ export function PageDraftCard({
 }) {
   const [titleDraft, setTitleDraft] = useState(page.title);
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const coverUploadInputRef = useRef<HTMLInputElement | null>(null);
   const activeTouchPointerIdRef = useRef<number | null>(null);
   const touchStartPointRef = useRef<{ x: number; y: number } | null>(null);
   const hasStartedTouchDragRef = useRef(false);
@@ -263,6 +285,29 @@ export function PageDraftCard({
     fontSize: "sm",
     rounded: "xl",
   } as const;
+  const isRemoveDisabled = isInteractionDisabled || isCover;
+  const isTitleDisabled = isInteractionDisabled || isCover;
+  const canDrag = !isInteractionDisabled && !isCover;
+  const isEffectiveCoverEnabled = isCoverEnabled ?? true;
+  const isCoverExportDisabled = Boolean(isCover && !isEffectiveCoverEnabled);
+  const isCoverToolDisabled = isInteractionDisabled || isCoverExportDisabled;
+
+  function handleCoverUploadChange(event: ChangeEvent<HTMLInputElement>) {
+    if (!isCover || !onReplaceCoverFromFiles) return;
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+    void onReplaceCoverFromFiles(files);
+    event.target.value = "";
+  }
+
+  function handleCoverDisabledOverlayKeyDown(
+    event: KeyboardEvent<HTMLDivElement>,
+  ) {
+    if (!isCoverExportDisabled || isInteractionDisabled) return;
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    onToggleCoverEnabled?.();
+  }
 
   return (
     <Box
@@ -285,67 +330,160 @@ export function PageDraftCard({
       onDrop={onDrop}
     >
       <Box borderBottomWidth={"1px"} borderColor={"app.epub.border.muted"}>
-        <InputGroup
-          startAddon={chapterNumber}
-          startAddonProps={{
-            minW: "2.25rem",
-            justifyContent: "center",
-            fontSize: "xs",
-            fontWeight: "semibold",
-            color: "app.epub.fg.muted",
-            borderLeftWidth: 0,
-            borderTopWidth: 0,
-            borderBottomWidth: "1px",
-            rounded: "none",
-          }}
-          endAddon={
-            <Tooltip content={"Remove"}>
-              <Button
-                {...iconButtonProps}
-                size={"sm"}
-                variant={"ghost"}
-                onClick={() => onRemove(page.id)}
-                aria-label={"Remove page"}
-                disabled={isInteractionDisabled}
-                px={2}
-                minW={"auto"}
-                rounded={"none"}
-                color={"app.epub.fg.danger"}
-                _hover={{ bg: "app.status.danger.bg" }}
+        {isCover ? (
+          <HStack h={"2.25rem"} px={2} justify={"space-between"} align={"center"}>
+            <Text
+              fontFamily={"ui"}
+              fontSize={"sm"}
+              fontWeight={"medium"}
+              color={"app.epub.fg.default"}
+            >
+              Cover
+            </Text>
+
+            <HStack gap={0.5}>
+              <FileUpload.Root maxFiles={1}>
+                <FileUpload.HiddenInput
+                  ref={coverUploadInputRef}
+                  aria-label={"Upload cover image"}
+                  accept={"image/*"}
+                  onChange={handleCoverUploadChange}
+                />
+                <Tooltip content={"Upload cover"}>
+                  <Button
+                    size={"xs"}
+                    variant={"ghost"}
+                    onClick={() => coverUploadInputRef.current?.click()}
+                    disabled={isCoverToolDisabled}
+                    aria-label={"Upload cover"}
+                    minW={"auto"}
+                    px={2}
+                  >
+                    <Icon>
+                      <LuUpload />
+                    </Icon>
+                  </Button>
+                </Tooltip>
+              </FileUpload.Root>
+
+              <Tooltip content={"Paste cover"}>
+                <Button
+                  size={"xs"}
+                  variant={"ghost"}
+                  onClick={() => void onReplaceCoverFromClipboard?.()}
+                  disabled={isCoverToolDisabled}
+                  aria-label={"Paste cover"}
+                  minW={"auto"}
+                  px={2}
+                >
+                  <Icon>
+                    <LuClipboardPaste />
+                  </Icon>
+                </Button>
+              </Tooltip>
+
+              <Tooltip content={"Reset cover"}>
+                <Button
+                  size={"xs"}
+                  variant={"ghost"}
+                  onClick={() => onResetCoverToAuto?.()}
+                  disabled={isCoverToolDisabled || !hasCustomCover}
+                  aria-label={"Reset cover"}
+                  minW={"auto"}
+                  px={2}
+                >
+                  <Icon>
+                    <LuRefreshCw />
+                  </Icon>
+                </Button>
+              </Tooltip>
+
+              <Tooltip
+                content={
+                  isEffectiveCoverEnabled ? "Disable cover" : "Enable cover"
+                }
               >
-                <Icon>
-                  <LuTrash2 />
-                </Icon>
-              </Button>
-            </Tooltip>
-          }
-          endAddonProps={{
-            borderRightWidth: 0,
-            borderTopWidth: 0,
-            borderBottomWidth: "1px",
-            rounded: "none",
-            p: 0,
-          }}
-        >
-          <Input
-            {...controlInputProps}
-            size={"sm"}
-            rounded={"none"}
-            borderLeftWidth={0}
-            borderRightWidth={0}
-            borderTopWidth={0}
-            borderBottomWidth={"1px"}
-            borderBottomColor={"app.epub.border.muted"}
-            bg={"app.epub.bg.card"}
-            color={"app.epub.fg.default"}
-            _placeholder={{ color: "app.epub.fg.subtle" }}
-            value={titleDraft}
-            disabled={isInteractionDisabled}
-            onChange={(event) => setTitleDraft(event.target.value)}
-            onBlur={commitRenameIfChanged}
-            onKeyDown={handleTitleKeyDown}
-          />
-        </InputGroup>
+                <Button
+                  size={"xs"}
+                  variant={"ghost"}
+                  onClick={() => onToggleCoverEnabled?.()}
+                  disabled={isInteractionDisabled}
+                  aria-label={
+                    isEffectiveCoverEnabled ? "Disable cover" : "Enable cover"
+                  }
+                  minW={"auto"}
+                  px={2}
+                >
+                  <Icon>
+                    {isEffectiveCoverEnabled ? <LuEyeOff /> : <LuEye />}
+                  </Icon>
+                </Button>
+              </Tooltip>
+            </HStack>
+          </HStack>
+        ) : (
+          <InputGroup
+            startAddon={chapterNumber}
+            startAddonProps={{
+              minW: "2.25rem",
+              justifyContent: "center",
+              fontSize: "xs",
+              fontWeight: "semibold",
+              color: "app.epub.fg.muted",
+              borderLeftWidth: 0,
+              borderTopWidth: 0,
+              borderBottomWidth: "1px",
+              rounded: "none",
+            }}
+            endAddon={
+              <Tooltip content={"Remove"}>
+                <Button
+                  {...iconButtonProps}
+                  size={"sm"}
+                  variant={"ghost"}
+                  onClick={() => onRemove(page.id)}
+                  aria-label={"Remove page"}
+                  disabled={isRemoveDisabled}
+                  px={2}
+                  minW={"auto"}
+                  rounded={"none"}
+                  color={"app.epub.fg.danger"}
+                  _hover={{ bg: "app.status.danger.bg" }}
+                >
+                  <Icon>
+                    <LuTrash2 />
+                  </Icon>
+                </Button>
+              </Tooltip>
+            }
+            endAddonProps={{
+              borderRightWidth: 0,
+              borderTopWidth: 0,
+              borderBottomWidth: "1px",
+              rounded: "none",
+              p: 0,
+            }}
+          >
+            <Input
+              {...controlInputProps}
+              size={"sm"}
+              rounded={"none"}
+              borderLeftWidth={0}
+              borderRightWidth={0}
+              borderTopWidth={0}
+              borderBottomWidth={"1px"}
+              borderBottomColor={"app.epub.border.muted"}
+              bg={"app.epub.bg.card"}
+              color={"app.epub.fg.default"}
+              _placeholder={{ color: "app.epub.fg.subtle" }}
+              value={titleDraft}
+              disabled={isTitleDisabled}
+              onChange={(event) => setTitleDraft(event.target.value)}
+              onBlur={commitRenameIfChanged}
+              onKeyDown={handleTitleKeyDown}
+            />
+          </InputGroup>
+        )}
       </Box>
       <AspectRatio
         position={"relative"}
@@ -354,50 +492,52 @@ export function PageDraftCard({
         cursor={"default"}
       >
         <Box position={"relative"} w={"full"} h={"full"}>
-          <Tooltip content={"Drag to reorder"}>
-            <Button
-              variant={"subtle"}
-              position={"absolute"}
-              bottom={2}
-              right={2}
-              zIndex={5}
-              px={2}
-              minW={"auto"}
-              rounded={"full"}
-              cursor={isInteractionDisabled ? "not-allowed" : "grab"}
-              draggable={!isInteractionDisabled}
-              disabled={isInteractionDisabled}
-              touchAction={"none"}
-              bg={"blackAlpha.300"}
-              color={"app.epub.fg.muted"}
-              _hover={{
-                bg: "blackAlpha.400",
-                color: "app.epub.fg.default",
-              }}
-              onDragStart={(event) => {
-                if (isInteractionDisabled) return;
-                if (activeTouchPointerIdRef.current !== null) {
-                  event.preventDefault();
-                  return;
-                }
-                event.stopPropagation();
-                setCardDragPreview(event);
-              }}
-              onDragEnd={(event) => {
-                event.stopPropagation();
-                onDragEnd();
-              }}
-              onPointerDown={handleGripPointerDown}
-              onPointerMove={handleGripPointerMove}
-              onPointerUp={handleGripPointerEnd}
-              onPointerCancel={handleGripPointerCancel}
-              aria-label={"Drag page"}
-            >
-              <Icon>
-                <LuGripVertical />
-              </Icon>
-            </Button>
-          </Tooltip>
+          {!isCover ? (
+            <Tooltip content={"Drag to reorder"}>
+              <Button
+                variant={"subtle"}
+                position={"absolute"}
+                bottom={2}
+                right={2}
+                zIndex={5}
+                px={2}
+                minW={"auto"}
+                rounded={"full"}
+                cursor={canDrag ? "grab" : "not-allowed"}
+                draggable={canDrag}
+                disabled={!canDrag}
+                touchAction={"none"}
+                bg={"blackAlpha.300"}
+                color={"app.epub.fg.muted"}
+                _hover={{
+                  bg: "blackAlpha.400",
+                  color: "app.epub.fg.default",
+                }}
+                onDragStart={(event) => {
+                  if (!canDrag) return;
+                  if (activeTouchPointerIdRef.current !== null) {
+                    event.preventDefault();
+                    return;
+                  }
+                  event.stopPropagation();
+                  setCardDragPreview(event);
+                }}
+                onDragEnd={(event) => {
+                  event.stopPropagation();
+                  onDragEnd();
+                }}
+                onPointerDown={handleGripPointerDown}
+                onPointerMove={handleGripPointerMove}
+                onPointerUp={handleGripPointerEnd}
+                onPointerCancel={handleGripPointerCancel}
+                aria-label={"Drag page"}
+              >
+                <Icon>
+                  <LuGripVertical />
+                </Icon>
+              </Button>
+            </Tooltip>
+          ) : null}
 
           <iframe
             title={`preview-${page.id}`}
@@ -408,20 +548,75 @@ export function PageDraftCard({
               height: "100%",
               border: "none",
               pointerEvents: "none",
-              filter: isInteractionDisabled
-                ? "blur(1px) grayscale(0.35) saturate(0.75) brightness(0.82)"
-                : "none",
+              filter:
+                isInteractionDisabled || isCoverExportDisabled
+                  ? "blur(1px) grayscale(0.35) saturate(0.75) brightness(0.82)"
+                  : "none",
               transition: "filter 0.2s ease",
             }}
           />
 
-          {isInteractionDisabled ? (
+          {isInteractionDisabled || isCoverExportDisabled ? (
             <Box
               position={"absolute"}
               inset={0}
-              pointerEvents={"none"}
+              pointerEvents={
+                isCoverExportDisabled && !isInteractionDisabled ? "auto" : "none"
+              }
               bg={"app.epub.overlay.preview"}
-            />
+              cursor={
+                isCoverExportDisabled && !isInteractionDisabled
+                  ? "pointer"
+                  : "default"
+              }
+              role={
+                isCoverExportDisabled && !isInteractionDisabled
+                  ? "button"
+                  : undefined
+              }
+              tabIndex={
+                isCoverExportDisabled && !isInteractionDisabled ? 0 : undefined
+              }
+              onClick={() => {
+                if (!isCoverExportDisabled || isInteractionDisabled) return;
+                onToggleCoverEnabled?.();
+              }}
+              onKeyDown={handleCoverDisabledOverlayKeyDown}
+            >
+              {isCoverExportDisabled ? (
+                <Box
+                  position={"absolute"}
+                  inset={0}
+                  display={"flex"}
+                  alignItems={"center"}
+                  justifyContent={"center"}
+                  px={3}
+                >
+                  <HStack
+                    gap={1.5}
+                    bg={"app.epub.bg.card"}
+                    borderWidth={"1px"}
+                    borderColor={"app.epub.border.default"}
+                    rounded={"full"}
+                    px={3}
+                    py={1.5}
+                  >
+                    <Icon boxSize={3.5} color={"app.epub.fg.default"}>
+                      <LuEyeOff />
+                    </Icon>
+                    <Text
+                      fontFamily={"ui"}
+                      fontSize={"xs"}
+                      fontWeight={"semibold"}
+                      color={"app.epub.fg.default"}
+                      lineHeight={1.1}
+                    >
+                      Enable cover
+                    </Text>
+                  </HStack>
+                </Box>
+              ) : null}
+            </Box>
           ) : null}
 
           {showGenerationStatus ? (

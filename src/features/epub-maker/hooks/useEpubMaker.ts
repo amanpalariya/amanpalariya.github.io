@@ -16,15 +16,20 @@ import {
 } from "../constants";
 import type {
   BuildEpubProgressUpdate,
+  CoverDraft,
+  CoverMode,
   EpubMakerState,
   GenerationWarning,
   PageId,
   PageDraft,
+  SanitizationPolicy,
 } from "../types";
 import { buildAutoEpubFileName, buildEpubFileName } from "../utils/file-name";
 import { createPageDraftFromInput } from "../domain/page-draft";
+import { sanitizeHtmlContent } from "../domain/html-sanitizer";
 import {
   clipboardImageBlobToHtml,
+  readClipboardImageBlob,
   readClipboardPageInput,
 } from "../services/clipboard";
 import {
@@ -40,30 +45,36 @@ const PAGE_HISTORY_LIMIT = 100;
 type PageFlashKind = "added" | "duplicate";
 type PageFlashEntry = { kind: PageFlashKind; token: number };
 
-interface PageHistoryState {
-  past: PageDraft[][];
-  present: PageDraft[];
-  future: PageDraft[][];
+type DraftSnapshot = {
+  pages: PageDraft[];
+  customCoverHtml: string | null;
+  coverEnabled: boolean;
+};
+
+interface DraftHistoryState {
+  past: DraftSnapshot[];
+  present: DraftSnapshot;
+  future: DraftSnapshot[];
 }
 
-type PageHistoryAction =
-  | { type: "commit"; updater: (previousPages: PageDraft[]) => PageDraft[] }
+type DraftHistoryAction =
+  | { type: "commit"; updater: (previousDraft: DraftSnapshot) => DraftSnapshot }
   | { type: "undo" }
   | { type: "redo" };
 
-function pageHistoryReducer(
-  state: PageHistoryState,
-  action: PageHistoryAction,
-): PageHistoryState {
+function draftHistoryReducer(
+  state: DraftHistoryState,
+  action: DraftHistoryAction,
+): DraftHistoryState {
   if (action.type === "undo") {
     if (state.past.length === 0) {
       return state;
     }
 
-    const previousPages = state.past[state.past.length - 1];
+    const previousDraft = state.past[state.past.length - 1];
     return {
       past: state.past.slice(0, -1),
-      present: previousPages,
+      present: previousDraft,
       future: [...state.future.slice(-(PAGE_HISTORY_LIMIT - 1)), state.present],
     };
   }
@@ -73,22 +84,22 @@ function pageHistoryReducer(
       return state;
     }
 
-    const nextPages = state.future[state.future.length - 1];
+    const nextDraft = state.future[state.future.length - 1];
     return {
       past: [...state.past.slice(-(PAGE_HISTORY_LIMIT - 1)), state.present],
-      present: nextPages,
+      present: nextDraft,
       future: state.future.slice(0, -1),
     };
   }
 
-  const nextPages = action.updater(state.present);
-  if (nextPages === state.present) {
+  const nextDraft = action.updater(state.present);
+  if (nextDraft === state.present) {
     return state;
   }
 
   return {
     past: [...state.past.slice(-(PAGE_HISTORY_LIMIT - 1)), state.present],
-    present: nextPages,
+    present: nextDraft,
     future: [],
   };
 }
@@ -115,6 +126,114 @@ function isMarkdownFile(file: File): boolean {
     fileName.endsWith(".mkd") ||
     fileName.endsWith(".mkdn")
   );
+}
+
+function escapeXmlText(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function wrapTextLines(
+  value: string,
+  maxCharsPerLine: number,
+  maxLines: number,
+): string[] {
+  const words = value.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return [];
+
+  const lines: string[] = [];
+  let currentLine = "";
+
+  const pushCurrentLine = () => {
+    if (!currentLine) return;
+    lines.push(currentLine);
+    currentLine = "";
+  };
+
+  for (const word of words) {
+    const candidate = currentLine ? `${currentLine} ${word}` : word;
+    if (candidate.length <= maxCharsPerLine) {
+      currentLine = candidate;
+      continue;
+    }
+
+    if (!currentLine && word.length > maxCharsPerLine) {
+      lines.push(word.slice(0, maxCharsPerLine));
+      const remainder = word.slice(maxCharsPerLine);
+      currentLine = remainder;
+      if (lines.length >= maxLines) break;
+      continue;
+    }
+
+    pushCurrentLine();
+    currentLine = word;
+    if (lines.length >= maxLines) break;
+  }
+
+  pushCurrentLine();
+
+  if (lines.length > maxLines) {
+    lines.length = maxLines;
+  }
+
+  if (words.join(" ").length > lines.join(" ").length) {
+    const lastLineIndex = lines.length - 1;
+    if (lastLineIndex >= 0) {
+      lines[lastLineIndex] = `${lines[lastLineIndex].replace(/[\s.]+$/g, "")}…`;
+    }
+  }
+
+  return lines;
+}
+
+function createAutoCoverSvgDataUrl(title: string, author: string): string {
+  const titleLines = wrapTextLines(title || DEFAULT_BOOK_TITLE, 18, 4);
+  const authorLines = wrapTextLines(author || "", 24, 2);
+
+  const titleStartY = 700 - Math.max(0, titleLines.length - 1) * 58;
+  const titleTspans = titleLines
+    .map(
+      (line, index) =>
+        `<tspan x="600" y="${titleStartY + index * 116}">${escapeXmlText(line)}</tspan>`,
+    )
+    .join("");
+  const authorStartY = titleStartY + titleLines.length * 120 + 60;
+  const authorTspans = authorLines
+    .map(
+      (line, index) =>
+        `<tspan x="600" y="${authorStartY + index * 72}">${escapeXmlText(line)}</tspan>`,
+    )
+    .join("");
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1800" viewBox="0 0 1200 1800" role="img" aria-label="Book cover"><defs><linearGradient id="coverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#173753"/><stop offset="100%" stop-color="#3a6ea5"/></linearGradient></defs><rect width="1200" height="1800" fill="url(#coverGradient)"/><rect x="76" y="76" width="1048" height="1648" rx="40" fill="none" stroke="rgba(255,255,255,0.34)" stroke-width="4"/><text fill="#f8fbff" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="92" font-weight="700" text-anchor="middle">${titleTspans}</text>${authorTspans ? `<text fill="#d8e7f6" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="54" font-weight="500" text-anchor="middle">${authorTspans}</text>` : ""}</svg>`;
+
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+function createAutoCoverHtml(title: string, author: string): string {
+  const safeTitle = title || DEFAULT_BOOK_TITLE;
+  const coverSrc = createAutoCoverSvgDataUrl(title, author);
+  return `<figure><img src="${coverSrc}" alt="Cover for ${escapeXmlText(safeTitle)}" /></figure>`;
+}
+
+function buildCoverDraft(
+  rawHtml: string,
+  mode: CoverMode,
+  sanitizePolicy: SanitizationPolicy,
+): CoverDraft {
+  const sanitized = sanitizeHtmlContent(rawHtml, "Cover", sanitizePolicy, {
+    variant: "cover",
+  });
+  return {
+    mode,
+    title: "Cover",
+    rawHtml,
+    previewHtml: sanitized.previewHtml,
+  };
 }
 
 export type UseEpubMakerReturn = EpubMakerState & {
@@ -148,12 +267,20 @@ export type UseEpubMakerReturn = EpubMakerState & {
   toggleFileNameMode: () => void;
   setEmbedRemoteImages: (value: boolean) => void;
   setAllowExternalLinks: (value: boolean) => void;
+  replaceCoverFromFiles: (files: FileList | File[]) => Promise<void>;
+  replaceCoverFromClipboard: () => Promise<void>;
+  resetCoverToAuto: () => void;
+  toggleCoverEnabled: () => void;
 };
 
 export function useEpubMaker(): UseEpubMakerReturn {
-  const [pageHistory, dispatchPageHistory] = useReducer(pageHistoryReducer, {
+  const [draftHistory, dispatchDraftHistory] = useReducer(draftHistoryReducer, {
     past: [],
-    present: [],
+    present: {
+      pages: [],
+      customCoverHtml: null,
+      coverEnabled: true,
+    },
     future: [],
   });
   const [isAdding, setIsAdding] = useState(false);
@@ -191,19 +318,37 @@ export function useEpubMaker(): UseEpubMakerReturn {
   const pageFlashClearTimerRef = useRef<number | null>(null);
   const flashSequenceRef = useRef(0);
   const generationAbortControllerRef = useRef<AbortController | null>(null);
-  const pages = pageHistory.present;
+  const pages = draftHistory.present.pages;
+  const customCoverHtml = draftHistory.present.customCoverHtml;
+  const coverEnabled = draftHistory.present.coverEnabled;
 
-  const canUndo = pageHistory.past.length > 0;
-  const canRedo = pageHistory.future.length > 0;
+  const canUndo = draftHistory.past.length > 0;
+  const canRedo = draftHistory.future.length > 0;
 
-  const commitPageChange = useCallback(
-    (updater: (previousPages: PageDraft[]) => PageDraft[]) => {
-      dispatchPageHistory({ type: "commit", updater });
+  const commitDraftChange = useCallback(
+    (updater: (previousDraft: DraftSnapshot) => DraftSnapshot) => {
+      dispatchDraftHistory({ type: "commit", updater });
       setGenerationChapterStatusByPageId({});
       setActiveGenerationPageId(null);
       setIsGenerationStatusFading(false);
     },
     [],
+  );
+
+  const commitPageChange = useCallback(
+    (updater: (previousPages: PageDraft[]) => PageDraft[]) => {
+      commitDraftChange((previousDraft) => {
+        const nextPages = updater(previousDraft.pages);
+        if (nextPages === previousDraft.pages) {
+          return previousDraft;
+        }
+        return {
+          ...previousDraft,
+          pages: nextPages,
+        };
+      });
+    },
+    [commitDraftChange],
   );
 
   useEffect(() => {
@@ -278,12 +423,12 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
   const undoPages = useCallback(() => {
     if (isGenerating) return;
-    dispatchPageHistory({ type: "undo" });
+    dispatchDraftHistory({ type: "undo" });
   }, [isGenerating]);
 
   const redoPages = useCallback(() => {
     if (isGenerating) return;
-    dispatchPageHistory({ type: "redo" });
+    dispatchDraftHistory({ type: "redo" });
   }, [isGenerating]);
 
   function dismissNotification(id: string) {
@@ -374,6 +519,11 @@ export function useEpubMaker(): UseEpubMakerReturn {
         )
       : autoEpubFileName;
 
+  const autoCoverRawHtml = useMemo(
+    () => createAutoCoverHtml(normalizedBookTitle, normalizedBookAuthor),
+    [normalizedBookTitle, normalizedBookAuthor],
+  );
+
   const sanitizePolicy = useMemo(() => {
     const policy = createDefaultSanitizationPolicy();
     policy.embedRemoteImages = prefs.sanitizeOptions.embedRemoteImages;
@@ -383,6 +533,14 @@ export function useEpubMaker(): UseEpubMakerReturn {
     prefs.sanitizeOptions.embedRemoteImages,
     prefs.sanitizeOptions.allowExternalLinks,
   ]);
+
+  const coverDraft = useMemo(() => {
+    if (customCoverHtml) {
+      return buildCoverDraft(customCoverHtml, "custom", sanitizePolicy);
+    }
+    return buildCoverDraft(autoCoverRawHtml, "auto", sanitizePolicy);
+  }, [autoCoverRawHtml, customCoverHtml, sanitizePolicy]);
+  const hasCustomCover = customCoverHtml !== null;
 
   useEffect(() => {
     setPrefs(readEpubMakerPrefs());
@@ -848,6 +1006,132 @@ export function useEpubMaker(): UseEpubMakerReturn {
     });
   }
 
+  async function replaceCoverFromFiles(files: FileList | File[]) {
+    if (isGenerating) return;
+
+    const uploadedFiles = Array.from(files);
+    if (uploadedFiles.length === 0) {
+      notify("warning", "No cover file selected", "Choose an image file to set as cover.");
+      return;
+    }
+
+    const imageFile = uploadedFiles.find((file) =>
+      file.type.toLowerCase().startsWith("image/"),
+    );
+
+    if (!imageFile) {
+      notify(
+        "warning",
+        "Unsupported cover format",
+        "Only image files can be used as a custom cover.",
+      );
+      return;
+    }
+
+    setIsAdding(true);
+    try {
+      const coverHtml = await clipboardImageBlobToHtml(imageFile);
+      commitDraftChange((previousDraft) => {
+        if (previousDraft.customCoverHtml === coverHtml) {
+          return previousDraft;
+        }
+        return {
+          ...previousDraft,
+          customCoverHtml: coverHtml,
+        };
+      });
+      setSummary("");
+      notify("success", "Cover updated", `Custom cover set from “${imageFile.name}”.`);
+    } catch (error) {
+      const message = `Could not set custom cover: ${String(error)}`;
+      setErrors([message]);
+      notify("error", "Couldn’t update cover", message);
+    } finally {
+      setIsAdding(false);
+    }
+  }
+
+  async function replaceCoverFromClipboard() {
+    if (isGenerating) return;
+
+    setIsAdding(true);
+    try {
+      const imageBlob = await readClipboardImageBlob();
+      const coverHtml = await clipboardImageBlobToHtml(imageBlob);
+      commitDraftChange((previousDraft) => {
+        if (previousDraft.customCoverHtml === coverHtml) {
+          return previousDraft;
+        }
+        return {
+          ...previousDraft,
+          customCoverHtml: coverHtml,
+        };
+      });
+      setSummary("");
+      notify("success", "Cover updated", "Custom cover set from clipboard image.");
+    } catch (error) {
+      const rawMessage = String(error);
+      const normalizedMessage = rawMessage.toLowerCase();
+      if (
+        normalizedMessage.includes("clipboard") ||
+        normalizedMessage.includes("not supported")
+      ) {
+        notify(
+          "warning",
+          "No clipboard image found",
+          "Copy an image first, then use Paste cover.",
+        );
+        return;
+      }
+
+      const message = `Could not paste cover image: ${rawMessage}`;
+      setErrors([message]);
+      notify("error", "Couldn’t update cover", message);
+    } finally {
+      setIsAdding(false);
+    }
+  }
+
+  function resetCoverToAuto() {
+    if (isGenerating) return;
+    if (!hasCustomCover) return;
+
+    commitDraftChange((previousDraft) => {
+      if (previousDraft.customCoverHtml === null) {
+        return previousDraft;
+      }
+      return {
+        ...previousDraft,
+        customCoverHtml: null,
+      };
+    });
+    setSummary("");
+    notify("info", "Cover reset", "Switched back to the auto-generated cover.");
+  }
+
+  function toggleCoverEnabled() {
+    if (isGenerating) return;
+
+    const nextCoverEnabled = !coverEnabled;
+    commitDraftChange((previousDraft) => {
+      if (previousDraft.coverEnabled === nextCoverEnabled) {
+        return previousDraft;
+      }
+      return {
+        ...previousDraft,
+        coverEnabled: nextCoverEnabled,
+      };
+    });
+    setSummary("");
+    notify(
+      "info",
+      nextCoverEnabled ? "Cover enabled" : "Cover disabled",
+      nextCoverEnabled
+        ? "Cover will be included in generated EPUB files."
+        : "Cover preview is kept, but cover is excluded from EPUB generation.",
+    );
+  }
+
   async function generateEpub() {
     if (isGenerating) return;
     if (generationStatusFadeTimerRef.current) {
@@ -874,7 +1158,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
     if (pages.length === 0) {
       const message =
-        "Add at least one page from clipboard before generating EPUB.";
+        "Add at least one page before generating EPUB.";
       setErrors([message]);
       notify("warning", "No pages added", message);
       setIsGenerating(false);
@@ -903,6 +1187,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
         bookAuthor: normalizedBookAuthor,
         downloadFileName: effectiveFileName,
         pages,
+        cover: coverEnabled ? coverDraft : undefined,
         sanitizePolicy,
         signal: abortController.signal,
         onProgress: (update: BuildEpubProgressUpdate) => {
@@ -931,7 +1216,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
       showDownloadCompleteIconTemporarily();
       setWarnings(result.warnings);
       setSummary(
-        `Generated and downloaded “${effectiveFileName}” with ${result.summary.chapterCount} page(s), ${result.summary.embeddedImageCount} embedded image(s), and ${result.summary.externalImageCount} external image reference(s).`,
+        `Generated and downloaded “${effectiveFileName}” with ${result.summary.chapterCount} page(s)${result.summary.coverIncluded ? " and a cover" : ""}, ${result.summary.embeddedImageCount} embedded image(s), and ${result.summary.externalImageCount} external image reference(s).`,
       );
       notify(
         "success",
@@ -979,6 +1264,10 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
   return {
     pages,
+    coverMode: coverDraft.mode,
+    isCoverEnabled: coverEnabled,
+    coverPreviewHtml: coverDraft.previewHtml,
+    hasCustomCover,
     isAdding,
     isGenerating,
     isCancellingGeneration,
@@ -1050,5 +1339,9 @@ export function useEpubMaker(): UseEpubMakerReturn {
         ...prev,
         sanitizeOptions: { ...prev.sanitizeOptions, allowExternalLinks: value },
       })),
+    replaceCoverFromFiles,
+    replaceCoverFromClipboard,
+    resetCoverToAuto,
+    toggleCoverEnabled,
   };
 }

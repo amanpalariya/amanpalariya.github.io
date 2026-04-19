@@ -196,6 +196,7 @@ export function EpubMetadataForm({
             </Box>
           </Tooltip>
         </HStack>
+
       </HStack>
     </>
   );
