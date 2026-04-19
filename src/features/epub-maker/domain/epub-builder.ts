@@ -74,6 +74,8 @@ export async function buildEpub(input: BuildEpubInput): Promise<BuildEpubResult>
   };
 
   const chapters: Chapter[] = [];
+  let coverChapter: Chapter | null = null;
+  let coverImageId: string | null = null;
   const pageCount = input.pages.length || 1;
   const progressStep = 80 / pageCount;
   const emitProgress = (
@@ -162,6 +164,73 @@ export async function buildEpub(input: BuildEpubInput): Promise<BuildEpubResult>
     emitProgress(Math.min(85, Math.round(5 + progressStep * (i + 1))), "processing_chapter", i, page.id);
   }
 
+  if (input.cover) {
+    throwIfAborted();
+    const coverTitle = input.cover.title || "Cover";
+    const sanitizedCover = sanitizeHtmlContent(
+      input.cover.rawHtml,
+      coverTitle,
+      input.sanitizePolicy,
+    );
+    const parsedCover = new DOMParser().parseFromString(
+      sanitizedCover.chapterBodyHtml,
+      "text/html",
+    );
+
+    const coverImageNodes = Array.from(parsedCover.body.querySelectorAll("img"));
+    for (const node of coverImageNodes) {
+      throwIfAborted();
+      const src = node.getAttribute("src") || "";
+      if (!src) continue;
+      const result = await registerImageAsset({
+        src,
+        baseUrl: null,
+        embedRemoteImages: input.sanitizePolicy.embedRemoteImages,
+        signal: input.signal,
+        imagesByKey,
+        nextImageNumber,
+      });
+      if (result.warning) warnings.push(result.warning);
+      if (!result.localHref && !result.absoluteSrc) {
+        node.remove();
+        continue;
+      }
+
+      if (result.localHref) {
+        const matchedImage = Array.from(imagesByKey.values()).find(
+          (image) => image.href === result.localHref,
+        );
+        if (matchedImage && !coverImageId) {
+          coverImageId = matchedImage.id;
+        }
+      }
+
+      node.setAttribute(
+        "src",
+        result.localHref ? `../${result.localHref}` : (result.absoluteSrc || src),
+      );
+    }
+
+    const coverBody = serializeBodyToXhtml(parsedCover.body);
+    const coverXhtml = `<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>${escapeXml(coverTitle)}</title>
+    <style>html,body{margin:0;padding:0}.cover-page{margin:0;padding:0}img{max-width:100%;height:auto;display:block}</style>
+  </head>
+  <body>
+    <div class="cover-page">${coverBody}</div>
+  </body>
+</html>`;
+
+    coverChapter = {
+      id: "cover",
+      href: "cover.xhtml",
+      title: coverTitle,
+      content: coverXhtml,
+    };
+  }
+
   const bookId =
     typeof crypto !== "undefined" && "randomUUID" in crypto
       ? crypto.randomUUID()
@@ -190,18 +259,22 @@ export async function buildEpub(input: BuildEpubInput): Promise<BuildEpubResult>
         `<item id="${chapter.id}" href="${chapter.href}" media-type="application/xhtml+xml"/>`,
     )
     .join("\n    ");
+  const manifestCoverChapterItem = coverChapter
+    ? `<item id="${coverChapter.id}" href="${coverChapter.href}" media-type="application/xhtml+xml"/>`
+    : "";
 
   const images = Array.from(imagesByKey.values());
   const manifestImageItems = images
     .map(
       (image) =>
-        `<item id="${image.id}" href="${image.href}" media-type="${escapeXml(image.mediaType)}"/>`,
+        `<item id="${image.id}" href="${image.href}" media-type="${escapeXml(image.mediaType)}"${coverImageId === image.id ? ' properties="cover-image"' : ""}/>` ,
     )
     .join("\n    ");
 
-  const spineItems = chapters
-    .map((chapter) => `<itemref idref="${chapter.id}"/>`)
-    .join("\n    ");
+  const spineItems = [
+    ...(coverChapter ? [`<itemref idref="${coverChapter.id}"/>`] : []),
+    ...chapters.map((chapter) => `<itemref idref="${chapter.id}"/>`),
+  ].join("\n    ");
 
   const contentOpf = `<?xml version="1.0" encoding="UTF-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="book-id" version="3.0">
@@ -210,11 +283,13 @@ export async function buildEpub(input: BuildEpubInput): Promise<BuildEpubResult>
     <dc:title>${escapeXml(input.bookTitle)}</dc:title>
     ${input.bookAuthor ? `<dc:creator>${escapeXml(input.bookAuthor)}</dc:creator>` : ""}
     <dc:language>en</dc:language>
+    ${coverImageId ? `<meta name="cover" content="${escapeXml(coverImageId)}"/>` : ""}
     <meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d{3}Z$/, "Z")}</meta>
   </metadata>
   <manifest>
     <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
     <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
+    ${manifestCoverChapterItem}
     ${manifestChapterItems}
     ${manifestImageItems}
   </manifest>
@@ -278,6 +353,10 @@ export async function buildEpub(input: BuildEpubInput): Promise<BuildEpubResult>
   oebps.file("nav.xhtml", navXhtml);
   oebps.file("toc.ncx", tocNcx);
 
+  if (coverChapter) {
+    oebps.file(coverChapter.href, coverChapter.content);
+  }
+
   for (const chapter of chapters) {
     oebps.file(chapter.href, chapter.content);
   }
@@ -303,6 +382,7 @@ export async function buildEpub(input: BuildEpubInput): Promise<BuildEpubResult>
     summary: {
       fileName: input.downloadFileName || "book.epub",
       chapterCount: chapters.length,
+      coverIncluded: Boolean(coverChapter),
       embeddedImageCount: images.length,
       externalImageCount: warnings.filter((warning) => warning.code === "FETCH_IMAGE_FAILED").length,
       durationMs: Date.now() - startedAt,

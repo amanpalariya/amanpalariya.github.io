@@ -35,6 +35,7 @@ export function EpubToolbar({
   generationProgress,
   showDownloadCompleteIcon,
   pageCount,
+  coverEnabled,
   pastedInput,
   onAddFromClipboard,
   onAddFromFiles,
@@ -54,6 +55,7 @@ export function EpubToolbar({
   generationProgress: number | null;
   showDownloadCompleteIcon: boolean;
   pageCount: number;
+  coverEnabled: boolean;
   pastedInput: string;
   onAddFromClipboard: () => Promise<void>;
   onAddFromFiles: (files: FileList | File[]) => Promise<void>;
@@ -239,7 +241,7 @@ export function EpubToolbar({
         {...actionButtonProps}
         onClick={isGenerating ? onCancelGeneration : onGenerate}
         loading={false}
-        disabled={!isGenerating && pageCount === 0}
+        disabled={!isGenerating && pageCount === 0 && !coverEnabled}
         position={"relative"}
         overflow={"hidden"}
         _before={{

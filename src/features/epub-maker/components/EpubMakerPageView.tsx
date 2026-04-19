@@ -125,6 +125,7 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
             generationProgress={props.generationProgress}
             showDownloadCompleteIcon={props.showDownloadCompleteIcon}
             pageCount={props.pages.length}
+            coverEnabled={props.coverEnabled}
             pastedInput={props.pastedInput}
             onAddFromClipboard={props.addPageFromClipboard}
             onAddFromFiles={props.addPagesFromFiles}
@@ -142,12 +143,18 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
           <EpubMetadataForm
             prefs={props.prefs}
             autoEpubFileName={props.autoEpubFileName}
+            coverEnabled={props.coverEnabled}
+            coverMode={props.coverMode}
+            hasCustomCover={props.hasCustomCover}
             onTitleChange={props.setTitle}
             onAuthorChange={props.setAuthor}
             onManualFileNameChange={props.setManualFileName}
             onToggleFileNameMode={props.toggleFileNameMode}
             onEmbedRemoteImagesChange={props.setEmbedRemoteImages}
             onAllowExternalLinksChange={props.setAllowExternalLinks}
+            onCoverEnabledChange={props.setCoverEnabled}
+            onReplaceCoverFromFiles={props.replaceCoverFromFiles}
+            onResetCoverToAuto={props.resetCoverToAuto}
           />
         </VStack>
       </Box>
@@ -166,6 +173,8 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
           <Box minH={"340px"} px={0} py={0}>
             <PageDraftGrid
               pages={props.pages}
+              coverEnabled={props.coverEnabled}
+              coverPreviewHtml={props.coverPreviewHtml}
               isAdding={props.isAdding}
               isGenerating={props.isGenerating}
               generationChapterStatusByPageId={props.generationChapterStatusByPageId}

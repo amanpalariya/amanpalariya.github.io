@@ -37,6 +37,7 @@ type DragPreviewAnchor = {
 export function PageDraftCard({
   page,
   chapterNumber,
+  isCover,
   onRemove,
   onRename,
   onDragStart,
@@ -56,7 +57,8 @@ export function PageDraftCard({
   generationStatus,
 }: {
   page: PageDraft;
-  chapterNumber: number;
+  chapterNumber: number | string;
+  isCover?: boolean;
   onRemove: (id: string) => void;
   onRename: (id: string, value: string) => void;
   onDragStart: (id: string, anchor: DragPreviewAnchor) => void;
@@ -263,6 +265,9 @@ export function PageDraftCard({
     fontSize: "sm",
     rounded: "xl",
   } as const;
+  const isRemoveDisabled = isInteractionDisabled || isCover;
+  const isTitleDisabled = isInteractionDisabled || isCover;
+  const canDrag = !isInteractionDisabled && !isCover;
 
   return (
     <Box
@@ -299,25 +304,27 @@ export function PageDraftCard({
             rounded: "none",
           }}
           endAddon={
-            <Tooltip content={"Remove"}>
-              <Button
-                {...iconButtonProps}
-                size={"sm"}
-                variant={"ghost"}
-                onClick={() => onRemove(page.id)}
-                aria-label={"Remove page"}
-                disabled={isInteractionDisabled}
-                px={2}
-                minW={"auto"}
-                rounded={"none"}
-                color={"app.epub.fg.danger"}
-                _hover={{ bg: "app.status.danger.bg" }}
-              >
-                <Icon>
-                  <LuTrash2 />
-                </Icon>
-              </Button>
-            </Tooltip>
+            isCover ? null : (
+              <Tooltip content={"Remove"}>
+                <Button
+                  {...iconButtonProps}
+                  size={"sm"}
+                  variant={"ghost"}
+                  onClick={() => onRemove(page.id)}
+                  aria-label={"Remove page"}
+                  disabled={isRemoveDisabled}
+                  px={2}
+                  minW={"auto"}
+                  rounded={"none"}
+                  color={"app.epub.fg.danger"}
+                  _hover={{ bg: "app.status.danger.bg" }}
+                >
+                  <Icon>
+                    <LuTrash2 />
+                  </Icon>
+                </Button>
+              </Tooltip>
+            )
           }
           endAddonProps={{
             borderRightWidth: 0,
@@ -340,9 +347,9 @@ export function PageDraftCard({
             color={"app.epub.fg.default"}
             _placeholder={{ color: "app.epub.fg.subtle" }}
             value={titleDraft}
-            disabled={isInteractionDisabled}
+            disabled={isTitleDisabled}
             onChange={(event) => setTitleDraft(event.target.value)}
-            onBlur={commitRenameIfChanged}
+            onBlur={isCover ? undefined : commitRenameIfChanged}
             onKeyDown={handleTitleKeyDown}
           />
         </InputGroup>
@@ -354,50 +361,52 @@ export function PageDraftCard({
         cursor={"default"}
       >
         <Box position={"relative"} w={"full"} h={"full"}>
-          <Tooltip content={"Drag to reorder"}>
-            <Button
-              variant={"subtle"}
-              position={"absolute"}
-              bottom={2}
-              right={2}
-              zIndex={5}
-              px={2}
-              minW={"auto"}
-              rounded={"full"}
-              cursor={isInteractionDisabled ? "not-allowed" : "grab"}
-              draggable={!isInteractionDisabled}
-              disabled={isInteractionDisabled}
-              touchAction={"none"}
-              bg={"blackAlpha.300"}
-              color={"app.epub.fg.muted"}
-              _hover={{
-                bg: "blackAlpha.400",
-                color: "app.epub.fg.default",
-              }}
-              onDragStart={(event) => {
-                if (isInteractionDisabled) return;
-                if (activeTouchPointerIdRef.current !== null) {
-                  event.preventDefault();
-                  return;
-                }
-                event.stopPropagation();
-                setCardDragPreview(event);
-              }}
-              onDragEnd={(event) => {
-                event.stopPropagation();
-                onDragEnd();
-              }}
-              onPointerDown={handleGripPointerDown}
-              onPointerMove={handleGripPointerMove}
-              onPointerUp={handleGripPointerEnd}
-              onPointerCancel={handleGripPointerCancel}
-              aria-label={"Drag page"}
-            >
-              <Icon>
-                <LuGripVertical />
-              </Icon>
-            </Button>
-          </Tooltip>
+          {!isCover ? (
+            <Tooltip content={"Drag to reorder"}>
+              <Button
+                variant={"subtle"}
+                position={"absolute"}
+                bottom={2}
+                right={2}
+                zIndex={5}
+                px={2}
+                minW={"auto"}
+                rounded={"full"}
+                cursor={canDrag ? "grab" : "not-allowed"}
+                draggable={canDrag}
+                disabled={!canDrag}
+                touchAction={"none"}
+                bg={"blackAlpha.300"}
+                color={"app.epub.fg.muted"}
+                _hover={{
+                  bg: "blackAlpha.400",
+                  color: "app.epub.fg.default",
+                }}
+                onDragStart={(event) => {
+                  if (!canDrag) return;
+                  if (activeTouchPointerIdRef.current !== null) {
+                    event.preventDefault();
+                    return;
+                  }
+                  event.stopPropagation();
+                  setCardDragPreview(event);
+                }}
+                onDragEnd={(event) => {
+                  event.stopPropagation();
+                  onDragEnd();
+                }}
+                onPointerDown={handleGripPointerDown}
+                onPointerMove={handleGripPointerMove}
+                onPointerUp={handleGripPointerEnd}
+                onPointerCancel={handleGripPointerCancel}
+                aria-label={"Drag page"}
+              >
+                <Icon>
+                  <LuGripVertical />
+                </Icon>
+              </Button>
+            </Tooltip>
+          ) : null}
 
           <iframe
             title={`preview-${page.id}`}

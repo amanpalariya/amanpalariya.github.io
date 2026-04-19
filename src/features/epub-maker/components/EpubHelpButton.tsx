@@ -103,7 +103,16 @@ export function EpubHelpButton() {
                   display={"list-item"}
                   color={"app.epub.fg.default"}
                 >
-                  Rename, reorder, or remove pages in the draft grid.
+                  Use the cover controls to include/exclude cover, upload a custom
+                  cover, or reset to auto cover (title + author).
+                </Text>
+                <Text
+                  as={"li"}
+                  display={"list-item"}
+                  color={"app.epub.fg.default"}
+                >
+                  Rename, reorder, or remove pages in the draft grid. Cover stays
+                  pinned first and cannot be dragged.
                 </Text>
                 <Text
                   as={"li"}
