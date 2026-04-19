@@ -2,37 +2,15 @@ import {
   Box,
   Dialog,
   HStack,
-  Icon,
   IconButton,
   Separator,
   Text,
   VStack,
 } from "@chakra-ui/react";
+import { ShortcutHint } from "@components/core/ShortcutHint";
 import { DialogCloseTrigger, DialogContent } from "@components/ui/dialog";
 import { Tooltip } from "@components/ui/tooltip";
 import { LuCircleHelp, LuCommand } from "react-icons/lu";
-import type { IconType } from "react-icons";
-
-function ShortcutToken({ label, icon }: { label?: string; icon?: IconType }) {
-  return (
-    <HStack
-      minH={"1.75rem"}
-      px={2}
-      rounded={"md"}
-      borderWidth={"1px"}
-      borderColor={"app.epub.border.default"}
-      bg={"app.epub.bg.surface"}
-      color={"app.epub.fg.default"}
-      fontSize={"xs"}
-      fontWeight={"semibold"}
-      gap={1}
-      lineHeight={1}
-    >
-      {icon ? <Icon as={icon} boxSize={3.5} /> : null}
-      {label ? <Text>{label}</Text> : null}
-    </HStack>
-  );
-}
 
 function ShortcutJoiner({ value }: { value: string }) {
   return (
@@ -141,39 +119,39 @@ export function EpubHelpButton() {
                 <HStack justify={"space-between"}>
                   <Text color={"app.epub.fg.default"}>Paste and add page</Text>
                   <HStack gap={1}>
-                    <ShortcutToken icon={LuCommand} />
+                    <ShortcutHint icon={LuCommand} label={""} />
                     <ShortcutJoiner value={"/"} />
-                    <ShortcutToken label={"Ctrl"} />
+                    <ShortcutHint label={"Ctrl"} />
                     <ShortcutJoiner value={"+"} />
-                    <ShortcutToken label={"V"} />
+                    <ShortcutHint label={"V"} />
                   </HStack>
                 </HStack>
 
                 <HStack justify={"space-between"}>
                   <Text color={"app.epub.fg.default"}>Undo</Text>
                   <HStack gap={1}>
-                    <ShortcutToken icon={LuCommand} />
+                    <ShortcutHint icon={LuCommand} label={""} />
                     <ShortcutJoiner value={"/"} />
-                    <ShortcutToken label={"Ctrl"} />
+                    <ShortcutHint label={"Ctrl"} />
                     <ShortcutJoiner value={"+"} />
-                    <ShortcutToken label={"Z"} />
+                    <ShortcutHint label={"Z"} />
                   </HStack>
                 </HStack>
 
                 <HStack justify={"space-between"} align={"start"}>
                   <Text color={"app.epub.fg.default"}>Redo</Text>
                   <HStack gap={1} wrap={"wrap"} justify={"end"}>
-                    <ShortcutToken icon={LuCommand} />
+                    <ShortcutHint icon={LuCommand} label={""} />
                     <ShortcutJoiner value={"/"} />
-                    <ShortcutToken label={"Ctrl"} />
+                    <ShortcutHint label={"Ctrl"} />
                     <ShortcutJoiner value={"+"} />
-                    <ShortcutToken label={"Shift"} />
+                    <ShortcutHint label={"Shift"} />
                     <ShortcutJoiner value={"+"} />
-                    <ShortcutToken label={"Z"} />
+                    <ShortcutHint label={"Z"} />
                     <ShortcutJoiner value={"or"} />
-                    <ShortcutToken label={"Ctrl"} />
+                    <ShortcutHint label={"Ctrl"} />
                     <ShortcutJoiner value={"+"} />
-                    <ShortcutToken label={"Y"} />
+                    <ShortcutHint label={"Y"} />
                   </HStack>
                 </HStack>
               </VStack>
