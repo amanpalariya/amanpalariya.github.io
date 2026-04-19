@@ -48,6 +48,7 @@ type PageFlashEntry = { kind: PageFlashKind; token: number };
 type DraftSnapshot = {
   pages: PageDraft[];
   customCoverHtml: string | null;
+  coverEnabled: boolean;
 };
 
 interface DraftHistoryState {
@@ -269,6 +270,7 @@ export type UseEpubMakerReturn = EpubMakerState & {
   replaceCoverFromFiles: (files: FileList | File[]) => Promise<void>;
   replaceCoverFromClipboard: () => Promise<void>;
   resetCoverToAuto: () => void;
+  toggleCoverEnabled: () => void;
 };
 
 export function useEpubMaker(): UseEpubMakerReturn {
@@ -277,6 +279,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     present: {
       pages: [],
       customCoverHtml: null,
+      coverEnabled: true,
     },
     future: [],
   });
@@ -317,6 +320,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
   const generationAbortControllerRef = useRef<AbortController | null>(null);
   const pages = draftHistory.present.pages;
   const customCoverHtml = draftHistory.present.customCoverHtml;
+  const coverEnabled = draftHistory.present.coverEnabled;
 
   const canUndo = draftHistory.past.length > 0;
   const canRedo = draftHistory.future.length > 0;
@@ -536,7 +540,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     }
     return buildCoverDraft(autoCoverRawHtml, "auto", sanitizePolicy);
   }, [autoCoverRawHtml, customCoverHtml, sanitizePolicy]);
-  const hasCustomCover = coverDraft.mode === "custom";
+  const hasCustomCover = customCoverHtml !== null;
 
   useEffect(() => {
     setPrefs(readEpubMakerPrefs());
@@ -1105,6 +1109,29 @@ export function useEpubMaker(): UseEpubMakerReturn {
     notify("info", "Cover reset", "Switched back to the auto-generated cover.");
   }
 
+  function toggleCoverEnabled() {
+    if (isGenerating) return;
+
+    const nextCoverEnabled = !coverEnabled;
+    commitDraftChange((previousDraft) => {
+      if (previousDraft.coverEnabled === nextCoverEnabled) {
+        return previousDraft;
+      }
+      return {
+        ...previousDraft,
+        coverEnabled: nextCoverEnabled,
+      };
+    });
+    setSummary("");
+    notify(
+      "info",
+      nextCoverEnabled ? "Cover enabled" : "Cover disabled",
+      nextCoverEnabled
+        ? "Cover will be included in generated EPUB files."
+        : "Cover preview is kept, but cover is excluded from EPUB generation.",
+    );
+  }
+
   async function generateEpub() {
     if (isGenerating) return;
     if (generationStatusFadeTimerRef.current) {
@@ -1160,7 +1187,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
         bookAuthor: normalizedBookAuthor,
         downloadFileName: effectiveFileName,
         pages,
-        cover: coverDraft,
+        cover: coverEnabled ? coverDraft : undefined,
         sanitizePolicy,
         signal: abortController.signal,
         onProgress: (update: BuildEpubProgressUpdate) => {
@@ -1238,6 +1265,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
   return {
     pages,
     coverMode: coverDraft.mode,
+    isCoverEnabled: coverEnabled,
     coverPreviewHtml: coverDraft.previewHtml,
     hasCustomCover,
     isAdding,
@@ -1314,5 +1342,6 @@ export function useEpubMaker(): UseEpubMakerReturn {
     replaceCoverFromFiles,
     replaceCoverFromClipboard,
     resetCoverToAuto,
+    toggleCoverEnabled,
   };
 }

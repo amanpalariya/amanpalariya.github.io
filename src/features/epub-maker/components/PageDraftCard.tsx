@@ -14,6 +14,8 @@ import {
   LuCheck,
   LuClipboardPaste,
   LuClock3,
+  LuEye,
+  LuEyeOff,
   LuGripVertical,
   LuLoaderCircle,
   LuRefreshCw,
@@ -44,9 +46,11 @@ export function PageDraftCard({
   chapterNumber,
   isCover,
   hasCustomCover,
+  isCoverEnabled,
   onReplaceCoverFromFiles,
   onReplaceCoverFromClipboard,
   onResetCoverToAuto,
+  onToggleCoverEnabled,
   onRemove,
   onRename,
   onDragStart,
@@ -69,9 +73,11 @@ export function PageDraftCard({
   chapterNumber: number | string;
   isCover?: boolean;
   hasCustomCover?: boolean;
+  isCoverEnabled?: boolean;
   onReplaceCoverFromFiles?: (files: FileList | File[]) => Promise<void>;
   onReplaceCoverFromClipboard?: () => Promise<void>;
   onResetCoverToAuto?: () => void;
+  onToggleCoverEnabled?: () => void;
   onRemove: (id: string) => void;
   onRename: (id: string, value: string) => void;
   onDragStart: (id: string, anchor: DragPreviewAnchor) => void;
@@ -282,6 +288,7 @@ export function PageDraftCard({
   const isRemoveDisabled = isInteractionDisabled || isCover;
   const isTitleDisabled = isInteractionDisabled || isCover;
   const canDrag = !isInteractionDisabled && !isCover;
+  const isEffectiveCoverEnabled = isCoverEnabled ?? true;
 
   function handleCoverUploadChange(event: ChangeEvent<HTMLInputElement>) {
     if (!isCover || !onReplaceCoverFromFiles) return;
@@ -376,6 +383,28 @@ export function PageDraftCard({
                 >
                   <Icon>
                     <LuRefreshCw />
+                  </Icon>
+                </Button>
+              </Tooltip>
+
+              <Tooltip
+                content={
+                  isEffectiveCoverEnabled ? "Disable cover" : "Enable cover"
+                }
+              >
+                <Button
+                  size={"xs"}
+                  variant={"ghost"}
+                  onClick={() => onToggleCoverEnabled?.()}
+                  disabled={isInteractionDisabled}
+                  aria-label={
+                    isEffectiveCoverEnabled ? "Disable cover" : "Enable cover"
+                  }
+                  minW={"auto"}
+                  px={2}
+                >
+                  <Icon>
+                    {isEffectiveCoverEnabled ? <LuEyeOff /> : <LuEye />}
                   </Icon>
                 </Button>
               </Tooltip>
@@ -508,20 +537,47 @@ export function PageDraftCard({
               height: "100%",
               border: "none",
               pointerEvents: "none",
-              filter: isInteractionDisabled
-                ? "blur(1px) grayscale(0.35) saturate(0.75) brightness(0.82)"
-                : "none",
+              filter:
+                isInteractionDisabled || (isCover && !isEffectiveCoverEnabled)
+                  ? "blur(1px) grayscale(0.35) saturate(0.75) brightness(0.82)"
+                  : "none",
               transition: "filter 0.2s ease",
             }}
           />
 
-          {isInteractionDisabled ? (
+          {isInteractionDisabled || (isCover && !isEffectiveCoverEnabled) ? (
             <Box
               position={"absolute"}
               inset={0}
               pointerEvents={"none"}
               bg={"app.epub.overlay.preview"}
-            />
+            >
+              {isCover && !isEffectiveCoverEnabled ? (
+                <Box
+                  position={"absolute"}
+                  inset={0}
+                  display={"flex"}
+                  alignItems={"center"}
+                  justifyContent={"center"}
+                  px={3}
+                >
+                  <Text
+                    fontFamily={"ui"}
+                    fontSize={"xs"}
+                    fontWeight={"semibold"}
+                    color={"app.epub.fg.default"}
+                    bg={"app.epub.bg.card"}
+                    borderWidth={"1px"}
+                    borderColor={"app.epub.border.default"}
+                    rounded={"full"}
+                    px={3}
+                    py={1.5}
+                  >
+                    Cover disabled for export
+                  </Text>
+                </Box>
+              ) : null}
+            </Box>
           ) : null}
 
           {showGenerationStatus ? (

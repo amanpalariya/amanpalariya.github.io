@@ -35,6 +35,7 @@ export function PageDraftGrid({
   pages,
   coverPreviewHtml,
   hasCustomCover,
+  isCoverEnabled,
   isAdding,
   isGenerating,
   generationChapterStatusByPageId,
@@ -47,6 +48,7 @@ export function PageDraftGrid({
   onReplaceCoverFromFiles,
   onReplaceCoverFromClipboard,
   onResetCoverToAuto,
+  onToggleCoverEnabled,
   onAddFromClipboard,
   onAddFromFiles,
   pastedInput,
@@ -57,6 +59,7 @@ export function PageDraftGrid({
   pages: PageDraft[];
   coverPreviewHtml: string;
   hasCustomCover: boolean;
+  isCoverEnabled: boolean;
   isAdding: boolean;
   isGenerating: boolean;
   generationChapterStatusByPageId: Record<string, ChapterGenerationStatus>;
@@ -69,6 +72,7 @@ export function PageDraftGrid({
   onReplaceCoverFromFiles: (files: FileList | File[]) => Promise<void>;
   onReplaceCoverFromClipboard: () => Promise<void>;
   onResetCoverToAuto: () => void;
+  onToggleCoverEnabled: () => void;
   onAddFromClipboard: () => Promise<void>;
   onAddFromFiles: (files: FileList | File[]) => Promise<void>;
   pastedInput: string;
@@ -321,9 +325,11 @@ export function PageDraftGrid({
             chapterNumber={"C"}
             isCover={true}
             hasCustomCover={hasCustomCover}
+            isCoverEnabled={isCoverEnabled}
             onReplaceCoverFromFiles={onReplaceCoverFromFiles}
             onReplaceCoverFromClipboard={onReplaceCoverFromClipboard}
             onResetCoverToAuto={onResetCoverToAuto}
+            onToggleCoverEnabled={onToggleCoverEnabled}
             onRemove={onRemove}
             onRename={onRename}
             onDragStart={() => {}}

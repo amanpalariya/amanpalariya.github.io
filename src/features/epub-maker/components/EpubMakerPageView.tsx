@@ -168,6 +168,7 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
               pages={props.pages}
               coverPreviewHtml={props.coverPreviewHtml}
               hasCustomCover={props.hasCustomCover}
+              isCoverEnabled={props.isCoverEnabled}
               isAdding={props.isAdding}
               isGenerating={props.isGenerating}
               generationChapterStatusByPageId={props.generationChapterStatusByPageId}
@@ -180,6 +181,7 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
               onReplaceCoverFromFiles={props.replaceCoverFromFiles}
               onReplaceCoverFromClipboard={props.replaceCoverFromClipboard}
               onResetCoverToAuto={props.resetCoverToAuto}
+              onToggleCoverEnabled={props.toggleCoverEnabled}
               onAddFromClipboard={props.addPageFromClipboard}
               onAddFromFiles={props.addPagesFromFiles}
               pastedInput={props.pastedInput}

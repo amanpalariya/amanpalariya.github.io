@@ -103,8 +103,8 @@ export function EpubHelpButton() {
                   display={"list-item"}
                   color={"app.epub.fg.default"}
                 >
-                  Use the cover controls to upload a custom cover image or reset to
-                  the auto cover (title + author).
+                  Use the cover controls to upload a custom cover image, reset to
+                  the auto cover (title + author), or disable cover export.
                 </Text>
                 <Text
                   as={"li"}
