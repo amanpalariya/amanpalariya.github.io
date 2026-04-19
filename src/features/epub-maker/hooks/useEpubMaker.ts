@@ -45,30 +45,35 @@ const PAGE_HISTORY_LIMIT = 100;
 type PageFlashKind = "added" | "duplicate";
 type PageFlashEntry = { kind: PageFlashKind; token: number };
 
-interface PageHistoryState {
-  past: PageDraft[][];
-  present: PageDraft[];
-  future: PageDraft[][];
+type DraftSnapshot = {
+  pages: PageDraft[];
+  customCoverHtml: string | null;
+};
+
+interface DraftHistoryState {
+  past: DraftSnapshot[];
+  present: DraftSnapshot;
+  future: DraftSnapshot[];
 }
 
-type PageHistoryAction =
-  | { type: "commit"; updater: (previousPages: PageDraft[]) => PageDraft[] }
+type DraftHistoryAction =
+  | { type: "commit"; updater: (previousDraft: DraftSnapshot) => DraftSnapshot }
   | { type: "undo" }
   | { type: "redo" };
 
-function pageHistoryReducer(
-  state: PageHistoryState,
-  action: PageHistoryAction,
-): PageHistoryState {
+function draftHistoryReducer(
+  state: DraftHistoryState,
+  action: DraftHistoryAction,
+): DraftHistoryState {
   if (action.type === "undo") {
     if (state.past.length === 0) {
       return state;
     }
 
-    const previousPages = state.past[state.past.length - 1];
+    const previousDraft = state.past[state.past.length - 1];
     return {
       past: state.past.slice(0, -1),
-      present: previousPages,
+      present: previousDraft,
       future: [...state.future.slice(-(PAGE_HISTORY_LIMIT - 1)), state.present],
     };
   }
@@ -78,22 +83,22 @@ function pageHistoryReducer(
       return state;
     }
 
-    const nextPages = state.future[state.future.length - 1];
+    const nextDraft = state.future[state.future.length - 1];
     return {
       past: [...state.past.slice(-(PAGE_HISTORY_LIMIT - 1)), state.present],
-      present: nextPages,
+      present: nextDraft,
       future: state.future.slice(0, -1),
     };
   }
 
-  const nextPages = action.updater(state.present);
-  if (nextPages === state.present) {
+  const nextDraft = action.updater(state.present);
+  if (nextDraft === state.present) {
     return state;
   }
 
   return {
     past: [...state.past.slice(-(PAGE_HISTORY_LIMIT - 1)), state.present],
-    present: nextPages,
+    present: nextDraft,
     future: [],
   };
 }
@@ -267,13 +272,15 @@ export type UseEpubMakerReturn = EpubMakerState & {
 };
 
 export function useEpubMaker(): UseEpubMakerReturn {
-  const [pageHistory, dispatchPageHistory] = useReducer(pageHistoryReducer, {
+  const [draftHistory, dispatchDraftHistory] = useReducer(draftHistoryReducer, {
     past: [],
-    present: [],
+    present: {
+      pages: [],
+      customCoverHtml: null,
+    },
     future: [],
   });
   const [isAdding, setIsAdding] = useState(false);
-  const [customCoverHtml, setCustomCoverHtml] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isCancellingGeneration, setIsCancellingGeneration] = useState(false);
   const [generationProgress, setGenerationProgress] = useState<number | null>(
@@ -308,19 +315,36 @@ export function useEpubMaker(): UseEpubMakerReturn {
   const pageFlashClearTimerRef = useRef<number | null>(null);
   const flashSequenceRef = useRef(0);
   const generationAbortControllerRef = useRef<AbortController | null>(null);
-  const pages = pageHistory.present;
+  const pages = draftHistory.present.pages;
+  const customCoverHtml = draftHistory.present.customCoverHtml;
 
-  const canUndo = pageHistory.past.length > 0;
-  const canRedo = pageHistory.future.length > 0;
+  const canUndo = draftHistory.past.length > 0;
+  const canRedo = draftHistory.future.length > 0;
 
-  const commitPageChange = useCallback(
-    (updater: (previousPages: PageDraft[]) => PageDraft[]) => {
-      dispatchPageHistory({ type: "commit", updater });
+  const commitDraftChange = useCallback(
+    (updater: (previousDraft: DraftSnapshot) => DraftSnapshot) => {
+      dispatchDraftHistory({ type: "commit", updater });
       setGenerationChapterStatusByPageId({});
       setActiveGenerationPageId(null);
       setIsGenerationStatusFading(false);
     },
     [],
+  );
+
+  const commitPageChange = useCallback(
+    (updater: (previousPages: PageDraft[]) => PageDraft[]) => {
+      commitDraftChange((previousDraft) => {
+        const nextPages = updater(previousDraft.pages);
+        if (nextPages === previousDraft.pages) {
+          return previousDraft;
+        }
+        return {
+          ...previousDraft,
+          pages: nextPages,
+        };
+      });
+    },
+    [commitDraftChange],
   );
 
   useEffect(() => {
@@ -395,12 +419,12 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
   const undoPages = useCallback(() => {
     if (isGenerating) return;
-    dispatchPageHistory({ type: "undo" });
+    dispatchDraftHistory({ type: "undo" });
   }, [isGenerating]);
 
   const redoPages = useCallback(() => {
     if (isGenerating) return;
-    dispatchPageHistory({ type: "redo" });
+    dispatchDraftHistory({ type: "redo" });
   }, [isGenerating]);
 
   function dismissNotification(id: string) {
@@ -1003,7 +1027,15 @@ export function useEpubMaker(): UseEpubMakerReturn {
     setIsAdding(true);
     try {
       const coverHtml = await clipboardImageBlobToHtml(imageFile);
-      setCustomCoverHtml(coverHtml);
+      commitDraftChange((previousDraft) => {
+        if (previousDraft.customCoverHtml === coverHtml) {
+          return previousDraft;
+        }
+        return {
+          ...previousDraft,
+          customCoverHtml: coverHtml,
+        };
+      });
       setSummary("");
       notify("success", "Cover updated", `Custom cover set from “${imageFile.name}”.`);
     } catch (error) {
@@ -1022,7 +1054,15 @@ export function useEpubMaker(): UseEpubMakerReturn {
     try {
       const imageBlob = await readClipboardImageBlob();
       const coverHtml = await clipboardImageBlobToHtml(imageBlob);
-      setCustomCoverHtml(coverHtml);
+      commitDraftChange((previousDraft) => {
+        if (previousDraft.customCoverHtml === coverHtml) {
+          return previousDraft;
+        }
+        return {
+          ...previousDraft,
+          customCoverHtml: coverHtml,
+        };
+      });
       setSummary("");
       notify("success", "Cover updated", "Custom cover set from clipboard image.");
     } catch (error) {
@@ -1049,7 +1089,18 @@ export function useEpubMaker(): UseEpubMakerReturn {
   }
 
   function resetCoverToAuto() {
-    setCustomCoverHtml(null);
+    if (isGenerating) return;
+    if (!hasCustomCover) return;
+
+    commitDraftChange((previousDraft) => {
+      if (previousDraft.customCoverHtml === null) {
+        return previousDraft;
+      }
+      return {
+        ...previousDraft,
+        customCoverHtml: null,
+      };
+    });
     setSummary("");
     notify("info", "Cover reset", "Switched back to the auto-generated cover.");
   }
