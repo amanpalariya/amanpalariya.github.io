@@ -117,7 +117,6 @@ export interface EpubMakerPrefs {
 
 export interface EpubMakerState {
   pages: PageDraft[];
-  coverEnabled: boolean;
   coverMode: CoverMode;
   coverPreviewHtml: string;
   hasCustomCover: boolean;

@@ -261,7 +261,6 @@ export type UseEpubMakerReturn = EpubMakerState & {
   toggleFileNameMode: () => void;
   setEmbedRemoteImages: (value: boolean) => void;
   setAllowExternalLinks: (value: boolean) => void;
-  setCoverEnabled: (value: boolean) => void;
   replaceCoverFromFiles: (files: FileList | File[]) => Promise<void>;
   replaceCoverFromClipboard: () => Promise<void>;
   resetCoverToAuto: () => void;
@@ -274,7 +273,6 @@ export function useEpubMaker(): UseEpubMakerReturn {
     future: [],
   });
   const [isAdding, setIsAdding] = useState(false);
-  const [coverEnabled, setCoverEnabledState] = useState(true);
   const [customCoverHtml, setCustomCoverHtml] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isCancellingGeneration, setIsCancellingGeneration] = useState(false);
@@ -1080,9 +1078,9 @@ export function useEpubMaker(): UseEpubMakerReturn {
     const abortController = new AbortController();
     generationAbortControllerRef.current = abortController;
 
-    if (pages.length === 0 && !coverEnabled) {
+    if (pages.length === 0) {
       const message =
-        "Add at least one page or enable cover before generating EPUB.";
+        "Add at least one page before generating EPUB.";
       setErrors([message]);
       notify("warning", "No pages added", message);
       setIsGenerating(false);
@@ -1111,7 +1109,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
         bookAuthor: normalizedBookAuthor,
         downloadFileName: effectiveFileName,
         pages,
-        cover: coverEnabled ? coverDraft : undefined,
+        cover: coverDraft,
         sanitizePolicy,
         signal: abortController.signal,
         onProgress: (update: BuildEpubProgressUpdate) => {
@@ -1188,7 +1186,6 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
   return {
     pages,
-    coverEnabled,
     coverMode: coverDraft.mode,
     coverPreviewHtml: coverDraft.previewHtml,
     hasCustomCover,
@@ -1263,10 +1260,6 @@ export function useEpubMaker(): UseEpubMakerReturn {
         ...prev,
         sanitizeOptions: { ...prev.sanitizeOptions, allowExternalLinks: value },
       })),
-    setCoverEnabled: (value: boolean) => {
-      setCoverEnabledState(value);
-      setSummary("");
-    },
     replaceCoverFromFiles,
     replaceCoverFromClipboard,
     resetCoverToAuto,

@@ -15,25 +15,21 @@ import type { EpubMakerState } from "../types";
 export function EpubMetadataForm({
   prefs,
   autoEpubFileName,
-  coverEnabled,
   onTitleChange,
   onAuthorChange,
   onManualFileNameChange,
   onToggleFileNameMode,
   onEmbedRemoteImagesChange,
   onAllowExternalLinksChange,
-  onCoverEnabledChange,
 }: {
   prefs: EpubMakerState["prefs"];
   autoEpubFileName: string;
-  coverEnabled: boolean;
   onTitleChange: (value: string) => void;
   onAuthorChange: (value: string) => void;
   onManualFileNameChange: (value: string) => void;
   onToggleFileNameMode: () => void;
   onEmbedRemoteImagesChange: (value: boolean) => void;
   onAllowExternalLinksChange: (value: boolean) => void;
-  onCoverEnabledChange: (value: boolean) => void;
 }) {
   const controlInputProps = {
     fontFamily: "ui",
@@ -201,15 +197,6 @@ export function EpubMetadataForm({
           </Tooltip>
         </HStack>
 
-        <HStack gap={2} align={"center"}>
-          <Switch
-            {...switchProps}
-            checked={coverEnabled}
-            onCheckedChange={(details) => onCoverEnabledChange(details.checked)}
-          >
-            Include cover
-          </Switch>
-        </HStack>
       </HStack>
     </>
   );

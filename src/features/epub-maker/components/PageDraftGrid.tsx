@@ -33,7 +33,6 @@ type DragMode = "mouse" | "touch" | null;
 
 export function PageDraftGrid({
   pages,
-  coverEnabled,
   coverPreviewHtml,
   hasCustomCover,
   isAdding,
@@ -56,7 +55,6 @@ export function PageDraftGrid({
   onAddFromFallback,
 }: {
   pages: PageDraft[];
-  coverEnabled: boolean;
   coverPreviewHtml: string;
   hasCustomCover: boolean;
   isAdding: boolean;
@@ -92,22 +90,20 @@ export function PageDraftGrid({
   const isInteractionDisabled = isGenerating;
   const isGenerationStatusVisible =
     isGenerating || Object.keys(generationChapterStatusByPageId).length > 0;
-  const coverOffset = coverEnabled ? 1 : 0;
+  const coverOffset = 1;
   const totalDisplayItemCount = pages.length + coverOffset;
   const completedPageCount = Object.values(
     generationChapterStatusByPageId,
   ).filter((status) => status === "completed").length;
-  const coverPage: PageDraft | null = coverEnabled
-    ? {
-        id: "__epub-cover__",
-        title: "Cover",
-        inputKind: "html",
-        rawContent: "",
-        baseUrl: null,
-        previewHtml: coverPreviewHtml,
-        createdAt: 0,
-      }
-    : null;
+  const coverPage: PageDraft = {
+    id: "__epub-cover__",
+    title: "Cover",
+    inputKind: "html",
+    rawContent: "",
+    baseUrl: null,
+    previewHtml: coverPreviewHtml,
+    createdAt: 0,
+  };
 
   function handleGhostUploadChange(event: ChangeEvent<HTMLInputElement>) {
     if (isInteractionDisabled) return;
@@ -125,9 +121,7 @@ export function PageDraftGrid({
       ? (() => {
           const draggedPage = pages[dragIndex];
           const remaining = pages.filter((page) => page.id !== draggedId);
-          const targetChapterIndex = coverEnabled
-            ? Math.max(0, dropIndex - 1)
-            : dropIndex;
+          const targetChapterIndex = Math.max(0, dropIndex - 1);
           const insertionIndex = Math.max(
             0,
             Math.min(targetChapterIndex, remaining.length),
@@ -146,9 +140,7 @@ export function PageDraftGrid({
       dropIndexRef.current ??
       dropIndex ??
       (dragIndex >= 0 ? dragIndex + coverOffset : 0);
-    const targetIndex = coverEnabled
-      ? Math.max(0, targetDisplayIndex - 1)
-      : targetDisplayIndex;
+    const targetIndex = Math.max(0, targetDisplayIndex - 1);
     onReorder(activeDraggedId, targetIndex);
     setDraggedId(null);
     setDropIndex(null);
@@ -251,9 +243,7 @@ export function PageDraftGrid({
       dropIndexRef.current ??
       dropIndex ??
       (dragIndex >= 0 ? dragIndex + coverOffset : 0);
-    const targetIndex = coverEnabled
-      ? Math.max(0, targetDisplayIndex - 1)
-      : targetDisplayIndex;
+    const targetIndex = Math.max(0, targetDisplayIndex - 1);
     onReorder(activeDraggedId, targetIndex);
     handleDragEnd();
   }
@@ -310,52 +300,50 @@ export function PageDraftGrid({
         gap={2}
         alignItems={"start"}
       >
-        {coverPage ? (
-          <Box
-            key={coverPage.id}
-            data-drop-index={0}
+        <Box
+          key={coverPage.id}
+          data-drop-index={0}
+          onDragOver={(event) => {
+            if (isInteractionDisabled) return;
+            event.preventDefault();
+            if (!draggedId) return;
+            setDropIndex(0);
+            dropIndexRef.current = 0;
+          }}
+          onDrop={(event) => {
+            if (isInteractionDisabled) return;
+            event.preventDefault();
+            handleDrop();
+          }}
+        >
+          <PageDraftCard
+            page={coverPage}
+            chapterNumber={"C"}
+            isCover={true}
+            hasCustomCover={hasCustomCover}
+            onReplaceCoverFromFiles={onReplaceCoverFromFiles}
+            onReplaceCoverFromClipboard={onReplaceCoverFromClipboard}
+            onResetCoverToAuto={onResetCoverToAuto}
+            onRemove={onRemove}
+            onRename={onRename}
+            onDragStart={() => {}}
+            onTouchDragStart={() => {}}
+            onTouchDragMove={() => {}}
+            onTouchDragEnd={() => {}}
+            onTouchDragCancel={() => {}}
+            onDragEnd={isInteractionDisabled ? () => {} : handleDragEnd}
             onDragOver={(event) => {
               if (isInteractionDisabled) return;
               event.preventDefault();
-              if (!draggedId) return;
-              setDropIndex(0);
-              dropIndexRef.current = 0;
             }}
-            onDrop={(event) => {
-              if (isInteractionDisabled) return;
-              event.preventDefault();
-              handleDrop();
-            }}
-          >
-            <PageDraftCard
-              page={coverPage}
-              chapterNumber={"C"}
-              isCover={true}
-              hasCustomCover={hasCustomCover}
-              onReplaceCoverFromFiles={onReplaceCoverFromFiles}
-              onReplaceCoverFromClipboard={onReplaceCoverFromClipboard}
-              onResetCoverToAuto={onResetCoverToAuto}
-              onRemove={onRemove}
-              onRename={onRename}
-              onDragStart={() => {}}
-              onTouchDragStart={() => {}}
-              onTouchDragMove={() => {}}
-              onTouchDragEnd={() => {}}
-              onTouchDragCancel={() => {}}
-              onDragEnd={isInteractionDisabled ? () => {} : handleDragEnd}
-              onDragOver={(event) => {
-                if (isInteractionDisabled) return;
-                event.preventDefault();
-              }}
-              onDrop={handleDrop}
-              isDragging={false}
-              isDropTarget={false}
-              isInteractionDisabled={isInteractionDisabled}
-              isGenerationStatusFading={isGenerationStatusFading}
-              generationStatus={undefined}
-            />
-          </Box>
-        ) : null}
+            onDrop={handleDrop}
+            isDragging={false}
+            isDropTarget={false}
+            isInteractionDisabled={isInteractionDisabled}
+            isGenerationStatusFading={isGenerationStatusFading}
+            generationStatus={undefined}
+          />
+        </Box>
 
         {previewPages.map((page, index) => {
           const displayIndex = index + coverOffset;
