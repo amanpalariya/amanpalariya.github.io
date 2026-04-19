@@ -312,21 +312,90 @@ export function PageDraftCard({
       onDrop={onDrop}
     >
       <Box borderBottomWidth={"1px"} borderColor={"app.epub.border.muted"}>
-        <InputGroup
-          startAddon={chapterNumber}
-          startAddonProps={{
-            minW: "2.25rem",
-            justifyContent: "center",
-            fontSize: "xs",
-            fontWeight: "semibold",
-            color: "app.epub.fg.muted",
-            borderLeftWidth: 0,
-            borderTopWidth: 0,
-            borderBottomWidth: "1px",
-            rounded: "none",
-          }}
-          endAddon={
-            isCover ? null : (
+        {isCover ? (
+          <HStack h={"2.25rem"} px={2} justify={"space-between"} align={"center"}>
+            <Text
+              fontFamily={"ui"}
+              fontSize={"sm"}
+              fontWeight={"medium"}
+              color={"app.epub.fg.default"}
+            >
+              Cover
+            </Text>
+
+            <HStack gap={0.5}>
+              <FileUpload.Root maxFiles={1}>
+                <FileUpload.HiddenInput
+                  ref={coverUploadInputRef}
+                  aria-label={"Upload cover image"}
+                  accept={"image/*"}
+                  onChange={handleCoverUploadChange}
+                />
+                <Tooltip content={"Upload cover"}>
+                  <Button
+                    size={"xs"}
+                    variant={"ghost"}
+                    onClick={() => coverUploadInputRef.current?.click()}
+                    disabled={isInteractionDisabled}
+                    aria-label={"Upload cover"}
+                    minW={"auto"}
+                    px={2}
+                  >
+                    <Icon>
+                      <LuUpload />
+                    </Icon>
+                  </Button>
+                </Tooltip>
+              </FileUpload.Root>
+
+              <Tooltip content={"Paste cover"}>
+                <Button
+                  size={"xs"}
+                  variant={"ghost"}
+                  onClick={() => void onReplaceCoverFromClipboard?.()}
+                  disabled={isInteractionDisabled}
+                  aria-label={"Paste cover"}
+                  minW={"auto"}
+                  px={2}
+                >
+                  <Icon>
+                    <LuClipboardPaste />
+                  </Icon>
+                </Button>
+              </Tooltip>
+
+              <Tooltip content={"Reset cover"}>
+                <Button
+                  size={"xs"}
+                  variant={"ghost"}
+                  onClick={() => onResetCoverToAuto?.()}
+                  disabled={isInteractionDisabled || !hasCustomCover}
+                  aria-label={"Reset cover"}
+                  minW={"auto"}
+                  px={2}
+                >
+                  <Icon>
+                    <LuRefreshCw />
+                  </Icon>
+                </Button>
+              </Tooltip>
+            </HStack>
+          </HStack>
+        ) : (
+          <InputGroup
+            startAddon={chapterNumber}
+            startAddonProps={{
+              minW: "2.25rem",
+              justifyContent: "center",
+              fontSize: "xs",
+              fontWeight: "semibold",
+              color: "app.epub.fg.muted",
+              borderLeftWidth: 0,
+              borderTopWidth: 0,
+              borderBottomWidth: "1px",
+              rounded: "none",
+            }}
+            endAddon={
               <Tooltip content={"Remove"}>
                 <Button
                   {...iconButtonProps}
@@ -346,35 +415,35 @@ export function PageDraftCard({
                   </Icon>
                 </Button>
               </Tooltip>
-            )
-          }
-          endAddonProps={{
-            borderRightWidth: 0,
-            borderTopWidth: 0,
-            borderBottomWidth: "1px",
-            rounded: "none",
-            p: 0,
-          }}
-        >
-          <Input
-            {...controlInputProps}
-            size={"sm"}
-            rounded={"none"}
-            borderLeftWidth={0}
-            borderRightWidth={0}
-            borderTopWidth={0}
-            borderBottomWidth={"1px"}
-            borderBottomColor={"app.epub.border.muted"}
-            bg={"app.epub.bg.card"}
-            color={"app.epub.fg.default"}
-            _placeholder={{ color: "app.epub.fg.subtle" }}
-            value={titleDraft}
-            disabled={isTitleDisabled}
-            onChange={(event) => setTitleDraft(event.target.value)}
-            onBlur={isCover ? undefined : commitRenameIfChanged}
-            onKeyDown={handleTitleKeyDown}
-          />
-        </InputGroup>
+            }
+            endAddonProps={{
+              borderRightWidth: 0,
+              borderTopWidth: 0,
+              borderBottomWidth: "1px",
+              rounded: "none",
+              p: 0,
+            }}
+          >
+            <Input
+              {...controlInputProps}
+              size={"sm"}
+              rounded={"none"}
+              borderLeftWidth={0}
+              borderRightWidth={0}
+              borderTopWidth={0}
+              borderBottomWidth={"1px"}
+              borderBottomColor={"app.epub.border.muted"}
+              bg={"app.epub.bg.card"}
+              color={"app.epub.fg.default"}
+              _placeholder={{ color: "app.epub.fg.subtle" }}
+              value={titleDraft}
+              disabled={isTitleDisabled}
+              onChange={(event) => setTitleDraft(event.target.value)}
+              onBlur={commitRenameIfChanged}
+              onKeyDown={handleTitleKeyDown}
+            />
+          </InputGroup>
+        )}
       </Box>
       <AspectRatio
         position={"relative"}
@@ -383,71 +452,6 @@ export function PageDraftCard({
         cursor={"default"}
       >
         <Box position={"relative"} w={"full"} h={"full"}>
-          {isCover ? (
-            <HStack
-              position={"absolute"}
-              top={2}
-              left={2}
-              zIndex={6}
-              gap={1}
-              flexWrap={"wrap"}
-              maxW={"calc(100% - 1rem)"}
-            >
-              <FileUpload.Root maxFiles={1}>
-                <FileUpload.HiddenInput
-                  ref={coverUploadInputRef}
-                  aria-label={"Upload cover image"}
-                  accept={"image/*"}
-                  onChange={handleCoverUploadChange}
-                />
-                <Button
-                  size={"xs"}
-                  variant={"solid"}
-                  bg={"blackAlpha.600"}
-                  color={"white"}
-                  _hover={{ bg: "blackAlpha.700" }}
-                  onClick={() => coverUploadInputRef.current?.click()}
-                  disabled={isInteractionDisabled}
-                >
-                  <Icon>
-                    <LuUpload />
-                  </Icon>
-                  Upload
-                </Button>
-              </FileUpload.Root>
-
-              <Button
-                size={"xs"}
-                variant={"solid"}
-                bg={"blackAlpha.600"}
-                color={"white"}
-                _hover={{ bg: "blackAlpha.700" }}
-                onClick={() => void onReplaceCoverFromClipboard?.()}
-                disabled={isInteractionDisabled}
-              >
-                <Icon>
-                  <LuClipboardPaste />
-                </Icon>
-                Paste
-              </Button>
-
-              <Button
-                size={"xs"}
-                variant={"solid"}
-                bg={"blackAlpha.600"}
-                color={"white"}
-                _hover={{ bg: "blackAlpha.700" }}
-                onClick={onResetCoverToAuto}
-                disabled={isInteractionDisabled || !hasCustomCover}
-              >
-                <Icon>
-                  <LuRefreshCw />
-                </Icon>
-                Reset
-              </Button>
-            </HStack>
-          ) : null}
-
           {!isCover ? (
             <Tooltip content={"Drag to reorder"}>
               <Button
