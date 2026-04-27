@@ -79,6 +79,10 @@ const COVER_TEXT_BOUND_LEFT = 130;
 const COVER_TEXT_BOUND_RIGHT = 1070;
 const COVER_FRAME_INSET = 76;
 const COVER_FRAME_RADIUS = 40;
+const COVER_TEXT_TITLE_COLOR = "#f5f5f5";
+const COVER_TEXT_AUTHOR_COLOR = "#e4e4e4";
+const COVER_TEXT_STROKE_COLOR = "rgba(0,0,0,0.42)";
+const COVER_TEXT_STROKE_WIDTH = 1.6;
 const COVER_TEXT_STYLE_ORDER: CoverTextPosition[] = [
   "style_1",
   "style_2",
@@ -87,6 +91,23 @@ const COVER_TEXT_STYLE_ORDER: CoverTextPosition[] = [
   "style_5",
   "style_6",
 ];
+const DEFAULT_TEXT_LAYOUT: CoverTextLayout = {
+  align: "center",
+  x: 600,
+  baseY: 760,
+  fontSize: 92,
+  lineHeight: 116,
+  maxCharsPerLine: 18,
+};
+const DEFAULT_AUTHOR_LAYOUT: CoverAuthorLayout = {
+  align: "center",
+  x: 600,
+  mode: "after-title",
+  baseY: 64,
+  fontSize: 48,
+  lineHeight: 64,
+  maxCharsPerLine: 26,
+};
 
 const COVER_SIZE_PRESETS: Record<CoverSizePresetId, CoverSizePresetOption> = {
   kindle_portrait: {
@@ -646,8 +667,8 @@ function createAutoCoverSvgDataUrl(input: AutoCoverInput): string {
   const coverHeight = Math.max(1000, Math.round(input.size.height));
   const metrics = resolveCoverCanvasMetrics(coverWidth, coverHeight);
   const styledLayouts = applyTextStyle(
-    scaleTextLayout(template.titleLayout, input.textScalePercent),
-    scaleAuthorLayout(template.authorLayout, input.textScalePercent),
+    scaleTextLayout(DEFAULT_TEXT_LAYOUT, input.textScalePercent),
+    scaleAuthorLayout(DEFAULT_AUTHOR_LAYOUT, input.textScalePercent),
     input.textPosition,
   );
   const titleLayout = scaleTextLayoutToCanvas(styledLayouts.titleLayout, metrics);
@@ -714,7 +735,8 @@ function createAutoCoverSvgDataUrl(input: AutoCoverInput): string {
   const frameY = frameInset;
   const frameWidth = Math.max(0, coverWidth - frameInset * 2);
   const frameHeight = Math.max(0, coverHeight - frameInset * 2);
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${coverWidth}" height="${coverHeight}" viewBox="0 0 ${coverWidth} ${coverHeight}" role="img" aria-label="Book cover"><defs><linearGradient id="coverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${template.gradientStart}"/><stop offset="100%" stop-color="${template.gradientEnd}"/></linearGradient></defs><rect width="${coverWidth}" height="${coverHeight}" fill="url(#coverGradient)"/><g transform="scale(${metrics.scaleX} ${metrics.scaleY})">${createSvgDecoration(template)}</g><rect x="${frameX}" y="${frameY}" width="${frameWidth}" height="${frameHeight}" rx="${frameRadius}" fill="none" stroke="${template.frameStroke}" stroke-width="${4 * metrics.unitScale}"/><text fill="${template.titleColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>${authorTspans ? `<text fill="${template.authorColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>` : ""}</svg>`;
+  const textStrokeWidth = COVER_TEXT_STROKE_WIDTH * metrics.unitScale;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${coverWidth}" height="${coverHeight}" viewBox="0 0 ${coverWidth} ${coverHeight}" role="img" aria-label="Book cover"><defs><linearGradient id="coverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${template.gradientStart}"/><stop offset="100%" stop-color="${template.gradientEnd}"/></linearGradient></defs><rect width="${coverWidth}" height="${coverHeight}" fill="url(#coverGradient)"/><g transform="scale(${metrics.scaleX} ${metrics.scaleY})">${createSvgDecoration(template)}</g><rect x="${frameX}" y="${frameY}" width="${frameWidth}" height="${frameHeight}" rx="${frameRadius}" fill="none" stroke="${template.frameStroke}" stroke-width="${4 * metrics.unitScale}"/><text fill="${COVER_TEXT_TITLE_COLOR}" stroke="${COVER_TEXT_STROKE_COLOR}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>${authorTspans ? `<text fill="${COVER_TEXT_AUTHOR_COLOR}" stroke="${COVER_TEXT_STROKE_COLOR}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>` : ""}</svg>`;
 
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
@@ -958,8 +980,8 @@ function createAutoCoverRasterDataUrl(input: AutoCoverInput): string {
   const coverHeight = Math.max(1000, Math.round(input.size.height));
   const metrics = resolveCoverCanvasMetrics(coverWidth, coverHeight);
   const styledLayouts = applyTextStyle(
-    scaleTextLayout(template.titleLayout, input.textScalePercent),
-    scaleAuthorLayout(template.authorLayout, input.textScalePercent),
+    scaleTextLayout(DEFAULT_TEXT_LAYOUT, input.textScalePercent),
+    scaleAuthorLayout(DEFAULT_AUTHOR_LAYOUT, input.textScalePercent),
     input.textPosition,
   );
   const titleLayout = scaleTextLayoutToCanvas(styledLayouts.titleLayout, metrics);
@@ -1031,9 +1053,17 @@ function createAutoCoverRasterDataUrl(input: AutoCoverInput): string {
   const titleStartY = computeTitleStartY(titleLayout, titleLines.length);
   context.textAlign = toCanvasTextAlign(titleLayout.align);
   context.textBaseline = "middle";
-  context.fillStyle = template.titleColor;
+  context.fillStyle = COVER_TEXT_TITLE_COLOR;
+  context.strokeStyle = COVER_TEXT_STROKE_COLOR;
+  context.lineWidth = COVER_TEXT_STROKE_WIDTH * metrics.unitScale;
+  context.lineJoin = "round";
   context.font = `700 ${titleLayout.fontSize}px Inter, Segoe UI, Roboto, Arial, sans-serif`;
   for (let index = 0; index < titleLines.length; index += 1) {
+    context.strokeText(
+      titleLines[index],
+      titleLayout.x,
+      titleStartY + index * titleLayout.lineHeight,
+    );
     context.fillText(
       titleLines[index],
       titleLayout.x,
@@ -1049,9 +1079,14 @@ function createAutoCoverRasterDataUrl(input: AutoCoverInput): string {
       titleLines.length,
     );
     context.textAlign = toCanvasTextAlign(authorLayout.align);
-    context.fillStyle = template.authorColor;
+    context.fillStyle = COVER_TEXT_AUTHOR_COLOR;
     context.font = `500 ${authorLayout.fontSize}px Inter, Segoe UI, Roboto, Arial, sans-serif`;
     for (let index = 0; index < authorLines.length; index += 1) {
+      context.strokeText(
+        authorLines[index],
+        authorLayout.x,
+        authorStartY + index * authorLayout.lineHeight,
+      );
       context.fillText(
         authorLines[index],
         authorLayout.x,
@@ -1124,13 +1159,12 @@ function createCustomCoverSvgDataUrl(
   input: AutoCoverInput,
   customImageSrc: string,
 ): string {
-  const template = resolveTemplate(input.templateId);
   const coverWidth = Math.max(800, Math.round(input.size.width));
   const coverHeight = Math.max(1000, Math.round(input.size.height));
   const metrics = resolveCoverCanvasMetrics(coverWidth, coverHeight);
   const styledLayouts = applyTextStyle(
-    scaleTextLayout(template.titleLayout, input.textScalePercent),
-    scaleAuthorLayout(template.authorLayout, input.textScalePercent),
+    scaleTextLayout(DEFAULT_TEXT_LAYOUT, input.textScalePercent),
+    scaleAuthorLayout(DEFAULT_AUTHOR_LAYOUT, input.textScalePercent),
     input.textPosition,
   );
   const titleLayout = scaleTextLayoutToCanvas(styledLayouts.titleLayout, metrics);
@@ -1190,7 +1224,8 @@ function createCustomCoverSvgDataUrl(
     )
     .join("");
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${coverWidth}" height="${coverHeight}" viewBox="0 0 ${coverWidth} ${coverHeight}" role="img" aria-label="Book cover"><image href="${escapeXmlText(customImageSrc)}" x="0" y="0" width="${coverWidth}" height="${coverHeight}" preserveAspectRatio="xMidYMid slice"/><rect width="${coverWidth}" height="${coverHeight}" fill="rgba(0,0,0,0.2)"/><text fill="${template.titleColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>${authorTspans ? `<text fill="${template.authorColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>` : ""}</svg>`;
+  const textStrokeWidth = COVER_TEXT_STROKE_WIDTH * metrics.unitScale;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${coverWidth}" height="${coverHeight}" viewBox="0 0 ${coverWidth} ${coverHeight}" role="img" aria-label="Book cover"><image href="${escapeXmlText(customImageSrc)}" x="0" y="0" width="${coverWidth}" height="${coverHeight}" preserveAspectRatio="xMidYMid slice"/><rect width="${coverWidth}" height="${coverHeight}" fill="rgba(0,0,0,0.2)"/><text fill="${COVER_TEXT_TITLE_COLOR}" stroke="${COVER_TEXT_STROKE_COLOR}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>${authorTspans ? `<text fill="${COVER_TEXT_AUTHOR_COLOR}" stroke="${COVER_TEXT_STROKE_COLOR}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>` : ""}</svg>`;
 
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
