@@ -18,7 +18,7 @@ const defaultPrefs: EpubMakerPrefs = {
   author: "",
   coverTemplateId: "classic",
   coverBaseTemplateId: "classic",
-  coverSizePresetId: "kindle_portrait",
+  coverSizePresetId: "ratio_1_1_6",
   coverTextScalePercent: 100,
   coverTextPosition: "style_1",
   coverTextColorMode: "adaptive",
@@ -51,12 +51,7 @@ function isCoverTemplateId(value: unknown): value is CoverTemplateId {
 }
 
 function isCoverSizePresetId(value: unknown): value is CoverSizePresetId {
-  return (
-    value === "kindle_portrait" ||
-    value === "trade_portrait" ||
-    value === "square" ||
-    value === "paperback_6x9"
-  );
+  return typeof value === "string" && value.trim().length > 0;
 }
 
 function clampCoverTextScalePercent(value: number): number {

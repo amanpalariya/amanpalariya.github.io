@@ -365,6 +365,10 @@ export function PageDraftCard({
       color: "app.epub.switch.label",
     },
   } as const;
+  const coverDialogSectionCardBg = {
+    base: "app.epub.bg.card",
+    _dark: "gray.950",
+  } as const;
   const isRemoveDisabled = isInteractionDisabled || isCover;
   const isTitleDisabled = isInteractionDisabled || isCover;
   const canDrag = !isInteractionDisabled && !isCover;
@@ -489,8 +493,28 @@ export function PageDraftCard({
                   borderColor={"app.epub.border.default"}
                   maxW={"1120px"}
                 >
-                  <Dialog.Header>
+                  <Dialog.Header
+                    display={"flex"}
+                    alignItems={"center"}
+                    justifyContent={"flex-start"}
+                    gap={2}
+                  >
                     <Dialog.Title fontFamily={"ui"}>Cover settings</Dialog.Title>
+                    <Button
+                      {...dialogOutlineButtonProps}
+                      size={"sm"}
+                      onClick={() => onToggleCoverEnabled?.()}
+                      disabled={isInteractionDisabled}
+                    >
+                      <HStack gap={1.5}>
+                        <Icon boxSize={4}>
+                          {isEffectiveCoverEnabled ? <LuEyeOff /> : <LuEye />}
+                        </Icon>
+                        <Text>
+                          {isEffectiveCoverEnabled ? "Disable cover" : "Enable cover"}
+                        </Text>
+                      </HStack>
+                    </Button>
                   </Dialog.Header>
 
                   <Dialog.Body>
@@ -507,7 +531,7 @@ export function PageDraftCard({
                         <Box
                           p={4}
                           rounded={"xl"}
-                          bg={"app.epub.bg.card"}
+                          bg={coverDialogSectionCardBg}
                           borderWidth={"1px"}
                           borderColor={"app.epub.border.default"}
                         >
@@ -610,7 +634,7 @@ export function PageDraftCard({
                         <Box
                           p={4}
                           rounded={"xl"}
-                          bg={"app.epub.bg.card"}
+                          bg={coverDialogSectionCardBg}
                           borderWidth={"1px"}
                           borderColor={"app.epub.border.default"}
                         >
@@ -781,35 +805,6 @@ export function PageDraftCard({
                           </VStack>
                         </Box>
 
-                        <Box
-                          p={4}
-                          rounded={"xl"}
-                          bg={"app.epub.bg.card"}
-                          borderWidth={"1px"}
-                          borderColor={"app.epub.border.default"}
-                        >
-                          <Text
-                            fontFamily={"ui"}
-                            fontSize={"sm"}
-                            fontWeight={"semibold"}
-                            color={"app.epub.fg.default"}
-                            mb={3}
-                          >
-                            Export
-                          </Text>
-                          <Switch
-                            {...switchProps}
-                            checked={isEffectiveCoverEnabled}
-                            onCheckedChange={(details) => {
-                              if (details.checked !== isEffectiveCoverEnabled) {
-                                onToggleCoverEnabled?.();
-                              }
-                            }}
-                            disabled={isInteractionDisabled}
-                          >
-                            Include cover in generated EPUB
-                          </Switch>
-                        </Box>
                       </VStack>
 
                       <Box>
@@ -833,7 +828,7 @@ export function PageDraftCard({
                                 pointerEvents: "none",
                                 filter:
                                   isInteractionDisabled || isCoverExportDisabled
-                                    ? "blur(1px) grayscale(0.35) saturate(0.75) brightness(0.82)"
+                                    ? "blur(2.5px) grayscale(0.35) saturate(0.75) brightness(0.82)"
                                     : "none",
                                 transition: "filter 0.2s ease",
                               }}
@@ -1044,7 +1039,7 @@ export function PageDraftCard({
               pointerEvents: "none",
               filter:
                 isInteractionDisabled || isCoverExportDisabled
-                  ? "blur(1px) grayscale(0.35) saturate(0.75) brightness(0.82)"
+                  ? "blur(2.5px) grayscale(0.35) saturate(0.75) brightness(0.82)"
                   : "none",
               transition: "filter 0.2s ease",
             }}

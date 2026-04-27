@@ -1087,13 +1087,6 @@ export function useEpubMaker(): UseEpubMakerReturn {
       };
     });
     setSummary("");
-    notify(
-      "info",
-      nextCoverEnabled ? "Cover enabled" : "Cover disabled",
-      nextCoverEnabled
-        ? "Cover will be included in generated EPUB files."
-        : "Cover preview is kept, but cover is excluded from EPUB generation.",
-    );
   }
 
   async function generateEpub() {

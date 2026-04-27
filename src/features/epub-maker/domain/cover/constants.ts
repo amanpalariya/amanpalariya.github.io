@@ -39,7 +39,7 @@ export const DEFAULT_TEXT_LAYOUT: CoverTextLayout = {
   baseY: 760,
   fontSize: 92,
   lineHeight: 116,
-  maxCharsPerLine: 18,
+  maxCharsPerLine: 20,
 };
 
 export const DEFAULT_AUTHOR_LAYOUT: CoverAuthorLayout = {
@@ -49,5 +49,5 @@ export const DEFAULT_AUTHOR_LAYOUT: CoverAuthorLayout = {
   baseY: 64,
   fontSize: 48,
   lineHeight: 64,
-  maxCharsPerLine: 26,
+  maxCharsPerLine: 25,
 };

@@ -6,36 +6,52 @@ import type {
 } from "../../types";
 import type { AutoCoverOptions, CoverTemplateSpec } from "./core-types";
 
-const COVER_SIZE_PRESETS: Record<CoverSizePresetId, CoverSizePresetOption> = {
-  kindle_portrait: {
-    id: "kindle_portrait",
-    label: "Kindle Portrait",
+const COVER_SIZE_PRESET_CATALOG: CoverSizePresetOption[] = [
+  {
+    id: "ratio_9_16",
+    label: "Portrait 9:16",
+    description: "1440 × 2560 (9:16)",
+    width: 1440,
+    height: 2560,
+  },
+  {
+    id: "ratio_1_1_6",
+    label: "Standard EPUB 1:1.6",
     description: "1600 × 2560 (1:1.6)",
     width: 1600,
     height: 2560,
   },
-  trade_portrait: {
-    id: "trade_portrait",
-    label: "Trade Portrait",
-    description: "1536 × 2304 (1:1.5)",
-    width: 1536,
-    height: 2304,
-  },
-  square: {
-    id: "square",
-    label: "Square",
-    description: "1800 × 1800 (1:1)",
-    width: 1800,
-    height: 1800,
-  },
-  paperback_6x9: {
-    id: "paperback_6x9",
-    label: "Paperback 6×9",
+  {
+    id: "ratio_2_3",
+    label: "Portrait 2:3",
     description: "1800 × 2700 (2:3)",
     width: 1800,
     height: 2700,
   },
-};
+  {
+    id: "ratio_3_4",
+    label: "Portrait 3:4",
+    description: "1200 × 1600 (3:4) · Kindle/Kobo screen size",
+    width: 1200,
+    height: 1600,
+  },
+  {
+    id: "ratio_1_1",
+    label: "Square 1:1",
+    description: "1800 × 1800 (1:1)",
+    width: 1800,
+    height: 1800,
+  },
+];
+
+const COVER_SIZE_PRESETS: Record<CoverSizePresetId, CoverSizePresetOption> =
+  COVER_SIZE_PRESET_CATALOG.reduce<Record<CoverSizePresetId, CoverSizePresetOption>>(
+    (accumulator, preset) => {
+      accumulator[preset.id] = preset;
+      return accumulator;
+    },
+    {},
+  );
 
 export const COVER_TEMPLATE_SPECS: Record<BaseCoverTemplateId, CoverTemplateSpec> = {
   classic: {
@@ -240,14 +256,14 @@ export function resolveCoverTemplateDefaults(
   return COVER_TEMPLATE_DEFAULTS[templateId] ?? COVER_TEMPLATE_DEFAULTS.classic;
 }
 
-export const COVER_SIZE_PRESET_OPTIONS: CoverSizePresetOption[] = Object.values(
-  COVER_SIZE_PRESETS,
-);
+export const COVER_SIZE_PRESET_OPTIONS: CoverSizePresetOption[] = [
+  ...COVER_SIZE_PRESET_CATALOG,
+];
 
 export function resolveCoverSizePreset(
   presetId: CoverSizePresetId,
 ): CoverSizePresetOption {
-  return COVER_SIZE_PRESETS[presetId] ?? COVER_SIZE_PRESETS.kindle_portrait;
+  return COVER_SIZE_PRESETS[presetId] ?? COVER_SIZE_PRESETS.ratio_1_1_6;
 }
 
 export function resolveTemplateSpec(templateId: BaseCoverTemplateId): CoverTemplateSpec {

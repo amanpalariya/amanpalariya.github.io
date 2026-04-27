@@ -22,11 +22,7 @@ export type BaseCoverTemplateId =
   | "sunset";
 export type CoverTemplateId = BaseCoverTemplateId | "custom";
 
-export type CoverSizePresetId =
-  | "kindle_portrait"
-  | "trade_portrait"
-  | "square"
-  | "paperback_6x9";
+export type CoverSizePresetId = string;
 
 export interface CoverTemplateOption {
   id: CoverTemplateId;

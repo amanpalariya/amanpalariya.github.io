@@ -200,8 +200,11 @@ export function resolveWrapCharLimit(
   fontSize: number,
   availableWidth: number,
 ): number {
-  const averageCharWidth = Math.max(1, fontSize * 0.58);
-  const visualMaxChars = Math.max(4, Math.floor(availableWidth / averageCharWidth));
+  const averageCharWidth = Math.max(1, fontSize * 0.46);
+  const visualMaxChars = Math.max(
+    4,
+    Math.round((availableWidth / averageCharWidth) * 1.15),
+  );
   return Math.max(4, Math.min(maxCharsPerLine, visualMaxChars));
 }
 

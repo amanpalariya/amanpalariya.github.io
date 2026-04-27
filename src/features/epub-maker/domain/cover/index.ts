@@ -139,7 +139,7 @@ function createAutoCoverSvgDataUrl(input: AutoCoverInput): string {
     ),
   );
 
-  const titleLines = wrapTextLines(input.title || DEFAULT_BOOK_TITLE, titleWrapLimit, 4);
+  const titleLines = wrapTextLines(input.title || DEFAULT_BOOK_TITLE, titleWrapLimit, 5);
   const authorLines = wrapTextLines(input.author || "", authorWrapLimit, 3);
 
   const titleStartY = computeTitleStartY(titleLayout, titleLines.length);
@@ -268,7 +268,7 @@ function createAutoCoverRasterDataUrl(input: AutoCoverInput): string {
     ),
   );
 
-  const titleLines = wrapTextLines(input.title || DEFAULT_BOOK_TITLE, titleWrapLimit, 4);
+  const titleLines = wrapTextLines(input.title || DEFAULT_BOOK_TITLE, titleWrapLimit, 5);
   const authorLines = wrapTextLines(input.author || "", authorWrapLimit, 3);
 
   const titleStartY = computeTitleStartY(titleLayout, titleLines.length);
@@ -407,7 +407,7 @@ function createCustomCoverSvgDataUrl(input: AutoCoverInput, customImageSrc: stri
     resolveAvailableTextWidth(authorLayout.align, authorLayout.x, textLeftBound, textRightBound),
   );
 
-  const titleLines = wrapTextLines(input.title || DEFAULT_BOOK_TITLE, titleWrapLimit, 4);
+  const titleLines = wrapTextLines(input.title || DEFAULT_BOOK_TITLE, titleWrapLimit, 5);
   const authorLines = wrapTextLines(input.author || "", authorWrapLimit, 3);
 
   const titleStartY = computeTitleStartY(titleLayout, titleLines.length);
