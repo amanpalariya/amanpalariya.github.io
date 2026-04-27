@@ -769,7 +769,7 @@ function resolveTextPalette(
 function createSvgDecoration(template: CoverTemplateSpec): string {
   switch (template.id) {
     case "classic":
-      return `<rect x="106" y="106" width="988" height="1588" rx="32" fill="none" stroke="${template.accentColor}" stroke-width="1"/><line x1="180" y1="220" x2="1020" y2="220" stroke="${template.accentColor}" stroke-width="2"/><line x1="180" y1="1580" x2="1020" y2="1580" stroke="${template.accentColor}" stroke-width="2"/>`;
+      return `<line x1="180" y1="220" x2="1020" y2="220" stroke="${template.accentColor}" stroke-width="2"/><line x1="180" y1="1580" x2="1020" y2="1580" stroke="${template.accentColor}" stroke-width="2"/>`;
     case "aurora":
       return `<circle cx="190" cy="230" r="260" fill="${template.accentColor}"/><circle cx="1030" cy="1500" r="320" fill="${template.accentColor}"/><circle cx="950" cy="330" r="180" fill="rgba(214,173,255,0.18)"/>`;
     case "ember":
@@ -777,7 +777,7 @@ function createSvgDecoration(template: CoverTemplateSpec): string {
     case "midnight":
       return `<circle cx="980" cy="260" r="148" fill="${template.accentColor}"/><circle cx="1040" cy="228" r="118" fill="rgba(8,8,8,0.9)"/><circle cx="980" cy="260" r="205" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="2"/><circle cx="980" cy="260" r="270" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/><circle cx="240" cy="260" r="8" fill="rgba(255,255,255,0.45)"/><circle cx="350" cy="420" r="5" fill="rgba(255,255,255,0.4)"/><circle cx="860" cy="340" r="6" fill="rgba(255,255,255,0.36)"/><circle cx="1080" cy="470" r="4" fill="rgba(255,255,255,0.42)"/><path d="M0,1460 C220,1360 430,1520 620,1450 C820,1375 980,1470 1200,1380 L1200,1800 L0,1800 Z" fill="rgba(24,24,24,0.3)"/>`;
     case "sage":
-      return `<defs><pattern id="geoPattern" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M0 18 L18 0 L36 18 L18 36 Z" fill="none" stroke="${template.accentColor}" stroke-width="1"/></pattern></defs><rect x="96" y="96" width="1008" height="1608" fill="url(#geoPattern)" opacity="0.34"/><rect x="112" y="112" width="976" height="1576" fill="none" stroke="${template.accentColor}" stroke-width="2"/><line x1="132" y1="300" x2="1068" y2="300" stroke="${template.accentColor}" stroke-width="2"/><line x1="132" y1="1500" x2="1068" y2="1500" stroke="${template.accentColor}" stroke-width="2"/>`;
+      return `<defs><pattern id="geoPattern" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M0 18 L18 0 L36 18 L18 36 Z" fill="none" stroke="${template.accentColor}" stroke-width="1"/></pattern></defs><rect x="96" y="96" width="1008" height="1608" fill="url(#geoPattern)" opacity="0.34"/><line x1="132" y1="300" x2="1068" y2="300" stroke="${template.accentColor}" stroke-width="2"/><line x1="132" y1="1500" x2="1068" y2="1500" stroke="${template.accentColor}" stroke-width="2"/>`;
     case "sunset":
       return `<g stroke="${template.accentColor}" stroke-width="3" fill="none"><path d="M130,230 C230,360 220,560 140,760"/><path d="M1030,1570 C950,1410 950,1190 1060,1030"/></g><g fill="${template.accentColor}"><circle cx="150" cy="250" r="24"/><circle cx="185" cy="220" r="20"/><circle cx="185" cy="280" r="20"/><circle cx="112" cy="220" r="20"/><circle cx="112" cy="280" r="20"/><circle cx="1038" cy="1560" r="22"/><circle cx="1070" cy="1530" r="18"/><circle cx="1070" cy="1590" r="18"/><circle cx="1006" cy="1530" r="18"/><circle cx="1006" cy="1590" r="18"/></g><ellipse cx="220" cy="500" rx="52" ry="24" fill="rgba(37,69,53,0.16)" transform="rotate(-26 220 500)"/><ellipse cx="960" cy="1280" rx="56" ry="25" fill="rgba(37,69,53,0.16)" transform="rotate(28 960 1280)"/>`;
     default:
@@ -912,10 +912,6 @@ function drawCanvasDecoration(
   switch (template.id) {
     case "classic": {
       context.strokeStyle = template.accentColor;
-      context.lineWidth = su(1);
-      drawRoundedRectPath(context, sx(106), sy(106), sx(988), sy(1588), su(32));
-      context.stroke();
-
       context.lineWidth = su(2);
       context.beginPath();
       context.moveTo(sx(180), sy(220));
@@ -1025,10 +1021,6 @@ function drawCanvasDecoration(
       }
 
       context.lineWidth = su(2);
-      context.beginPath();
-      context.rect(sx(112), sy(112), sx(976), sy(1576));
-      context.stroke();
-
       context.beginPath();
       context.moveTo(sx(132), sy(300));
       context.lineTo(sx(1068), sy(300));
