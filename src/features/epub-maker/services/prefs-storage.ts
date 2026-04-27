@@ -23,7 +23,14 @@ function isFileNameMode(value: unknown): value is FileNameMode {
 }
 
 function isCoverTemplateId(value: unknown): value is CoverTemplateId {
-  return value === "classic" || value === "aurora" || value === "ember";
+  return (
+    value === "classic" ||
+    value === "aurora" ||
+    value === "ember" ||
+    value === "midnight" ||
+    value === "sage" ||
+    value === "sunset"
+  );
 }
 
 function readToolString(field: string, fallback: string): string {

@@ -528,6 +528,7 @@ export function PageDraftCard({
                   </Icon>
                   <NativeSelect.Root
                     size={"xs"}
+                    disabled={isInteractionDisabled}
                     minW={"7.25rem"}
                     maxW={"11.5rem"}
                     bg={"blackAlpha.500"}
@@ -537,7 +538,6 @@ export function PageDraftCard({
                   >
                     <NativeSelect.Field
                       value={selectedCoverTemplateId}
-                      disabled={isInteractionDisabled}
                       aria-label={"Select cover template"}
                       onChange={(event) =>
                         onCoverTemplateChange?.(

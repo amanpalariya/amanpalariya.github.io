@@ -5,7 +5,13 @@ export type FileNameMode = "auto" | "manual";
 export type PageId = string;
 export type ChapterGenerationStatus = "pending" | "processing" | "completed";
 export type CoverMode = "auto" | "custom";
-export type CoverTemplateId = "classic" | "aurora" | "ember";
+export type CoverTemplateId =
+  | "classic"
+  | "aurora"
+  | "ember"
+  | "midnight"
+  | "sage"
+  | "sunset";
 
 export interface CoverTemplateOption {
   id: CoverTemplateId;
