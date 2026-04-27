@@ -1290,7 +1290,8 @@ export function useEpubMaker(): UseEpubMakerReturn {
           prev.coverTemplateId === value &&
           prev.coverBaseTemplateId === value &&
           prev.coverTextScalePercent === defaults.textScalePercent &&
-          prev.coverTextPosition === "style_1"
+          prev.coverTextPosition === "style_1" &&
+          prev.coverTextColorMode === defaults.textColorMode
         ) {
           return prev;
         }
@@ -1300,6 +1301,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
           coverBaseTemplateId: value,
           coverTextScalePercent: defaults.textScalePercent,
           coverTextPosition: "style_1",
+          coverTextColorMode: defaults.textColorMode,
         };
       }),
     setCoverSizePresetId: (value: CoverSizePresetId) =>

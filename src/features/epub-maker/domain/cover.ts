@@ -319,14 +319,14 @@ const COVER_TEMPLATE_SPECS: Record<BaseCoverTemplateId, CoverTemplateSpec> = {
 
 const COVER_TEMPLATE_DEFAULTS: Record<
   BaseCoverTemplateId,
-  Pick<AutoCoverOptions, "textScalePercent">
+  Pick<AutoCoverOptions, "textScalePercent" | "textColorMode">
 > = {
-  classic: { textScalePercent: 100 },
-  aurora: { textScalePercent: 100 },
-  ember: { textScalePercent: 100 },
-  midnight: { textScalePercent: 100 },
-  sage: { textScalePercent: 95 },
-  sunset: { textScalePercent: 95 },
+  classic: { textScalePercent: 100, textColorMode: "dark" },
+  aurora: { textScalePercent: 100, textColorMode: "light" },
+  ember: { textScalePercent: 100, textColorMode: "light" },
+  midnight: { textScalePercent: 100, textColorMode: "light" },
+  sage: { textScalePercent: 95, textColorMode: "dark" },
+  sunset: { textScalePercent: 95, textColorMode: "dark" },
 };
 
 export const COVER_TEMPLATE_OPTIONS: CoverTemplateOption[] = Object.values(
@@ -345,7 +345,7 @@ COVER_TEMPLATE_OPTIONS.push({
 
 export function resolveCoverTemplateDefaults(
   templateId: BaseCoverTemplateId,
-): Pick<AutoCoverOptions, "textScalePercent"> {
+): Pick<AutoCoverOptions, "textScalePercent" | "textColorMode"> {
   return COVER_TEMPLATE_DEFAULTS[templateId] ?? COVER_TEMPLATE_DEFAULTS.classic;
 }
 
