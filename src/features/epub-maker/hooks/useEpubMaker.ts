@@ -28,6 +28,7 @@ import type {
   BaseCoverTemplateId,
   BuildEpubProgressUpdate,
   CoverSizePresetId,
+  CoverTextColorMode,
   CoverTextPosition,
   CoverTemplateId,
   CoverDraft,
@@ -194,6 +195,7 @@ export type UseEpubMakerReturn = EpubMakerState & {
   setCoverSizePresetId: (value: CoverSizePresetId) => void;
   setCoverTextScalePercent: (value: number) => void;
   setCoverTextPosition: (value: CoverTextPosition) => void;
+  setCoverTextColorMode: (value: CoverTextColorMode) => void;
   setIncludeTextOnCustomCover: (value: boolean) => void;
   setManualFileName: (value: string) => void;
   toggleFileNameMode: () => void;
@@ -464,6 +466,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
           sizePresetId: prefs.coverSizePresetId,
           textScalePercent: prefs.coverTextScalePercent,
           textPosition: prefs.coverTextPosition,
+          textColorMode: prefs.coverTextColorMode,
           customCoverHtml,
           includeTextOnCustomCover: prefs.includeTextOnCustomCover,
         },
@@ -477,6 +480,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
       prefs.coverSizePresetId,
       prefs.coverTextScalePercent,
       prefs.coverTextPosition,
+      prefs.coverTextColorMode,
       prefs.includeTextOnCustomCover,
       customCoverHtml,
       effectiveCoverTemplateId,
@@ -1231,6 +1235,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     coverSizePresetOptions: COVER_SIZE_PRESET_OPTIONS,
     coverTextScalePercent: prefs.coverTextScalePercent,
     coverTextPosition: prefs.coverTextPosition,
+    coverTextColorMode: prefs.coverTextColorMode,
     includeTextOnCustomCover: prefs.includeTextOnCustomCover,
     isCoverEnabled: coverEnabled,
     coverPreviewHtml: coverDraft.previewHtml,
@@ -1325,6 +1330,16 @@ export function useEpubMaker(): UseEpubMakerReturn {
               ...prev,
               coverTemplateId: "custom",
               coverTextPosition: value,
+            },
+      ),
+    setCoverTextColorMode: (value: CoverTextColorMode) =>
+      setPrefs((prev) =>
+        prev.coverTextColorMode === value
+          ? prev
+          : {
+              ...prev,
+              coverTemplateId: "custom",
+              coverTextColorMode: value,
             },
       ),
     setIncludeTextOnCustomCover: (value: boolean) =>

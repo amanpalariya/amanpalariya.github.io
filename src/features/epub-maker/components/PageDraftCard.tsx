@@ -44,6 +44,7 @@ import type {
   CoverMode,
   CoverSizePresetId,
   CoverSizePresetOption,
+  CoverTextColorMode,
   CoverTextPosition,
   CoverTemplateId,
   CoverTemplateOption,
@@ -71,11 +72,13 @@ export function PageDraftCard({
   coverSizePresetOptions,
   coverTextScalePercent,
   coverTextPosition,
+  coverTextColorMode,
   includeTextOnCustomCover,
   onCoverTemplateChange,
   onCoverSizePresetChange,
   onCoverTextScalePercentChange,
   onCoverTextPositionChange,
+  onCoverTextColorModeChange,
   onIncludeTextOnCustomCoverChange,
   onReplaceCoverFromFiles,
   onReplaceCoverFromClipboard,
@@ -111,11 +114,13 @@ export function PageDraftCard({
   coverSizePresetOptions?: CoverSizePresetOption[];
   coverTextScalePercent?: number;
   coverTextPosition?: CoverTextPosition;
+  coverTextColorMode?: CoverTextColorMode;
   includeTextOnCustomCover?: boolean;
   onCoverTemplateChange?: (templateId: CoverTemplateId) => void;
   onCoverSizePresetChange?: (presetId: CoverSizePresetId) => void;
   onCoverTextScalePercentChange?: (value: number) => void;
   onCoverTextPositionChange?: (value: CoverTextPosition) => void;
+  onCoverTextColorModeChange?: (value: CoverTextColorMode) => void;
   onIncludeTextOnCustomCoverChange?: (value: boolean) => void;
   onReplaceCoverFromFiles?: (files: FileList | File[]) => Promise<void>;
   onReplaceCoverFromClipboard?: () => Promise<void>;
@@ -378,6 +383,7 @@ export function PageDraftCard({
   const isCoverToolDisabled = isInteractionDisabled;
   const effectiveCoverTextScalePercent = coverTextScalePercent ?? 100;
   const effectiveCoverTextPosition = coverTextPosition ?? "style_1";
+  const effectiveCoverTextColorMode = coverTextColorMode ?? "adaptive";
   const isTextOnCustomCoverEnabled = includeTextOnCustomCover ?? true;
   const hasCustomCoverValue = hasCustomCover ?? false;
   const coverTextStyles: CoverTextPosition[] = [
@@ -636,7 +642,7 @@ export function PageDraftCard({
 
                             <Box gridColumn={{ base: "auto", md: "1 / span 2" }}>
                               <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
-                                Text style
+                                Text position
                               </Text>
                               <Button
                                 {...dialogOutlineButtonProps}
@@ -653,6 +659,36 @@ export function PageDraftCard({
                                 Toggle style ({coverTextStyles.indexOf(effectiveCoverTextPosition) + 1}/
                                 {coverTextStyles.length})
                               </Button>
+                            </Box>
+
+                            <Box gridColumn={{ base: "auto", md: "1 / span 2" }}>
+                              <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
+                                Text color
+                              </Text>
+                              <NativeSelect.Root
+                                {...dialogFieldProps}
+                                size={"md"}
+                                disabled={isInteractionDisabled}
+                                maxW={"220px"}
+                              >
+                                <NativeSelect.Field
+                                  fontFamily={"ui"}
+                                  fontSize={"sm"}
+                                  rounded={"lg"}
+                                  value={effectiveCoverTextColorMode}
+                                  aria-label={"Select cover text color mode"}
+                                  onChange={(event) =>
+                                    onCoverTextColorModeChange?.(
+                                      event.currentTarget.value as CoverTextColorMode,
+                                    )
+                                  }
+                                >
+                                  <option value={"light"}>Light</option>
+                                  <option value={"dark"}>Dark</option>
+                                  <option value={"adaptive"}>Adaptive</option>
+                                </NativeSelect.Field>
+                                <NativeSelect.Indicator />
+                              </NativeSelect.Root>
                             </Box>
                           </Box>
                         </Box>

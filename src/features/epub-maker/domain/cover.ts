@@ -3,6 +3,7 @@ import type {
   BaseCoverTemplateId,
   CoverSizePresetId,
   CoverSizePresetOption,
+  CoverTextColorMode,
   CoverTextPosition,
   CoverTemplateId,
   CoverTemplateOption,
@@ -20,6 +21,7 @@ export interface AutoCoverInput {
   };
   textScalePercent: number;
   textPosition: CoverTextPosition;
+  textColorMode: CoverTextColorMode;
 }
 
 export interface AutoCoverOptions {
@@ -27,6 +29,7 @@ export interface AutoCoverOptions {
   sizePresetId: CoverSizePresetId;
   textScalePercent: number;
   textPosition: CoverTextPosition;
+  textColorMode: CoverTextColorMode;
 }
 
 export interface CoverHtmlOptions extends AutoCoverOptions {
@@ -83,6 +86,9 @@ const COVER_TEXT_TITLE_COLOR = "#f5f5f5";
 const COVER_TEXT_AUTHOR_COLOR = "#e4e4e4";
 const COVER_TEXT_STROKE_COLOR = "rgba(0,0,0,0.42)";
 const COVER_TEXT_STROKE_WIDTH = 1.6;
+const COVER_TEXT_DARK_TITLE_COLOR = "#171717";
+const COVER_TEXT_DARK_AUTHOR_COLOR = "#3f3f3f";
+const COVER_TEXT_LIGHT_STROKE_COLOR = "rgba(255,255,255,0.34)";
 const COVER_TEXT_STYLE_ORDER: CoverTextPosition[] = [
   "style_1",
   "style_2",
@@ -515,6 +521,12 @@ type CoverCanvasMetrics = {
   unitScale: number;
 };
 
+type CoverResolvedTextPalette = {
+  titleColor: string;
+  authorColor: string;
+  strokeColor: string;
+};
+
 function applyTextStyle(
   titleLayout: CoverTextLayout,
   authorLayout: CoverAuthorLayout,
@@ -642,6 +654,118 @@ function resolveCoverCanvasMetrics(
   };
 }
 
+function clampColorChannel(value: number): number {
+  return Math.max(0, Math.min(255, Math.round(value)));
+}
+
+function rgbToHex(red: number, green: number, blue: number): string {
+  return `#${[red, green, blue]
+    .map((channel) => clampColorChannel(channel).toString(16).padStart(2, "0"))
+    .join("")}`;
+}
+
+function parseHexColor(color: string): { red: number; green: number; blue: number } | null {
+  const normalized = color.trim().replace(/^#/, "");
+  if (!/^[\da-f]{3}$|^[\da-f]{6}$/i.test(normalized)) return null;
+  const expanded =
+    normalized.length === 3
+      ? normalized
+          .split("")
+          .map((chunk) => `${chunk}${chunk}`)
+          .join("")
+      : normalized;
+  const red = Number.parseInt(expanded.slice(0, 2), 16);
+  const green = Number.parseInt(expanded.slice(2, 4), 16);
+  const blue = Number.parseInt(expanded.slice(4, 6), 16);
+  return { red, green, blue };
+}
+
+function mixRgb(
+  source: { red: number; green: number; blue: number },
+  target: { red: number; green: number; blue: number },
+  weight: number,
+): { red: number; green: number; blue: number } {
+  const clampedWeight = Math.max(0, Math.min(1, weight));
+  const sourceWeight = 1 - clampedWeight;
+  return {
+    red: source.red * sourceWeight + target.red * clampedWeight,
+    green: source.green * sourceWeight + target.green * clampedWeight,
+    blue: source.blue * sourceWeight + target.blue * clampedWeight,
+  };
+}
+
+function relativeLuminance(color: { red: number; green: number; blue: number }): number {
+  const toLinear = (channel: number) => {
+    const normalized = channel / 255;
+    return normalized <= 0.03928
+      ? normalized / 12.92
+      : ((normalized + 0.055) / 1.055) ** 2.4;
+  };
+  const red = toLinear(color.red);
+  const green = toLinear(color.green);
+  const blue = toLinear(color.blue);
+  return red * 0.2126 + green * 0.7152 + blue * 0.0722;
+}
+
+function resolveAdaptivePalette(
+  gradientStart: string,
+  gradientEnd: string,
+): CoverResolvedTextPalette {
+  const start = parseHexColor(gradientStart);
+  const end = parseHexColor(gradientEnd);
+  if (!start || !end) {
+    return {
+      titleColor: COVER_TEXT_TITLE_COLOR,
+      authorColor: COVER_TEXT_AUTHOR_COLOR,
+      strokeColor: COVER_TEXT_STROKE_COLOR,
+    };
+  }
+
+  const midpoint = mixRgb(start, end, 0.5);
+  const isLightBackground = relativeLuminance(midpoint) >= 0.58;
+  if (isLightBackground) {
+    const title = mixRgb(midpoint, { red: 0, green: 0, blue: 0 }, 0.88);
+    const author = mixRgb(midpoint, { red: 0, green: 0, blue: 0 }, 0.72);
+    return {
+      titleColor: rgbToHex(title.red, title.green, title.blue),
+      authorColor: rgbToHex(author.red, author.green, author.blue),
+      strokeColor: COVER_TEXT_LIGHT_STROKE_COLOR,
+    };
+  }
+
+  const title = mixRgb(midpoint, { red: 255, green: 255, blue: 255 }, 0.9);
+  const author = mixRgb(midpoint, { red: 255, green: 255, blue: 255 }, 0.76);
+  return {
+    titleColor: rgbToHex(title.red, title.green, title.blue),
+    authorColor: rgbToHex(author.red, author.green, author.blue),
+    strokeColor: COVER_TEXT_STROKE_COLOR,
+  };
+}
+
+function resolveTextPalette(
+  textColorMode: CoverTextColorMode,
+  gradientStart: string,
+  gradientEnd: string,
+): CoverResolvedTextPalette {
+  if (textColorMode === "light") {
+    return {
+      titleColor: COVER_TEXT_TITLE_COLOR,
+      authorColor: COVER_TEXT_AUTHOR_COLOR,
+      strokeColor: COVER_TEXT_STROKE_COLOR,
+    };
+  }
+
+  if (textColorMode === "dark") {
+    return {
+      titleColor: COVER_TEXT_DARK_TITLE_COLOR,
+      authorColor: COVER_TEXT_DARK_AUTHOR_COLOR,
+      strokeColor: COVER_TEXT_LIGHT_STROKE_COLOR,
+    };
+  }
+
+  return resolveAdaptivePalette(gradientStart, gradientEnd);
+}
+
 function createSvgDecoration(template: CoverTemplateSpec): string {
   switch (template.id) {
     case "classic":
@@ -663,6 +787,11 @@ function createSvgDecoration(template: CoverTemplateSpec): string {
 
 function createAutoCoverSvgDataUrl(input: AutoCoverInput): string {
   const template = resolveTemplate(input.templateId);
+  const textPalette = resolveTextPalette(
+    input.textColorMode,
+    template.gradientStart,
+    template.gradientEnd,
+  );
   const coverWidth = Math.max(800, Math.round(input.size.width));
   const coverHeight = Math.max(1000, Math.round(input.size.height));
   const metrics = resolveCoverCanvasMetrics(coverWidth, coverHeight);
@@ -736,7 +865,7 @@ function createAutoCoverSvgDataUrl(input: AutoCoverInput): string {
   const frameWidth = Math.max(0, coverWidth - frameInset * 2);
   const frameHeight = Math.max(0, coverHeight - frameInset * 2);
   const textStrokeWidth = COVER_TEXT_STROKE_WIDTH * metrics.unitScale;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${coverWidth}" height="${coverHeight}" viewBox="0 0 ${coverWidth} ${coverHeight}" role="img" aria-label="Book cover"><defs><linearGradient id="coverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${template.gradientStart}"/><stop offset="100%" stop-color="${template.gradientEnd}"/></linearGradient></defs><rect width="${coverWidth}" height="${coverHeight}" fill="url(#coverGradient)"/><g transform="scale(${metrics.scaleX} ${metrics.scaleY})">${createSvgDecoration(template)}</g><rect x="${frameX}" y="${frameY}" width="${frameWidth}" height="${frameHeight}" rx="${frameRadius}" fill="none" stroke="${template.frameStroke}" stroke-width="${4 * metrics.unitScale}"/><text fill="${COVER_TEXT_TITLE_COLOR}" stroke="${COVER_TEXT_STROKE_COLOR}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>${authorTspans ? `<text fill="${COVER_TEXT_AUTHOR_COLOR}" stroke="${COVER_TEXT_STROKE_COLOR}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>` : ""}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${coverWidth}" height="${coverHeight}" viewBox="0 0 ${coverWidth} ${coverHeight}" role="img" aria-label="Book cover"><defs><linearGradient id="coverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${template.gradientStart}"/><stop offset="100%" stop-color="${template.gradientEnd}"/></linearGradient></defs><rect width="${coverWidth}" height="${coverHeight}" fill="url(#coverGradient)"/><g transform="scale(${metrics.scaleX} ${metrics.scaleY})">${createSvgDecoration(template)}</g><rect x="${frameX}" y="${frameY}" width="${frameWidth}" height="${frameHeight}" rx="${frameRadius}" fill="none" stroke="${template.frameStroke}" stroke-width="${4 * metrics.unitScale}"/><text fill="${textPalette.titleColor}" stroke="${textPalette.strokeColor}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>${authorTspans ? `<text fill="${textPalette.authorColor}" stroke="${textPalette.strokeColor}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>` : ""}</svg>`;
 
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
@@ -976,6 +1105,11 @@ function createAutoCoverRasterDataUrl(input: AutoCoverInput): string {
   }
 
   const template = resolveTemplate(input.templateId);
+  const textPalette = resolveTextPalette(
+    input.textColorMode,
+    template.gradientStart,
+    template.gradientEnd,
+  );
   const coverWidth = Math.max(800, Math.round(input.size.width));
   const coverHeight = Math.max(1000, Math.round(input.size.height));
   const metrics = resolveCoverCanvasMetrics(coverWidth, coverHeight);
@@ -1053,8 +1187,8 @@ function createAutoCoverRasterDataUrl(input: AutoCoverInput): string {
   const titleStartY = computeTitleStartY(titleLayout, titleLines.length);
   context.textAlign = toCanvasTextAlign(titleLayout.align);
   context.textBaseline = "middle";
-  context.fillStyle = COVER_TEXT_TITLE_COLOR;
-  context.strokeStyle = COVER_TEXT_STROKE_COLOR;
+  context.fillStyle = textPalette.titleColor;
+  context.strokeStyle = textPalette.strokeColor;
   context.lineWidth = COVER_TEXT_STROKE_WIDTH * metrics.unitScale;
   context.lineJoin = "round";
   context.font = `700 ${titleLayout.fontSize}px Inter, Segoe UI, Roboto, Arial, sans-serif`;
@@ -1079,7 +1213,7 @@ function createAutoCoverRasterDataUrl(input: AutoCoverInput): string {
       titleLines.length,
     );
     context.textAlign = toCanvasTextAlign(authorLayout.align);
-    context.fillStyle = COVER_TEXT_AUTHOR_COLOR;
+    context.fillStyle = textPalette.authorColor;
     context.font = `500 ${authorLayout.fontSize}px Inter, Segoe UI, Roboto, Arial, sans-serif`;
     for (let index = 0; index < authorLines.length; index += 1) {
       context.strokeText(
@@ -1144,6 +1278,7 @@ export function createAutoCoverHtml(
       },
       textScalePercent: options.textScalePercent,
       textPosition: options.textPosition,
+      textColorMode: options.textColorMode,
     },
     preferredRenderer,
   );
@@ -1159,6 +1294,7 @@ function createCustomCoverSvgDataUrl(
   input: AutoCoverInput,
   customImageSrc: string,
 ): string {
+  const textPalette = resolveTextPalette(input.textColorMode, "#2b2b2b", "#171717");
   const coverWidth = Math.max(800, Math.round(input.size.width));
   const coverHeight = Math.max(1000, Math.round(input.size.height));
   const metrics = resolveCoverCanvasMetrics(coverWidth, coverHeight);
@@ -1225,7 +1361,7 @@ function createCustomCoverSvgDataUrl(
     .join("");
 
   const textStrokeWidth = COVER_TEXT_STROKE_WIDTH * metrics.unitScale;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${coverWidth}" height="${coverHeight}" viewBox="0 0 ${coverWidth} ${coverHeight}" role="img" aria-label="Book cover"><image href="${escapeXmlText(customImageSrc)}" x="0" y="0" width="${coverWidth}" height="${coverHeight}" preserveAspectRatio="xMidYMid slice"/><rect width="${coverWidth}" height="${coverHeight}" fill="rgba(0,0,0,0.2)"/><text fill="${COVER_TEXT_TITLE_COLOR}" stroke="${COVER_TEXT_STROKE_COLOR}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>${authorTspans ? `<text fill="${COVER_TEXT_AUTHOR_COLOR}" stroke="${COVER_TEXT_STROKE_COLOR}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>` : ""}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${coverWidth}" height="${coverHeight}" viewBox="0 0 ${coverWidth} ${coverHeight}" role="img" aria-label="Book cover"><image href="${escapeXmlText(customImageSrc)}" x="0" y="0" width="${coverWidth}" height="${coverHeight}" preserveAspectRatio="xMidYMid slice"/><rect width="${coverWidth}" height="${coverHeight}" fill="rgba(0,0,0,0.2)"/><text fill="${textPalette.titleColor}" stroke="${textPalette.strokeColor}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>${authorTspans ? `<text fill="${textPalette.authorColor}" stroke="${textPalette.strokeColor}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>` : ""}</svg>`;
 
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
@@ -1252,6 +1388,7 @@ export function createCoverHtml(
             size: { width: coverSize.width, height: coverSize.height },
             textScalePercent: options.textScalePercent,
             textPosition: options.textPosition,
+            textColorMode: options.textColorMode,
           },
           customImageSrc,
         )

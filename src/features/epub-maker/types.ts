@@ -12,6 +12,7 @@ export type CoverTextPosition =
   | "style_4"
   | "style_5"
   | "style_6";
+export type CoverTextColorMode = "light" | "dark" | "adaptive";
 export type BaseCoverTemplateId =
   | "classic"
   | "aurora"
@@ -147,6 +148,7 @@ export interface EpubMakerPrefs {
   coverSizePresetId: CoverSizePresetId;
   coverTextScalePercent: number;
   coverTextPosition: CoverTextPosition;
+  coverTextColorMode: CoverTextColorMode;
   includeTextOnCustomCover: boolean;
   manualFileName: string;
   fileNameMode: FileNameMode;
@@ -165,6 +167,7 @@ export interface EpubMakerState {
   coverSizePresetOptions: CoverSizePresetOption[];
   coverTextScalePercent: number;
   coverTextPosition: CoverTextPosition;
+  coverTextColorMode: CoverTextColorMode;
   includeTextOnCustomCover: boolean;
   isCoverEnabled: boolean;
   coverPreviewHtml: string;

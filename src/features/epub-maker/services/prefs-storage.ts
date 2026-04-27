@@ -5,6 +5,7 @@ import {
 } from "../constants";
 import type {
   BaseCoverTemplateId,
+  CoverTextColorMode,
   CoverSizePresetId,
   CoverTemplateId,
   EpubMakerPrefs,
@@ -20,6 +21,7 @@ const defaultPrefs: EpubMakerPrefs = {
   coverSizePresetId: "kindle_portrait",
   coverTextScalePercent: 100,
   coverTextPosition: "style_1",
+  coverTextColorMode: "adaptive",
   includeTextOnCustomCover: true,
   manualFileName: "",
   fileNameMode: "auto",
@@ -73,6 +75,10 @@ function isCoverTextPosition(value: unknown): value is EpubMakerPrefs["coverText
   );
 }
 
+function isCoverTextColorMode(value: unknown): value is CoverTextColorMode {
+  return value === "light" || value === "dark" || value === "adaptive";
+}
+
 function readToolString(field: string, fallback: string): string {
   const value = window.localStorage.getItem(buildToolStorageKey(EPUB_MAKER_TOOL_ID, field));
   return typeof value === "string" ? value : fallback;
@@ -115,6 +121,10 @@ export function readEpubMakerPrefs(): EpubMakerPrefs {
       EPUB_MAKER_STORAGE_FIELDS.coverTextPosition,
       defaultPrefs.coverTextPosition,
     );
+    const coverTextColorModeValue = readToolString(
+      EPUB_MAKER_STORAGE_FIELDS.coverTextColorMode,
+      defaultPrefs.coverTextColorMode,
+    );
     return {
       title: readToolString(EPUB_MAKER_STORAGE_FIELDS.title, defaultPrefs.title),
       author: readToolString(EPUB_MAKER_STORAGE_FIELDS.author, defaultPrefs.author),
@@ -133,6 +143,9 @@ export function readEpubMakerPrefs(): EpubMakerPrefs {
       coverTextPosition: isCoverTextPosition(coverTextPositionValue)
         ? coverTextPositionValue
         : defaultPrefs.coverTextPosition,
+      coverTextColorMode: isCoverTextColorMode(coverTextColorModeValue)
+        ? coverTextColorModeValue
+        : defaultPrefs.coverTextColorMode,
       includeTextOnCustomCover: readToolBoolean(
         EPUB_MAKER_STORAGE_FIELDS.includeTextOnCustomCover,
         defaultPrefs.includeTextOnCustomCover,
@@ -202,6 +215,13 @@ export function writeEpubMakerPrefs(prefs: EpubMakerPrefs): void {
         EPUB_MAKER_STORAGE_FIELDS.coverTextPosition,
       ),
       prefs.coverTextPosition,
+    );
+    window.localStorage.setItem(
+      buildToolStorageKey(
+        EPUB_MAKER_TOOL_ID,
+        EPUB_MAKER_STORAGE_FIELDS.coverTextColorMode,
+      ),
+      prefs.coverTextColorMode,
     );
     window.localStorage.setItem(
       buildToolStorageKey(

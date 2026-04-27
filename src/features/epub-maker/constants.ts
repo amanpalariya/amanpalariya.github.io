@@ -9,6 +9,7 @@ export const EPUB_MAKER_STORAGE_FIELDS = {
   coverSizePresetId: "cover-size-preset-id",
   coverTextScalePercent: "cover-text-scale-percent",
   coverTextPosition: "cover-text-position",
+  coverTextColorMode: "cover-text-color-mode",
   includeTextOnCustomCover: "include-text-on-custom-cover",
   manualFileName: "manual-file-name",
   fileNameMode: "file-name-mode",
