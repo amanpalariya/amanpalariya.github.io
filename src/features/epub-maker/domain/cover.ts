@@ -489,6 +489,7 @@ function scaleAuthorLayout(
 type CoverCanvasMetrics = {
   scaleX: number;
   scaleY: number;
+  unitScale: number;
 };
 
 function applyTextStyle(
@@ -557,7 +558,7 @@ function scaleTextLayoutToCanvas(
   layout: CoverTextLayout,
   metrics: CoverCanvasMetrics,
 ): CoverTextLayout {
-  const textScale = Math.min(metrics.scaleX, metrics.scaleY);
+  const textScale = metrics.unitScale;
   return {
     ...layout,
     x: Math.round(layout.x * metrics.scaleX),
@@ -571,7 +572,7 @@ function scaleAuthorLayoutToCanvas(
   layout: CoverAuthorLayout,
   metrics: CoverCanvasMetrics,
 ): CoverAuthorLayout {
-  const textScale = Math.min(metrics.scaleX, metrics.scaleY);
+  const textScale = metrics.unitScale;
   return {
     ...layout,
     x: Math.round(layout.x * metrics.scaleX),
@@ -609,9 +610,12 @@ function resolveCoverCanvasMetrics(
   coverWidth: number,
   coverHeight: number,
 ): CoverCanvasMetrics {
+  const scaleX = coverWidth / AUTO_COVER_LAYOUT_WIDTH;
+  const scaleY = coverHeight / AUTO_COVER_LAYOUT_HEIGHT;
   return {
-    scaleX: coverWidth / AUTO_COVER_LAYOUT_WIDTH,
-    scaleY: coverHeight / AUTO_COVER_LAYOUT_HEIGHT,
+    scaleX,
+    scaleY,
+    unitScale: Math.min(scaleX, scaleY),
   };
 }
 
@@ -702,7 +706,7 @@ function createAutoCoverSvgDataUrl(input: AutoCoverInput): string {
     )
     .join("");
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${coverWidth}" height="${coverHeight}" viewBox="0 0 ${coverWidth} ${coverHeight}" role="img" aria-label="Book cover"><defs><linearGradient id="coverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${template.gradientStart}"/><stop offset="100%" stop-color="${template.gradientEnd}"/></linearGradient></defs><rect width="${coverWidth}" height="${coverHeight}" fill="url(#coverGradient)"/><g transform="scale(${metrics.scaleX} ${metrics.scaleY})">${createSvgDecoration(template)}<rect x="76" y="76" width="1048" height="1648" rx="40" fill="none" stroke="${template.frameStroke}" stroke-width="4"/></g><text fill="${template.titleColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>${authorTspans ? `<text fill="${template.authorColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>` : ""}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${coverWidth}" height="${coverHeight}" viewBox="0 0 ${coverWidth} ${coverHeight}" role="img" aria-label="Book cover"><defs><linearGradient id="coverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${template.gradientStart}"/><stop offset="100%" stop-color="${template.gradientEnd}"/></linearGradient></defs><rect width="${coverWidth}" height="${coverHeight}" fill="url(#coverGradient)"/><g transform="scale(${metrics.scaleX} ${metrics.scaleY})">${createSvgDecoration(template)}<rect x="76" y="76" width="1048" height="1648" rx="40" fill="none" stroke="${template.frameStroke}" stroke-width="${4 / Math.max(0.0001, metrics.unitScale)}"/></g><text fill="${template.titleColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>${authorTspans ? `<text fill="${template.authorColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>` : ""}</svg>`;
 
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
@@ -737,24 +741,28 @@ function drawRoundedRectPath(
 function drawCanvasDecoration(
   context: CanvasRenderingContext2D,
   template: CoverTemplateSpec,
+  metrics: CoverCanvasMetrics,
   width: number,
   height: number,
 ) {
   context.save();
+  const sx = (value: number) => value * metrics.scaleX;
+  const sy = (value: number) => value * metrics.scaleY;
+  const su = (value: number) => value * metrics.unitScale;
 
   switch (template.id) {
     case "classic": {
       context.strokeStyle = template.accentColor;
-      context.lineWidth = 1;
-      drawRoundedRectPath(context, 106, 106, 988, 1588, 32);
+      context.lineWidth = su(1);
+      drawRoundedRectPath(context, sx(106), sy(106), sx(988), sy(1588), su(32));
       context.stroke();
 
-      context.lineWidth = 2;
+      context.lineWidth = su(2);
       context.beginPath();
-      context.moveTo(180, 220);
-      context.lineTo(1020, 220);
-      context.moveTo(180, 1580);
-      context.lineTo(1020, 1580);
+      context.moveTo(sx(180), sy(220));
+      context.lineTo(sx(1020), sy(220));
+      context.moveTo(sx(180), sy(1580));
+      context.lineTo(sx(1020), sy(1580));
       context.stroke();
 
       context.restore();
@@ -763,14 +771,14 @@ function drawCanvasDecoration(
     case "aurora": {
       context.fillStyle = template.accentColor;
       context.beginPath();
-      context.arc(190, 230, 260, 0, Math.PI * 2);
+      context.arc(sx(190), sy(230), su(260), 0, Math.PI * 2);
       context.fill();
       context.beginPath();
-      context.arc(1030, 1500, 320, 0, Math.PI * 2);
+      context.arc(sx(1030), sy(1500), su(320), 0, Math.PI * 2);
       context.fill();
       context.fillStyle = "rgba(214,173,255,0.18)";
       context.beginPath();
-      context.arc(950, 330, 180, 0, Math.PI * 2);
+      context.arc(sx(950), sy(330), su(180), 0, Math.PI * 2);
       context.fill();
       context.restore();
       return;
@@ -778,18 +786,18 @@ function drawCanvasDecoration(
     case "ember": {
       context.fillStyle = template.accentColor;
       context.beginPath();
-      context.moveTo(0, 1560);
-      context.lineTo(width, 1180);
+      context.moveTo(sx(0), sy(1560));
+      context.lineTo(width, sy(1180));
       context.lineTo(width, height);
-      context.lineTo(0, height);
+      context.lineTo(sx(0), height);
       context.closePath();
       context.fill();
 
       context.fillStyle = "rgba(255,166,107,0.14)";
       context.beginPath();
-      context.moveTo(0, 0);
-      context.lineTo(760, 0);
-      context.lineTo(0, 760);
+      context.moveTo(sx(0), sy(0));
+      context.lineTo(sx(760), sy(0));
+      context.lineTo(sx(0), sy(760));
       context.closePath();
       context.fill();
       context.restore();
@@ -798,24 +806,24 @@ function drawCanvasDecoration(
     case "midnight": {
       context.fillStyle = template.accentColor;
       context.beginPath();
-      context.arc(980, 260, 148, 0, Math.PI * 2);
+      context.arc(sx(980), sy(260), su(148), 0, Math.PI * 2);
       context.fill();
 
       context.fillStyle = "rgba(8,8,8,0.9)";
       context.beginPath();
-      context.arc(1040, 228, 118, 0, Math.PI * 2);
+      context.arc(sx(1040), sy(228), su(118), 0, Math.PI * 2);
       context.fill();
 
       context.strokeStyle = "rgba(255,255,255,0.14)";
-      context.lineWidth = 2;
+      context.lineWidth = su(2);
       context.beginPath();
-      context.arc(980, 260, 205, 0, Math.PI * 2);
+      context.arc(sx(980), sy(260), su(205), 0, Math.PI * 2);
       context.stroke();
 
       context.strokeStyle = "rgba(255,255,255,0.08)";
-      context.lineWidth = 1.5;
+      context.lineWidth = su(1.5);
       context.beginPath();
-      context.arc(980, 260, 270, 0, Math.PI * 2);
+      context.arc(sx(980), sy(260), su(270), 0, Math.PI * 2);
       context.stroke();
 
       context.fillStyle = "rgba(255,255,255,0.42)";
@@ -826,17 +834,17 @@ function drawCanvasDecoration(
         [1080, 470, 4],
       ] as const) {
         context.beginPath();
-        context.arc(x, y, r, 0, Math.PI * 2);
+        context.arc(sx(x), sy(y), su(r), 0, Math.PI * 2);
         context.fill();
       }
 
       context.fillStyle = "rgba(24,24,24,0.3)";
       context.beginPath();
-      context.moveTo(0, 1460);
-      context.bezierCurveTo(220, 1360, 430, 1520, 620, 1450);
-      context.bezierCurveTo(820, 1375, 980, 1470, width, 1380);
+      context.moveTo(sx(0), sy(1460));
+      context.bezierCurveTo(sx(220), sy(1360), sx(430), sy(1520), sx(620), sy(1450));
+      context.bezierCurveTo(sx(820), sy(1375), sx(980), sy(1470), width, sy(1380));
       context.lineTo(width, height);
-      context.lineTo(0, height);
+      context.lineTo(sx(0), height);
       context.closePath();
       context.fill();
       context.restore();
@@ -844,29 +852,29 @@ function drawCanvasDecoration(
     }
     case "sage": {
       context.strokeStyle = template.accentColor;
-      context.lineWidth = 1;
+      context.lineWidth = su(1);
       for (let y = 96; y <= 1704; y += 36) {
         for (let x = 96; x <= 1104; x += 36) {
           context.beginPath();
-          context.moveTo(x, y + 18);
-          context.lineTo(x + 18, y);
-          context.lineTo(x + 36, y + 18);
-          context.lineTo(x + 18, y + 36);
+          context.moveTo(sx(x), sy(y + 18));
+          context.lineTo(sx(x + 18), sy(y));
+          context.lineTo(sx(x + 36), sy(y + 18));
+          context.lineTo(sx(x + 18), sy(y + 36));
           context.closePath();
           context.stroke();
         }
       }
 
-      context.lineWidth = 2;
+      context.lineWidth = su(2);
       context.beginPath();
-      context.rect(112, 112, 976, 1576);
+      context.rect(sx(112), sy(112), sx(976), sy(1576));
       context.stroke();
 
       context.beginPath();
-      context.moveTo(132, 300);
-      context.lineTo(1068, 300);
-      context.moveTo(132, 1500);
-      context.lineTo(1068, 1500);
+      context.moveTo(sx(132), sy(300));
+      context.lineTo(sx(1068), sy(300));
+      context.moveTo(sx(132), sy(1500));
+      context.lineTo(sx(1068), sy(1500));
       context.stroke();
 
       context.restore();
@@ -874,12 +882,12 @@ function drawCanvasDecoration(
     }
     case "sunset": {
       context.strokeStyle = template.accentColor;
-      context.lineWidth = 3;
+      context.lineWidth = su(3);
       context.beginPath();
-      context.moveTo(130, 230);
-      context.bezierCurveTo(230, 360, 220, 560, 140, 760);
-      context.moveTo(1030, 1570);
-      context.bezierCurveTo(950, 1410, 950, 1190, 1060, 1030);
+      context.moveTo(sx(130), sy(230));
+      context.bezierCurveTo(sx(230), sy(360), sx(220), sy(560), sx(140), sy(760));
+      context.moveTo(sx(1030), sy(1570));
+      context.bezierCurveTo(sx(950), sy(1410), sx(950), sy(1190), sx(1060), sy(1030));
       context.stroke();
 
       context.fillStyle = template.accentColor;
@@ -896,24 +904,24 @@ function drawCanvasDecoration(
         [1006, 1590, 18],
       ] as const) {
         context.beginPath();
-        context.arc(x, y, r, 0, Math.PI * 2);
+        context.arc(sx(x), sy(y), su(r), 0, Math.PI * 2);
         context.fill();
       }
 
       context.fillStyle = "rgba(37,69,53,0.16)";
       context.save();
-      context.translate(220, 500);
+      context.translate(sx(220), sy(500));
       context.rotate((-26 * Math.PI) / 180);
       context.beginPath();
-      context.ellipse(0, 0, 52, 24, 0, 0, Math.PI * 2);
+      context.ellipse(0, 0, su(52), su(24), 0, 0, Math.PI * 2);
       context.fill();
       context.restore();
 
       context.save();
-      context.translate(960, 1280);
+      context.translate(sx(960), sy(1280));
       context.rotate((28 * Math.PI) / 180);
       context.beginPath();
-      context.ellipse(0, 0, 56, 25, 0, 0, Math.PI * 2);
+      context.ellipse(0, 0, su(56), su(25), 0, 0, Math.PI * 2);
       context.fill();
       context.restore();
 
@@ -958,16 +966,19 @@ function createAutoCoverRasterDataUrl(input: AutoCoverInput): string {
   context.fillStyle = gradient;
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  context.save();
-  context.scale(metrics.scaleX, metrics.scaleY);
-
-  drawCanvasDecoration(context, template, AUTO_COVER_LAYOUT_WIDTH, AUTO_COVER_LAYOUT_HEIGHT);
+  drawCanvasDecoration(context, template, metrics, coverWidth, coverHeight);
 
   context.strokeStyle = template.frameStroke;
-  context.lineWidth = 4;
-  drawRoundedRectPath(context, 76, 76, 1048, 1648, 40);
+  context.lineWidth = 4 * metrics.unitScale;
+  drawRoundedRectPath(
+    context,
+    76 * metrics.scaleX,
+    76 * metrics.scaleY,
+    1048 * metrics.scaleX,
+    1648 * metrics.scaleY,
+    40 * metrics.unitScale,
+  );
   context.stroke();
-  context.restore();
 
   const titleWrapLimit = resolveWrapCharLimit(
     titleLayout.maxCharsPerLine,
