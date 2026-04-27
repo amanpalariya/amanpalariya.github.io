@@ -15,6 +15,12 @@ import {
   DEFAULT_BOOK_TITLE,
 } from "../constants";
 import type {
+  AutoCoverRendererId,
+} from "../domain/cover";
+import {
+  createAutoCoverHtml,
+} from "../domain/cover";
+import type {
   BuildEpubProgressUpdate,
   CoverDraft,
   CoverMode,
@@ -42,6 +48,7 @@ import { downloadBlob } from "../services/download";
 import { renderMarkdownToHtml } from "@utils/markdown";
 
 const PAGE_HISTORY_LIMIT = 100;
+const AUTO_COVER_RENDERER: AutoCoverRendererId = "raster-png";
 type PageFlashKind = "added" | "duplicate";
 type PageFlashEntry = { kind: PageFlashKind; token: number };
 
@@ -126,98 +133,6 @@ function isMarkdownFile(file: File): boolean {
     fileName.endsWith(".mkd") ||
     fileName.endsWith(".mkdn")
   );
-}
-
-function escapeXmlText(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
-function wrapTextLines(
-  value: string,
-  maxCharsPerLine: number,
-  maxLines: number,
-): string[] {
-  const words = value.trim().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return [];
-
-  const lines: string[] = [];
-  let currentLine = "";
-
-  const pushCurrentLine = () => {
-    if (!currentLine) return;
-    lines.push(currentLine);
-    currentLine = "";
-  };
-
-  for (const word of words) {
-    const candidate = currentLine ? `${currentLine} ${word}` : word;
-    if (candidate.length <= maxCharsPerLine) {
-      currentLine = candidate;
-      continue;
-    }
-
-    if (!currentLine && word.length > maxCharsPerLine) {
-      lines.push(word.slice(0, maxCharsPerLine));
-      const remainder = word.slice(maxCharsPerLine);
-      currentLine = remainder;
-      if (lines.length >= maxLines) break;
-      continue;
-    }
-
-    pushCurrentLine();
-    currentLine = word;
-    if (lines.length >= maxLines) break;
-  }
-
-  pushCurrentLine();
-
-  if (lines.length > maxLines) {
-    lines.length = maxLines;
-  }
-
-  if (words.join(" ").length > lines.join(" ").length) {
-    const lastLineIndex = lines.length - 1;
-    if (lastLineIndex >= 0) {
-      lines[lastLineIndex] = `${lines[lastLineIndex].replace(/[\s.]+$/g, "")}…`;
-    }
-  }
-
-  return lines;
-}
-
-function createAutoCoverSvgDataUrl(title: string, author: string): string {
-  const titleLines = wrapTextLines(title || DEFAULT_BOOK_TITLE, 18, 4);
-  const authorLines = wrapTextLines(author || "", 24, 2);
-
-  const titleStartY = 700 - Math.max(0, titleLines.length - 1) * 58;
-  const titleTspans = titleLines
-    .map(
-      (line, index) =>
-        `<tspan x="600" y="${titleStartY + index * 116}">${escapeXmlText(line)}</tspan>`,
-    )
-    .join("");
-  const authorStartY = titleStartY + titleLines.length * 120 + 60;
-  const authorTspans = authorLines
-    .map(
-      (line, index) =>
-        `<tspan x="600" y="${authorStartY + index * 72}">${escapeXmlText(line)}</tspan>`,
-    )
-    .join("");
-
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1800" viewBox="0 0 1200 1800" role="img" aria-label="Book cover"><defs><linearGradient id="coverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#173753"/><stop offset="100%" stop-color="#3a6ea5"/></linearGradient></defs><rect width="1200" height="1800" fill="url(#coverGradient)"/><rect x="76" y="76" width="1048" height="1648" rx="40" fill="none" stroke="rgba(255,255,255,0.34)" stroke-width="4"/><text fill="#f8fbff" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="92" font-weight="700" text-anchor="middle">${titleTspans}</text>${authorTspans ? `<text fill="#d8e7f6" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="54" font-weight="500" text-anchor="middle">${authorTspans}</text>` : ""}</svg>`;
-
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-}
-
-function createAutoCoverHtml(title: string, author: string): string {
-  const safeTitle = title || DEFAULT_BOOK_TITLE;
-  const coverSrc = createAutoCoverSvgDataUrl(title, author);
-  return `<figure><img src="${coverSrc}" alt="Cover for ${escapeXmlText(safeTitle)}" /></figure>`;
 }
 
 function buildCoverDraft(
@@ -520,7 +435,12 @@ export function useEpubMaker(): UseEpubMakerReturn {
       : autoEpubFileName;
 
   const autoCoverRawHtml = useMemo(
-    () => createAutoCoverHtml(normalizedBookTitle, normalizedBookAuthor),
+    () =>
+      createAutoCoverHtml(
+        normalizedBookTitle,
+        normalizedBookAuthor,
+        AUTO_COVER_RENDERER,
+      ),
     [normalizedBookTitle, normalizedBookAuthor],
   );
 
