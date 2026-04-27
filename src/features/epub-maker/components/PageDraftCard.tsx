@@ -386,14 +386,6 @@ export function PageDraftCard({
   const effectiveCoverTextColorMode = coverTextColorMode ?? "adaptive";
   const isTextOnCustomCoverEnabled = includeTextOnCustomCover ?? true;
   const hasCustomCoverValue = hasCustomCover ?? false;
-  const coverTextStyles: CoverTextPosition[] = [
-    "style_1",
-    "style_2",
-    "style_3",
-    "style_4",
-    "style_5",
-    "style_6",
-  ];
 
   function handleCoverUploadChange(event: ChangeEvent<HTMLInputElement>) {
     if (!isCover || !onReplaceCoverFromFiles) return;
@@ -526,7 +518,7 @@ export function PageDraftCard({
                             color={"app.epub.fg.default"}
                             mb={3}
                           >
-                            Layout & Typography
+                            Template & Size
                           </Text>
                           <Box
                             display={"grid"}
@@ -612,84 +604,6 @@ export function PageDraftCard({
                               </NativeSelect.Root>
                             </Box>
 
-                            <Box gridColumn={{ base: "auto", md: "1 / span 2" }}>
-                              <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
-                                Cover text size (%)
-                              </Text>
-                              <NumberInput.Root
-                                {...dialogFieldProps}
-                                size={"md"}
-                                value={String(effectiveCoverTextScalePercent)}
-                                min={70}
-                                max={180}
-                                step={5}
-                                onValueChange={(details) =>
-                                  handleCoverTextScaleChange(details.value)
-                                }
-                                disabled={isInteractionDisabled}
-                                maxW={"220px"}
-                              >
-                                <NumberInput.Control />
-                                <NumberInput.Input
-                                  fontFamily={"ui"}
-                                  fontSize={"sm"}
-                                  rounded={"lg"}
-                                  bg={"app.epub.bg.card"}
-                                  color={"app.epub.fg.default"}
-                                />
-                              </NumberInput.Root>
-                            </Box>
-
-                            <Box gridColumn={{ base: "auto", md: "1 / span 2" }}>
-                              <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
-                                Text position
-                              </Text>
-                              <Button
-                                {...dialogOutlineButtonProps}
-                                onClick={() => {
-                                  const currentIndex = coverTextStyles.indexOf(
-                                    effectiveCoverTextPosition,
-                                  );
-                                  const nextIndex =
-                                    (currentIndex + 1) % coverTextStyles.length;
-                                  onCoverTextPositionChange?.(coverTextStyles[nextIndex]);
-                                }}
-                                disabled={isInteractionDisabled}
-                              >
-                                Toggle style ({coverTextStyles.indexOf(effectiveCoverTextPosition) + 1}/
-                                {coverTextStyles.length})
-                              </Button>
-                            </Box>
-
-                            <Box gridColumn={{ base: "auto", md: "1 / span 2" }}>
-                              <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
-                                Text color
-                              </Text>
-                              <NativeSelect.Root
-                                {...dialogFieldProps}
-                                size={"md"}
-                                disabled={isInteractionDisabled}
-                                maxW={"220px"}
-                              >
-                                <NativeSelect.Field
-                                  fontFamily={"ui"}
-                                  fontSize={"sm"}
-                                  rounded={"lg"}
-                                  value={effectiveCoverTextColorMode}
-                                  aria-label={"Select cover text color mode"}
-                                  onChange={(event) =>
-                                    onCoverTextColorModeChange?.(
-                                      event.currentTarget.value as CoverTextColorMode,
-                                    )
-                                  }
-                                >
-                                  <option value={"light"}>Light</option>
-                                  <option value={"dark"}>Dark</option>
-                                  <option value={"adaptive"}>Adaptive</option>
-                                </NativeSelect.Field>
-                                <NativeSelect.Indicator />
-                              </NativeSelect.Root>
-                            </Box>
                           </Box>
                         </Box>
 
@@ -707,7 +621,7 @@ export function PageDraftCard({
                             color={"app.epub.fg.default"}
                             mb={3}
                           >
-                            Cover Image
+                            Image & Text
                           </Text>
                           <VStack align={"stretch"} gap={2}>
                             <HStack gap={2} wrap={"wrap"}>
@@ -773,6 +687,97 @@ export function PageDraftCard({
                             >
                               Show title/author text on custom image
                             </Switch>
+
+                            <Box>
+                              <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
+                                Cover text size (%)
+                              </Text>
+                              <NumberInput.Root
+                                {...dialogFieldProps}
+                                size={"md"}
+                                value={String(effectiveCoverTextScalePercent)}
+                                min={70}
+                                max={180}
+                                step={5}
+                                onValueChange={(details) =>
+                                  handleCoverTextScaleChange(details.value)
+                                }
+                                disabled={isInteractionDisabled}
+                                maxW={"220px"}
+                              >
+                                <NumberInput.Control />
+                                <NumberInput.Input
+                                  fontFamily={"ui"}
+                                  fontSize={"sm"}
+                                  rounded={"lg"}
+                                  bg={"app.epub.bg.card"}
+                                  color={"app.epub.fg.default"}
+                                />
+                              </NumberInput.Root>
+                            </Box>
+
+                            <Box>
+                              <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
+                                Text position
+                              </Text>
+                              <NativeSelect.Root
+                                {...dialogFieldProps}
+                                size={"md"}
+                                disabled={isInteractionDisabled}
+                                maxW={"220px"}
+                              >
+                                <NativeSelect.Field
+                                  fontFamily={"ui"}
+                                  fontSize={"sm"}
+                                  rounded={"lg"}
+                                  value={effectiveCoverTextPosition}
+                                  aria-label={"Select cover text position style"}
+                                  onChange={(event) =>
+                                    onCoverTextPositionChange?.(
+                                      event.currentTarget.value as CoverTextPosition,
+                                    )
+                                  }
+                                >
+                                  <option value={"style_1"}>Style 1</option>
+                                  <option value={"style_2"}>Style 2</option>
+                                  <option value={"style_3"}>Style 3</option>
+                                  <option value={"style_4"}>Style 4</option>
+                                  <option value={"style_5"}>Style 5</option>
+                                  <option value={"style_6"}>Style 6</option>
+                                </NativeSelect.Field>
+                                <NativeSelect.Indicator />
+                              </NativeSelect.Root>
+                            </Box>
+
+                            <Box>
+                              <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
+                                Text color
+                              </Text>
+                              <NativeSelect.Root
+                                {...dialogFieldProps}
+                                size={"md"}
+                                disabled={isInteractionDisabled}
+                                maxW={"220px"}
+                              >
+                                <NativeSelect.Field
+                                  fontFamily={"ui"}
+                                  fontSize={"sm"}
+                                  rounded={"lg"}
+                                  value={effectiveCoverTextColorMode}
+                                  aria-label={"Select cover text color mode"}
+                                  onChange={(event) =>
+                                    onCoverTextColorModeChange?.(
+                                      event.currentTarget.value as CoverTextColorMode,
+                                    )
+                                  }
+                                >
+                                  <option value={"light"}>Light</option>
+                                  <option value={"dark"}>Dark</option>
+                                  <option value={"adaptive"}>Adaptive</option>
+                                </NativeSelect.Field>
+                                <NativeSelect.Indicator />
+                              </NativeSelect.Root>
+                            </Box>
                           </VStack>
                         </Box>
 
