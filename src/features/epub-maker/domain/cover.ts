@@ -11,6 +11,25 @@ export interface AutoCoverInput {
 
 type AutoCoverRenderer = (input: AutoCoverInput) => string;
 
+type CoverTextLayout = {
+  align: "center" | "left";
+  x: number;
+  baseY: number;
+  fontSize: number;
+  lineHeight: number;
+  maxCharsPerLine: number;
+};
+
+type CoverAuthorLayout = {
+  align: "center" | "left";
+  x: number;
+  mode: "after-title" | "fixed";
+  baseY: number;
+  fontSize: number;
+  lineHeight: number;
+  maxCharsPerLine: number;
+};
+
 type CoverTemplateSpec = {
   id: CoverTemplateId;
   label: string;
@@ -21,6 +40,8 @@ type CoverTemplateSpec = {
   authorColor: string;
   frameStroke: string;
   accentColor: string;
+  titleLayout: CoverTextLayout;
+  authorLayout: CoverAuthorLayout;
 };
 
 const DEFAULT_AUTO_COVER_RENDERER: AutoCoverRendererId = "raster-png";
@@ -28,14 +49,31 @@ const DEFAULT_AUTO_COVER_RENDERER: AutoCoverRendererId = "raster-png";
 const COVER_TEMPLATE_SPECS: Record<CoverTemplateId, CoverTemplateSpec> = {
   classic: {
     id: "classic",
-    label: "Classic",
-    description: "Clean frame with balanced typography.",
-    gradientStart: "#173753",
-    gradientEnd: "#3a6ea5",
-    titleColor: "#f8fbff",
-    authorColor: "#d8e7f6",
-    frameStroke: "rgba(255,255,255,0.34)",
-    accentColor: "rgba(255,255,255,0.16)",
+    label: "Monochrome",
+    description: "Basic black-on-white with clean editorial balance.",
+    gradientStart: "#ffffff",
+    gradientEnd: "#f4f4f4",
+    titleColor: "#0f0f0f",
+    authorColor: "#4f4f4f",
+    frameStroke: "rgba(0,0,0,0.28)",
+    accentColor: "rgba(0,0,0,0.08)",
+    titleLayout: {
+      align: "center",
+      x: 600,
+      baseY: 620,
+      fontSize: 88,
+      lineHeight: 108,
+      maxCharsPerLine: 20,
+    },
+    authorLayout: {
+      align: "center",
+      x: 600,
+      mode: "after-title",
+      baseY: 72,
+      fontSize: 44,
+      lineHeight: 60,
+      maxCharsPerLine: 30,
+    },
   },
   aurora: {
     id: "aurora",
@@ -47,6 +85,23 @@ const COVER_TEMPLATE_SPECS: Record<CoverTemplateId, CoverTemplateSpec> = {
     authorColor: "#d9d6ff",
     frameStroke: "rgba(230,224,255,0.36)",
     accentColor: "rgba(164,244,255,0.26)",
+    titleLayout: {
+      align: "center",
+      x: 600,
+      baseY: 700,
+      fontSize: 92,
+      lineHeight: 116,
+      maxCharsPerLine: 18,
+    },
+    authorLayout: {
+      align: "center",
+      x: 600,
+      mode: "after-title",
+      baseY: 60,
+      fontSize: 54,
+      lineHeight: 72,
+      maxCharsPerLine: 24,
+    },
   },
   ember: {
     id: "ember",
@@ -58,39 +113,107 @@ const COVER_TEMPLATE_SPECS: Record<CoverTemplateId, CoverTemplateSpec> = {
     authorColor: "#ffd6b3",
     frameStroke: "rgba(255,228,204,0.34)",
     accentColor: "rgba(255,211,153,0.22)",
+    titleLayout: {
+      align: "center",
+      x: 600,
+      baseY: 760,
+      fontSize: 92,
+      lineHeight: 116,
+      maxCharsPerLine: 18,
+    },
+    authorLayout: {
+      align: "center",
+      x: 600,
+      mode: "after-title",
+      baseY: 56,
+      fontSize: 52,
+      lineHeight: 68,
+      maxCharsPerLine: 24,
+    },
   },
   midnight: {
     id: "midnight",
-    label: "Midnight",
-    description: "Nocturnal mood with moonlit accents.",
-    gradientStart: "#090b1f",
-    gradientEnd: "#222a5d",
-    titleColor: "#f4f7ff",
-    authorColor: "#cfd8ff",
-    frameStroke: "rgba(197,214,255,0.32)",
-    accentColor: "rgba(216,226,255,0.22)",
+    label: "Noir",
+    description: "White-on-black style with cinematic rings.",
+    gradientStart: "#080808",
+    gradientEnd: "#1a1a1a",
+    titleColor: "#f8f8f8",
+    authorColor: "#d2d2d2",
+    frameStroke: "rgba(255,255,255,0.24)",
+    accentColor: "rgba(255,255,255,0.16)",
+    titleLayout: {
+      align: "left",
+      x: 130,
+      baseY: 600,
+      fontSize: 96,
+      lineHeight: 114,
+      maxCharsPerLine: 14,
+    },
+    authorLayout: {
+      align: "left",
+      x: 130,
+      mode: "fixed",
+      baseY: 1510,
+      fontSize: 42,
+      lineHeight: 56,
+      maxCharsPerLine: 26,
+    },
   },
   sage: {
     id: "sage",
-    label: "Sage",
-    description: "Earthy calm with botanical overlays.",
-    gradientStart: "#1f3c33",
-    gradientEnd: "#3f6b56",
-    titleColor: "#f2fbf4",
-    authorColor: "#d4edd8",
-    frameStroke: "rgba(222,243,225,0.34)",
-    accentColor: "rgba(206,238,214,0.22)",
+    label: "Geometric",
+    description: "Black-on-ivory with geometric border patterns.",
+    gradientStart: "#fffef8",
+    gradientEnd: "#f0ede4",
+    titleColor: "#141414",
+    authorColor: "#4a4a4a",
+    frameStroke: "rgba(0,0,0,0.24)",
+    accentColor: "rgba(0,0,0,0.14)",
+    titleLayout: {
+      align: "center",
+      x: 600,
+      baseY: 900,
+      fontSize: 86,
+      lineHeight: 104,
+      maxCharsPerLine: 19,
+    },
+    authorLayout: {
+      align: "center",
+      x: 600,
+      mode: "fixed",
+      baseY: 280,
+      fontSize: 40,
+      lineHeight: 52,
+      maxCharsPerLine: 28,
+    },
   },
   sunset: {
     id: "sunset",
-    label: "Sunset",
-    description: "Layered dusk tones with soft horizon bands.",
-    gradientStart: "#30122f",
-    gradientEnd: "#df6b4a",
-    titleColor: "#fff4ea",
-    authorColor: "#ffe1c9",
-    frameStroke: "rgba(255,236,216,0.34)",
-    accentColor: "rgba(255,201,155,0.24)",
+    label: "Floral",
+    description: "Botanical motifs with title in the lower half.",
+    gradientStart: "#fcfaf4",
+    gradientEnd: "#efe7d8",
+    titleColor: "#212121",
+    authorColor: "#505050",
+    frameStroke: "rgba(0,0,0,0.24)",
+    accentColor: "rgba(37,69,53,0.2)",
+    titleLayout: {
+      align: "left",
+      x: 130,
+      baseY: 1110,
+      fontSize: 84,
+      lineHeight: 100,
+      maxCharsPerLine: 16,
+    },
+    authorLayout: {
+      align: "left",
+      x: 130,
+      mode: "fixed",
+      baseY: 305,
+      fontSize: 40,
+      lineHeight: 52,
+      maxCharsPerLine: 28,
+    },
   },
 };
 
@@ -168,20 +291,42 @@ function resolveTemplate(templateId: CoverTemplateId): CoverTemplateSpec {
   return COVER_TEMPLATE_SPECS[templateId] ?? COVER_TEMPLATE_SPECS.classic;
 }
 
+function computeTitleStartY(layout: CoverTextLayout, lineCount: number): number {
+  return layout.baseY - Math.max(0, lineCount - 1) * (layout.lineHeight / 2);
+}
+
+function computeAuthorStartY(
+  layout: CoverAuthorLayout,
+  titleLayout: CoverTextLayout,
+  titleStartY: number,
+  titleLineCount: number,
+): number {
+  if (layout.mode === "fixed") return layout.baseY;
+  return titleStartY + titleLineCount * titleLayout.lineHeight + layout.baseY;
+}
+
+function toSvgTextAnchor(align: "center" | "left"): "middle" | "start" {
+  return align === "center" ? "middle" : "start";
+}
+
+function toCanvasTextAlign(align: "center" | "left"): CanvasTextAlign {
+  return align === "center" ? "center" : "left";
+}
+
 function createSvgDecoration(template: CoverTemplateSpec): string {
   switch (template.id) {
     case "classic":
-      return `<rect x="106" y="106" width="988" height="1588" rx="32" fill="none" stroke="${template.accentColor}" stroke-width="1"/>`;
+      return `<rect x="106" y="106" width="988" height="1588" rx="32" fill="none" stroke="${template.accentColor}" stroke-width="1"/><line x1="180" y1="220" x2="1020" y2="220" stroke="${template.accentColor}" stroke-width="2"/><line x1="180" y1="1580" x2="1020" y2="1580" stroke="${template.accentColor}" stroke-width="2"/>`;
     case "aurora":
       return `<circle cx="190" cy="230" r="260" fill="${template.accentColor}"/><circle cx="1030" cy="1500" r="320" fill="${template.accentColor}"/><circle cx="950" cy="330" r="180" fill="rgba(214,173,255,0.18)"/>`;
     case "ember":
       return `<path d="M0,1560 L1200,1180 L1200,1800 L0,1800 Z" fill="${template.accentColor}"/><path d="M0,0 L760,0 L0,760 Z" fill="rgba(255,166,107,0.14)"/>`;
     case "midnight":
-      return `<circle cx="980" cy="250" r="150" fill="${template.accentColor}"/><circle cx="1045" cy="220" r="120" fill="rgba(20,24,54,0.92)"/><circle cx="240" cy="260" r="8" fill="rgba(255,255,255,0.45)"/><circle cx="350" cy="420" r="5" fill="rgba(255,255,255,0.4)"/><circle cx="860" cy="340" r="6" fill="rgba(255,255,255,0.36)"/><circle cx="1080" cy="470" r="4" fill="rgba(255,255,255,0.42)"/><path d="M0,1460 C220,1360 430,1520 620,1450 C820,1375 980,1470 1200,1380 L1200,1800 L0,1800 Z" fill="rgba(10,14,32,0.3)"/>`;
+      return `<circle cx="980" cy="260" r="148" fill="${template.accentColor}"/><circle cx="1040" cy="228" r="118" fill="rgba(8,8,8,0.9)"/><circle cx="980" cy="260" r="205" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="2"/><circle cx="980" cy="260" r="270" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/><circle cx="240" cy="260" r="8" fill="rgba(255,255,255,0.45)"/><circle cx="350" cy="420" r="5" fill="rgba(255,255,255,0.4)"/><circle cx="860" cy="340" r="6" fill="rgba(255,255,255,0.36)"/><circle cx="1080" cy="470" r="4" fill="rgba(255,255,255,0.42)"/><path d="M0,1460 C220,1360 430,1520 620,1450 C820,1375 980,1470 1200,1380 L1200,1800 L0,1800 Z" fill="rgba(24,24,24,0.3)"/>`;
     case "sage":
-      return `<ellipse cx="210" cy="340" rx="250" ry="190" fill="${template.accentColor}"/><ellipse cx="980" cy="1420" rx="280" ry="220" fill="${template.accentColor}"/><path d="M180,1280 C310,1110 470,1120 580,1260 C430,1290 290,1360 180,1280 Z" fill="rgba(230,247,232,0.2)"/><path d="M720,520 C830,390 980,400 1070,530 C930,560 820,620 720,520 Z" fill="rgba(230,247,232,0.2)"/>`;
+      return `<defs><pattern id="geoPattern" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M0 18 L18 0 L36 18 L18 36 Z" fill="none" stroke="${template.accentColor}" stroke-width="1"/></pattern></defs><rect x="96" y="96" width="1008" height="1608" fill="url(#geoPattern)" opacity="0.34"/><rect x="112" y="112" width="976" height="1576" fill="none" stroke="${template.accentColor}" stroke-width="2"/><line x1="132" y1="300" x2="1068" y2="300" stroke="${template.accentColor}" stroke-width="2"/><line x1="132" y1="1500" x2="1068" y2="1500" stroke="${template.accentColor}" stroke-width="2"/>`;
     case "sunset":
-      return `<circle cx="600" cy="560" r="230" fill="${template.accentColor}"/><rect x="0" y="840" width="1200" height="90" fill="rgba(255,213,178,0.18)"/><rect x="0" y="980" width="1200" height="82" fill="rgba(255,176,128,0.16)"/><path d="M0,1410 C200,1370 400,1480 600,1430 C820,1380 1010,1460 1200,1400 L1200,1800 L0,1800 Z" fill="rgba(78,22,41,0.26)"/>`;
+      return `<g stroke="${template.accentColor}" stroke-width="3" fill="none"><path d="M130,230 C230,360 220,560 140,760"/><path d="M1030,1570 C950,1410 950,1190 1060,1030"/></g><g fill="${template.accentColor}"><circle cx="150" cy="250" r="24"/><circle cx="185" cy="220" r="20"/><circle cx="185" cy="280" r="20"/><circle cx="112" cy="220" r="20"/><circle cx="112" cy="280" r="20"/><circle cx="1038" cy="1560" r="22"/><circle cx="1070" cy="1530" r="18"/><circle cx="1070" cy="1590" r="18"/><circle cx="1006" cy="1530" r="18"/><circle cx="1006" cy="1590" r="18"/></g><ellipse cx="220" cy="500" rx="52" ry="24" fill="rgba(37,69,53,0.16)" transform="rotate(-26 220 500)"/><ellipse cx="960" cy="1280" rx="56" ry="25" fill="rgba(37,69,53,0.16)" transform="rotate(28 960 1280)"/>`;
     default:
       return "";
   }
@@ -189,26 +334,41 @@ function createSvgDecoration(template: CoverTemplateSpec): string {
 
 function createAutoCoverSvgDataUrl(input: AutoCoverInput): string {
   const template = resolveTemplate(input.templateId);
-  const titleLines = wrapTextLines(input.title || DEFAULT_BOOK_TITLE, 18, 4);
-  const authorLines = wrapTextLines(input.author || "", 24, 2);
+  const titleLines = wrapTextLines(
+    input.title || DEFAULT_BOOK_TITLE,
+    template.titleLayout.maxCharsPerLine,
+    4,
+  );
+  const authorLines = wrapTextLines(
+    input.author || "",
+    template.authorLayout.maxCharsPerLine,
+    3,
+  );
 
-  const titleStartY = 700 - Math.max(0, titleLines.length - 1) * 58;
+  const titleStartY = computeTitleStartY(template.titleLayout, titleLines.length);
+  const titleAnchor = toSvgTextAnchor(template.titleLayout.align);
   const titleTspans = titleLines
     .map(
       (line, index) =>
-        `<tspan x="600" y="${titleStartY + index * 116}">${escapeXmlText(line)}</tspan>`,
+        `<tspan x="${template.titleLayout.x}" y="${titleStartY + index * template.titleLayout.lineHeight}">${escapeXmlText(line)}</tspan>`,
     )
     .join("");
 
-  const authorStartY = titleStartY + titleLines.length * 120 + 60;
+  const authorStartY = computeAuthorStartY(
+    template.authorLayout,
+    template.titleLayout,
+    titleStartY,
+    titleLines.length,
+  );
+  const authorAnchor = toSvgTextAnchor(template.authorLayout.align);
   const authorTspans = authorLines
     .map(
       (line, index) =>
-        `<tspan x="600" y="${authorStartY + index * 72}">${escapeXmlText(line)}</tspan>`,
+        `<tspan x="${template.authorLayout.x}" y="${authorStartY + index * template.authorLayout.lineHeight}">${escapeXmlText(line)}</tspan>`,
     )
     .join("");
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1800" viewBox="0 0 1200 1800" role="img" aria-label="Book cover"><defs><linearGradient id="coverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${template.gradientStart}"/><stop offset="100%" stop-color="${template.gradientEnd}"/></linearGradient></defs><rect width="1200" height="1800" fill="url(#coverGradient)"/>${createSvgDecoration(template)}<rect x="76" y="76" width="1048" height="1648" rx="40" fill="none" stroke="${template.frameStroke}" stroke-width="4"/><text fill="${template.titleColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="92" font-weight="700" text-anchor="middle">${titleTspans}</text>${authorTspans ? `<text fill="${template.authorColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="54" font-weight="500" text-anchor="middle">${authorTspans}</text>` : ""}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1800" viewBox="0 0 1200 1800" role="img" aria-label="Book cover"><defs><linearGradient id="coverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${template.gradientStart}"/><stop offset="100%" stop-color="${template.gradientEnd}"/></linearGradient></defs><rect width="1200" height="1800" fill="url(#coverGradient)"/>${createSvgDecoration(template)}<rect x="76" y="76" width="1048" height="1648" rx="40" fill="none" stroke="${template.frameStroke}" stroke-width="4"/><text fill="${template.titleColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${template.titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>${authorTspans ? `<text fill="${template.authorColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${template.authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>` : ""}</svg>`;
 
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
@@ -254,6 +414,15 @@ function drawCanvasDecoration(
       context.lineWidth = 1;
       drawRoundedRectPath(context, 106, 106, 988, 1588, 32);
       context.stroke();
+
+      context.lineWidth = 2;
+      context.beginPath();
+      context.moveTo(180, 220);
+      context.lineTo(1020, 220);
+      context.moveTo(180, 1580);
+      context.lineTo(1020, 1580);
+      context.stroke();
+
       context.restore();
       return;
     }
@@ -295,13 +464,25 @@ function drawCanvasDecoration(
     case "midnight": {
       context.fillStyle = template.accentColor;
       context.beginPath();
-      context.arc(980, 250, 150, 0, Math.PI * 2);
+      context.arc(980, 260, 148, 0, Math.PI * 2);
       context.fill();
 
-      context.fillStyle = "rgba(20,24,54,0.92)";
+      context.fillStyle = "rgba(8,8,8,0.9)";
       context.beginPath();
-      context.arc(1045, 220, 120, 0, Math.PI * 2);
+      context.arc(1040, 228, 118, 0, Math.PI * 2);
       context.fill();
+
+      context.strokeStyle = "rgba(255,255,255,0.14)";
+      context.lineWidth = 2;
+      context.beginPath();
+      context.arc(980, 260, 205, 0, Math.PI * 2);
+      context.stroke();
+
+      context.strokeStyle = "rgba(255,255,255,0.08)";
+      context.lineWidth = 1.5;
+      context.beginPath();
+      context.arc(980, 260, 270, 0, Math.PI * 2);
+      context.stroke();
 
       context.fillStyle = "rgba(255,255,255,0.42)";
       for (const [x, y, r] of [
@@ -315,7 +496,7 @@ function drawCanvasDecoration(
         context.fill();
       }
 
-      context.fillStyle = "rgba(10,14,32,0.3)";
+      context.fillStyle = "rgba(24,24,24,0.3)";
       context.beginPath();
       context.moveTo(0, 1460);
       context.bezierCurveTo(220, 1360, 430, 1520, 620, 1450);
@@ -328,51 +509,80 @@ function drawCanvasDecoration(
       return;
     }
     case "sage": {
-      context.fillStyle = template.accentColor;
-      context.beginPath();
-      context.ellipse(210, 340, 250, 190, 0, 0, Math.PI * 2);
-      context.fill();
-      context.beginPath();
-      context.ellipse(980, 1420, 280, 220, 0, 0, Math.PI * 2);
-      context.fill();
+      context.strokeStyle = template.accentColor;
+      context.lineWidth = 1;
+      for (let y = 96; y <= 1704; y += 36) {
+        for (let x = 96; x <= 1104; x += 36) {
+          context.beginPath();
+          context.moveTo(x, y + 18);
+          context.lineTo(x + 18, y);
+          context.lineTo(x + 36, y + 18);
+          context.lineTo(x + 18, y + 36);
+          context.closePath();
+          context.stroke();
+        }
+      }
 
-      context.fillStyle = "rgba(230,247,232,0.2)";
+      context.lineWidth = 2;
       context.beginPath();
-      context.moveTo(180, 1280);
-      context.bezierCurveTo(310, 1110, 470, 1120, 580, 1260);
-      context.bezierCurveTo(430, 1290, 290, 1360, 180, 1280);
-      context.closePath();
-      context.fill();
+      context.rect(112, 112, 976, 1576);
+      context.stroke();
 
       context.beginPath();
-      context.moveTo(720, 520);
-      context.bezierCurveTo(830, 390, 980, 400, 1070, 530);
-      context.bezierCurveTo(930, 560, 820, 620, 720, 520);
-      context.closePath();
-      context.fill();
+      context.moveTo(132, 300);
+      context.lineTo(1068, 300);
+      context.moveTo(132, 1500);
+      context.lineTo(1068, 1500);
+      context.stroke();
+
       context.restore();
       return;
     }
     case "sunset": {
+      context.strokeStyle = template.accentColor;
+      context.lineWidth = 3;
+      context.beginPath();
+      context.moveTo(130, 230);
+      context.bezierCurveTo(230, 360, 220, 560, 140, 760);
+      context.moveTo(1030, 1570);
+      context.bezierCurveTo(950, 1410, 950, 1190, 1060, 1030);
+      context.stroke();
+
       context.fillStyle = template.accentColor;
-      context.beginPath();
-      context.arc(600, 560, 230, 0, Math.PI * 2);
-      context.fill();
+      for (const [x, y, r] of [
+        [150, 250, 24],
+        [185, 220, 20],
+        [185, 280, 20],
+        [112, 220, 20],
+        [112, 280, 20],
+        [1038, 1560, 22],
+        [1070, 1530, 18],
+        [1070, 1590, 18],
+        [1006, 1530, 18],
+        [1006, 1590, 18],
+      ] as const) {
+        context.beginPath();
+        context.arc(x, y, r, 0, Math.PI * 2);
+        context.fill();
+      }
 
-      context.fillStyle = "rgba(255,213,178,0.18)";
-      context.fillRect(0, 840, width, 90);
-      context.fillStyle = "rgba(255,176,128,0.16)";
-      context.fillRect(0, 980, width, 82);
-
-      context.fillStyle = "rgba(78,22,41,0.26)";
+      context.fillStyle = "rgba(37,69,53,0.16)";
+      context.save();
+      context.translate(220, 500);
+      context.rotate((-26 * Math.PI) / 180);
       context.beginPath();
-      context.moveTo(0, 1410);
-      context.bezierCurveTo(200, 1370, 400, 1480, 600, 1430);
-      context.bezierCurveTo(820, 1380, 1010, 1460, width, 1400);
-      context.lineTo(width, height);
-      context.lineTo(0, height);
-      context.closePath();
+      context.ellipse(0, 0, 52, 24, 0, 0, Math.PI * 2);
       context.fill();
+      context.restore();
+
+      context.save();
+      context.translate(960, 1280);
+      context.rotate((28 * Math.PI) / 180);
+      context.beginPath();
+      context.ellipse(0, 0, 56, 25, 0, 0, Math.PI * 2);
+      context.fill();
+      context.restore();
+
       context.restore();
       return;
     }
@@ -409,25 +619,46 @@ function createAutoCoverRasterDataUrl(input: AutoCoverInput): string {
   drawRoundedRectPath(context, 76, 76, 1048, 1648, 40);
   context.stroke();
 
-  const centerX = canvas.width / 2;
-  const titleLines = wrapTextLines(input.title || DEFAULT_BOOK_TITLE, 18, 4);
-  const authorLines = wrapTextLines(input.author || "", 24, 2);
+  const titleLines = wrapTextLines(
+    input.title || DEFAULT_BOOK_TITLE,
+    template.titleLayout.maxCharsPerLine,
+    4,
+  );
+  const authorLines = wrapTextLines(
+    input.author || "",
+    template.authorLayout.maxCharsPerLine,
+    3,
+  );
 
-  const titleStartY = 700 - Math.max(0, titleLines.length - 1) * 58;
-  context.textAlign = "center";
+  const titleStartY = computeTitleStartY(template.titleLayout, titleLines.length);
+  context.textAlign = toCanvasTextAlign(template.titleLayout.align);
   context.textBaseline = "middle";
   context.fillStyle = template.titleColor;
-  context.font = "700 92px Inter, Segoe UI, Roboto, Arial, sans-serif";
+  context.font = `700 ${template.titleLayout.fontSize}px Inter, Segoe UI, Roboto, Arial, sans-serif`;
   for (let index = 0; index < titleLines.length; index += 1) {
-    context.fillText(titleLines[index], centerX, titleStartY + index * 116);
+    context.fillText(
+      titleLines[index],
+      template.titleLayout.x,
+      titleStartY + index * template.titleLayout.lineHeight,
+    );
   }
 
   if (authorLines.length > 0) {
-    const authorStartY = titleStartY + titleLines.length * 120 + 60;
+    const authorStartY = computeAuthorStartY(
+      template.authorLayout,
+      template.titleLayout,
+      titleStartY,
+      titleLines.length,
+    );
+    context.textAlign = toCanvasTextAlign(template.authorLayout.align);
     context.fillStyle = template.authorColor;
-    context.font = "500 54px Inter, Segoe UI, Roboto, Arial, sans-serif";
+    context.font = `500 ${template.authorLayout.fontSize}px Inter, Segoe UI, Roboto, Arial, sans-serif`;
     for (let index = 0; index < authorLines.length; index += 1) {
-      context.fillText(authorLines[index], centerX, authorStartY + index * 72);
+      context.fillText(
+        authorLines[index],
+        template.authorLayout.x,
+        authorStartY + index * template.authorLayout.lineHeight,
+      );
     }
   }
 
