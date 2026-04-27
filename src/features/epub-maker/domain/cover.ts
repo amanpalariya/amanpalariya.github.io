@@ -766,6 +766,36 @@ function resolveTextPalette(
   return resolveAdaptivePalette(gradientStart, gradientEnd);
 }
 
+function createSageSvgDecoration(
+  coverWidth: number,
+  coverHeight: number,
+  unitScale: number,
+  accentColor: string,
+): string {
+  const left = coverWidth * 0.12;
+  const right = coverWidth * 0.88;
+  const top = coverHeight * 0.1;
+  const bottom = coverHeight * 0.9;
+  const stepX = Math.max(16, 34 * unitScale);
+  const stepY = Math.max(14, 28 * unitScale);
+  const centerX = (left + right) / 2;
+  const halfWidth = Math.max(1, (right - left) / 2);
+  let dots = "";
+
+  for (let row = 0, y = top; y <= bottom; row += 1, y += stepY) {
+    const rowOffset = row % 2 === 0 ? 0 : stepX / 2;
+    for (let x = left + rowOffset; x <= right; x += stepX) {
+      const normY = (y - top) / Math.max(1, bottom - top);
+      const normX = Math.abs((x - centerX) / halfWidth);
+      const alpha = Math.max(0.075, (1 - normY * 0.68) * (1 - normX * 0.58) * 0.44);
+      const radius = Math.max(1.6, 2.6 * unitScale + (1 - normY) * 1.2 * unitScale);
+      dots += `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${radius.toFixed(2)}" fill="${accentColor}" opacity="${alpha.toFixed(3)}"/>`;
+    }
+  }
+
+  return `<g>${dots}</g>`;
+}
+
 function createSvgDecoration(template: CoverTemplateSpec): string {
   switch (template.id) {
     case "classic":
@@ -777,7 +807,7 @@ function createSvgDecoration(template: CoverTemplateSpec): string {
     case "midnight":
       return `<circle cx="980" cy="260" r="148" fill="${template.accentColor}"/><circle cx="1040" cy="228" r="118" fill="rgba(8,8,8,0.9)"/><circle cx="980" cy="260" r="205" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="2"/><circle cx="980" cy="260" r="270" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/><circle cx="240" cy="260" r="8" fill="rgba(255,255,255,0.45)"/><circle cx="350" cy="420" r="5" fill="rgba(255,255,255,0.4)"/><circle cx="860" cy="340" r="6" fill="rgba(255,255,255,0.36)"/><circle cx="1080" cy="470" r="4" fill="rgba(255,255,255,0.42)"/><path d="M0,1460 C220,1360 430,1520 620,1450 C820,1375 980,1470 1200,1380 L1200,1800 L0,1800 Z" fill="rgba(24,24,24,0.3)"/>`;
     case "sage":
-      return `<defs><pattern id="geoPattern" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M0 18 L18 0 L36 18 L18 36 Z" fill="none" stroke="${template.accentColor}" stroke-width="1"/></pattern></defs><rect x="96" y="96" width="1008" height="1608" fill="url(#geoPattern)" opacity="0.34"/><line x1="132" y1="300" x2="1068" y2="300" stroke="${template.accentColor}" stroke-width="2"/><line x1="132" y1="1500" x2="1068" y2="1500" stroke="${template.accentColor}" stroke-width="2"/>`;
+      return "";
     case "sunset":
       return `<g stroke="${template.accentColor}" stroke-width="3" fill="none"><path d="M130,230 C230,360 220,560 140,760"/><path d="M1030,1570 C950,1410 950,1190 1060,1030"/></g><g fill="${template.accentColor}"><circle cx="150" cy="250" r="24"/><circle cx="185" cy="220" r="20"/><circle cx="185" cy="280" r="20"/><circle cx="112" cy="220" r="20"/><circle cx="112" cy="280" r="20"/><circle cx="1038" cy="1560" r="22"/><circle cx="1070" cy="1530" r="18"/><circle cx="1070" cy="1590" r="18"/><circle cx="1006" cy="1530" r="18"/><circle cx="1006" cy="1590" r="18"/></g><ellipse cx="220" cy="500" rx="52" ry="24" fill="rgba(37,69,53,0.16)" transform="rotate(-26 220 500)"/><ellipse cx="960" cy="1280" rx="56" ry="25" fill="rgba(37,69,53,0.16)" transform="rotate(28 960 1280)"/>`;
     default:
@@ -865,7 +895,16 @@ function createAutoCoverSvgDataUrl(input: AutoCoverInput): string {
   const frameWidth = Math.max(0, coverWidth - frameInset * 2);
   const frameHeight = Math.max(0, coverHeight - frameInset * 2);
   const textStrokeWidth = COVER_TEXT_STROKE_WIDTH * metrics.unitScale;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${coverWidth}" height="${coverHeight}" viewBox="0 0 ${coverWidth} ${coverHeight}" role="img" aria-label="Book cover"><defs><linearGradient id="coverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${template.gradientStart}"/><stop offset="100%" stop-color="${template.gradientEnd}"/></linearGradient></defs><rect width="${coverWidth}" height="${coverHeight}" fill="url(#coverGradient)"/><g transform="scale(${metrics.scaleX} ${metrics.scaleY})">${createSvgDecoration(template)}</g><rect x="${frameX}" y="${frameY}" width="${frameWidth}" height="${frameHeight}" rx="${frameRadius}" fill="none" stroke="${template.frameStroke}" stroke-width="${4 * metrics.unitScale}"/><text fill="${textPalette.titleColor}" stroke="${textPalette.strokeColor}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>${authorTspans ? `<text fill="${textPalette.authorColor}" stroke="${textPalette.strokeColor}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>` : ""}</svg>`;
+  const decorationSvg =
+    template.id === "sage"
+      ? createSageSvgDecoration(
+          coverWidth,
+          coverHeight,
+          metrics.unitScale,
+          template.accentColor,
+        )
+      : `<g transform="scale(${metrics.scaleX} ${metrics.scaleY})">${createSvgDecoration(template)}</g>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${coverWidth}" height="${coverHeight}" viewBox="0 0 ${coverWidth} ${coverHeight}" role="img" aria-label="Book cover"><defs><linearGradient id="coverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${template.gradientStart}"/><stop offset="100%" stop-color="${template.gradientEnd}"/></linearGradient></defs><rect width="${coverWidth}" height="${coverHeight}" fill="url(#coverGradient)"/>${decorationSvg}<rect x="${frameX}" y="${frameY}" width="${frameWidth}" height="${frameHeight}" rx="${frameRadius}" fill="none" stroke="${template.frameStroke}" stroke-width="${4 * metrics.unitScale}"/><text fill="${textPalette.titleColor}" stroke="${textPalette.strokeColor}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>${authorTspans ? `<text fill="${textPalette.authorColor}" stroke="${textPalette.strokeColor}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>` : ""}</svg>`;
 
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
@@ -1006,27 +1045,38 @@ function drawCanvasDecoration(
       return;
     }
     case "sage": {
-      context.strokeStyle = template.accentColor;
-      context.lineWidth = su(1);
-      for (let y = 96; y <= 1704; y += 36) {
-        for (let x = 96; x <= 1104; x += 36) {
+      const left = width * 0.12;
+      const right = width * 0.88;
+      const top = height * 0.1;
+      const bottom = height * 0.9;
+      const stepX = Math.max(16, 34 * metrics.unitScale);
+      const stepY = Math.max(14, 28 * metrics.unitScale);
+      const centerX = (left + right) / 2;
+      const halfWidth = Math.max(1, (right - left) / 2);
+
+      context.fillStyle = template.accentColor;
+      for (let row = 0, y = top; y <= bottom; row += 1, y += stepY) {
+        const rowOffset = row % 2 === 0 ? 0 : stepX / 2;
+        for (let x = left + rowOffset; x <= right; x += stepX) {
+          const normY = (y - top) / Math.max(1, bottom - top);
+          const normX = Math.abs((x - centerX) / halfWidth);
+          const alpha = Math.max(
+            0.075,
+            (1 - normY * 0.68) * (1 - normX * 0.58) * 0.44,
+          );
+          const radius = Math.max(
+            1.6,
+            2.6 * metrics.unitScale + (1 - normY) * 1.2 * metrics.unitScale,
+          );
+          context.globalAlpha = alpha;
           context.beginPath();
-          context.moveTo(sx(x), sy(y + 18));
-          context.lineTo(sx(x + 18), sy(y));
-          context.lineTo(sx(x + 36), sy(y + 18));
-          context.lineTo(sx(x + 18), sy(y + 36));
-          context.closePath();
-          context.stroke();
+          context.arc(x, y, radius, 0, Math.PI * 2);
+          context.fill();
         }
       }
+      context.globalAlpha = 1;
 
-      context.lineWidth = su(2);
-      context.beginPath();
-      context.moveTo(sx(132), sy(300));
-      context.lineTo(sx(1068), sy(300));
-      context.moveTo(sx(132), sy(1500));
-      context.lineTo(sx(1068), sy(1500));
-      context.stroke();
+      context.globalAlpha = 1;
 
       context.restore();
       return;
