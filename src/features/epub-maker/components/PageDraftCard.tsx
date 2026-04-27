@@ -89,6 +89,73 @@ const SHOW_TEMPLATE_DESCRIPTIONS = false;
 type CoverSizeLabelMode = "none" | "bottom" | "side";
 const COVER_SIZE_LABEL_MODE: CoverSizeLabelMode = "side";
 const SHOW_SIZE_DESCRIPTIONS = true;
+const COVER_GRID_HOVER_BG = "app.status.info.bg" as const;
+const COVER_GRID_SELECTED_BORDER_COLOR = "app.epub.button.primary.border" as const;
+
+const dropdownGridItemInteractionProps = {
+  p: 1,
+  bg: "transparent",
+  cursor: "pointer",
+  transition: "background 0.12s ease",
+  _highlighted: {
+    bg: COVER_GRID_HOVER_BG,
+    outline: "1px solid",
+    outlineColor: COVER_GRID_SELECTED_BORDER_COLOR,
+  },
+  _hover: {
+    bg: COVER_GRID_HOVER_BG,
+    outline: "1px solid",
+    outlineColor: COVER_GRID_SELECTED_BORDER_COLOR,
+  },
+} as const;
+
+function resolveGridSelectionFrameProps(isSelected: boolean): {
+  borderWidth: "3px" | "1px";
+  borderColor: string;
+  outline: "2px solid" | "none";
+  outlineColor: string;
+} {
+  if (isSelected) {
+    return {
+      borderWidth: "3px",
+      borderColor: COVER_GRID_SELECTED_BORDER_COLOR,
+      outline: "2px solid",
+      outlineColor: COVER_GRID_SELECTED_BORDER_COLOR,
+    };
+  }
+
+  return {
+    borderWidth: "1px",
+    borderColor: "app.epub.border.default",
+    outline: "none",
+    outlineColor: "transparent",
+  };
+}
+
+function renderGridSelectionBadge(isSelected: boolean): ReactNode {
+  if (!isSelected) return null;
+
+  return (
+    <Box
+      position={"absolute"}
+      top={1}
+      right={1}
+      w={"16px"}
+      h={"16px"}
+      rounded={"full"}
+      bg={"app.epub.button.primary.bg"}
+      color={"app.epub.button.primary.fg"}
+      display={"grid"}
+      placeItems={"center"}
+      borderWidth={"1px"}
+      borderColor={"app.epub.bg.card"}
+    >
+      <Icon boxSize={2.5}>
+        <LuCheck />
+      </Icon>
+    </Box>
+  );
+}
 
 function resolveRatioFrameSize(
   ratio: number,
@@ -995,15 +1062,17 @@ export function PageDraftCard({
                                           const isSelected =
                                             !isCustomTemplateSelected &&
                                             option.id === selectedTemplateMenuId;
+                                          const selectionFrameProps =
+                                            resolveGridSelectionFrameProps(
+                                              isSelected,
+                                            );
 
                                           return (
                                             <Menu.Item
                                               key={option.id}
                                               value={option.id}
                                               rounded={"md"}
-                                              p={0}
-                                              bg={"transparent"}
-                                              _hover={{ bg: "transparent" }}
+                                              {...dropdownGridItemInteractionProps}
                                               onClick={() =>
                                                 onCoverTemplateChange?.(
                                                   option.id,
@@ -1042,12 +1111,10 @@ export function PageDraftCard({
                                                     <Box
                                                       rounded={"sm"}
                                                       borderWidth={
-                                                        isSelected ? "3px" : "1px"
+                                                        selectionFrameProps.borderWidth
                                                       }
                                                       borderColor={
-                                                        isSelected
-                                                          ? "app.epub.button.primary.border"
-                                                          : "app.epub.border.default"
+                                                        selectionFrameProps.borderColor
                                                       }
                                                       bg={"app.epub.bg.preview"}
                                                       style={{
@@ -1062,45 +1129,18 @@ export function PageDraftCard({
                                                       position={"relative"}
                                                       overflow={"hidden"}
                                                       outline={
-                                                        isSelected
-                                                          ? "2px solid"
-                                                          : "none"
+                                                        selectionFrameProps.outline
                                                       }
                                                       outlineColor={
-                                                        isSelected
-                                                          ? "app.epub.button.primary.border"
-                                                          : "transparent"
+                                                        selectionFrameProps.outlineColor
                                                       }
                                                       transition={
                                                         "border-color 0.16s ease"
                                                       }
                                                     >
-                                                      {isSelected ? (
-                                                        <Box
-                                                          position={"absolute"}
-                                                          top={1}
-                                                          right={1}
-                                                          w={"16px"}
-                                                          h={"16px"}
-                                                          rounded={"full"}
-                                                          bg={
-                                                            "app.epub.button.primary.bg"
-                                                          }
-                                                          color={
-                                                            "app.epub.button.primary.fg"
-                                                          }
-                                                          display={"grid"}
-                                                          placeItems={"center"}
-                                                          borderWidth={"1px"}
-                                                          borderColor={
-                                                            "app.epub.bg.card"
-                                                          }
-                                                        >
-                                                          <Icon boxSize={2.5}>
-                                                            <LuCheck />
-                                                          </Icon>
-                                                        </Box>
-                                                      ) : null}
+                                                      {renderGridSelectionBadge(
+                                                        isSelected,
+                                                      )}
                                                     </Box>
                                                   </AspectRatio>
                                                   {COVER_TEMPLATE_LABEL_MODE ===
@@ -1276,15 +1316,17 @@ export function PageDraftCard({
                                         const isSelected =
                                           option.id ===
                                           selectedCoverSizePreviewOption?.id;
+                                        const selectionFrameProps =
+                                          resolveGridSelectionFrameProps(
+                                            isSelected,
+                                          );
 
                                         return (
                                           <Menu.Item
                                             key={option.id}
                                             value={option.id}
                                             rounded={"md"}
-                                            p={0}
-                                            bg={"transparent"}
-                                            _hover={{ bg: "transparent" }}
+                                            {...dropdownGridItemInteractionProps}
                                             onClick={() =>
                                               onCoverSizePresetChange?.(
                                                 option.id,
@@ -1322,25 +1364,19 @@ export function PageDraftCard({
                                                   <Box
                                                     rounded={"sm"}
                                                     borderWidth={
-                                                      isSelected ? "3px" : "1px"
+                                                      selectionFrameProps.borderWidth
                                                     }
                                                     borderColor={
-                                                      isSelected
-                                                        ? "app.epub.button.primary.border"
-                                                        : "app.epub.border.default"
+                                                      selectionFrameProps.borderColor
                                                     }
                                                     bg={"app.epub.bg.preview"}
                                                     position={"relative"}
                                                     overflow={"hidden"}
                                                     outline={
-                                                      isSelected
-                                                        ? "2px solid"
-                                                        : "none"
+                                                      selectionFrameProps.outline
                                                     }
                                                     outlineColor={
-                                                      isSelected
-                                                        ? "app.epub.button.primary.border"
-                                                        : "transparent"
+                                                      selectionFrameProps.outlineColor
                                                     }
                                                     transition={
                                                       "border-color 0.16s ease"
@@ -1365,32 +1401,9 @@ export function PageDraftCard({
                                                       rounded={"xs"}
                                                       bg={"transparent"}
                                                     />
-                                                    {isSelected ? (
-                                                      <Box
-                                                        position={"absolute"}
-                                                        top={1}
-                                                        right={1}
-                                                        w={"16px"}
-                                                        h={"16px"}
-                                                        rounded={"full"}
-                                                        bg={
-                                                          "app.epub.button.primary.bg"
-                                                        }
-                                                        color={
-                                                          "app.epub.button.primary.fg"
-                                                        }
-                                                        display={"grid"}
-                                                        placeItems={"center"}
-                                                        borderWidth={"1px"}
-                                                        borderColor={
-                                                          "app.epub.bg.card"
-                                                        }
-                                                      >
-                                                        <Icon boxSize={2.5}>
-                                                          <LuCheck />
-                                                        </Icon>
-                                                      </Box>
-                                                    ) : null}
+                                                    {renderGridSelectionBadge(
+                                                      isSelected,
+                                                    )}
                                                   </Box>
                                                 </AspectRatio>
                                                 {COVER_SIZE_LABEL_MODE ===
@@ -1637,15 +1650,17 @@ export function PageDraftCard({
                                         const isSelected =
                                           styleOption ===
                                           effectiveCoverTextPosition;
+                                        const selectionFrameProps =
+                                          resolveGridSelectionFrameProps(
+                                            isSelected,
+                                          );
 
                                         return (
                                           <Menu.Item
                                             key={styleOption}
                                             value={styleOption}
                                             rounded={"md"}
-                                            p={0}
-                                            bg={"transparent"}
-                                            _hover={{ bg: "transparent" }}
+                                            {...dropdownGridItemInteractionProps}
                                             onClick={() =>
                                               onCoverTextPositionChange?.(
                                                 styleOption,
@@ -1657,25 +1672,19 @@ export function PageDraftCard({
                                               h={"72px"}
                                               rounded={"sm"}
                                               borderWidth={
-                                                isSelected ? "3px" : "1px"
+                                                selectionFrameProps.borderWidth
                                               }
                                               borderColor={
-                                                isSelected
-                                                  ? "app.epub.button.primary.border"
-                                                  : "app.epub.border.default"
+                                                selectionFrameProps.borderColor
                                               }
                                               bg={"app.epub.bg.preview"}
                                               position={"relative"}
                                               overflow={"hidden"}
                                               outline={
-                                                isSelected
-                                                  ? "2px solid"
-                                                  : "none"
+                                                selectionFrameProps.outline
                                               }
                                               outlineColor={
-                                                isSelected
-                                                  ? "app.epub.button.primary.border"
-                                                  : "transparent"
+                                                selectionFrameProps.outlineColor
                                               }
                                               transition={
                                                 "border-color 0.16s ease"
@@ -1705,32 +1714,9 @@ export function PageDraftCard({
                                                   COVER_PREVIEW_AUTHOR_OPACITY
                                                 }
                                               />
-                                              {isSelected ? (
-                                                <Box
-                                                  position={"absolute"}
-                                                  top={1}
-                                                  right={1}
-                                                  w={"16px"}
-                                                  h={"16px"}
-                                                  rounded={"full"}
-                                                  bg={
-                                                    "app.epub.button.primary.bg"
-                                                  }
-                                                  color={
-                                                    "app.epub.button.primary.fg"
-                                                  }
-                                                  display={"grid"}
-                                                  placeItems={"center"}
-                                                  borderWidth={"1px"}
-                                                  borderColor={
-                                                    "app.epub.bg.card"
-                                                  }
-                                                >
-                                                  <Icon boxSize={2.5}>
-                                                    <LuCheck />
-                                                  </Icon>
-                                                </Box>
-                                              ) : null}
+                                              {renderGridSelectionBadge(
+                                                isSelected,
+                                              )}
                                             </Box>
                                           </Menu.Item>
                                         );
