@@ -45,10 +45,12 @@ type CoverTemplateSpec = {
 };
 
 const DEFAULT_AUTO_COVER_RENDERER: AutoCoverRendererId = "raster-png";
-const AUTO_COVER_WIDTH = 1200;
+const AUTO_COVER_LAYOUT_WIDTH = 1200;
 const AUTO_COVER_LAYOUT_HEIGHT = 1800;
-const AUTO_COVER_HEIGHT = 1920; // Kindle-friendly 1:1.6 aspect ratio
-const AUTO_COVER_VERTICAL_SCALE = AUTO_COVER_HEIGHT / AUTO_COVER_LAYOUT_HEIGHT;
+const AUTO_COVER_WIDTH = 1600;
+const AUTO_COVER_HEIGHT = 2560; // Kindle-friendly 1:1.6 aspect ratio
+const AUTO_COVER_SCALE_X = AUTO_COVER_WIDTH / AUTO_COVER_LAYOUT_WIDTH;
+const AUTO_COVER_SCALE_Y = AUTO_COVER_HEIGHT / AUTO_COVER_LAYOUT_HEIGHT;
 
 const COVER_TEMPLATE_SPECS: Record<CoverTemplateId, CoverTemplateSpec> = {
   classic: {
@@ -372,7 +374,7 @@ function createAutoCoverSvgDataUrl(input: AutoCoverInput): string {
     )
     .join("");
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${AUTO_COVER_WIDTH}" height="${AUTO_COVER_HEIGHT}" viewBox="0 0 ${AUTO_COVER_WIDTH} ${AUTO_COVER_HEIGHT}" role="img" aria-label="Book cover"><defs><linearGradient id="coverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${template.gradientStart}"/><stop offset="100%" stop-color="${template.gradientEnd}"/></linearGradient></defs><rect width="${AUTO_COVER_WIDTH}" height="${AUTO_COVER_HEIGHT}" fill="url(#coverGradient)"/><g transform="scale(1 ${AUTO_COVER_VERTICAL_SCALE})">${createSvgDecoration(template)}<rect x="76" y="76" width="1048" height="1648" rx="40" fill="none" stroke="${template.frameStroke}" stroke-width="4"/><text fill="${template.titleColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${template.titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>${authorTspans ? `<text fill="${template.authorColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${template.authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>` : ""}</g></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${AUTO_COVER_WIDTH}" height="${AUTO_COVER_HEIGHT}" viewBox="0 0 ${AUTO_COVER_WIDTH} ${AUTO_COVER_HEIGHT}" role="img" aria-label="Book cover"><defs><linearGradient id="coverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${template.gradientStart}"/><stop offset="100%" stop-color="${template.gradientEnd}"/></linearGradient></defs><rect width="${AUTO_COVER_WIDTH}" height="${AUTO_COVER_HEIGHT}" fill="url(#coverGradient)"/><g transform="scale(${AUTO_COVER_SCALE_X} ${AUTO_COVER_SCALE_Y})">${createSvgDecoration(template)}<rect x="76" y="76" width="1048" height="1648" rx="40" fill="none" stroke="${template.frameStroke}" stroke-width="4"/><text fill="${template.titleColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${template.titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>${authorTspans ? `<text fill="${template.authorColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${template.authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>` : ""}</g></svg>`;
 
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
@@ -617,9 +619,14 @@ function createAutoCoverRasterDataUrl(input: AutoCoverInput): string {
   context.fillRect(0, 0, canvas.width, canvas.height);
 
   context.save();
-  context.scale(1, AUTO_COVER_VERTICAL_SCALE);
+  context.scale(AUTO_COVER_SCALE_X, AUTO_COVER_SCALE_Y);
 
-  drawCanvasDecoration(context, template, AUTO_COVER_WIDTH, AUTO_COVER_LAYOUT_HEIGHT);
+  drawCanvasDecoration(
+    context,
+    template,
+    AUTO_COVER_LAYOUT_WIDTH,
+    AUTO_COVER_LAYOUT_HEIGHT,
+  );
 
   context.strokeStyle = template.frameStroke;
   context.lineWidth = 4;

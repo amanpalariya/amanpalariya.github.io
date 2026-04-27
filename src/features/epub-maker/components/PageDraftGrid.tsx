@@ -35,6 +35,7 @@ type DragPreviewAnchor = {
   width: number;
 };
 type DragMode = "mouse" | "touch" | null;
+const PAGE_PREVIEW_RATIO = 1 / 1.4142;
 
 export function PageDraftGrid({
   pages,
@@ -499,7 +500,7 @@ export function PageDraftGrid({
             </FileUpload.Root>
           </Box>
 
-          <AspectRatio ratio={1 / 1.4142}>
+          <AspectRatio ratio={PAGE_PREVIEW_RATIO}>
             <Box
               h={"full"}
               display={"flex"}
@@ -646,7 +647,7 @@ export function PageDraftGrid({
                   </Text>
                 </HStack>
               </Box>
-              <AspectRatio ratio={1 / 1.4142} bg={"app.epub.bg.preview"}>
+              <AspectRatio ratio={PAGE_PREVIEW_RATIO} bg={"app.epub.bg.preview"}>
                 <iframe
                   title={`drag-preview-${draggedPage.id}`}
                   srcDoc={draggedPage.previewHtml}
