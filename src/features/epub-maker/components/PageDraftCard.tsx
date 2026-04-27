@@ -9,6 +9,7 @@ import {
   IconButton,
   Input,
   InputGroup,
+  Menu,
   NativeSelect,
   NumberInput,
   Text,
@@ -21,6 +22,7 @@ import {
   LuCheck,
   LuClipboardPaste,
   LuClock3,
+  LuChevronDown,
   LuEye,
   LuEyeOff,
   LuGripVertical,
@@ -58,6 +60,72 @@ type DragPreviewAnchor = {
   offsetY: number;
   width: number;
 };
+
+const COVER_TEXT_POSITION_OPTIONS: CoverTextPosition[] = [
+  "style_1",
+  "style_2",
+  "style_3",
+  "style_4",
+  "style_5",
+  "style_6",
+];
+
+const COVER_PREVIEW_TITLE_WIDTH = "76%";
+const COVER_PREVIEW_AUTHOR_WIDTH = "44%";
+const COVER_PREVIEW_TITLE_HEIGHT = "3px";
+const COVER_PREVIEW_AUTHOR_HEIGHT = "2px";
+const COVER_PREVIEW_TITLE_OPACITY = 0.95;
+const COVER_PREVIEW_AUTHOR_OPACITY = 0.55;
+
+type CoverTextPreviewLine = {
+  top: string;
+  left: string;
+};
+
+function resolveCoverTextPreviewLines(style: CoverTextPosition): {
+  title: CoverTextPreviewLine;
+  author: CoverTextPreviewLine;
+} {
+  if (style === "style_2") {
+    return {
+      title: { top: "46%", left: "12%" },
+      author: { top: "57%", left: "12%" },
+    };
+  }
+
+  if (style === "style_3") {
+    return {
+      title: { top: "46%", left: "20%" },
+      author: { top: "57%", left: "44%" },
+    };
+  }
+
+  if (style === "style_4") {
+    return {
+      title: { top: "58%", left: "12%" },
+      author: { top: "44%", left: "24%" },
+    };
+  }
+
+  if (style === "style_5") {
+    return {
+      title: { top: "58%", left: "12%" },
+      author: { top: "44%", left: "12%" },
+    };
+  }
+
+  if (style === "style_6") {
+    return {
+      title: { top: "74%", left: "12%" },
+      author: { top: "86%", left: "24%" },
+    };
+  }
+
+  return {
+    title: { top: "46%", left: "12%" },
+    author: { top: "57%", left: "24%" },
+  };
+}
 
 export function PageDraftCard({
   page,
@@ -150,7 +218,9 @@ export function PageDraftCard({
   const activeTouchPointerIdRef = useRef<number | null>(null);
   const touchStartPointRef = useRef<{ x: number; y: number } | null>(null);
   const hasStartedTouchDragRef = useRef(false);
-  const [flashKind, setFlashKind] = useState<"added" | "duplicate" | null>(null);
+  const [flashKind, setFlashKind] = useState<"added" | "duplicate" | null>(
+    null,
+  );
   const [flashOpacity, setFlashOpacity] = useState(0);
   const clearFlashTimerRef = useRef<number | null>(null);
   const effectiveGenerationStatus = generationStatus ?? "pending";
@@ -167,7 +237,9 @@ export function PageDraftCard({
       : flashKind === "duplicate"
         ? "251, 146, 60"
         : null;
-  const flashOverlayBg = flashColorBase ? `rgba(${flashColorBase}, 0.22)` : null;
+  const flashOverlayBg = flashColorBase
+    ? `rgba(${flashColorBase}, 0.22)`
+    : null;
   const flashBorderColor = flashColorBase
     ? `rgba(${flashColorBase}, ${Math.max(0.2, flashOpacity + 0.16)})`
     : null;
@@ -242,7 +314,10 @@ export function PageDraftCard({
     });
   }
 
-  function buildDragAnchor(clientX: number, clientY: number): DragPreviewAnchor {
+  function buildDragAnchor(
+    clientX: number,
+    clientY: number,
+  ): DragPreviewAnchor {
     const card = cardRef.current;
     if (!card) {
       return {
@@ -281,7 +356,8 @@ export function PageDraftCard({
     const startPoint = touchStartPointRef.current;
     const movedEnough =
       !!startPoint &&
-      Math.hypot(event.clientX - startPoint.x, event.clientY - startPoint.y) >= 8;
+      Math.hypot(event.clientX - startPoint.x, event.clientY - startPoint.y) >=
+        8;
     if (!hasStartedTouchDragRef.current && movedEnough) {
       hasStartedTouchDragRef.current = true;
       onTouchDragStart(page.id, buildDragAnchor(event.clientX, event.clientY));
@@ -309,7 +385,9 @@ export function PageDraftCard({
     hasStartedTouchDragRef.current = false;
   }
 
-  function handleGripPointerCancel(event: ReactPointerEvent<HTMLButtonElement>) {
+  function handleGripPointerCancel(
+    event: ReactPointerEvent<HTMLButtonElement>,
+  ) {
     if (activeTouchPointerIdRef.current !== event.pointerId) return;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
@@ -390,6 +468,9 @@ export function PageDraftCard({
   const effectiveCoverTextColorMode = coverTextColorMode ?? "adaptive";
   const isTextOnCustomCoverEnabled = includeTextOnCustomCover ?? true;
   const hasCustomCoverValue = hasCustomCover ?? false;
+  const selectedCoverTextPreviewLines = resolveCoverTextPreviewLines(
+    effectiveCoverTextPosition,
+  );
 
   function handleCoverUploadChange(event: ChangeEvent<HTMLInputElement>) {
     if (!isCover || !onReplaceCoverFromFiles) return;
@@ -436,7 +517,12 @@ export function PageDraftCard({
     >
       <Box borderBottomWidth={"1px"} borderColor={"app.epub.border.muted"}>
         {isCover ? (
-          <HStack h={"2.25rem"} px={2} justify={"space-between"} align={"center"}>
+          <HStack
+            h={"2.25rem"}
+            px={2}
+            justify={"space-between"}
+            align={"center"}
+          >
             <Text
               fontFamily={"ui"}
               fontSize={"sm"}
@@ -499,7 +585,9 @@ export function PageDraftCard({
                     justifyContent={"flex-start"}
                     gap={2}
                   >
-                    <Dialog.Title fontFamily={"ui"}>Cover settings</Dialog.Title>
+                    <Dialog.Title fontFamily={"ui"}>
+                      Cover settings
+                    </Dialog.Title>
                     <Button
                       {...dialogOutlineButtonProps}
                       size={"sm"}
@@ -511,7 +599,9 @@ export function PageDraftCard({
                           {isEffectiveCoverEnabled ? <LuEyeOff /> : <LuEye />}
                         </Icon>
                         <Text>
-                          {isEffectiveCoverEnabled ? "Disable cover" : "Enable cover"}
+                          {isEffectiveCoverEnabled
+                            ? "Disable cover"
+                            : "Enable cover"}
                         </Text>
                       </HStack>
                     </Button>
@@ -553,7 +643,11 @@ export function PageDraftCard({
                             }}
                           >
                             <Box>
-                              <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
+                              <Text
+                                fontSize={"sm"}
+                                color={"app.epub.fg.muted"}
+                                mb={1}
+                              >
                                 Cover template / theme
                               </Text>
                               <NativeSelect.Root
@@ -574,26 +668,33 @@ export function PageDraftCard({
                                   aria-label={"Select cover template"}
                                   onChange={(event) =>
                                     onCoverTemplateChange?.(
-                                      event.currentTarget.value as CoverTemplateId,
+                                      event.currentTarget
+                                        .value as CoverTemplateId,
                                     )
                                   }
                                 >
-                                  {(coverTemplateOptions ?? []).map((option) => (
-                                    <option
-                                      key={option.id}
-                                      value={option.id}
-                                      disabled={option.id === "custom"}
-                                    >
-                                      {option.label}
-                                    </option>
-                                  ))}
+                                  {(coverTemplateOptions ?? []).map(
+                                    (option) => (
+                                      <option
+                                        key={option.id}
+                                        value={option.id}
+                                        disabled={option.id === "custom"}
+                                      >
+                                        {option.label}
+                                      </option>
+                                    ),
+                                  )}
                                 </NativeSelect.Field>
                                 <NativeSelect.Indicator />
                               </NativeSelect.Root>
                             </Box>
 
                             <Box>
-                              <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
+                              <Text
+                                fontSize={"sm"}
+                                color={"app.epub.fg.muted"}
+                                mb={1}
+                              >
                                 Common cover sizes
                               </Text>
                               <NativeSelect.Root
@@ -614,20 +715,22 @@ export function PageDraftCard({
                                   aria-label={"Select cover size preset"}
                                   onChange={(event) =>
                                     onCoverSizePresetChange?.(
-                                      event.currentTarget.value as CoverSizePresetId,
+                                      event.currentTarget
+                                        .value as CoverSizePresetId,
                                     )
                                   }
                                 >
-                                  {(coverSizePresetOptions ?? []).map((option) => (
-                                    <option key={option.id} value={option.id}>
-                                      {option.label} · {option.description}
-                                    </option>
-                                  ))}
+                                  {(coverSizePresetOptions ?? []).map(
+                                    (option) => (
+                                      <option key={option.id} value={option.id}>
+                                        {option.label} · {option.description}
+                                      </option>
+                                    ),
+                                  )}
                                 </NativeSelect.Field>
                                 <NativeSelect.Indicator />
                               </NativeSelect.Root>
                             </Box>
-
                           </Box>
                         </Box>
 
@@ -654,7 +757,9 @@ export function PageDraftCard({
                                   {...dialogOutlineButtonProps}
                                   roundedRight={0}
                                   borderRightWidth={"0"}
-                                  onClick={() => void onReplaceCoverFromClipboard?.()}
+                                  onClick={() =>
+                                    void onReplaceCoverFromClipboard?.()
+                                  }
                                   disabled={isCoverToolDisabled}
                                 >
                                   <HStack gap={1.5}>
@@ -676,9 +781,13 @@ export function PageDraftCard({
                                       {...dialogOutlineButtonProps}
                                       roundedLeft={0}
                                       borderLeftWidth={"1px"}
-                                      borderLeftColor={"app.epub.border.default"}
+                                      borderLeftColor={
+                                        "app.epub.border.default"
+                                      }
                                       aria-label={"Upload custom image"}
-                                      onClick={() => coverUploadInputRef.current?.click()}
+                                      onClick={() =>
+                                        coverUploadInputRef.current?.click()
+                                      }
                                       disabled={isCoverToolDisabled}
                                     >
                                       <LuUpload />
@@ -690,7 +799,9 @@ export function PageDraftCard({
                               <Button
                                 {...dialogOutlineButtonProps}
                                 onClick={() => onResetCoverToAuto?.()}
-                                disabled={isCoverToolDisabled || !hasCustomCoverValue}
+                                disabled={
+                                  isCoverToolDisabled || !hasCustomCoverValue
+                                }
                               >
                                 <HStack gap={1.5}>
                                   <Icon>
@@ -705,15 +816,23 @@ export function PageDraftCard({
                               {...switchProps}
                               checked={isTextOnCustomCoverEnabled}
                               onCheckedChange={(details) =>
-                                onIncludeTextOnCustomCoverChange?.(details.checked)
+                                onIncludeTextOnCustomCoverChange?.(
+                                  details.checked,
+                                )
                               }
-                              disabled={isInteractionDisabled || !hasCustomCoverValue}
+                              disabled={
+                                isInteractionDisabled || !hasCustomCoverValue
+                              }
                             >
                               Show title/author text on custom image
                             </Switch>
 
                             <Box>
-                              <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
+                              <Text
+                                fontSize={"sm"}
+                                color={"app.epub.fg.muted"}
+                                mb={1}
+                              >
                                 Cover text size (%)
                               </Text>
                               <NumberInput.Root
@@ -741,40 +860,174 @@ export function PageDraftCard({
                             </Box>
 
                             <Box>
-                              <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
+                              <Text
+                                fontSize={"sm"}
+                                color={"app.epub.fg.muted"}
+                                mb={1}
+                              >
                                 Text position
                               </Text>
-                              <NativeSelect.Root
-                                {...dialogFieldProps}
-                                size={"md"}
-                                disabled={isInteractionDisabled}
-                                maxW={"220px"}
+                              <Menu.Root
+                                positioning={{
+                                  placement: "bottom-start",
+                                }}
                               >
-                                <NativeSelect.Field
-                                  fontFamily={"ui"}
-                                  fontSize={"sm"}
-                                  rounded={"lg"}
-                                  value={effectiveCoverTextPosition}
-                                  aria-label={"Select cover text position style"}
-                                  onChange={(event) =>
-                                    onCoverTextPositionChange?.(
-                                      event.currentTarget.value as CoverTextPosition,
-                                    )
-                                  }
-                                >
-                                  <option value={"style_1"}>Style 1</option>
-                                  <option value={"style_2"}>Style 2</option>
-                                  <option value={"style_3"}>Style 3</option>
-                                  <option value={"style_4"}>Style 4</option>
-                                  <option value={"style_5"}>Style 5</option>
-                                  <option value={"style_6"}>Style 6</option>
-                                </NativeSelect.Field>
-                                <NativeSelect.Indicator />
-                              </NativeSelect.Root>
+                                <Menu.Trigger asChild>
+                                  <Button
+                                    {...dialogFieldProps}
+                                    size={"md"}
+                                    h={"64px"}
+                                    minH={"64px"}
+                                    rounded={"lg"}
+                                    w={"auto"}
+                                    minW={"unset"}
+                                    p={1}
+                                    gap={1.5}
+                                    disabled={isInteractionDisabled}
+                                    aria-label={
+                                      "Select cover text position style"
+                                    }
+                                  >
+                                    <Box
+                                      w={"40px"}
+                                      h={"56px"}
+                                      rounded={"sm"}
+                                      borderWidth={"1px"}
+                                      borderColor={"app.epub.border.default"}
+                                      bg={"app.epub.bg.preview"}
+                                      position={"relative"}
+                                      overflow={"hidden"}
+                                    >
+                                      <Box
+                                        position={"absolute"}
+                                        top={
+                                          selectedCoverTextPreviewLines.title
+                                            .top
+                                        }
+                                        left={
+                                          selectedCoverTextPreviewLines.title
+                                            .left
+                                        }
+                                        w={COVER_PREVIEW_TITLE_WIDTH}
+                                        h={COVER_PREVIEW_TITLE_HEIGHT}
+                                        bg={"app.epub.fg.default"}
+                                        rounded={"full"}
+                                        opacity={COVER_PREVIEW_TITLE_OPACITY}
+                                      />
+                                      <Box
+                                        position={"absolute"}
+                                        top={
+                                          selectedCoverTextPreviewLines.author
+                                            .top
+                                        }
+                                        left={
+                                          selectedCoverTextPreviewLines.author
+                                            .left
+                                        }
+                                        w={COVER_PREVIEW_AUTHOR_WIDTH}
+                                        h={COVER_PREVIEW_AUTHOR_HEIGHT}
+                                        bg={"app.epub.fg.muted"}
+                                        rounded={"full"}
+                                        opacity={COVER_PREVIEW_AUTHOR_OPACITY}
+                                      />
+                                    </Box>
+                                    <Icon color={"app.epub.fg.muted"}>
+                                      <LuChevronDown />
+                                    </Icon>
+                                  </Button>
+                                </Menu.Trigger>
+                                <Menu.Positioner>
+                                  <Menu.Content
+                                    bg={"app.epub.bg.card"}
+                                    borderColor={"app.epub.border.default"}
+                                    minW={"220px"}
+                                    p={2}
+                                    display={"grid"}
+                                    gridTemplateColumns={
+                                      "repeat(3, minmax(0, 1fr))"
+                                    }
+                                    gap={2}
+                                  >
+                                    {COVER_TEXT_POSITION_OPTIONS.map(
+                                      (styleOption) => {
+                                        const previewLines =
+                                          resolveCoverTextPreviewLines(
+                                            styleOption,
+                                          );
+                                        const isSelected =
+                                          styleOption ===
+                                          effectiveCoverTextPosition;
+
+                                        return (
+                                          <Menu.Item
+                                            key={styleOption}
+                                            value={styleOption}
+                                            rounded={"md"}
+                                            p={0}
+                                            bg={"transparent"}
+                                            _hover={{ bg: "transparent" }}
+                                            onClick={() =>
+                                              onCoverTextPositionChange?.(
+                                                styleOption,
+                                              )
+                                            }
+                                          >
+                                            <Box
+                                              w={"full"}
+                                              h={"72px"}
+                                              rounded={"md"}
+                                              borderWidth={
+                                                isSelected ? "2px" : "1px"
+                                              }
+                                              borderColor={
+                                                isSelected
+                                                  ? "app.epub.border.accent"
+                                                  : "app.epub.border.default"
+                                              }
+                                              bg={"app.epub.bg.preview"}
+                                              position={"relative"}
+                                              overflow={"hidden"}
+                                            >
+                                              <Box
+                                                position={"absolute"}
+                                                top={previewLines.title.top}
+                                                left={previewLines.title.left}
+                                                w={COVER_PREVIEW_TITLE_WIDTH}
+                                                h={COVER_PREVIEW_TITLE_HEIGHT}
+                                                bg={"app.epub.fg.default"}
+                                                rounded={"full"}
+                                                opacity={
+                                                  COVER_PREVIEW_TITLE_OPACITY
+                                                }
+                                              />
+                                              <Box
+                                                position={"absolute"}
+                                                top={previewLines.author.top}
+                                                left={previewLines.author.left}
+                                                w={COVER_PREVIEW_AUTHOR_WIDTH}
+                                                h={COVER_PREVIEW_AUTHOR_HEIGHT}
+                                                bg={"app.epub.fg.muted"}
+                                                rounded={"full"}
+                                                opacity={
+                                                  COVER_PREVIEW_AUTHOR_OPACITY
+                                                }
+                                              />
+                                            </Box>
+                                          </Menu.Item>
+                                        );
+                                      },
+                                    )}
+                                  </Menu.Content>
+                                </Menu.Positioner>
+                              </Menu.Root>
                             </Box>
 
                             <Box>
-                              <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
+                              <Text
+                                fontSize={"sm"}
+                                color={"app.epub.fg.muted"}
+                                mb={1}
+                              >
                                 Text color
                               </Text>
                               <NativeSelect.Root
@@ -791,7 +1044,8 @@ export function PageDraftCard({
                                   aria-label={"Select cover text color mode"}
                                   onChange={(event) =>
                                     onCoverTextColorModeChange?.(
-                                      event.currentTarget.value as CoverTextColorMode,
+                                      event.currentTarget
+                                        .value as CoverTextColorMode,
                                     )
                                   }
                                 >
@@ -804,7 +1058,6 @@ export function PageDraftCard({
                             </Box>
                           </VStack>
                         </Box>
-
                       </VStack>
 
                       <Box>
@@ -838,28 +1091,35 @@ export function PageDraftCard({
                                 position={"absolute"}
                                 inset={0}
                                 pointerEvents={
-                                  isCoverExportDisabled && !isInteractionDisabled
+                                  isCoverExportDisabled &&
+                                  !isInteractionDisabled
                                     ? "auto"
                                     : "none"
                                 }
                                 bg={"app.epub.overlay.preview"}
                                 cursor={
-                                  isCoverExportDisabled && !isInteractionDisabled
+                                  isCoverExportDisabled &&
+                                  !isInteractionDisabled
                                     ? "pointer"
                                     : "default"
                                 }
                                 role={
-                                  isCoverExportDisabled && !isInteractionDisabled
+                                  isCoverExportDisabled &&
+                                  !isInteractionDisabled
                                     ? "button"
                                     : undefined
                                 }
                                 tabIndex={
-                                  isCoverExportDisabled && !isInteractionDisabled
+                                  isCoverExportDisabled &&
+                                  !isInteractionDisabled
                                     ? 0
                                     : undefined
                                 }
                                 onClick={() => {
-                                  if (!isCoverExportDisabled || isInteractionDisabled) {
+                                  if (
+                                    !isCoverExportDisabled ||
+                                    isInteractionDisabled
+                                  ) {
                                     return;
                                   }
                                   onToggleCoverEnabled?.();
@@ -883,7 +1143,10 @@ export function PageDraftCard({
                                     px={3}
                                     py={1.5}
                                   >
-                                    <Icon boxSize={3.5} color={"app.epub.fg.default"}>
+                                    <Icon
+                                      boxSize={3.5}
+                                      color={"app.epub.fg.default"}
+                                    >
                                       <LuEyeOff />
                                     </Icon>
                                     <Text
@@ -1050,7 +1313,9 @@ export function PageDraftCard({
               position={"absolute"}
               inset={0}
               pointerEvents={
-                isCoverExportDisabled && !isInteractionDisabled ? "auto" : "none"
+                isCoverExportDisabled && !isInteractionDisabled
+                  ? "auto"
+                  : "none"
               }
               bg={"app.epub.overlay.preview"}
               cursor={
