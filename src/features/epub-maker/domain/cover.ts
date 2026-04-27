@@ -77,6 +77,8 @@ const TITLE_FONT_SIZE_BOOST = 1.04;
 const AUTHOR_FONT_SIZE_BOOST = 1.22;
 const COVER_TEXT_BOUND_LEFT = 130;
 const COVER_TEXT_BOUND_RIGHT = 1070;
+const COVER_FRAME_INSET = 76;
+const COVER_FRAME_RADIUS = 40;
 const COVER_TEXT_STYLE_ORDER: CoverTextPosition[] = [
   "style_1",
   "style_2",
@@ -706,7 +708,13 @@ function createAutoCoverSvgDataUrl(input: AutoCoverInput): string {
     )
     .join("");
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${coverWidth}" height="${coverHeight}" viewBox="0 0 ${coverWidth} ${coverHeight}" role="img" aria-label="Book cover"><defs><linearGradient id="coverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${template.gradientStart}"/><stop offset="100%" stop-color="${template.gradientEnd}"/></linearGradient></defs><rect width="${coverWidth}" height="${coverHeight}" fill="url(#coverGradient)"/><g transform="scale(${metrics.scaleX} ${metrics.scaleY})">${createSvgDecoration(template)}<rect x="76" y="76" width="1048" height="1648" rx="40" fill="none" stroke="${template.frameStroke}" stroke-width="${4 / Math.max(0.0001, metrics.unitScale)}"/></g><text fill="${template.titleColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>${authorTspans ? `<text fill="${template.authorColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>` : ""}</svg>`;
+  const frameInset = Math.round(COVER_FRAME_INSET * metrics.unitScale);
+  const frameRadius = Math.round(COVER_FRAME_RADIUS * metrics.unitScale);
+  const frameX = frameInset;
+  const frameY = frameInset;
+  const frameWidth = Math.max(0, coverWidth - frameInset * 2);
+  const frameHeight = Math.max(0, coverHeight - frameInset * 2);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${coverWidth}" height="${coverHeight}" viewBox="0 0 ${coverWidth} ${coverHeight}" role="img" aria-label="Book cover"><defs><linearGradient id="coverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${template.gradientStart}"/><stop offset="100%" stop-color="${template.gradientEnd}"/></linearGradient></defs><rect width="${coverWidth}" height="${coverHeight}" fill="url(#coverGradient)"/><g transform="scale(${metrics.scaleX} ${metrics.scaleY})">${createSvgDecoration(template)}</g><rect x="${frameX}" y="${frameY}" width="${frameWidth}" height="${frameHeight}" rx="${frameRadius}" fill="none" stroke="${template.frameStroke}" stroke-width="${4 * metrics.unitScale}"/><text fill="${template.titleColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>${authorTspans ? `<text fill="${template.authorColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>` : ""}</svg>`;
 
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
@@ -891,22 +899,29 @@ function drawCanvasDecoration(
       context.stroke();
 
       context.fillStyle = template.accentColor;
-      for (const [x, y, r] of [
-        [150, 250, 24],
-        [185, 220, 20],
-        [185, 280, 20],
-        [112, 220, 20],
-        [112, 280, 20],
-        [1038, 1560, 22],
-        [1070, 1530, 18],
-        [1070, 1590, 18],
-        [1006, 1530, 18],
-        [1006, 1590, 18],
-      ] as const) {
-        context.beginPath();
-        context.arc(sx(x), sy(y), su(r), 0, Math.PI * 2);
-        context.fill();
-      }
+      const drawFlowerCluster = (
+        centerX: number,
+        centerY: number,
+        centerRadius: number,
+        petalOffset: number,
+        petalRadius: number,
+      ) => {
+        const clusterCircles: Array<[number, number, number]> = [
+          [centerX, centerY, centerRadius],
+          [centerX + petalOffset, centerY - petalOffset, petalRadius],
+          [centerX + petalOffset, centerY + petalOffset, petalRadius],
+          [centerX - petalOffset, centerY - petalOffset, petalRadius],
+          [centerX - petalOffset, centerY + petalOffset, petalRadius],
+        ];
+        for (const [x, y, r] of clusterCircles) {
+          context.beginPath();
+          context.arc(x, y, r, 0, Math.PI * 2);
+          context.fill();
+        }
+      };
+
+      drawFlowerCluster(sx(150), sy(250), su(24), su(35), su(20));
+      drawFlowerCluster(sx(1038), sy(1560), su(22), su(32), su(18));
 
       context.fillStyle = "rgba(37,69,53,0.16)";
       context.save();
@@ -968,15 +983,17 @@ function createAutoCoverRasterDataUrl(input: AutoCoverInput): string {
 
   drawCanvasDecoration(context, template, metrics, coverWidth, coverHeight);
 
+  const frameInset = COVER_FRAME_INSET * metrics.unitScale;
+  const frameRadius = COVER_FRAME_RADIUS * metrics.unitScale;
   context.strokeStyle = template.frameStroke;
   context.lineWidth = 4 * metrics.unitScale;
   drawRoundedRectPath(
     context,
-    76 * metrics.scaleX,
-    76 * metrics.scaleY,
-    1048 * metrics.scaleX,
-    1648 * metrics.scaleY,
-    40 * metrics.unitScale,
+    frameInset,
+    frameInset,
+    Math.max(0, coverWidth - frameInset * 2),
+    Math.max(0, coverHeight - frameInset * 2),
+    frameRadius,
   );
   context.stroke();
 
