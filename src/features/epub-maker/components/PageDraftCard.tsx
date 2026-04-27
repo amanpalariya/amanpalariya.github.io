@@ -218,6 +218,11 @@ function resolveCoverTextPreviewLines(style: CoverTextPosition): {
   };
 }
 
+function extractFirstImageSrcFromHtml(html: string): string | null {
+  const match = html.match(/<img[^>]*\ssrc=["']([^"']+)["'][^>]*>/i);
+  return match?.[1] ?? null;
+}
+
 function isBaseTemplateId(
   value: CoverTemplateId,
 ): value is BaseCoverTemplateId {
@@ -585,18 +590,22 @@ export function PageDraftCard({
   const effectiveCoverTextPosition = coverTextPosition ?? "style_1";
   const effectiveCoverTextColorMode = coverTextColorMode ?? "adaptive";
   const isCoverTextHidden = hideCoverText ?? false;
+  const isCoverTextEnabled = !isCoverTextHidden;
+  const isCoverTextControlsDisabled =
+    isInteractionDisabled || !isCoverTextEnabled;
   const hasCustomCoverValue = hasCustomCover ?? false;
   const availableCoverTemplateOptions = coverTemplateOptions ?? [];
   const selectableCoverTemplateOptions = availableCoverTemplateOptions.filter(
     (option) => option.id !== "custom",
   );
-  const selectedTemplatePreviewId =
+  const selectedTemplateMenuId =
     selectedCoverTemplateId &&
     selectableCoverTemplateOptions.some(
       (option) => option.id === selectedCoverTemplateId,
     )
       ? selectedCoverTemplateId
       : (selectableCoverTemplateOptions[0]?.id ?? "classic");
+  const isCustomTemplateSelected = hasCustomCoverValue && coverMode === "custom";
   const isTemplateSelectionDisabled =
     isInteractionDisabled || selectableCoverTemplateOptions.length === 0;
   const templatePreviewById = useMemo(() => {
@@ -629,9 +638,17 @@ export function PageDraftCard({
   ]);
 
   const selectedCoverTemplatePreviewSrc =
-    templatePreviewById[selectedTemplatePreviewId] ??
+    (isCustomTemplateSelected
+      ? extractFirstImageSrcFromHtml(page.previewHtml)
+      : undefined) ??
+    templatePreviewById[selectedTemplateMenuId] ??
     templatePreviewById.classic ??
     "";
+  const selectedCoverTemplateLabel = isCustomTemplateSelected
+    ? "Custom"
+    : (availableCoverTemplateOptions.find(
+        (option) => option.id === selectedTemplateMenuId,
+      )?.label ?? "Template");
   const selectedCoverTextPreviewLines = resolveCoverTextPreviewLines(
     effectiveCoverTextPosition,
   );
@@ -820,7 +837,7 @@ export function PageDraftCard({
                             gap={3}
                             gridTemplateColumns={{
                               base: "minmax(0, 1fr)",
-                              md: "repeat(3, minmax(0, 1fr))",
+                              md: "minmax(0, 1fr)",
                             }}
                           >
                             <Box>
@@ -836,68 +853,123 @@ export function PageDraftCard({
                                   placement: "bottom-start",
                                 }}
                               >
-                                <Menu.Trigger asChild>
+                                <Box
+                                  display={"grid"}
+                                  gridTemplateColumns={"minmax(0, 1fr) auto auto"}
+                                  w={"full"}
+                                  minW={0}
+                                >
+                                  <Menu.Trigger asChild>
+                                    <Button
+                                      {...dialogFieldProps}
+                                      size={"md"}
+                                      h={"64px"}
+                                      minH={"64px"}
+                                      roundedRight={0}
+                                      borderRightWidth={"0"}
+                                      w={"full"}
+                                      minW={0}
+                                      p={1}
+                                      justifyContent={"flex-start"}
+                                      disabled={isTemplateSelectionDisabled}
+                                      aria-label={"Select cover template"}
+                                    >
+                                      <HStack
+                                        w={"full"}
+                                        justify={"space-between"}
+                                        gap={2}
+                                      >
+                                        <HStack align={"center"} gap={2} minW={0}>
+                                          <Box
+                                            w={"40px"}
+                                            h={"56px"}
+                                            rounded={"sm"}
+                                            borderWidth={"1px"}
+                                            borderColor={
+                                              "app.epub.border.default"
+                                            }
+                                            bg={"app.epub.bg.preview"}
+                                            style={{
+                                              backgroundImage:
+                                                selectedCoverTemplatePreviewSrc
+                                                  ? `url("${selectedCoverTemplatePreviewSrc}")`
+                                                  : undefined,
+                                              backgroundSize: "cover",
+                                              backgroundPosition: "center",
+                                            }}
+                                            position={"relative"}
+                                            overflow={"hidden"}
+                                          />
+                                          <Text
+                                            fontFamily={"ui"}
+                                            fontSize={"sm"}
+                                            color={"app.epub.fg.default"}
+                                            lineClamp={1}
+                                            textAlign={"left"}
+                                          >
+                                            {selectedCoverTemplateLabel}
+                                          </Text>
+                                        </HStack>
+                                        <Icon
+                                          color={"app.epub.fg.muted"}
+                                          flexShrink={0}
+                                        >
+                                          <LuChevronDown />
+                                        </Icon>
+                                      </HStack>
+                                    </Button>
+                                  </Menu.Trigger>
                                   <Button
-                                    {...dialogFieldProps}
+                                    {...dialogOutlineButtonProps}
+                                    roundedLeft={0}
+                                    roundedRight={0}
+                                    borderLeftWidth={"1px"}
+                                    borderRightWidth={"0"}
+                                    borderLeftColor={"app.epub.border.default"}
                                     size={"md"}
                                     h={"64px"}
                                     minH={"64px"}
-                                    rounded={"lg"}
-                                    w={"full"}
-                                    p={1}
-                                    justifyContent={"flex-start"}
-                                    disabled={isTemplateSelectionDisabled}
-                                    aria-label={"Select cover template"}
+                                    onClick={() =>
+                                      void onReplaceCoverFromClipboard?.()
+                                    }
+                                    disabled={isCoverToolDisabled}
                                   >
-                                    <HStack
-                                      w={"full"}
-                                      justify={"space-between"}
-                                      gap={2}
-                                    >
-                                      <HStack align={"center"} gap={2} minW={0}>
-                                        <Box
-                                          w={"40px"}
-                                          h={"56px"}
-                                          rounded={"sm"}
-                                          borderWidth={"1px"}
-                                          borderColor={
-                                            "app.epub.border.default"
-                                          }
-                                          bg={"app.epub.bg.preview"}
-                                          style={{
-                                            backgroundImage:
-                                              selectedCoverTemplatePreviewSrc
-                                                ? `url("${selectedCoverTemplatePreviewSrc}")`
-                                                : undefined,
-                                            backgroundSize: "cover",
-                                            backgroundPosition: "center",
-                                          }}
-                                          position={"relative"}
-                                          overflow={"hidden"}
-                                        />
-                                        <Text
-                                          fontFamily={"ui"}
-                                          fontSize={"sm"}
-                                          color={"app.epub.fg.default"}
-                                          lineClamp={1}
-                                          textAlign={"left"}
-                                        >
-                                          {availableCoverTemplateOptions.find(
-                                            (option) =>
-                                              option.id ===
-                                              selectedTemplatePreviewId,
-                                          )?.label ?? "Template"}
-                                        </Text>
-                                      </HStack>
-                                      <Icon
-                                        color={"app.epub.fg.muted"}
-                                        flexShrink={0}
-                                      >
-                                        <LuChevronDown />
+                                    <HStack gap={1.5}>
+                                      <Icon>
+                                        <LuClipboardPaste />
                                       </Icon>
+                                      <Text>Paste</Text>
                                     </HStack>
                                   </Button>
-                                </Menu.Trigger>
+                                  <FileUpload.Root maxFiles={1}>
+                                    <FileUpload.HiddenInput
+                                      ref={coverUploadInputRef}
+                                      aria-label={"Upload cover image"}
+                                      accept={"image/*"}
+                                      onChange={handleCoverUploadChange}
+                                    />
+                                    <Tooltip content={"Upload custom image"}>
+                                      <IconButton
+                                        {...dialogOutlineButtonProps}
+                                        roundedLeft={0}
+                                        borderLeftWidth={"1px"}
+                                        borderLeftColor={
+                                          "app.epub.border.default"
+                                        }
+                                        size={"md"}
+                                        h={"64px"}
+                                        minH={"64px"}
+                                        aria-label={"Upload custom image"}
+                                        onClick={() =>
+                                          coverUploadInputRef.current?.click()
+                                        }
+                                        disabled={isCoverToolDisabled}
+                                      >
+                                        <LuUpload />
+                                      </IconButton>
+                                    </Tooltip>
+                                  </FileUpload.Root>
+                                </Box>
                                 <Menu.Positioner>
                                   <Menu.Content
                                     bg={"app.epub.bg.card"}
@@ -906,131 +978,146 @@ export function PageDraftCard({
                                     p={2}
                                     rounded={"lg"}
                                     overflow={"hidden"}
-                                    display={"grid"}
-                                    gridTemplateColumns={
-                                      COVER_TEMPLATE_LABEL_MODE === "side"
-                                        ? "minmax(0, 1fr)"
-                                        : "repeat(3, minmax(0, 1fr))"
-                                    }
-                                    gap={2}
                                   >
-                                    {selectableCoverTemplateOptions.map(
-                                      (option) => {
-                                        const previewSrc =
-                                          templatePreviewById[option.id];
-                                        const isSelected =
-                                          option.id ===
-                                          selectedTemplatePreviewId;
+                                    <Box
+                                      display={"grid"}
+                                      gridTemplateColumns={
+                                        COVER_TEMPLATE_LABEL_MODE === "side"
+                                          ? "minmax(0, 1fr)"
+                                          : "repeat(3, minmax(0, 1fr))"
+                                      }
+                                      gap={2}
+                                    >
+                                      {selectableCoverTemplateOptions.map(
+                                        (option) => {
+                                          const previewSrc =
+                                            templatePreviewById[option.id];
+                                          const isSelected =
+                                            !isCustomTemplateSelected &&
+                                            option.id === selectedTemplateMenuId;
 
-                                        return (
-                                          <Menu.Item
-                                            key={option.id}
-                                            value={option.id}
-                                            rounded={"md"}
-                                            p={0}
-                                            bg={"transparent"}
-                                            _hover={{ bg: "transparent" }}
-                                            onClick={() =>
-                                              onCoverTemplateChange?.(
-                                                option.id,
-                                              )
-                                            }
-                                          >
-                                            <VStack
-                                              align={
-                                                COVER_TEMPLATE_LABEL_MODE ===
-                                                "side"
-                                                  ? "start"
-                                                  : "stretch"
+                                          return (
+                                            <Menu.Item
+                                              key={option.id}
+                                              value={option.id}
+                                              rounded={"md"}
+                                              p={0}
+                                              bg={"transparent"}
+                                              _hover={{ bg: "transparent" }}
+                                              onClick={() =>
+                                                onCoverTemplateChange?.(
+                                                  option.id,
+                                                )
                                               }
-                                              gap={0.5}
-                                              w={"full"}
                                             >
-                                              <HStack
-                                                align={"start"}
-                                                gap={
+                                              <VStack
+                                                align={
                                                   COVER_TEMPLATE_LABEL_MODE ===
                                                   "side"
-                                                    ? 2
-                                                    : 0
+                                                    ? "start"
+                                                    : "stretch"
                                                 }
+                                                gap={0.5}
+                                                w={"full"}
                                               >
-                                                <AspectRatio
-                                                  ratio={COVER_GRID_TILE_RATIO}
-                                                  w={"full"}
-                                                  flex={
+                                                <HStack
+                                                  align={"start"}
+                                                  gap={
                                                     COVER_TEMPLATE_LABEL_MODE ===
                                                     "side"
-                                                      ? "0 0 64px"
-                                                      : undefined
+                                                      ? 2
+                                                      : 0
                                                   }
                                                 >
-                                                  <Box
-                                                    rounded={"sm"}
-                                                    borderWidth={
-                                                      isSelected ? "3px" : "1px"
-                                                    }
-                                                    borderColor={
-                                                      isSelected
-                                                        ? "app.epub.button.primary.border"
-                                                        : "app.epub.border.default"
-                                                    }
-                                                    bg={"app.epub.bg.preview"}
-                                                    style={{
-                                                      backgroundImage:
-                                                        previewSrc
-                                                          ? `url("${previewSrc}")`
-                                                          : undefined,
-                                                      backgroundSize: "cover",
-                                                      backgroundPosition:
-                                                        "center",
-                                                    }}
-                                                    position={"relative"}
-                                                    overflow={"hidden"}
-                                                    outline={
-                                                      isSelected
-                                                        ? "2px solid"
-                                                        : "none"
-                                                    }
-                                                    outlineColor={
-                                                      isSelected
-                                                        ? "app.epub.button.primary.border"
-                                                        : "transparent"
-                                                    }
-                                                    transition={
-                                                      "border-color 0.16s ease"
+                                                  <AspectRatio
+                                                    ratio={COVER_GRID_TILE_RATIO}
+                                                    w={"full"}
+                                                    flex={
+                                                      COVER_TEMPLATE_LABEL_MODE ===
+                                                      "side"
+                                                        ? "0 0 64px"
+                                                        : undefined
                                                     }
                                                   >
-                                                    {isSelected ? (
-                                                      <Box
-                                                        position={"absolute"}
-                                                        top={1}
-                                                        right={1}
-                                                        w={"16px"}
-                                                        h={"16px"}
-                                                        rounded={"full"}
-                                                        bg={
-                                                          "app.epub.button.primary.bg"
-                                                        }
-                                                        color={
-                                                          "app.epub.button.primary.fg"
-                                                        }
-                                                        display={"grid"}
-                                                        placeItems={"center"}
-                                                        borderWidth={"1px"}
-                                                        borderColor={
-                                                          "app.epub.bg.card"
-                                                        }
-                                                      >
-                                                        <Icon boxSize={2.5}>
-                                                          <LuCheck />
-                                                        </Icon>
-                                                      </Box>
-                                                    ) : null}
-                                                  </Box>
-                                                </AspectRatio>
+                                                    <Box
+                                                      rounded={"sm"}
+                                                      borderWidth={
+                                                        isSelected ? "3px" : "1px"
+                                                      }
+                                                      borderColor={
+                                                        isSelected
+                                                          ? "app.epub.button.primary.border"
+                                                          : "app.epub.border.default"
+                                                      }
+                                                      bg={"app.epub.bg.preview"}
+                                                      style={{
+                                                        backgroundImage:
+                                                          previewSrc
+                                                            ? `url("${previewSrc}")`
+                                                            : undefined,
+                                                        backgroundSize: "cover",
+                                                        backgroundPosition:
+                                                          "center",
+                                                      }}
+                                                      position={"relative"}
+                                                      overflow={"hidden"}
+                                                      outline={
+                                                        isSelected
+                                                          ? "2px solid"
+                                                          : "none"
+                                                      }
+                                                      outlineColor={
+                                                        isSelected
+                                                          ? "app.epub.button.primary.border"
+                                                          : "transparent"
+                                                      }
+                                                      transition={
+                                                        "border-color 0.16s ease"
+                                                      }
+                                                    >
+                                                      {isSelected ? (
+                                                        <Box
+                                                          position={"absolute"}
+                                                          top={1}
+                                                          right={1}
+                                                          w={"16px"}
+                                                          h={"16px"}
+                                                          rounded={"full"}
+                                                          bg={
+                                                            "app.epub.button.primary.bg"
+                                                          }
+                                                          color={
+                                                            "app.epub.button.primary.fg"
+                                                          }
+                                                          display={"grid"}
+                                                          placeItems={"center"}
+                                                          borderWidth={"1px"}
+                                                          borderColor={
+                                                            "app.epub.bg.card"
+                                                          }
+                                                        >
+                                                          <Icon boxSize={2.5}>
+                                                            <LuCheck />
+                                                          </Icon>
+                                                        </Box>
+                                                      ) : null}
+                                                    </Box>
+                                                  </AspectRatio>
+                                                  {COVER_TEMPLATE_LABEL_MODE ===
+                                                  "side"
+                                                    ? renderGridOptionMeta({
+                                                        labelMode:
+                                                          COVER_TEMPLATE_LABEL_MODE,
+                                                        label: option.label,
+                                                        description:
+                                                          option.description,
+                                                        showDescription:
+                                                          SHOW_TEMPLATE_DESCRIPTIONS,
+                                                      })
+                                                    : null}
+                                                </HStack>
                                                 {COVER_TEMPLATE_LABEL_MODE ===
-                                                "side"
+                                                "bottom"
                                                   ? renderGridOptionMeta({
                                                       labelMode:
                                                         COVER_TEMPLATE_LABEL_MODE,
@@ -1041,24 +1128,12 @@ export function PageDraftCard({
                                                         SHOW_TEMPLATE_DESCRIPTIONS,
                                                     })
                                                   : null}
-                                              </HStack>
-                                              {COVER_TEMPLATE_LABEL_MODE ===
-                                              "bottom"
-                                                ? renderGridOptionMeta({
-                                                    labelMode:
-                                                      COVER_TEMPLATE_LABEL_MODE,
-                                                    label: option.label,
-                                                    description:
-                                                      option.description,
-                                                    showDescription:
-                                                      SHOW_TEMPLATE_DESCRIPTIONS,
-                                                  })
-                                                : null}
-                                            </VStack>
-                                          </Menu.Item>
-                                        );
-                                      },
-                                    )}
+                                              </VStack>
+                                            </Menu.Item>
+                                          );
+                                        },
+                                      )}
+                                    </Box>
                                   </Menu.Content>
                                 </Menu.Positioner>
                               </Menu.Root>
@@ -1353,6 +1428,115 @@ export function PageDraftCard({
                               </Menu.Root>
                             </Box>
 
+                          </Box>
+
+                        </Box>
+
+                        <Box
+                          p={4}
+                          rounded={"xl"}
+                          bg={coverDialogSectionCardBg}
+                          borderWidth={"1px"}
+                          borderColor={"app.epub.border.default"}
+                        >
+                          <HStack gap={2} mb={3}>
+                            <Switch
+                              {...switchProps}
+                              checked={isCoverTextEnabled}
+                              onCheckedChange={(details) =>
+                                onHideCoverTextChange?.(!details.checked)
+                              }
+                              disabled={isInteractionDisabled}
+                              inputProps={{
+                                "aria-label": "Toggle cover text visibility",
+                              }}
+                            />
+                            <Text
+                              fontFamily={"ui"}
+                              fontSize={"sm"}
+                              fontWeight={"semibold"}
+                              color={"app.epub.fg.default"}
+                            >
+                              Cover text
+                            </Text>
+                          </HStack>
+                          <VStack align={"stretch"} gap={2}>
+                            <Box
+                              display={"grid"}
+                              gap={3}
+                              gridTemplateColumns={{
+                                base: "minmax(0, 1fr)",
+                                lg: "repeat(2, minmax(0, 1fr))",
+                              }}
+                            >
+                              <Box>
+                                <Text
+                                  fontSize={"sm"}
+                                  color={"app.epub.fg.muted"}
+                                  mb={1}
+                                >
+                                  Cover text size (%)
+                                </Text>
+                                <NumberInput.Root
+                                  {...dialogFieldProps}
+                                  size={"md"}
+                                  value={String(effectiveCoverTextScalePercent)}
+                                  min={70}
+                                  max={180}
+                                  step={5}
+                                  onValueChange={(details) =>
+                                    handleCoverTextScaleChange(details.value)
+                                  }
+                                  disabled={isCoverTextControlsDisabled}
+                                  w={"full"}
+                                >
+                                  <NumberInput.Control />
+                                  <NumberInput.Input
+                                    fontFamily={"ui"}
+                                    fontSize={"sm"}
+                                    rounded={"lg"}
+                                    bg={"app.epub.bg.card"}
+                                    color={"app.epub.fg.default"}
+                                  />
+                                </NumberInput.Root>
+                              </Box>
+
+                              <Box>
+                                <Text
+                                  fontSize={"sm"}
+                                  color={"app.epub.fg.muted"}
+                                  mb={1}
+                                >
+                                  Text color
+                                </Text>
+                                <NativeSelect.Root
+                                  {...dialogFieldProps}
+                                  size={"md"}
+                                  disabled={isCoverTextControlsDisabled}
+                                  w={"full"}
+                                >
+                                  <NativeSelect.Field
+                                    fontFamily={"ui"}
+                                    fontSize={"sm"}
+                                    rounded={"lg"}
+                                    value={effectiveCoverTextColorMode}
+                                    aria-label={"Select cover text color mode"}
+                                    onChange={(event) =>
+                                      onCoverTextColorModeChange?.(
+                                        event.currentTarget
+                                          .value as CoverTextColorMode,
+                                      )
+                                    }
+                                  >
+                                    <option value={"light"}>Light</option>
+                                    <option value={"dark"}>Dark</option>
+                                    <option value={"adaptive"}>Adaptive</option>
+                                  </NativeSelect.Field>
+                                  <NativeSelect.Indicator />
+                                </NativeSelect.Root>
+                              </Box>
+                            </Box>
+
                             <Box>
                               <Text
                                 fontSize={"sm"}
@@ -1377,7 +1561,7 @@ export function PageDraftCard({
                                     minW={"unset"}
                                     p={1}
                                     gap={1.5}
-                                    disabled={isInteractionDisabled}
+                                    disabled={isCoverTextControlsDisabled}
                                     aria-label={
                                       "Select cover text position style"
                                     }
@@ -1555,151 +1739,6 @@ export function PageDraftCard({
                                   </Menu.Content>
                                 </Menu.Positioner>
                               </Menu.Root>
-                            </Box>
-                          </Box>
-
-                          <VStack align={"stretch"} gap={2} mt={3}>
-                            <HStack gap={2} wrap={"wrap"}>
-                              <HStack gap={0} align={"stretch"}>
-                                <Button
-                                  {...dialogOutlineButtonProps}
-                                  roundedRight={0}
-                                  borderRightWidth={"0"}
-                                  onClick={() =>
-                                    void onReplaceCoverFromClipboard?.()
-                                  }
-                                  disabled={isCoverToolDisabled}
-                                >
-                                  <HStack gap={1.5}>
-                                    <Icon>
-                                      <LuClipboardPaste />
-                                    </Icon>
-                                    <Text>Paste custom image</Text>
-                                  </HStack>
-                                </Button>
-                                <FileUpload.Root maxFiles={1}>
-                                  <FileUpload.HiddenInput
-                                    ref={coverUploadInputRef}
-                                    aria-label={"Upload cover image"}
-                                    accept={"image/*"}
-                                    onChange={handleCoverUploadChange}
-                                  />
-                                  <Tooltip content={"Upload custom image"}>
-                                    <IconButton
-                                      {...dialogOutlineButtonProps}
-                                      roundedLeft={0}
-                                      borderLeftWidth={"1px"}
-                                      borderLeftColor={
-                                        "app.epub.border.default"
-                                      }
-                                      aria-label={"Upload custom image"}
-                                      onClick={() =>
-                                        coverUploadInputRef.current?.click()
-                                      }
-                                      disabled={isCoverToolDisabled}
-                                    >
-                                      <LuUpload />
-                                    </IconButton>
-                                  </Tooltip>
-                                </FileUpload.Root>
-                              </HStack>
-                            </HStack>
-
-                            <Switch
-                              {...switchProps}
-                              checked={isCoverTextHidden}
-                              onCheckedChange={(details) =>
-                                onHideCoverTextChange?.(details.checked)
-                              }
-                              disabled={isInteractionDisabled}
-                            >
-                              Hide title/author text
-                            </Switch>
-                          </VStack>
-                        </Box>
-
-                        <Box
-                          p={4}
-                          rounded={"xl"}
-                          bg={coverDialogSectionCardBg}
-                          borderWidth={"1px"}
-                          borderColor={"app.epub.border.default"}
-                        >
-                          <Text
-                            fontFamily={"ui"}
-                            fontSize={"sm"}
-                            fontWeight={"semibold"}
-                            color={"app.epub.fg.default"}
-                            mb={3}
-                          >
-                            Cover text
-                          </Text>
-                          <VStack align={"stretch"} gap={2}>
-                            <Box>
-                              <Text
-                                fontSize={"sm"}
-                                color={"app.epub.fg.muted"}
-                                mb={1}
-                              >
-                                Cover text size (%)
-                              </Text>
-                              <NumberInput.Root
-                                {...dialogFieldProps}
-                                size={"md"}
-                                value={String(effectiveCoverTextScalePercent)}
-                                min={70}
-                                max={180}
-                                step={5}
-                                onValueChange={(details) =>
-                                  handleCoverTextScaleChange(details.value)
-                                }
-                                disabled={isInteractionDisabled}
-                                maxW={"220px"}
-                              >
-                                <NumberInput.Control />
-                                <NumberInput.Input
-                                  fontFamily={"ui"}
-                                  fontSize={"sm"}
-                                  rounded={"lg"}
-                                  bg={"app.epub.bg.card"}
-                                  color={"app.epub.fg.default"}
-                                />
-                              </NumberInput.Root>
-                            </Box>
-
-                            <Box>
-                              <Text
-                                fontSize={"sm"}
-                                color={"app.epub.fg.muted"}
-                                mb={1}
-                              >
-                                Text color
-                              </Text>
-                              <NativeSelect.Root
-                                {...dialogFieldProps}
-                                size={"md"}
-                                disabled={isInteractionDisabled}
-                                maxW={"220px"}
-                              >
-                                <NativeSelect.Field
-                                  fontFamily={"ui"}
-                                  fontSize={"sm"}
-                                  rounded={"lg"}
-                                  value={effectiveCoverTextColorMode}
-                                  aria-label={"Select cover text color mode"}
-                                  onChange={(event) =>
-                                    onCoverTextColorModeChange?.(
-                                      event.currentTarget
-                                        .value as CoverTextColorMode,
-                                    )
-                                  }
-                                >
-                                  <option value={"light"}>Light</option>
-                                  <option value={"dark"}>Dark</option>
-                                  <option value={"adaptive"}>Adaptive</option>
-                                </NativeSelect.Field>
-                                <NativeSelect.Indicator />
-                              </NativeSelect.Root>
                             </Box>
                           </VStack>
                         </Box>

@@ -1083,7 +1083,8 @@ export function useEpubMaker(): UseEpubMakerReturn {
         prev.coverSizePresetId === nextCoverSizePresetId &&
         prev.coverTextPosition === "style_1" &&
         prev.coverTextScalePercent === 100 &&
-        prev.coverTextColorMode === "adaptive"
+        prev.coverTextColorMode === "adaptive" &&
+        prev.hideCoverText === false
       ) {
         return prev;
       }
@@ -1096,6 +1097,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
         coverTextPosition: "style_1",
         coverTextScalePercent: 100,
         coverTextColorMode: "adaptive",
+        hideCoverText: false,
       };
     });
 
@@ -1307,9 +1309,20 @@ export function useEpubMaker(): UseEpubMakerReturn {
       setPrefs((prev) => ({ ...prev, title: value })),
     setAuthor: (value: string) =>
       setPrefs((prev) => ({ ...prev, author: value })),
-    setCoverTemplateId: (value: CoverTemplateId) =>
+    setCoverTemplateId: (value: CoverTemplateId) => {
+      if (!isBaseCoverTemplateId(value)) return;
+
+      // Picking a built-in template exits custom-image mode immediately.
+      commitDraftChange((previousDraft) =>
+        previousDraft.customCoverHtml === null
+          ? previousDraft
+          : {
+              ...previousDraft,
+              customCoverHtml: null,
+            },
+      );
+
       setPrefs((prev) => {
-        if (!isBaseCoverTemplateId(value)) return prev;
         if (
           prev.coverTemplateId === value &&
           prev.coverBaseTemplateId === value
@@ -1321,7 +1334,8 @@ export function useEpubMaker(): UseEpubMakerReturn {
           coverTemplateId: value,
           coverBaseTemplateId: value,
         };
-      }),
+      });
+    },
     setCoverSizePresetId: (value: CoverSizePresetId) =>
       setPrefs((prev) =>
         prev.coverSizePresetId === value
