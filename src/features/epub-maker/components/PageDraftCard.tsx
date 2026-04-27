@@ -7,6 +7,7 @@ import {
   Icon,
   Input,
   InputGroup,
+  NativeSelect,
   Text,
 } from "@chakra-ui/react";
 import { Tooltip } from "@components/ui/tooltip";
@@ -18,6 +19,7 @@ import {
   LuEyeOff,
   LuGripVertical,
   LuLoaderCircle,
+  LuPalette,
   LuRefreshCw,
   LuTrash2,
   LuUpload,
@@ -31,7 +33,12 @@ import {
   type KeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import type { ChapterGenerationStatus, PageDraft } from "../types";
+import type {
+  ChapterGenerationStatus,
+  CoverTemplateId,
+  CoverTemplateOption,
+  PageDraft,
+} from "../types";
 
 type DragPreviewAnchor = {
   clientX: number;
@@ -47,6 +54,9 @@ export function PageDraftCard({
   isCover,
   hasCustomCover,
   isCoverEnabled,
+  selectedCoverTemplateId,
+  coverTemplateOptions,
+  onCoverTemplateChange,
   onReplaceCoverFromFiles,
   onReplaceCoverFromClipboard,
   onResetCoverToAuto,
@@ -74,6 +84,9 @@ export function PageDraftCard({
   isCover?: boolean;
   hasCustomCover?: boolean;
   isCoverEnabled?: boolean;
+  selectedCoverTemplateId?: CoverTemplateId;
+  coverTemplateOptions?: CoverTemplateOption[];
+  onCoverTemplateChange?: (templateId: CoverTemplateId) => void;
   onReplaceCoverFromFiles?: (files: FileList | File[]) => Promise<void>;
   onReplaceCoverFromClipboard?: () => Promise<void>;
   onResetCoverToAuto?: () => void;
@@ -331,96 +344,99 @@ export function PageDraftCard({
     >
       <Box borderBottomWidth={"1px"} borderColor={"app.epub.border.muted"}>
         {isCover ? (
-          <HStack h={"2.25rem"} px={2} justify={"space-between"} align={"center"}>
-            <Text
-              fontFamily={"ui"}
-              fontSize={"sm"}
-              fontWeight={"medium"}
-              color={"app.epub.fg.default"}
-            >
-              Cover
-            </Text>
+          <>
+            <HStack h={"2.25rem"} px={2} justify={"space-between"} align={"center"}>
+              <Text
+                fontFamily={"ui"}
+                fontSize={"sm"}
+                fontWeight={"medium"}
+                color={"app.epub.fg.default"}
+              >
+                Cover
+              </Text>
 
-            <HStack gap={0.5}>
-              <FileUpload.Root maxFiles={1}>
-                <FileUpload.HiddenInput
-                  ref={coverUploadInputRef}
-                  aria-label={"Upload cover image"}
-                  accept={"image/*"}
-                  onChange={handleCoverUploadChange}
-                />
-                <Tooltip content={"Upload cover"}>
+              <HStack gap={0.5}>
+                <FileUpload.Root maxFiles={1}>
+                  <FileUpload.HiddenInput
+                    ref={coverUploadInputRef}
+                    aria-label={"Upload cover image"}
+                    accept={"image/*"}
+                    onChange={handleCoverUploadChange}
+                  />
+                  <Tooltip content={"Upload cover"}>
+                    <Button
+                      size={"xs"}
+                      variant={"ghost"}
+                      onClick={() => coverUploadInputRef.current?.click()}
+                      disabled={isCoverToolDisabled}
+                      aria-label={"Upload cover"}
+                      minW={"auto"}
+                      px={2}
+                    >
+                      <Icon>
+                        <LuUpload />
+                      </Icon>
+                    </Button>
+                  </Tooltip>
+                </FileUpload.Root>
+
+                <Tooltip content={"Paste cover"}>
                   <Button
                     size={"xs"}
                     variant={"ghost"}
-                    onClick={() => coverUploadInputRef.current?.click()}
+                    onClick={() => void onReplaceCoverFromClipboard?.()}
                     disabled={isCoverToolDisabled}
-                    aria-label={"Upload cover"}
+                    aria-label={"Paste cover"}
                     minW={"auto"}
                     px={2}
                   >
                     <Icon>
-                      <LuUpload />
+                      <LuClipboardPaste />
                     </Icon>
                   </Button>
                 </Tooltip>
-              </FileUpload.Root>
 
-              <Tooltip content={"Paste cover"}>
-                <Button
-                  size={"xs"}
-                  variant={"ghost"}
-                  onClick={() => void onReplaceCoverFromClipboard?.()}
-                  disabled={isCoverToolDisabled}
-                  aria-label={"Paste cover"}
-                  minW={"auto"}
-                  px={2}
-                >
-                  <Icon>
-                    <LuClipboardPaste />
-                  </Icon>
-                </Button>
-              </Tooltip>
+                <Tooltip content={"Reset cover"}>
+                  <Button
+                    size={"xs"}
+                    variant={"ghost"}
+                    onClick={() => onResetCoverToAuto?.()}
+                    disabled={isCoverToolDisabled || !hasCustomCover}
+                    aria-label={"Reset cover"}
+                    minW={"auto"}
+                    px={2}
+                  >
+                    <Icon>
+                      <LuRefreshCw />
+                    </Icon>
+                  </Button>
+                </Tooltip>
 
-              <Tooltip content={"Reset cover"}>
-                <Button
-                  size={"xs"}
-                  variant={"ghost"}
-                  onClick={() => onResetCoverToAuto?.()}
-                  disabled={isCoverToolDisabled || !hasCustomCover}
-                  aria-label={"Reset cover"}
-                  minW={"auto"}
-                  px={2}
-                >
-                  <Icon>
-                    <LuRefreshCw />
-                  </Icon>
-                </Button>
-              </Tooltip>
-
-              <Tooltip
-                content={
-                  isEffectiveCoverEnabled ? "Disable cover" : "Enable cover"
-                }
-              >
-                <Button
-                  size={"xs"}
-                  variant={"ghost"}
-                  onClick={() => onToggleCoverEnabled?.()}
-                  disabled={isInteractionDisabled}
-                  aria-label={
+                <Tooltip
+                  content={
                     isEffectiveCoverEnabled ? "Disable cover" : "Enable cover"
                   }
-                  minW={"auto"}
-                  px={2}
                 >
-                  <Icon>
-                    {isEffectiveCoverEnabled ? <LuEyeOff /> : <LuEye />}
-                  </Icon>
-                </Button>
-              </Tooltip>
+                  <Button
+                    size={"xs"}
+                    variant={"ghost"}
+                    onClick={() => onToggleCoverEnabled?.()}
+                    disabled={isInteractionDisabled}
+                    aria-label={
+                      isEffectiveCoverEnabled ? "Disable cover" : "Enable cover"
+                    }
+                    minW={"auto"}
+                    px={2}
+                  >
+                    <Icon>
+                      {isEffectiveCoverEnabled ? <LuEyeOff /> : <LuEye />}
+                    </Icon>
+                  </Button>
+                </Tooltip>
+              </HStack>
             </HStack>
-          </HStack>
+
+          </>
         ) : (
           <InputGroup
             startAddon={chapterNumber}
@@ -492,6 +508,58 @@ export function PageDraftCard({
         cursor={"default"}
       >
         <Box position={"relative"} w={"full"} h={"full"}>
+          {isCover &&
+          selectedCoverTemplateId &&
+          coverTemplateOptions &&
+          coverTemplateOptions.length > 0 ? (
+            <Box position={"absolute"} top={0} left={0} right={0} zIndex={5}>
+              <Box
+                w={"full"}
+                px={2}
+                py={1.5}
+                bg={"blackAlpha.500"}
+                borderBottomWidth={"1px"}
+                borderColor={"whiteAlpha.300"}
+                backdropFilter={"blur(4px)"}
+              >
+                <HStack gap={1.5} align={"center"}>
+                  <Icon boxSize={3.5} color={"whiteAlpha.900"}>
+                    <LuPalette />
+                  </Icon>
+                  <NativeSelect.Root
+                    size={"xs"}
+                    minW={"7.25rem"}
+                    maxW={"11.5rem"}
+                    bg={"blackAlpha.500"}
+                    borderColor={"whiteAlpha.400"}
+                    color={"whiteAlpha.900"}
+                    rounded={"sm"}
+                  >
+                    <NativeSelect.Field
+                      value={selectedCoverTemplateId}
+                      disabled={isInteractionDisabled}
+                      aria-label={"Select cover template"}
+                      onChange={(event) =>
+                        onCoverTemplateChange?.(
+                          event.currentTarget.value as CoverTemplateId,
+                        )
+                      }
+                      fontFamily={"ui"}
+                      fontSize={"xs"}
+                    >
+                      {coverTemplateOptions.map((option) => (
+                        <option key={option.id} value={option.id}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </NativeSelect.Field>
+                    <NativeSelect.Indicator color={"whiteAlpha.900"} />
+                  </NativeSelect.Root>
+                </HStack>
+              </Box>
+            </Box>
+          ) : null}
+
           {!isCover ? (
             <Tooltip content={"Drag to reorder"}>
               <Button

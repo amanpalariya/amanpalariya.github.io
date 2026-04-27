@@ -3,12 +3,13 @@ import {
   EPUB_MAKER_STORAGE_FIELDS,
   EPUB_MAKER_TOOL_ID,
 } from "../constants";
-import type { EpubMakerPrefs, FileNameMode } from "../types";
+import type { CoverTemplateId, EpubMakerPrefs, FileNameMode } from "../types";
 import { buildToolStorageKey } from "@utils/storage";
 
 const defaultPrefs: EpubMakerPrefs = {
   title: "",
   author: "",
+  coverTemplateId: "classic",
   manualFileName: "",
   fileNameMode: "auto",
   sanitizeOptions: {
@@ -19,6 +20,10 @@ const defaultPrefs: EpubMakerPrefs = {
 
 function isFileNameMode(value: unknown): value is FileNameMode {
   return value === "auto" || value === "manual";
+}
+
+function isCoverTemplateId(value: unknown): value is CoverTemplateId {
+  return value === "classic" || value === "aurora" || value === "ember";
 }
 
 function readToolString(field: string, fallback: string): string {
@@ -41,9 +46,16 @@ export function readEpubMakerPrefs(): EpubMakerPrefs {
       EPUB_MAKER_STORAGE_FIELDS.fileNameMode,
       defaultPrefs.fileNameMode,
     );
+    const coverTemplateIdValue = readToolString(
+      EPUB_MAKER_STORAGE_FIELDS.coverTemplateId,
+      defaultPrefs.coverTemplateId,
+    );
     return {
       title: readToolString(EPUB_MAKER_STORAGE_FIELDS.title, defaultPrefs.title),
       author: readToolString(EPUB_MAKER_STORAGE_FIELDS.author, defaultPrefs.author),
+      coverTemplateId: isCoverTemplateId(coverTemplateIdValue)
+        ? coverTemplateIdValue
+        : defaultPrefs.coverTemplateId,
       manualFileName: readToolString(
         EPUB_MAKER_STORAGE_FIELDS.manualFileName,
         defaultPrefs.manualFileName,
@@ -77,6 +89,10 @@ export function writeEpubMakerPrefs(prefs: EpubMakerPrefs): void {
     window.localStorage.setItem(
       buildToolStorageKey(EPUB_MAKER_TOOL_ID, EPUB_MAKER_STORAGE_FIELDS.author),
       prefs.author,
+    );
+    window.localStorage.setItem(
+      buildToolStorageKey(EPUB_MAKER_TOOL_ID, EPUB_MAKER_STORAGE_FIELDS.coverTemplateId),
+      prefs.coverTemplateId,
     );
     window.localStorage.setItem(
       buildToolStorageKey(EPUB_MAKER_TOOL_ID, EPUB_MAKER_STORAGE_FIELDS.manualFileName),

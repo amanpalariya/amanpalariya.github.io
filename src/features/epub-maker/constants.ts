@@ -4,6 +4,7 @@ export const EPUB_MAKER_TOOL_ID = "epub-maker";
 export const EPUB_MAKER_STORAGE_FIELDS = {
   title: "title",
   author: "author",
+  coverTemplateId: "cover-template-id",
   manualFileName: "manual-file-name",
   fileNameMode: "file-name-mode",
   sanitizeEmbedRemoteImages: "sanitize.embed-remote-images",

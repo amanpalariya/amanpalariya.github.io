@@ -5,6 +5,13 @@ export type FileNameMode = "auto" | "manual";
 export type PageId = string;
 export type ChapterGenerationStatus = "pending" | "processing" | "completed";
 export type CoverMode = "auto" | "custom";
+export type CoverTemplateId = "classic" | "aurora" | "ember";
+
+export interface CoverTemplateOption {
+  id: CoverTemplateId;
+  label: string;
+  description: string;
+}
 
 export interface PageDraft {
   id: PageId;
@@ -107,6 +114,7 @@ export interface BuildEpubResult {
 export interface EpubMakerPrefs {
   title: string;
   author: string;
+  coverTemplateId: CoverTemplateId;
   manualFileName: string;
   fileNameMode: FileNameMode;
   sanitizeOptions: {
@@ -118,6 +126,8 @@ export interface EpubMakerPrefs {
 export interface EpubMakerState {
   pages: PageDraft[];
   coverMode: CoverMode;
+  coverTemplateId: CoverTemplateId;
+  coverTemplateOptions: CoverTemplateOption[];
   isCoverEnabled: boolean;
   coverPreviewHtml: string;
   hasCustomCover: boolean;

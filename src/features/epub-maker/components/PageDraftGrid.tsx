@@ -18,7 +18,12 @@ import {
   useState,
 } from "react";
 import { LuFilePlus, LuUpload } from "react-icons/lu";
-import type { ChapterGenerationStatus, PageDraft } from "../types";
+import type {
+  ChapterGenerationStatus,
+  CoverTemplateId,
+  CoverTemplateOption,
+  PageDraft,
+} from "../types";
 import { PageDraftCard } from "./PageDraftCard";
 type PageFlashKind = "added" | "duplicate";
 type PageFlashEntry = { kind: PageFlashKind; token: number };
@@ -35,6 +40,8 @@ export function PageDraftGrid({
   pages,
   coverPreviewHtml,
   hasCustomCover,
+  coverTemplateId,
+  coverTemplateOptions,
   isCoverEnabled,
   isAdding,
   isGenerating,
@@ -49,6 +56,7 @@ export function PageDraftGrid({
   onReplaceCoverFromClipboard,
   onResetCoverToAuto,
   onToggleCoverEnabled,
+  onCoverTemplateChange,
   onAddFromClipboard,
   onAddFromFiles,
   pastedInput,
@@ -59,6 +67,8 @@ export function PageDraftGrid({
   pages: PageDraft[];
   coverPreviewHtml: string;
   hasCustomCover: boolean;
+  coverTemplateId: CoverTemplateId;
+  coverTemplateOptions: CoverTemplateOption[];
   isCoverEnabled: boolean;
   isAdding: boolean;
   isGenerating: boolean;
@@ -73,6 +83,7 @@ export function PageDraftGrid({
   onReplaceCoverFromClipboard: () => Promise<void>;
   onResetCoverToAuto: () => void;
   onToggleCoverEnabled: () => void;
+  onCoverTemplateChange: (templateId: CoverTemplateId) => void;
   onAddFromClipboard: () => Promise<void>;
   onAddFromFiles: (files: FileList | File[]) => Promise<void>;
   pastedInput: string;
@@ -326,6 +337,9 @@ export function PageDraftGrid({
             isCover={true}
             hasCustomCover={hasCustomCover}
             isCoverEnabled={isCoverEnabled}
+            selectedCoverTemplateId={coverTemplateId}
+            coverTemplateOptions={coverTemplateOptions}
+            onCoverTemplateChange={onCoverTemplateChange}
             onReplaceCoverFromFiles={onReplaceCoverFromFiles}
             onReplaceCoverFromClipboard={onReplaceCoverFromClipboard}
             onResetCoverToAuto={onResetCoverToAuto}

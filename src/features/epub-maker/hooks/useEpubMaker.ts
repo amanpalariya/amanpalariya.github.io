@@ -18,10 +18,12 @@ import type {
   AutoCoverRendererId,
 } from "../domain/cover";
 import {
+  COVER_TEMPLATE_OPTIONS,
   createAutoCoverHtml,
 } from "../domain/cover";
 import type {
   BuildEpubProgressUpdate,
+  CoverTemplateId,
   CoverDraft,
   CoverMode,
   EpubMakerState,
@@ -178,6 +180,7 @@ export type UseEpubMakerReturn = EpubMakerState & {
   dismissNotification: (id: string) => void;
   setTitle: (value: string) => void;
   setAuthor: (value: string) => void;
+  setCoverTemplateId: (value: CoverTemplateId) => void;
   setManualFileName: (value: string) => void;
   toggleFileNameMode: () => void;
   setEmbedRemoteImages: (value: boolean) => void;
@@ -439,9 +442,10 @@ export function useEpubMaker(): UseEpubMakerReturn {
       createAutoCoverHtml(
         normalizedBookTitle,
         normalizedBookAuthor,
+        prefs.coverTemplateId,
         AUTO_COVER_RENDERER,
       ),
-    [normalizedBookTitle, normalizedBookAuthor],
+    [normalizedBookTitle, normalizedBookAuthor, prefs.coverTemplateId],
   );
 
   const sanitizePolicy = useMemo(() => {
@@ -1185,6 +1189,8 @@ export function useEpubMaker(): UseEpubMakerReturn {
   return {
     pages,
     coverMode: coverDraft.mode,
+    coverTemplateId: prefs.coverTemplateId,
+    coverTemplateOptions: COVER_TEMPLATE_OPTIONS,
     isCoverEnabled: coverEnabled,
     coverPreviewHtml: coverDraft.previewHtml,
     hasCustomCover,
@@ -1230,6 +1236,15 @@ export function useEpubMaker(): UseEpubMakerReturn {
       setPrefs((prev) => ({ ...prev, title: value })),
     setAuthor: (value: string) =>
       setPrefs((prev) => ({ ...prev, author: value })),
+    setCoverTemplateId: (value: CoverTemplateId) =>
+      setPrefs((prev) =>
+        prev.coverTemplateId === value
+          ? prev
+          : {
+              ...prev,
+              coverTemplateId: value,
+            },
+      ),
     setManualFileName: (value: string) =>
       setPrefs((prev) => ({
         ...prev,
