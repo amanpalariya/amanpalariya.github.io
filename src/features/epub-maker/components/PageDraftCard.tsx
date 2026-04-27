@@ -301,7 +301,7 @@ export function PageDraftCard({
   const isRemoveDisabled = isInteractionDisabled || isCover;
   const isTitleDisabled = isInteractionDisabled || isCover;
   const canDrag = !isInteractionDisabled && !isCover;
-  const previewRatio = isCover ? 1 / 1.6 : 1 / 1.4142;
+  const previewRatio = 1 / 1.4142;
   const isEffectiveCoverEnabled = isCoverEnabled ?? true;
   const isCoverExportDisabled = Boolean(isCover && !isEffectiveCoverEnabled);
   const isCoverToolDisabled = isInteractionDisabled || isCoverExportDisabled;
