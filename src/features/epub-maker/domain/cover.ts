@@ -69,6 +69,10 @@ const DEFAULT_AUTO_COVER_RENDERER: AutoCoverRendererId = "raster-png";
 const AUTO_COVER_LAYOUT_WIDTH = 1200;
 const AUTO_COVER_LAYOUT_HEIGHT = 1800;
 const BASE_TEXT_SCALE_MULTIPLIER = 1.35;
+const TITLE_FONT_SIZE_BOOST = 1.04;
+const AUTHOR_FONT_SIZE_BOOST = 1.22;
+const COVER_TEXT_BOUND_LEFT = 130;
+const COVER_TEXT_BOUND_RIGHT = 1070;
 
 const COVER_SIZE_PRESETS: Record<CoverSizePresetId, CoverSizePresetOption> = {
   kindle_portrait: {
@@ -304,52 +308,95 @@ function wrapTextLines(
   maxCharsPerLine: number,
   maxLines: number,
 ): string[] {
-  const words = value.trim().split(/\s+/).filter(Boolean);
+  const trimmed = value.trim();
+  if (!trimmed || maxLines <= 0) return [];
+
+  const limit = Math.max(4, maxCharsPerLine);
+  const words = trimmed.split(/\s+/).filter(Boolean);
   if (words.length === 0) return [];
+
+  const splitWord = (word: string): string[] => {
+    const chars = Array.from(word);
+    const chunks: string[] = [];
+    for (let index = 0; index < chars.length; index += limit) {
+      chunks.push(chars.slice(index, index + limit).join(""));
+    }
+    return chunks.length > 0 ? chunks : [word];
+  };
+
+  const segments = words.flatMap((word) => {
+    const parts = splitWord(word);
+    return parts.map((part, index) => ({ text: part, withSpace: index === 0 }));
+  });
 
   const lines: string[] = [];
   let currentLine = "";
+  let consumedSegments = 0;
 
-  const pushCurrentLine = () => {
+  const pushLine = () => {
     if (!currentLine) return;
     lines.push(currentLine);
     currentLine = "";
   };
 
-  for (const word of words) {
-    const candidate = currentLine ? `${currentLine} ${word}` : word;
-    if (candidate.length <= maxCharsPerLine) {
+  for (const segment of segments) {
+    const candidate = currentLine
+      ? `${currentLine}${segment.withSpace ? " " : ""}${segment.text}`
+      : segment.text;
+
+    if (candidate.length <= limit) {
       currentLine = candidate;
+      consumedSegments += 1;
       continue;
     }
 
-    if (!currentLine && word.length > maxCharsPerLine) {
-      lines.push(word.slice(0, maxCharsPerLine));
-      const remainder = word.slice(maxCharsPerLine);
-      currentLine = remainder;
-      if (lines.length >= maxLines) break;
-      continue;
-    }
-
-    pushCurrentLine();
-    currentLine = word;
+    pushLine();
     if (lines.length >= maxLines) break;
+
+    currentLine = segment.text;
+    consumedSegments += 1;
   }
 
-  pushCurrentLine();
+  if (currentLine && lines.length < maxLines) {
+    lines.push(currentLine);
+  }
 
   if (lines.length > maxLines) {
     lines.length = maxLines;
   }
 
-  if (words.join(" ").length > lines.join(" ").length) {
+  if (consumedSegments < segments.length && lines.length > 0) {
     const lastLineIndex = lines.length - 1;
-    if (lastLineIndex >= 0) {
-      lines[lastLineIndex] = `${lines[lastLineIndex].replace(/[\s.]+$/g, "")}…`;
+    let truncated = lines[lastLineIndex].replace(/[\s.]+$/g, "");
+    while (truncated.length > 1 && `${truncated}…`.length > limit) {
+      truncated = truncated.slice(0, -1).replace(/[\s.]+$/g, "");
     }
+    lines[lastLineIndex] = `${truncated}…`;
   }
 
   return lines;
+}
+
+function resolveAvailableTextWidth(align: "center" | "left", x: number): number {
+  if (align === "center") {
+    const halfWidth = Math.max(
+      0,
+      Math.min(x - COVER_TEXT_BOUND_LEFT, COVER_TEXT_BOUND_RIGHT - x),
+    );
+    return halfWidth * 2;
+  }
+
+  return Math.max(0, COVER_TEXT_BOUND_RIGHT - x);
+}
+
+function resolveWrapCharLimit(
+  maxCharsPerLine: number,
+  fontSize: number,
+  availableWidth: number,
+): number {
+  const averageCharWidth = Math.max(1, fontSize * 0.58);
+  const visualMaxChars = Math.max(4, Math.floor(availableWidth / averageCharWidth));
+  return Math.max(4, Math.min(maxCharsPerLine, visualMaxChars));
 }
 
 function resolveTemplate(templateId: CoverTemplateId): CoverTemplateSpec {
@@ -364,13 +411,14 @@ function resolveTextScalePercent(value: number): number {
 function scaleTextLayout(layout: CoverTextLayout, textScalePercent: number): CoverTextLayout {
   const textScale =
     (resolveTextScalePercent(textScalePercent) / 100) * BASE_TEXT_SCALE_MULTIPLIER;
+  const finalScale = textScale * TITLE_FONT_SIZE_BOOST;
   return {
     ...layout,
-    fontSize: Math.max(18, Math.round(layout.fontSize * textScale)),
-    lineHeight: Math.max(24, Math.round(layout.lineHeight * textScale)),
+    fontSize: Math.max(18, Math.round(layout.fontSize * finalScale)),
+    lineHeight: Math.max(24, Math.round(layout.lineHeight * finalScale)),
     maxCharsPerLine: Math.max(
       8,
-      Math.round(layout.maxCharsPerLine / Math.max(1, textScale * 0.92)),
+      Math.round(layout.maxCharsPerLine / Math.max(1, finalScale * 0.92)),
     ),
   };
 }
@@ -381,13 +429,14 @@ function scaleAuthorLayout(
 ): CoverAuthorLayout {
   const textScale =
     (resolveTextScalePercent(textScalePercent) / 100) * BASE_TEXT_SCALE_MULTIPLIER;
+  const finalScale = textScale * AUTHOR_FONT_SIZE_BOOST;
   return {
     ...layout,
-    fontSize: Math.max(14, Math.round(layout.fontSize * textScale)),
-    lineHeight: Math.max(20, Math.round(layout.lineHeight * textScale)),
+    fontSize: Math.max(14, Math.round(layout.fontSize * finalScale)),
+    lineHeight: Math.max(20, Math.round(layout.lineHeight * finalScale)),
     maxCharsPerLine: Math.max(
       10,
-      Math.round(layout.maxCharsPerLine / Math.max(1, textScale * 0.9)),
+      Math.round(layout.maxCharsPerLine / Math.max(1, finalScale * 0.9)),
     ),
   };
 }
@@ -441,14 +490,24 @@ function createAutoCoverSvgDataUrl(input: AutoCoverInput): string {
   const coverHeight = Math.max(1000, Math.round(input.size.height));
   const scaleX = coverWidth / AUTO_COVER_LAYOUT_WIDTH;
   const scaleY = coverHeight / AUTO_COVER_LAYOUT_HEIGHT;
+  const titleWrapLimit = resolveWrapCharLimit(
+    titleLayout.maxCharsPerLine,
+    titleLayout.fontSize,
+    resolveAvailableTextWidth(titleLayout.align, titleLayout.x),
+  );
+  const authorWrapLimit = resolveWrapCharLimit(
+    authorLayout.maxCharsPerLine,
+    authorLayout.fontSize,
+    resolveAvailableTextWidth(authorLayout.align, authorLayout.x),
+  );
   const titleLines = wrapTextLines(
     input.title || DEFAULT_BOOK_TITLE,
-    titleLayout.maxCharsPerLine,
+    titleWrapLimit,
     4,
   );
   const authorLines = wrapTextLines(
     input.author || "",
-    authorLayout.maxCharsPerLine,
+    authorWrapLimit,
     3,
   );
 
@@ -740,14 +799,24 @@ function createAutoCoverRasterDataUrl(input: AutoCoverInput): string {
   drawRoundedRectPath(context, 76, 76, 1048, 1648, 40);
   context.stroke();
 
+  const titleWrapLimit = resolveWrapCharLimit(
+    titleLayout.maxCharsPerLine,
+    titleLayout.fontSize,
+    resolveAvailableTextWidth(titleLayout.align, titleLayout.x),
+  );
+  const authorWrapLimit = resolveWrapCharLimit(
+    authorLayout.maxCharsPerLine,
+    authorLayout.fontSize,
+    resolveAvailableTextWidth(authorLayout.align, authorLayout.x),
+  );
   const titleLines = wrapTextLines(
     input.title || DEFAULT_BOOK_TITLE,
-    titleLayout.maxCharsPerLine,
+    titleWrapLimit,
     4,
   );
   const authorLines = wrapTextLines(
     input.author || "",
-    authorLayout.maxCharsPerLine,
+    authorWrapLimit,
     3,
   );
 
@@ -855,15 +924,25 @@ function createCustomCoverSvgDataUrl(
   const coverHeight = Math.max(1000, Math.round(input.size.height));
   const scaleX = coverWidth / AUTO_COVER_LAYOUT_WIDTH;
   const scaleY = coverHeight / AUTO_COVER_LAYOUT_HEIGHT;
+  const titleWrapLimit = resolveWrapCharLimit(
+    titleLayout.maxCharsPerLine,
+    titleLayout.fontSize,
+    resolveAvailableTextWidth(titleLayout.align, titleLayout.x),
+  );
+  const authorWrapLimit = resolveWrapCharLimit(
+    authorLayout.maxCharsPerLine,
+    authorLayout.fontSize,
+    resolveAvailableTextWidth(authorLayout.align, authorLayout.x),
+  );
 
   const titleLines = wrapTextLines(
     input.title || DEFAULT_BOOK_TITLE,
-    titleLayout.maxCharsPerLine,
+    titleWrapLimit,
     4,
   );
   const authorLines = wrapTextLines(
     input.author || "",
-    authorLayout.maxCharsPerLine,
+    authorWrapLimit,
     3,
   );
   const titleStartY = computeTitleStartY(titleLayout, titleLines.length);
