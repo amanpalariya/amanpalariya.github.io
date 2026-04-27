@@ -181,7 +181,15 @@ function createAutoCoverSvgDataUrl(input: AutoCoverInput): string {
     height: coverHeight,
   });
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${coverWidth}" height="${coverHeight}" viewBox="0 0 ${coverWidth} ${coverHeight}" role="img" aria-label="Book cover"><defs><linearGradient id="coverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${template.gradientStart}"/><stop offset="100%" stop-color="${template.gradientEnd}"/></linearGradient></defs><rect width="${coverWidth}" height="${coverHeight}" fill="url(#coverGradient)"/>${decorationSvg}<rect x="${frameX}" y="${frameY}" width="${frameWidth}" height="${frameHeight}" rx="${frameRadius}" fill="none" stroke="${template.frameStroke}" stroke-width="${4 * metrics.unitScale}"/><text fill="${textPalette.titleColor}" stroke="${textPalette.strokeColor}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>${authorTspans ? `<text fill="${textPalette.authorColor}" stroke="${textPalette.strokeColor}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>` : ""}</svg>`;
+  const titleTextSvg = input.hideText
+    ? ""
+    : `<text fill="${textPalette.titleColor}" stroke="${textPalette.strokeColor}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>`;
+  const authorTextSvg =
+    input.hideText || !authorTspans
+      ? ""
+      : `<text fill="${textPalette.authorColor}" stroke="${textPalette.strokeColor}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>`;
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${coverWidth}" height="${coverHeight}" viewBox="0 0 ${coverWidth} ${coverHeight}" role="img" aria-label="Book cover"><defs><linearGradient id="coverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${template.gradientStart}"/><stop offset="100%" stop-color="${template.gradientEnd}"/></linearGradient></defs><rect width="${coverWidth}" height="${coverHeight}" fill="url(#coverGradient)"/>${decorationSvg}<rect x="${frameX}" y="${frameY}" width="${frameWidth}" height="${frameHeight}" rx="${frameRadius}" fill="none" stroke="${template.frameStroke}" stroke-width="${4 * metrics.unitScale}"/>${titleTextSvg}${authorTextSvg}</svg>`;
 
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
@@ -271,50 +279,52 @@ function createAutoCoverRasterDataUrl(input: AutoCoverInput): string {
   const titleLines = wrapTextLines(input.title || DEFAULT_BOOK_TITLE, titleWrapLimit, 5);
   const authorLines = wrapTextLines(input.author || "", authorWrapLimit, 3);
 
-  const titleStartY = computeTitleStartY(titleLayout, titleLines.length);
-  context.textAlign = toCanvasTextAlign(titleLayout.align);
-  context.textBaseline = "middle";
-  context.fillStyle = textPalette.titleColor;
-  context.strokeStyle = textPalette.strokeColor;
-  context.lineWidth = COVER_TEXT_STROKE_WIDTH * metrics.unitScale;
-  context.lineJoin = "round";
-  context.font = `700 ${titleLayout.fontSize}px Inter, Segoe UI, Roboto, Arial, sans-serif`;
+  if (!input.hideText) {
+    const titleStartY = computeTitleStartY(titleLayout, titleLines.length);
+    context.textAlign = toCanvasTextAlign(titleLayout.align);
+    context.textBaseline = "middle";
+    context.fillStyle = textPalette.titleColor;
+    context.strokeStyle = textPalette.strokeColor;
+    context.lineWidth = COVER_TEXT_STROKE_WIDTH * metrics.unitScale;
+    context.lineJoin = "round";
+    context.font = `700 ${titleLayout.fontSize}px Inter, Segoe UI, Roboto, Arial, sans-serif`;
 
-  for (let index = 0; index < titleLines.length; index += 1) {
-    context.strokeText(
-      titleLines[index],
-      titleLayout.x,
-      titleStartY + index * titleLayout.lineHeight,
-    );
-    context.fillText(
-      titleLines[index],
-      titleLayout.x,
-      titleStartY + index * titleLayout.lineHeight,
-    );
-  }
-
-  if (authorLines.length > 0) {
-    const authorStartY = computeAuthorStartY(
-      authorLayout,
-      titleLayout,
-      titleStartY,
-      titleLines.length,
-    );
-    context.textAlign = toCanvasTextAlign(authorLayout.align);
-    context.fillStyle = textPalette.authorColor;
-    context.font = `500 ${authorLayout.fontSize}px Inter, Segoe UI, Roboto, Arial, sans-serif`;
-
-    for (let index = 0; index < authorLines.length; index += 1) {
+    for (let index = 0; index < titleLines.length; index += 1) {
       context.strokeText(
-        authorLines[index],
-        authorLayout.x,
-        authorStartY + index * authorLayout.lineHeight,
+        titleLines[index],
+        titleLayout.x,
+        titleStartY + index * titleLayout.lineHeight,
       );
       context.fillText(
-        authorLines[index],
-        authorLayout.x,
-        authorStartY + index * authorLayout.lineHeight,
+        titleLines[index],
+        titleLayout.x,
+        titleStartY + index * titleLayout.lineHeight,
       );
+    }
+
+    if (authorLines.length > 0) {
+      const authorStartY = computeAuthorStartY(
+        authorLayout,
+        titleLayout,
+        titleStartY,
+        titleLines.length,
+      );
+      context.textAlign = toCanvasTextAlign(authorLayout.align);
+      context.fillStyle = textPalette.authorColor;
+      context.font = `500 ${authorLayout.fontSize}px Inter, Segoe UI, Roboto, Arial, sans-serif`;
+
+      for (let index = 0; index < authorLines.length; index += 1) {
+        context.strokeText(
+          authorLines[index],
+          authorLayout.x,
+          authorStartY + index * authorLayout.lineHeight,
+        );
+        context.fillText(
+          authorLines[index],
+          authorLayout.x,
+          authorStartY + index * authorLayout.lineHeight,
+        );
+      }
     }
   }
 
@@ -351,7 +361,7 @@ export function createAutoCoverDataUrl(
 export function createAutoCoverHtml(
   title: string,
   author: string,
-  options: AutoCoverOptions,
+  options: AutoCoverOptions & { hideCoverText?: boolean },
   preferredRenderer: AutoCoverRendererId = DEFAULT_AUTO_COVER_RENDERER,
 ): string {
   const safeTitle = title || DEFAULT_BOOK_TITLE;
@@ -368,6 +378,7 @@ export function createAutoCoverHtml(
       textScalePercent: options.textScalePercent,
       textPosition: options.textPosition,
       textColorMode: options.textColorMode,
+      hideText: options.hideCoverText,
     },
     preferredRenderer,
   );
@@ -453,8 +464,9 @@ export function createCoverHtml(
     : null;
 
   if (customImageSrc) {
-    const finalSrc = options.includeTextOnCustomCover
-      ? createCustomCoverSvgDataUrl(
+    const finalSrc = options.hideCoverText
+      ? customImageSrc
+      : createCustomCoverSvgDataUrl(
           {
             title,
             author,
@@ -463,10 +475,10 @@ export function createCoverHtml(
             textScalePercent: options.textScalePercent,
             textPosition: options.textPosition,
             textColorMode: options.textColorMode,
+            hideText: options.hideCoverText,
           },
           customImageSrc,
-        )
-      : customImageSrc;
+        );
 
     return `<figure><img src="${finalSrc}" alt="Cover for ${escapeXmlText(safeTitle)}" /></figure>`;
   }

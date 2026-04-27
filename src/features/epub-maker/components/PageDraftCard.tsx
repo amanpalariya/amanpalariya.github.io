@@ -57,7 +57,6 @@ import type {
 } from "../types";
 import {
   createAutoCoverDataUrl,
-  resolveCoverTemplateDefaults,
 } from "../domain/cover";
 
 type DragPreviewAnchor = {
@@ -248,13 +247,13 @@ export function PageDraftCard({
   coverTextScalePercent,
   coverTextPosition,
   coverTextColorMode,
-  includeTextOnCustomCover,
+  hideCoverText,
   onCoverTemplateChange,
   onCoverSizePresetChange,
   onCoverTextScalePercentChange,
   onCoverTextPositionChange,
   onCoverTextColorModeChange,
-  onIncludeTextOnCustomCoverChange,
+  onHideCoverTextChange,
   onReplaceCoverFromFiles,
   onReplaceCoverFromClipboard,
   onResetCoverToAuto,
@@ -292,13 +291,13 @@ export function PageDraftCard({
   coverTextScalePercent?: number;
   coverTextPosition?: CoverTextPosition;
   coverTextColorMode?: CoverTextColorMode;
-  includeTextOnCustomCover?: boolean;
+  hideCoverText?: boolean;
   onCoverTemplateChange?: (templateId: CoverTemplateId) => void;
   onCoverSizePresetChange?: (presetId: CoverSizePresetId) => void;
   onCoverTextScalePercentChange?: (value: number) => void;
   onCoverTextPositionChange?: (value: CoverTextPosition) => void;
   onCoverTextColorModeChange?: (value: CoverTextColorMode) => void;
-  onIncludeTextOnCustomCoverChange?: (value: boolean) => void;
+  onHideCoverTextChange?: (value: boolean) => void;
   onReplaceCoverFromFiles?: (files: FileList | File[]) => Promise<void>;
   onReplaceCoverFromClipboard?: () => Promise<void>;
   onResetCoverToAuto?: () => void;
@@ -585,7 +584,7 @@ export function PageDraftCard({
   const effectiveCoverTextScalePercent = coverTextScalePercent ?? 100;
   const effectiveCoverTextPosition = coverTextPosition ?? "style_1";
   const effectiveCoverTextColorMode = coverTextColorMode ?? "adaptive";
-  const isTextOnCustomCoverEnabled = includeTextOnCustomCover ?? true;
+  const isCoverTextHidden = hideCoverText ?? false;
   const hasCustomCoverValue = hasCustomCover ?? false;
   const availableCoverTemplateOptions = coverTemplateOptions ?? [];
   const selectableCoverTemplateOptions = availableCoverTemplateOptions.filter(
@@ -593,35 +592,28 @@ export function PageDraftCard({
   );
   const selectedTemplatePreviewId =
     selectedCoverTemplateId &&
-    availableCoverTemplateOptions.some(
+    selectableCoverTemplateOptions.some(
       (option) => option.id === selectedCoverTemplateId,
     )
       ? selectedCoverTemplateId
       : (selectableCoverTemplateOptions[0]?.id ?? "classic");
-  const effectivePreviewBookTitle = (previewBookTitle ?? "").trim();
-  const effectivePreviewBookAuthor = (previewBookAuthor ?? "").trim();
   const isTemplateSelectionDisabled =
     isInteractionDisabled || selectableCoverTemplateOptions.length === 0;
   const templatePreviewById = useMemo(() => {
-    const selectedBaseTemplateId = isBaseTemplateId(selectedTemplatePreviewId)
-      ? selectedTemplatePreviewId
-      : "classic";
-
     const previewEntries: [CoverTemplateId, string][] =
-      availableCoverTemplateOptions.map((option) => {
+      selectableCoverTemplateOptions.map((option) => {
         const templateId = isBaseTemplateId(option.id)
           ? option.id
-          : selectedBaseTemplateId;
-        const defaults = resolveCoverTemplateDefaults(templateId);
+          : "classic";
         const previewSrc = createAutoCoverDataUrl(
           {
-            title: effectivePreviewBookTitle,
-            author: effectivePreviewBookAuthor,
+            title: "",
+            author: "",
             templateId,
             size: { width: 520, height: 780 },
-            textScalePercent: defaults.textScalePercent,
-            textPosition: effectiveCoverTextPosition,
-            textColorMode: defaults.textColorMode,
+            textScalePercent: 100,
+            textPosition: "style_1",
+            textColorMode: "adaptive",
           },
           "svg",
         );
@@ -633,11 +625,7 @@ export function PageDraftCard({
       string
     >;
   }, [
-    availableCoverTemplateOptions,
-    selectedTemplatePreviewId,
-    effectiveCoverTextPosition,
-    effectivePreviewBookTitle,
-    effectivePreviewBookAuthor,
+    selectableCoverTemplateOptions,
   ]);
 
   const selectedCoverTemplatePreviewSrc =
@@ -781,6 +769,23 @@ export function PageDraftCard({
                         </Text>
                       </HStack>
                     </Button>
+                    <Button
+                      size={"sm"}
+                      variant={"ghost"}
+                      rounded={"lg"}
+                      bg={"transparent"}
+                      color={"app.epub.fg.danger"}
+                      _hover={{ bg: "app.status.danger.bg" }}
+                      onClick={() => onResetCoverToAuto?.()}
+                      disabled={isInteractionDisabled}
+                    >
+                      <HStack gap={1.5}>
+                        <Icon boxSize={4}>
+                          <LuRefreshCw />
+                        </Icon>
+                        <Text>Reset</Text>
+                      </HStack>
+                    </Button>
                   </Dialog.Header>
 
                   <Dialog.Body>
@@ -808,7 +813,7 @@ export function PageDraftCard({
                             color={"app.epub.fg.default"}
                             mb={3}
                           >
-                            Template & Size
+                            Cover background
                           </Text>
                           <Box
                             display={"grid"}
@@ -909,15 +914,13 @@ export function PageDraftCard({
                                     }
                                     gap={2}
                                   >
-                                    {availableCoverTemplateOptions.map(
+                                    {selectableCoverTemplateOptions.map(
                                       (option) => {
                                         const previewSrc =
                                           templatePreviewById[option.id];
                                         const isSelected =
                                           option.id ===
                                           selectedTemplatePreviewId;
-                                        const isCustomOption =
-                                          option.id === "custom";
 
                                         return (
                                           <Menu.Item
@@ -927,13 +930,10 @@ export function PageDraftCard({
                                             p={0}
                                             bg={"transparent"}
                                             _hover={{ bg: "transparent" }}
-                                            disabled={isCustomOption}
                                             onClick={() =>
-                                              isCustomOption
-                                                ? undefined
-                                                : onCoverTemplateChange?.(
-                                                    option.id,
-                                                  )
+                                              onCoverTemplateChange?.(
+                                                option.id,
+                                              )
                                             }
                                           >
                                             <VStack
@@ -1000,22 +1000,7 @@ export function PageDraftCard({
                                                     transition={
                                                       "border-color 0.16s ease"
                                                     }
-                                                    opacity={
-                                                      isCustomOption ? 0.82 : 1
-                                                    }
                                                   >
-                                                    {isCustomOption ? (
-                                                      <Box
-                                                        position={"absolute"}
-                                                        inset={1.5}
-                                                        rounded={"xs"}
-                                                        borderWidth={"1px"}
-                                                        borderStyle={"dashed"}
-                                                        borderColor={
-                                                          "app.epub.border.default"
-                                                        }
-                                                      />
-                                                    ) : null}
                                                     {isSelected ? (
                                                       <Box
                                                         position={"absolute"}
@@ -1572,25 +1557,8 @@ export function PageDraftCard({
                               </Menu.Root>
                             </Box>
                           </Box>
-                        </Box>
 
-                        <Box
-                          p={4}
-                          rounded={"xl"}
-                          bg={coverDialogSectionCardBg}
-                          borderWidth={"1px"}
-                          borderColor={"app.epub.border.default"}
-                        >
-                          <Text
-                            fontFamily={"ui"}
-                            fontSize={"sm"}
-                            fontWeight={"semibold"}
-                            color={"app.epub.fg.default"}
-                            mb={3}
-                          >
-                            Image & Text
-                          </Text>
-                          <VStack align={"stretch"} gap={2}>
+                          <VStack align={"stretch"} gap={2} mt={3}>
                             <HStack gap={2} wrap={"wrap"}>
                               <HStack gap={0} align={"stretch"}>
                                 <Button
@@ -1635,38 +1603,38 @@ export function PageDraftCard({
                                   </Tooltip>
                                 </FileUpload.Root>
                               </HStack>
-
-                              <Button
-                                {...dialogOutlineButtonProps}
-                                onClick={() => onResetCoverToAuto?.()}
-                                disabled={
-                                  isCoverToolDisabled || !hasCustomCoverValue
-                                }
-                              >
-                                <HStack gap={1.5}>
-                                  <Icon>
-                                    <LuRefreshCw />
-                                  </Icon>
-                                  <Text>Reset to auto cover</Text>
-                                </HStack>
-                              </Button>
                             </HStack>
 
                             <Switch
                               {...switchProps}
-                              checked={isTextOnCustomCoverEnabled}
+                              checked={isCoverTextHidden}
                               onCheckedChange={(details) =>
-                                onIncludeTextOnCustomCoverChange?.(
-                                  details.checked,
-                                )
+                                onHideCoverTextChange?.(details.checked)
                               }
-                              disabled={
-                                isInteractionDisabled || !hasCustomCoverValue
-                              }
+                              disabled={isInteractionDisabled}
                             >
-                              Show title/author text on custom image
+                              Hide title/author text
                             </Switch>
+                          </VStack>
+                        </Box>
 
+                        <Box
+                          p={4}
+                          rounded={"xl"}
+                          bg={coverDialogSectionCardBg}
+                          borderWidth={"1px"}
+                          borderColor={"app.epub.border.default"}
+                        >
+                          <Text
+                            fontFamily={"ui"}
+                            fontSize={"sm"}
+                            fontWeight={"semibold"}
+                            color={"app.epub.fg.default"}
+                            mb={3}
+                          >
+                            Cover text
+                          </Text>
+                          <VStack align={"stretch"} gap={2}>
                             <Box>
                               <Text
                                 fontSize={"sm"}

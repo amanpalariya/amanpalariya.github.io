@@ -22,7 +22,7 @@ const defaultPrefs: EpubMakerPrefs = {
   coverTextScalePercent: 100,
   coverTextPosition: "style_1",
   coverTextColorMode: "adaptive",
-  includeTextOnCustomCover: true,
+  hideCoverText: false,
   manualFileName: "",
   fileNameMode: "auto",
   sanitizeOptions: {
@@ -141,9 +141,9 @@ export function readEpubMakerPrefs(): EpubMakerPrefs {
       coverTextColorMode: isCoverTextColorMode(coverTextColorModeValue)
         ? coverTextColorModeValue
         : defaultPrefs.coverTextColorMode,
-      includeTextOnCustomCover: readToolBoolean(
-        EPUB_MAKER_STORAGE_FIELDS.includeTextOnCustomCover,
-        defaultPrefs.includeTextOnCustomCover,
+      hideCoverText: readToolBoolean(
+        EPUB_MAKER_STORAGE_FIELDS.hideCoverText,
+        defaultPrefs.hideCoverText,
       ),
       manualFileName: readToolString(
         EPUB_MAKER_STORAGE_FIELDS.manualFileName,
@@ -221,9 +221,9 @@ export function writeEpubMakerPrefs(prefs: EpubMakerPrefs): void {
     window.localStorage.setItem(
       buildToolStorageKey(
         EPUB_MAKER_TOOL_ID,
-        EPUB_MAKER_STORAGE_FIELDS.includeTextOnCustomCover,
+        EPUB_MAKER_STORAGE_FIELDS.hideCoverText,
       ),
-      prefs.includeTextOnCustomCover ? "true" : "false",
+      prefs.hideCoverText ? "true" : "false",
     );
     window.localStorage.setItem(
       buildToolStorageKey(EPUB_MAKER_TOOL_ID, EPUB_MAKER_STORAGE_FIELDS.manualFileName),

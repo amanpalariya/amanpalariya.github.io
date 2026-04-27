@@ -18,6 +18,7 @@ export interface AutoCoverInput {
   textScalePercent: number;
   textPosition: CoverTextPosition;
   textColorMode: CoverTextColorMode;
+  hideText?: boolean;
 }
 
 export interface AutoCoverOptions {
@@ -30,7 +31,7 @@ export interface AutoCoverOptions {
 
 export interface CoverHtmlOptions extends AutoCoverOptions {
   customCoverHtml?: string | null;
-  includeTextOnCustomCover?: boolean;
+  hideCoverText?: boolean;
 }
 
 export type CoverTextLayout = {

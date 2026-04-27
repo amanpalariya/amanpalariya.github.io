@@ -145,7 +145,7 @@ export interface EpubMakerPrefs {
   coverTextScalePercent: number;
   coverTextPosition: CoverTextPosition;
   coverTextColorMode: CoverTextColorMode;
-  includeTextOnCustomCover: boolean;
+  hideCoverText: boolean;
   manualFileName: string;
   fileNameMode: FileNameMode;
   sanitizeOptions: {
@@ -164,7 +164,7 @@ export interface EpubMakerState {
   coverTextScalePercent: number;
   coverTextPosition: CoverTextPosition;
   coverTextColorMode: CoverTextColorMode;
-  includeTextOnCustomCover: boolean;
+  hideCoverText: boolean;
   isCoverEnabled: boolean;
   coverPreviewHtml: string;
   hasCustomCover: boolean;

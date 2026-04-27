@@ -19,7 +19,6 @@ import {
   createCoverHtml,
   COVER_TEMPLATE_OPTIONS,
   COVER_SIZE_PRESET_OPTIONS,
-  resolveCoverTemplateDefaults,
   resolveCoverSizePreset,
 } from "../domain/cover";
 import type {
@@ -196,7 +195,7 @@ export type UseEpubMakerReturn = EpubMakerState & {
   setCoverTextScalePercent: (value: number) => void;
   setCoverTextPosition: (value: CoverTextPosition) => void;
   setCoverTextColorMode: (value: CoverTextColorMode) => void;
-  setIncludeTextOnCustomCover: (value: boolean) => void;
+  setHideCoverText: (value: boolean) => void;
   setManualFileName: (value: string) => void;
   toggleFileNameMode: () => void;
   setEmbedRemoteImages: (value: boolean) => void;
@@ -469,7 +468,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
           textPosition: prefs.coverTextPosition,
           textColorMode: prefs.coverTextColorMode,
           customCoverHtml,
-          includeTextOnCustomCover: prefs.includeTextOnCustomCover,
+          hideCoverText: prefs.hideCoverText,
         },
         AUTO_COVER_RENDERER,
       ),
@@ -482,7 +481,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
       prefs.coverTextScalePercent,
       prefs.coverTextPosition,
       prefs.coverTextColorMode,
-      prefs.includeTextOnCustomCover,
+      prefs.hideCoverText,
       customCoverHtml,
       effectiveCoverTemplateId,
     ],
@@ -1065,19 +1064,42 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
   function resetCoverToAuto() {
     if (isGenerating) return;
-    if (!hasCustomCover) return;
 
-    commitDraftChange((previousDraft) => {
-      if (previousDraft.customCoverHtml === null) {
-        return previousDraft;
+    commitDraftChange((previousDraft) =>
+      previousDraft.customCoverHtml === null && previousDraft.coverEnabled
+        ? previousDraft
+        : {
+            ...previousDraft,
+            customCoverHtml: null,
+            coverEnabled: true,
+          },
+    );
+
+    setPrefs((prev) => {
+      const nextCoverSizePresetId = resolveCoverSizePreset("ratio_1_1_6").id;
+      if (
+        prev.coverTemplateId === "aurora" &&
+        prev.coverBaseTemplateId === "aurora" &&
+        prev.coverSizePresetId === nextCoverSizePresetId &&
+        prev.coverTextPosition === "style_1" &&
+        prev.coverTextScalePercent === 100 &&
+        prev.coverTextColorMode === "adaptive"
+      ) {
+        return prev;
       }
+
       return {
-        ...previousDraft,
-        customCoverHtml: null,
+        ...prev,
+        coverTemplateId: "aurora",
+        coverBaseTemplateId: "aurora",
+        coverSizePresetId: nextCoverSizePresetId,
+        coverTextPosition: "style_1",
+        coverTextScalePercent: 100,
+        coverTextColorMode: "adaptive",
       };
     });
+
     setSummary("");
-    notify("info", "Cover reset", "Switched back to the auto-generated cover.");
   }
 
   function toggleCoverEnabled() {
@@ -1232,14 +1254,14 @@ export function useEpubMaker(): UseEpubMakerReturn {
   return {
     pages,
     coverMode: coverDraft.mode,
-    coverTemplateId: prefs.coverTemplateId,
+    coverTemplateId: effectiveCoverTemplateId,
     coverTemplateOptions: COVER_TEMPLATE_OPTIONS,
     coverSizePresetId: prefs.coverSizePresetId,
     coverSizePresetOptions: COVER_SIZE_PRESET_OPTIONS,
     coverTextScalePercent: prefs.coverTextScalePercent,
     coverTextPosition: prefs.coverTextPosition,
     coverTextColorMode: prefs.coverTextColorMode,
-    includeTextOnCustomCover: prefs.includeTextOnCustomCover,
+    hideCoverText: prefs.hideCoverText,
     isCoverEnabled: coverEnabled,
     coverPreviewHtml: coverDraft.previewHtml,
     hasCustomCover,
@@ -1288,12 +1310,9 @@ export function useEpubMaker(): UseEpubMakerReturn {
     setCoverTemplateId: (value: CoverTemplateId) =>
       setPrefs((prev) => {
         if (!isBaseCoverTemplateId(value)) return prev;
-        const defaults = resolveCoverTemplateDefaults(value);
         if (
           prev.coverTemplateId === value &&
-          prev.coverBaseTemplateId === value &&
-          prev.coverTextScalePercent === defaults.textScalePercent &&
-          prev.coverTextColorMode === defaults.textColorMode
+          prev.coverBaseTemplateId === value
         ) {
           return prev;
         }
@@ -1301,8 +1320,6 @@ export function useEpubMaker(): UseEpubMakerReturn {
           ...prev,
           coverTemplateId: value,
           coverBaseTemplateId: value,
-          coverTextScalePercent: defaults.textScalePercent,
-          coverTextColorMode: defaults.textColorMode,
         };
       }),
     setCoverSizePresetId: (value: CoverSizePresetId) =>
@@ -1321,7 +1338,6 @@ export function useEpubMaker(): UseEpubMakerReturn {
           ? prev
           : {
               ...prev,
-              coverTemplateId: "custom",
               coverTextScalePercent: nextValue,
             };
       }),
@@ -1340,17 +1356,16 @@ export function useEpubMaker(): UseEpubMakerReturn {
           ? prev
           : {
               ...prev,
-              coverTemplateId: "custom",
               coverTextColorMode: value,
             },
       ),
-    setIncludeTextOnCustomCover: (value: boolean) =>
+    setHideCoverText: (value: boolean) =>
       setPrefs((prev) =>
-        prev.includeTextOnCustomCover === value
+        prev.hideCoverText === value
           ? prev
           : {
               ...prev,
-              includeTextOnCustomCover: value,
+              hideCoverText: value,
             },
       ),
     setManualFileName: (value: string) =>

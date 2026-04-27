@@ -56,7 +56,7 @@ export function PageDraftGrid({
   coverTextScalePercent,
   coverTextPosition,
   coverTextColorMode,
-  includeTextOnCustomCover,
+  hideCoverText,
   isCoverEnabled,
   isAdding,
   isGenerating,
@@ -76,7 +76,7 @@ export function PageDraftGrid({
   onCoverTextScalePercentChange,
   onCoverTextPositionChange,
   onCoverTextColorModeChange,
-  onIncludeTextOnCustomCoverChange,
+  onHideCoverTextChange,
   onAddFromClipboard,
   onAddFromFiles,
   pastedInput,
@@ -97,7 +97,7 @@ export function PageDraftGrid({
   coverTextScalePercent: number;
   coverTextPosition: CoverTextPosition;
   coverTextColorMode: CoverTextColorMode;
-  includeTextOnCustomCover: boolean;
+  hideCoverText: boolean;
   isCoverEnabled: boolean;
   isAdding: boolean;
   isGenerating: boolean;
@@ -117,7 +117,7 @@ export function PageDraftGrid({
   onCoverTextScalePercentChange: (value: number) => void;
   onCoverTextPositionChange: (value: CoverTextPosition) => void;
   onCoverTextColorModeChange: (value: CoverTextColorMode) => void;
-  onIncludeTextOnCustomCoverChange: (value: boolean) => void;
+  onHideCoverTextChange: (value: boolean) => void;
   onAddFromClipboard: () => Promise<void>;
   onAddFromFiles: (files: FileList | File[]) => Promise<void>;
   pastedInput: string;
@@ -383,13 +383,13 @@ export function PageDraftGrid({
             coverTextScalePercent={coverTextScalePercent}
             coverTextPosition={coverTextPosition}
             coverTextColorMode={coverTextColorMode}
-            includeTextOnCustomCover={includeTextOnCustomCover}
+            hideCoverText={hideCoverText}
             onCoverTemplateChange={onCoverTemplateChange}
             onCoverSizePresetChange={onCoverSizePresetChange}
             onCoverTextScalePercentChange={onCoverTextScalePercentChange}
             onCoverTextPositionChange={onCoverTextPositionChange}
             onCoverTextColorModeChange={onCoverTextColorModeChange}
-            onIncludeTextOnCustomCoverChange={onIncludeTextOnCustomCoverChange}
+            onHideCoverTextChange={onHideCoverTextChange}
             onReplaceCoverFromFiles={onReplaceCoverFromFiles}
             onReplaceCoverFromClipboard={onReplaceCoverFromClipboard}
             onResetCoverToAuto={onResetCoverToAuto}
