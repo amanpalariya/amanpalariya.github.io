@@ -13,10 +13,24 @@ export type CoverTemplateId =
   | "sage"
   | "sunset";
 
+export type CoverSizePresetId =
+  | "kindle_portrait"
+  | "trade_portrait"
+  | "square"
+  | "paperback_6x9";
+
 export interface CoverTemplateOption {
   id: CoverTemplateId;
   label: string;
   description: string;
+}
+
+export interface CoverSizePresetOption {
+  id: CoverSizePresetId;
+  label: string;
+  description: string;
+  width: number;
+  height: number;
 }
 
 export interface PageDraft {
@@ -121,6 +135,9 @@ export interface EpubMakerPrefs {
   title: string;
   author: string;
   coverTemplateId: CoverTemplateId;
+  coverSizePresetId: CoverSizePresetId;
+  coverTextScalePercent: number;
+  includeTextOnCustomCover: boolean;
   manualFileName: string;
   fileNameMode: FileNameMode;
   sanitizeOptions: {
@@ -134,6 +151,10 @@ export interface EpubMakerState {
   coverMode: CoverMode;
   coverTemplateId: CoverTemplateId;
   coverTemplateOptions: CoverTemplateOption[];
+  coverSizePresetId: CoverSizePresetId;
+  coverSizePresetOptions: CoverSizePresetOption[];
+  coverTextScalePercent: number;
+  includeTextOnCustomCover: boolean;
   isCoverEnabled: boolean;
   coverPreviewHtml: string;
   hasCustomCover: boolean;

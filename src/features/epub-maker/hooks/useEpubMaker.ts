@@ -18,11 +18,14 @@ import type {
   AutoCoverRendererId,
 } from "../domain/cover";
 import {
+  createCoverHtml,
   COVER_TEMPLATE_OPTIONS,
-  createAutoCoverHtml,
+  COVER_SIZE_PRESET_OPTIONS,
+  resolveCoverSizePreset,
 } from "../domain/cover";
 import type {
   BuildEpubProgressUpdate,
+  CoverSizePresetId,
   CoverTemplateId,
   CoverDraft,
   CoverMode,
@@ -181,6 +184,9 @@ export type UseEpubMakerReturn = EpubMakerState & {
   setTitle: (value: string) => void;
   setAuthor: (value: string) => void;
   setCoverTemplateId: (value: CoverTemplateId) => void;
+  setCoverSizePresetId: (value: CoverSizePresetId) => void;
+  setCoverTextScalePercent: (value: number) => void;
+  setIncludeTextOnCustomCover: (value: boolean) => void;
   setManualFileName: (value: string) => void;
   toggleFileNameMode: () => void;
   setEmbedRemoteImages: (value: boolean) => void;
@@ -437,15 +443,29 @@ export function useEpubMaker(): UseEpubMakerReturn {
         )
       : autoEpubFileName;
 
-  const autoCoverRawHtml = useMemo(
+  const coverRawHtml = useMemo(
     () =>
-      createAutoCoverHtml(
+      createCoverHtml(
         normalizedBookTitle,
         normalizedBookAuthor,
-        prefs.coverTemplateId,
+        {
+          templateId: prefs.coverTemplateId,
+          sizePresetId: prefs.coverSizePresetId,
+          textScalePercent: prefs.coverTextScalePercent,
+          customCoverHtml,
+          includeTextOnCustomCover: prefs.includeTextOnCustomCover,
+        },
         AUTO_COVER_RENDERER,
       ),
-    [normalizedBookTitle, normalizedBookAuthor, prefs.coverTemplateId],
+    [
+      normalizedBookTitle,
+      normalizedBookAuthor,
+      prefs.coverTemplateId,
+      prefs.coverSizePresetId,
+      prefs.coverTextScalePercent,
+      prefs.includeTextOnCustomCover,
+      customCoverHtml,
+    ],
   );
 
   const sanitizePolicy = useMemo(() => {
@@ -459,11 +479,12 @@ export function useEpubMaker(): UseEpubMakerReturn {
   ]);
 
   const coverDraft = useMemo(() => {
-    if (customCoverHtml) {
-      return buildCoverDraft(customCoverHtml, "custom", sanitizePolicy);
-    }
-    return buildCoverDraft(autoCoverRawHtml, "auto", sanitizePolicy);
-  }, [autoCoverRawHtml, customCoverHtml, sanitizePolicy]);
+    return buildCoverDraft(
+      coverRawHtml,
+      customCoverHtml ? "custom" : "auto",
+      sanitizePolicy,
+    );
+  }, [coverRawHtml, customCoverHtml, sanitizePolicy]);
   const hasCustomCover = customCoverHtml !== null;
 
   useEffect(() => {
@@ -1191,6 +1212,10 @@ export function useEpubMaker(): UseEpubMakerReturn {
     coverMode: coverDraft.mode,
     coverTemplateId: prefs.coverTemplateId,
     coverTemplateOptions: COVER_TEMPLATE_OPTIONS,
+    coverSizePresetId: prefs.coverSizePresetId,
+    coverSizePresetOptions: COVER_SIZE_PRESET_OPTIONS,
+    coverTextScalePercent: prefs.coverTextScalePercent,
+    includeTextOnCustomCover: prefs.includeTextOnCustomCover,
     isCoverEnabled: coverEnabled,
     coverPreviewHtml: coverDraft.previewHtml,
     hasCustomCover,
@@ -1243,6 +1268,34 @@ export function useEpubMaker(): UseEpubMakerReturn {
           : {
               ...prev,
               coverTemplateId: value,
+            },
+      ),
+    setCoverSizePresetId: (value: CoverSizePresetId) =>
+      setPrefs((prev) =>
+        prev.coverSizePresetId === value
+          ? prev
+          : {
+              ...prev,
+              coverSizePresetId: resolveCoverSizePreset(value).id,
+            },
+      ),
+    setCoverTextScalePercent: (value: number) =>
+      setPrefs((prev) => {
+        const nextValue = Math.max(70, Math.min(180, Math.round(value)));
+        return prev.coverTextScalePercent === nextValue
+          ? prev
+          : {
+              ...prev,
+              coverTextScalePercent: nextValue,
+            };
+      }),
+    setIncludeTextOnCustomCover: (value: boolean) =>
+      setPrefs((prev) =>
+        prev.includeTextOnCustomCover === value
+          ? prev
+          : {
+              ...prev,
+              includeTextOnCustomCover: value,
             },
       ),
     setManualFileName: (value: string) =>

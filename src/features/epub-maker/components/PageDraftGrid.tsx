@@ -20,6 +20,9 @@ import {
 import { LuFilePlus, LuUpload } from "react-icons/lu";
 import type {
   ChapterGenerationStatus,
+  CoverMode,
+  CoverSizePresetId,
+  CoverSizePresetOption,
   CoverTemplateId,
   CoverTemplateOption,
   PageDraft,
@@ -40,9 +43,14 @@ const PAGE_PREVIEW_RATIO = 1 / 1.4142;
 export function PageDraftGrid({
   pages,
   coverPreviewHtml,
+  coverMode,
   hasCustomCover,
   coverTemplateId,
   coverTemplateOptions,
+  coverSizePresetId,
+  coverSizePresetOptions,
+  coverTextScalePercent,
+  includeTextOnCustomCover,
   isCoverEnabled,
   isAdding,
   isGenerating,
@@ -58,6 +66,9 @@ export function PageDraftGrid({
   onResetCoverToAuto,
   onToggleCoverEnabled,
   onCoverTemplateChange,
+  onCoverSizePresetChange,
+  onCoverTextScalePercentChange,
+  onIncludeTextOnCustomCoverChange,
   onAddFromClipboard,
   onAddFromFiles,
   pastedInput,
@@ -67,9 +78,14 @@ export function PageDraftGrid({
 }: {
   pages: PageDraft[];
   coverPreviewHtml: string;
+  coverMode: CoverMode;
   hasCustomCover: boolean;
   coverTemplateId: CoverTemplateId;
   coverTemplateOptions: CoverTemplateOption[];
+  coverSizePresetId: CoverSizePresetId;
+  coverSizePresetOptions: CoverSizePresetOption[];
+  coverTextScalePercent: number;
+  includeTextOnCustomCover: boolean;
   isCoverEnabled: boolean;
   isAdding: boolean;
   isGenerating: boolean;
@@ -85,6 +101,9 @@ export function PageDraftGrid({
   onResetCoverToAuto: () => void;
   onToggleCoverEnabled: () => void;
   onCoverTemplateChange: (templateId: CoverTemplateId) => void;
+  onCoverSizePresetChange: (presetId: CoverSizePresetId) => void;
+  onCoverTextScalePercentChange: (value: number) => void;
+  onIncludeTextOnCustomCoverChange: (value: boolean) => void;
   onAddFromClipboard: () => Promise<void>;
   onAddFromFiles: (files: FileList | File[]) => Promise<void>;
   pastedInput: string;
@@ -336,11 +355,19 @@ export function PageDraftGrid({
             page={coverPage}
             chapterNumber={"C"}
             isCover={true}
+            coverMode={coverMode}
             hasCustomCover={hasCustomCover}
             isCoverEnabled={isCoverEnabled}
             selectedCoverTemplateId={coverTemplateId}
             coverTemplateOptions={coverTemplateOptions}
+            selectedCoverSizePresetId={coverSizePresetId}
+            coverSizePresetOptions={coverSizePresetOptions}
+            coverTextScalePercent={coverTextScalePercent}
+            includeTextOnCustomCover={includeTextOnCustomCover}
             onCoverTemplateChange={onCoverTemplateChange}
+            onCoverSizePresetChange={onCoverSizePresetChange}
+            onCoverTextScalePercentChange={onCoverTextScalePercentChange}
+            onIncludeTextOnCustomCoverChange={onIncludeTextOnCustomCoverChange}
             onReplaceCoverFromFiles={onReplaceCoverFromFiles}
             onReplaceCoverFromClipboard={onReplaceCoverFromClipboard}
             onResetCoverToAuto={onResetCoverToAuto}

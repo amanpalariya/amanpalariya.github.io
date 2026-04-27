@@ -167,9 +167,14 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
             <PageDraftGrid
               pages={props.pages}
               coverPreviewHtml={props.coverPreviewHtml}
+              coverMode={props.coverMode}
               hasCustomCover={props.hasCustomCover}
               coverTemplateId={props.coverTemplateId}
               coverTemplateOptions={props.coverTemplateOptions}
+              coverSizePresetId={props.coverSizePresetId}
+              coverSizePresetOptions={props.coverSizePresetOptions}
+              coverTextScalePercent={props.coverTextScalePercent}
+              includeTextOnCustomCover={props.includeTextOnCustomCover}
               isCoverEnabled={props.isCoverEnabled}
               isAdding={props.isAdding}
               isGenerating={props.isGenerating}
@@ -185,6 +190,9 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
               onResetCoverToAuto={props.resetCoverToAuto}
               onToggleCoverEnabled={props.toggleCoverEnabled}
               onCoverTemplateChange={props.setCoverTemplateId}
+              onCoverSizePresetChange={props.setCoverSizePresetId}
+              onCoverTextScalePercentChange={props.setCoverTextScalePercent}
+              onIncludeTextOnCustomCoverChange={props.setIncludeTextOnCustomCover}
               onAddFromClipboard={props.addPageFromClipboard}
               onAddFromFiles={props.addPagesFromFiles}
               pastedInput={props.pastedInput}

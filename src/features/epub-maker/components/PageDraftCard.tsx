@@ -2,14 +2,20 @@ import {
   AspectRatio,
   Box,
   Button,
+  Dialog,
   FileUpload,
   HStack,
   Icon,
+  IconButton,
   Input,
   InputGroup,
   NativeSelect,
+  NumberInput,
   Text,
+  VStack,
 } from "@chakra-ui/react";
+import { DialogCloseTrigger, DialogContent } from "@components/ui/dialog";
+import { Switch } from "@components/ui/switch";
 import { Tooltip } from "@components/ui/tooltip";
 import {
   LuCheck,
@@ -19,8 +25,8 @@ import {
   LuEyeOff,
   LuGripVertical,
   LuLoaderCircle,
-  LuPalette,
   LuRefreshCw,
+  LuSettings2,
   LuTrash2,
   LuUpload,
 } from "react-icons/lu";
@@ -35,6 +41,9 @@ import {
 } from "react";
 import type {
   ChapterGenerationStatus,
+  CoverMode,
+  CoverSizePresetId,
+  CoverSizePresetOption,
   CoverTemplateId,
   CoverTemplateOption,
   PageDraft,
@@ -52,11 +61,19 @@ export function PageDraftCard({
   page,
   chapterNumber,
   isCover,
+  coverMode,
   hasCustomCover,
   isCoverEnabled,
   selectedCoverTemplateId,
   coverTemplateOptions,
+  selectedCoverSizePresetId,
+  coverSizePresetOptions,
+  coverTextScalePercent,
+  includeTextOnCustomCover,
   onCoverTemplateChange,
+  onCoverSizePresetChange,
+  onCoverTextScalePercentChange,
+  onIncludeTextOnCustomCoverChange,
   onReplaceCoverFromFiles,
   onReplaceCoverFromClipboard,
   onResetCoverToAuto,
@@ -82,11 +99,19 @@ export function PageDraftCard({
   page: PageDraft;
   chapterNumber: number | string;
   isCover?: boolean;
+  coverMode?: CoverMode;
   hasCustomCover?: boolean;
   isCoverEnabled?: boolean;
   selectedCoverTemplateId?: CoverTemplateId;
   coverTemplateOptions?: CoverTemplateOption[];
+  selectedCoverSizePresetId?: CoverSizePresetId;
+  coverSizePresetOptions?: CoverSizePresetOption[];
+  coverTextScalePercent?: number;
+  includeTextOnCustomCover?: boolean;
   onCoverTemplateChange?: (templateId: CoverTemplateId) => void;
+  onCoverSizePresetChange?: (presetId: CoverSizePresetId) => void;
+  onCoverTextScalePercentChange?: (value: number) => void;
+  onIncludeTextOnCustomCoverChange?: (value: boolean) => void;
   onReplaceCoverFromFiles?: (files: FileList | File[]) => Promise<void>;
   onReplaceCoverFromClipboard?: () => Promise<void>;
   onResetCoverToAuto?: () => void;
@@ -298,13 +323,57 @@ export function PageDraftCard({
     fontSize: "sm",
     rounded: "xl",
   } as const;
+  const dialogFieldProps = {
+    fontFamily: "ui",
+    fontSize: "sm",
+    rounded: "lg",
+    bg: "app.epub.bg.card",
+    color: "app.epub.fg.default",
+    borderColor: "app.epub.border.default",
+  } as const;
+  const dialogOutlineButtonProps = {
+    size: "md",
+    variant: "outline",
+    rounded: "lg",
+    borderColor: "app.epub.border.default",
+    color: "app.epub.fg.default",
+    bg: "app.epub.bg.card",
+    _hover: {
+      bg: "app.epub.bg.surface",
+      color: "app.epub.fg.default",
+    },
+  } as const;
+  const switchProps = {
+    controlProps: {
+      bg: "app.epub.switch.track.off",
+      _checked: { bg: "app.epub.switch.track.on" },
+    },
+    thumbProps: {
+      bg: "app.epub.switch.thumb",
+    },
+    labelProps: {
+      color: "app.epub.switch.label",
+    },
+  } as const;
   const isRemoveDisabled = isInteractionDisabled || isCover;
   const isTitleDisabled = isInteractionDisabled || isCover;
   const canDrag = !isInteractionDisabled && !isCover;
-  const previewRatio = 1 / 1.4142;
+  const selectedCoverSizePreset =
+    selectedCoverSizePresetId && coverSizePresetOptions
+      ? coverSizePresetOptions.find(
+          (option) => option.id === selectedCoverSizePresetId,
+        )
+      : undefined;
+  const cardPreviewRatio = 1 / 1.4142;
+  const dialogPreviewRatio =
+    (selectedCoverSizePreset?.width ?? 1600) /
+    (selectedCoverSizePreset?.height ?? 2560);
   const isEffectiveCoverEnabled = isCoverEnabled ?? true;
   const isCoverExportDisabled = Boolean(isCover && !isEffectiveCoverEnabled);
-  const isCoverToolDisabled = isInteractionDisabled || isCoverExportDisabled;
+  const isCoverToolDisabled = isInteractionDisabled;
+  const effectiveCoverTextScalePercent = coverTextScalePercent ?? 100;
+  const isTextOnCustomCoverEnabled = includeTextOnCustomCover ?? true;
+  const hasCustomCoverValue = hasCustomCover ?? false;
 
   function handleCoverUploadChange(event: ChangeEvent<HTMLInputElement>) {
     if (!isCover || !onReplaceCoverFromFiles) return;
@@ -321,6 +390,12 @@ export function PageDraftCard({
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
     onToggleCoverEnabled?.();
+  }
+
+  function handleCoverTextScaleChange(value: string) {
+    const parsed = Number(value);
+    if (Number.isNaN(parsed)) return;
+    onCoverTextScalePercentChange?.(parsed);
   }
 
   return (
@@ -345,99 +420,421 @@ export function PageDraftCard({
     >
       <Box borderBottomWidth={"1px"} borderColor={"app.epub.border.muted"}>
         {isCover ? (
-          <>
-            <HStack h={"2.25rem"} px={2} justify={"space-between"} align={"center"}>
-              <Text
-                fontFamily={"ui"}
-                fontSize={"sm"}
-                fontWeight={"medium"}
-                color={"app.epub.fg.default"}
+          <HStack h={"2.25rem"} px={2} justify={"space-between"} align={"center"}>
+            <Text
+              fontFamily={"ui"}
+              fontSize={"sm"}
+              fontWeight={"medium"}
+              color={"app.epub.fg.default"}
+            >
+              Cover
+            </Text>
+
+            <HStack gap={1}>
+              <Tooltip
+                content={
+                  isEffectiveCoverEnabled
+                    ? "Disable cover in generated EPUB"
+                    : "Enable cover in generated EPUB"
+                }
               >
-                Cover
-              </Text>
-
-              <HStack gap={0.5}>
-                <FileUpload.Root maxFiles={1}>
-                  <FileUpload.HiddenInput
-                    ref={coverUploadInputRef}
-                    aria-label={"Upload cover image"}
-                    accept={"image/*"}
-                    onChange={handleCoverUploadChange}
-                  />
-                  <Tooltip content={"Upload cover"}>
-                    <Button
-                      size={"xs"}
-                      variant={"ghost"}
-                      onClick={() => coverUploadInputRef.current?.click()}
-                      disabled={isCoverToolDisabled}
-                      aria-label={"Upload cover"}
-                      minW={"auto"}
-                      px={2}
-                    >
-                      <Icon>
-                        <LuUpload />
-                      </Icon>
-                    </Button>
-                  </Tooltip>
-                </FileUpload.Root>
-
-                <Tooltip content={"Paste cover"}>
-                  <Button
-                    size={"xs"}
-                    variant={"ghost"}
-                    onClick={() => void onReplaceCoverFromClipboard?.()}
-                    disabled={isCoverToolDisabled}
-                    aria-label={"Paste cover"}
-                    minW={"auto"}
-                    px={2}
-                  >
-                    <Icon>
-                      <LuClipboardPaste />
-                    </Icon>
-                  </Button>
-                </Tooltip>
-
-                <Tooltip content={"Reset cover"}>
-                  <Button
-                    size={"xs"}
-                    variant={"ghost"}
-                    onClick={() => onResetCoverToAuto?.()}
-                    disabled={isCoverToolDisabled || !hasCustomCover}
-                    aria-label={"Reset cover"}
-                    minW={"auto"}
-                    px={2}
-                  >
-                    <Icon>
-                      <LuRefreshCw />
-                    </Icon>
-                  </Button>
-                </Tooltip>
-
-                <Tooltip
-                  content={
+                <IconButton
+                  size={"xs"}
+                  variant={"ghost"}
+                  aria-label={
                     isEffectiveCoverEnabled ? "Disable cover" : "Enable cover"
                   }
+                  onClick={() => onToggleCoverEnabled?.()}
+                  disabled={isInteractionDisabled}
+                  color={
+                    isEffectiveCoverEnabled
+                      ? "app.epub.fg.default"
+                      : "app.epub.fg.subtle"
+                  }
                 >
-                  <Button
-                    size={"xs"}
-                    variant={"ghost"}
-                    onClick={() => onToggleCoverEnabled?.()}
-                    disabled={isInteractionDisabled}
-                    aria-label={
-                      isEffectiveCoverEnabled ? "Disable cover" : "Enable cover"
-                    }
-                    minW={"auto"}
-                    px={2}
-                  >
-                    <Icon>
-                      {isEffectiveCoverEnabled ? <LuEyeOff /> : <LuEye />}
-                    </Icon>
-                  </Button>
+                  {isEffectiveCoverEnabled ? <LuEye /> : <LuEyeOff />}
+                </IconButton>
+              </Tooltip>
+              <Dialog.Root>
+                <Tooltip content={"Cover settings"}>
+                  <Dialog.Trigger asChild>
+                    <IconButton
+                      size={"xs"}
+                      variant={"ghost"}
+                      aria-label={`Open cover settings (${coverMode === "custom" ? "custom image" : "auto-generated"})`}
+                      disabled={isInteractionDisabled}
+                    >
+                      <LuSettings2 />
+                    </IconButton>
+                  </Dialog.Trigger>
                 </Tooltip>
-              </HStack>
-            </HStack>
 
-          </>
+                <DialogContent
+                  bg={"app.epub.bg.surface"}
+                  color={"app.epub.fg.default"}
+                  rounded={"2xl"}
+                  borderWidth={"1px"}
+                  borderColor={"app.epub.border.default"}
+                  maxW={"1120px"}
+                >
+                  <Dialog.Header>
+                    <Dialog.Title fontFamily={"ui"}>Cover settings</Dialog.Title>
+                  </Dialog.Header>
+
+                  <Dialog.Body>
+                    <Box
+                      display={"grid"}
+                      gap={5}
+                      gridTemplateColumns={{
+                        base: "minmax(0, 1fr)",
+                        lg: "minmax(0, 1fr) minmax(0, 1fr)",
+                      }}
+                      alignItems={"start"}
+                    >
+                      <VStack align={"stretch"} gap={3}>
+                        <Box
+                          p={4}
+                          rounded={"xl"}
+                          bg={"app.epub.bg.card"}
+                          borderWidth={"1px"}
+                          borderColor={"app.epub.border.default"}
+                        >
+                          <Text
+                            fontFamily={"ui"}
+                            fontSize={"sm"}
+                            fontWeight={"semibold"}
+                            color={"app.epub.fg.default"}
+                            mb={3}
+                          >
+                            Layout & Typography
+                          </Text>
+                          <Box
+                            display={"grid"}
+                            gap={3}
+                            gridTemplateColumns={{
+                              base: "minmax(0, 1fr)",
+                              md: "minmax(0, 1fr) minmax(0, 1fr)",
+                            }}
+                          >
+                            <Box>
+                              <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
+                                Cover template / theme
+                              </Text>
+                              <NativeSelect.Root
+                                {...dialogFieldProps}
+                                size={"md"}
+                                disabled={
+                                  isInteractionDisabled ||
+                                  !selectedCoverTemplateId ||
+                                  !coverTemplateOptions ||
+                                  coverTemplateOptions.length === 0
+                                }
+                              >
+                                <NativeSelect.Field
+                                  fontFamily={"ui"}
+                                  fontSize={"sm"}
+                                  rounded={"lg"}
+                                  value={selectedCoverTemplateId ?? ""}
+                                  aria-label={"Select cover template"}
+                                  onChange={(event) =>
+                                    onCoverTemplateChange?.(
+                                      event.currentTarget.value as CoverTemplateId,
+                                    )
+                                  }
+                                >
+                                  {(coverTemplateOptions ?? []).map((option) => (
+                                    <option key={option.id} value={option.id}>
+                                      {option.label}
+                                    </option>
+                                  ))}
+                                </NativeSelect.Field>
+                                <NativeSelect.Indicator />
+                              </NativeSelect.Root>
+                            </Box>
+
+                            <Box>
+                              <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
+                                Common cover sizes
+                              </Text>
+                              <NativeSelect.Root
+                                {...dialogFieldProps}
+                                size={"md"}
+                                disabled={
+                                  isInteractionDisabled ||
+                                  !selectedCoverSizePresetId ||
+                                  !coverSizePresetOptions ||
+                                  coverSizePresetOptions.length === 0
+                                }
+                              >
+                                <NativeSelect.Field
+                                  fontFamily={"ui"}
+                                  fontSize={"sm"}
+                                  rounded={"lg"}
+                                  value={selectedCoverSizePresetId ?? ""}
+                                  aria-label={"Select cover size preset"}
+                                  onChange={(event) =>
+                                    onCoverSizePresetChange?.(
+                                      event.currentTarget.value as CoverSizePresetId,
+                                    )
+                                  }
+                                >
+                                  {(coverSizePresetOptions ?? []).map((option) => (
+                                    <option key={option.id} value={option.id}>
+                                      {option.label} · {option.description}
+                                    </option>
+                                  ))}
+                                </NativeSelect.Field>
+                                <NativeSelect.Indicator />
+                              </NativeSelect.Root>
+                            </Box>
+
+                            <Box gridColumn={{ base: "auto", md: "1 / span 2" }}>
+                              <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
+                                Cover text size (%)
+                              </Text>
+                              <NumberInput.Root
+                                {...dialogFieldProps}
+                                size={"md"}
+                                value={String(effectiveCoverTextScalePercent)}
+                                min={70}
+                                max={180}
+                                step={5}
+                                onValueChange={(details) =>
+                                  handleCoverTextScaleChange(details.value)
+                                }
+                                disabled={isInteractionDisabled}
+                                maxW={"220px"}
+                              >
+                                <NumberInput.Control />
+                                <NumberInput.Input
+                                  fontFamily={"ui"}
+                                  fontSize={"sm"}
+                                  rounded={"lg"}
+                                  bg={"app.epub.bg.card"}
+                                  color={"app.epub.fg.default"}
+                                />
+                              </NumberInput.Root>
+                            </Box>
+                          </Box>
+                        </Box>
+
+                        <Box
+                          p={4}
+                          rounded={"xl"}
+                          bg={"app.epub.bg.card"}
+                          borderWidth={"1px"}
+                          borderColor={"app.epub.border.default"}
+                        >
+                          <Text
+                            fontFamily={"ui"}
+                            fontSize={"sm"}
+                            fontWeight={"semibold"}
+                            color={"app.epub.fg.default"}
+                            mb={3}
+                          >
+                            Cover Image
+                          </Text>
+                          <VStack align={"stretch"} gap={2}>
+                            <HStack gap={2} wrap={"wrap"}>
+                              <HStack gap={0} align={"stretch"}>
+                                <Button
+                                  {...dialogOutlineButtonProps}
+                                  roundedRight={0}
+                                  borderRightWidth={"0"}
+                                  onClick={() => void onReplaceCoverFromClipboard?.()}
+                                  disabled={isCoverToolDisabled}
+                                >
+                                  <HStack gap={1.5}>
+                                    <Icon>
+                                      <LuClipboardPaste />
+                                    </Icon>
+                                    <Text>Paste custom image</Text>
+                                  </HStack>
+                                </Button>
+                                <FileUpload.Root maxFiles={1}>
+                                  <FileUpload.HiddenInput
+                                    ref={coverUploadInputRef}
+                                    aria-label={"Upload cover image"}
+                                    accept={"image/*"}
+                                    onChange={handleCoverUploadChange}
+                                  />
+                                  <Tooltip content={"Upload custom image"}>
+                                    <IconButton
+                                      {...dialogOutlineButtonProps}
+                                      roundedLeft={0}
+                                      borderLeftWidth={"1px"}
+                                      borderLeftColor={"app.epub.border.default"}
+                                      aria-label={"Upload custom image"}
+                                      onClick={() => coverUploadInputRef.current?.click()}
+                                      disabled={isCoverToolDisabled}
+                                    >
+                                      <LuUpload />
+                                    </IconButton>
+                                  </Tooltip>
+                                </FileUpload.Root>
+                              </HStack>
+
+                              <Button
+                                {...dialogOutlineButtonProps}
+                                onClick={() => onResetCoverToAuto?.()}
+                                disabled={isCoverToolDisabled || !hasCustomCoverValue}
+                              >
+                                <HStack gap={1.5}>
+                                  <Icon>
+                                    <LuRefreshCw />
+                                  </Icon>
+                                  <Text>Reset to auto cover</Text>
+                                </HStack>
+                              </Button>
+                            </HStack>
+
+                            <Switch
+                              {...switchProps}
+                              checked={isTextOnCustomCoverEnabled}
+                              onCheckedChange={(details) =>
+                                onIncludeTextOnCustomCoverChange?.(details.checked)
+                              }
+                              disabled={isInteractionDisabled || !hasCustomCoverValue}
+                            >
+                              Show title/author text on custom image
+                            </Switch>
+                          </VStack>
+                        </Box>
+
+                        <Box
+                          p={4}
+                          rounded={"xl"}
+                          bg={"app.epub.bg.card"}
+                          borderWidth={"1px"}
+                          borderColor={"app.epub.border.default"}
+                        >
+                          <Text
+                            fontFamily={"ui"}
+                            fontSize={"sm"}
+                            fontWeight={"semibold"}
+                            color={"app.epub.fg.default"}
+                            mb={3}
+                          >
+                            Export
+                          </Text>
+                          <Switch
+                            {...switchProps}
+                            checked={isEffectiveCoverEnabled}
+                            onCheckedChange={(details) => {
+                              if (details.checked !== isEffectiveCoverEnabled) {
+                                onToggleCoverEnabled?.();
+                              }
+                            }}
+                            disabled={isInteractionDisabled}
+                          >
+                            Include cover in generated EPUB
+                          </Switch>
+                        </Box>
+                      </VStack>
+
+                      <Box>
+                        <AspectRatio ratio={dialogPreviewRatio}>
+                          <Box
+                            position={"relative"}
+                            borderWidth={"1px"}
+                            borderColor={"app.epub.border.default"}
+                            rounded={"lg"}
+                            overflow={"hidden"}
+                            bg={"app.epub.bg.preview"}
+                          >
+                            <iframe
+                              title={`cover-dialog-preview-${page.id}`}
+                              srcDoc={page.previewHtml}
+                              sandbox=""
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                border: "none",
+                                pointerEvents: "none",
+                                filter:
+                                  isInteractionDisabled || isCoverExportDisabled
+                                    ? "blur(1px) grayscale(0.35) saturate(0.75) brightness(0.82)"
+                                    : "none",
+                                transition: "filter 0.2s ease",
+                              }}
+                            />
+                            {!isEffectiveCoverEnabled ? (
+                              <Box
+                                position={"absolute"}
+                                inset={0}
+                                pointerEvents={
+                                  isCoverExportDisabled && !isInteractionDisabled
+                                    ? "auto"
+                                    : "none"
+                                }
+                                bg={"app.epub.overlay.preview"}
+                                cursor={
+                                  isCoverExportDisabled && !isInteractionDisabled
+                                    ? "pointer"
+                                    : "default"
+                                }
+                                role={
+                                  isCoverExportDisabled && !isInteractionDisabled
+                                    ? "button"
+                                    : undefined
+                                }
+                                tabIndex={
+                                  isCoverExportDisabled && !isInteractionDisabled
+                                    ? 0
+                                    : undefined
+                                }
+                                onClick={() => {
+                                  if (!isCoverExportDisabled || isInteractionDisabled) {
+                                    return;
+                                  }
+                                  onToggleCoverEnabled?.();
+                                }}
+                                onKeyDown={handleCoverDisabledOverlayKeyDown}
+                              >
+                                <Box
+                                  position={"absolute"}
+                                  inset={0}
+                                  display={"flex"}
+                                  alignItems={"center"}
+                                  justifyContent={"center"}
+                                  px={3}
+                                >
+                                  <HStack
+                                    gap={1.5}
+                                    bg={"app.epub.bg.card"}
+                                    borderWidth={"1px"}
+                                    borderColor={"app.epub.border.default"}
+                                    rounded={"full"}
+                                    px={3}
+                                    py={1.5}
+                                  >
+                                    <Icon boxSize={3.5} color={"app.epub.fg.default"}>
+                                      <LuEyeOff />
+                                    </Icon>
+                                    <Text
+                                      fontFamily={"ui"}
+                                      fontSize={"xs"}
+                                      fontWeight={"semibold"}
+                                      color={"app.epub.fg.default"}
+                                      lineHeight={1.1}
+                                    >
+                                      Enable cover
+                                    </Text>
+                                  </HStack>
+                                </Box>
+                              </Box>
+                            ) : null}
+                          </Box>
+                        </AspectRatio>
+                      </Box>
+                    </Box>
+                  </Dialog.Body>
+
+                  <DialogCloseTrigger />
+                </DialogContent>
+              </Dialog.Root>
+            </HStack>
+          </HStack>
         ) : (
           <InputGroup
             startAddon={chapterNumber}
@@ -504,63 +901,11 @@ export function PageDraftCard({
       </Box>
       <AspectRatio
         position={"relative"}
-        ratio={previewRatio}
+        ratio={cardPreviewRatio}
         bg={"app.epub.bg.preview"}
         cursor={"default"}
       >
         <Box position={"relative"} w={"full"} h={"full"}>
-          {isCover &&
-          selectedCoverTemplateId &&
-          coverTemplateOptions &&
-          coverTemplateOptions.length > 0 ? (
-            <Box position={"absolute"} top={0} left={0} right={0} zIndex={5}>
-              <Box
-                w={"full"}
-                px={2}
-                py={1.5}
-                bg={"blackAlpha.500"}
-                borderBottomWidth={"1px"}
-                borderColor={"whiteAlpha.300"}
-                backdropFilter={"blur(4px)"}
-              >
-                <HStack gap={1.5} align={"center"}>
-                  <Icon boxSize={3.5} color={"whiteAlpha.900"}>
-                    <LuPalette />
-                  </Icon>
-                  <NativeSelect.Root
-                    size={"xs"}
-                    disabled={isInteractionDisabled}
-                    minW={"7.25rem"}
-                    maxW={"11.5rem"}
-                    bg={"blackAlpha.500"}
-                    borderColor={"whiteAlpha.400"}
-                    color={"whiteAlpha.900"}
-                    rounded={"sm"}
-                  >
-                    <NativeSelect.Field
-                      value={selectedCoverTemplateId}
-                      aria-label={"Select cover template"}
-                      onChange={(event) =>
-                        onCoverTemplateChange?.(
-                          event.currentTarget.value as CoverTemplateId,
-                        )
-                      }
-                      fontFamily={"ui"}
-                      fontSize={"xs"}
-                    >
-                      {coverTemplateOptions.map((option) => (
-                        <option key={option.id} value={option.id}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </NativeSelect.Field>
-                    <NativeSelect.Indicator color={"whiteAlpha.900"} />
-                  </NativeSelect.Root>
-                </HStack>
-              </Box>
-            </Box>
-          ) : null}
-
           {!isCover ? (
             <Tooltip content={"Drag to reorder"}>
               <Button
