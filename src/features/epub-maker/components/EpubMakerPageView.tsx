@@ -166,6 +166,8 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
           <Box minH={"340px"} px={0} py={0}>
             <PageDraftGrid
               pages={props.pages}
+              previewBookTitle={props.normalizedBookTitle}
+              previewBookAuthor={props.normalizedBookAuthor}
               coverPreviewHtml={props.coverPreviewHtml}
               coverMode={props.coverMode}
               hasCustomCover={props.hasCustomCover}
@@ -180,7 +182,9 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
               isCoverEnabled={props.isCoverEnabled}
               isAdding={props.isAdding}
               isGenerating={props.isGenerating}
-              generationChapterStatusByPageId={props.generationChapterStatusByPageId}
+              generationChapterStatusByPageId={
+                props.generationChapterStatusByPageId
+              }
               activeGenerationPageId={props.activeGenerationPageId}
               isGenerationStatusFading={props.isGenerationStatusFading}
               pageFlashById={props.pageFlashById}
@@ -196,7 +200,9 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
               onCoverTextScalePercentChange={props.setCoverTextScalePercent}
               onCoverTextPositionChange={props.setCoverTextPosition}
               onCoverTextColorModeChange={props.setCoverTextColorMode}
-              onIncludeTextOnCustomCoverChange={props.setIncludeTextOnCustomCover}
+              onIncludeTextOnCustomCoverChange={
+                props.setIncludeTextOnCustomCover
+              }
               onAddFromClipboard={props.addPageFromClipboard}
               onAddFromFiles={props.addPagesFromFiles}
               pastedInput={props.pastedInput}
@@ -235,14 +241,23 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
             justifyContent={"center"}
             pointerEvents={"none"}
           >
-            <VStack gap={2} color={"app.epub.fg.muted"} textAlign={"center"} px={4}>
+            <VStack
+              gap={2}
+              color={"app.epub.fg.muted"}
+              textAlign={"center"}
+              px={4}
+            >
               <Icon boxSize={8}>
                 <LuFilePlus />
               </Icon>
               <Text fontFamily={"ui"} fontSize={"sm"} fontWeight={"semibold"}>
                 Drop files to add pages
               </Text>
-              <Text fontFamily={"ui"} fontSize={"xs"} color={"app.epub.fg.subtle"}>
+              <Text
+                fontFamily={"ui"}
+                fontSize={"xs"}
+                color={"app.epub.fg.subtle"}
+              >
                 Supports Markdown, text, HTML, and image files.
               </Text>
             </VStack>

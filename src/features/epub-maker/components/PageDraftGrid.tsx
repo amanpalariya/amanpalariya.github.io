@@ -44,6 +44,8 @@ const PAGE_PREVIEW_RATIO = 1 / 1.4142;
 
 export function PageDraftGrid({
   pages,
+  previewBookTitle,
+  previewBookAuthor,
   coverPreviewHtml,
   coverMode,
   hasCustomCover,
@@ -83,6 +85,8 @@ export function PageDraftGrid({
   onAddFromFallback,
 }: {
   pages: PageDraft[];
+  previewBookTitle: string;
+  previewBookAuthor: string;
   coverPreviewHtml: string;
   coverMode: CoverMode;
   hasCustomCover: boolean;
@@ -210,10 +214,12 @@ export function PageDraftGrid({
   }
 
   function updateDropIndexFromPoint(clientX: number, clientY: number) {
-    const hitTarget = document.elementFromPoint(clientX, clientY) as
-      | HTMLElement
-      | null;
-    const dropIndexElement = hitTarget?.closest<HTMLElement>("[data-drop-index]");
+    const hitTarget = document.elementFromPoint(
+      clientX,
+      clientY,
+    ) as HTMLElement | null;
+    const dropIndexElement =
+      hitTarget?.closest<HTMLElement>("[data-drop-index]");
     if (dropIndexElement?.dataset.dropIndex) {
       const nextIndex = Number(dropIndexElement.dataset.dropIndex);
       if (!Number.isNaN(nextIndex)) {
@@ -363,6 +369,8 @@ export function PageDraftGrid({
         >
           <PageDraftCard
             page={coverPage}
+            previewBookTitle={previewBookTitle}
+            previewBookAuthor={previewBookAuthor}
             chapterNumber={"C"}
             isCover={true}
             coverMode={coverMode}
@@ -630,81 +638,83 @@ export function PageDraftGrid({
         </Box>
       </SimpleGrid>
 
-      {draggedId && dragPreviewAnchor ? (
-        (() => {
-          const draggedPage = pages.find((page) => page.id === draggedId);
-          if (!draggedPage) return null;
+      {draggedId && dragPreviewAnchor
+        ? (() => {
+            const draggedPage = pages.find((page) => page.id === draggedId);
+            if (!draggedPage) return null;
 
-          return (
-            <Box
-              position={"fixed"}
-              left={`${dragPreviewAnchor.clientX - dragPreviewAnchor.offsetX}px`}
-              top={`${dragPreviewAnchor.clientY - dragPreviewAnchor.offsetY}px`}
-              w={`${dragPreviewAnchor.width}px`}
-              pointerEvents={"none"}
-              zIndex={30}
-              opacity={0.95}
-              borderWidth={"1px"}
-              borderColor={"app.epub.border.accent"}
-              rounded={"2xl"}
-              overflow={"hidden"}
-              bg={"app.epub.bg.card"}
-              boxShadow={"2xl"}
-            >
+            return (
               <Box
+                position={"fixed"}
+                left={`${dragPreviewAnchor.clientX - dragPreviewAnchor.offsetX}px`}
+                top={`${dragPreviewAnchor.clientY - dragPreviewAnchor.offsetY}px`}
+                w={`${dragPreviewAnchor.width}px`}
+                pointerEvents={"none"}
+                zIndex={30}
+                opacity={0.95}
+                borderWidth={"1px"}
+                borderColor={"app.epub.border.accent"}
+                rounded={"2xl"}
+                overflow={"hidden"}
                 bg={"app.epub.bg.card"}
+                boxShadow={"2xl"}
               >
-                <HStack
-                  h={"2rem"}
-                  gap={2}
-                  px={2}
-                  align={"center"}
-                  borderBottomWidth={"1px"}
-                  borderColor={"app.epub.border.muted"}
-                >
-                  <Box
-                    minW={"2.25rem"}
-                    display={"flex"}
-                    alignItems={"center"}
-                    justifyContent={"center"}
+                <Box bg={"app.epub.bg.card"}>
+                  <HStack
+                    h={"2rem"}
+                    gap={2}
+                    px={2}
+                    align={"center"}
+                    borderBottomWidth={"1px"}
+                    borderColor={"app.epub.border.muted"}
                   >
-                    <Text
-                      fontFamily={"ui"}
-                      fontSize={"xs"}
-                      fontWeight={"semibold"}
-                      color={"app.epub.fg.muted"}
+                    <Box
+                      minW={"2.25rem"}
+                      display={"flex"}
+                      alignItems={"center"}
+                      justifyContent={"center"}
                     >
-                      {pages.findIndex((page) => page.id === draggedPage.id) + 1}
+                      <Text
+                        fontFamily={"ui"}
+                        fontSize={"xs"}
+                        fontWeight={"semibold"}
+                        color={"app.epub.fg.muted"}
+                      >
+                        {pages.findIndex((page) => page.id === draggedPage.id) +
+                          1}
+                      </Text>
+                    </Box>
+                    <Text
+                      flex={1}
+                      fontFamily={"ui"}
+                      fontSize={"sm"}
+                      color={"app.epub.fg.default"}
+                      lineClamp={1}
+                    >
+                      {draggedPage.title}
                     </Text>
-                  </Box>
-                  <Text
-                    flex={1}
-                    fontFamily={"ui"}
-                    fontSize={"sm"}
-                    color={"app.epub.fg.default"}
-                    lineClamp={1}
-                  >
-                    {draggedPage.title}
-                  </Text>
-                </HStack>
+                  </HStack>
+                </Box>
+                <AspectRatio
+                  ratio={PAGE_PREVIEW_RATIO}
+                  bg={"app.epub.bg.preview"}
+                >
+                  <iframe
+                    title={`drag-preview-${draggedPage.id}`}
+                    srcDoc={draggedPage.previewHtml}
+                    sandbox=""
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      border: "none",
+                      pointerEvents: "none",
+                    }}
+                  />
+                </AspectRatio>
               </Box>
-              <AspectRatio ratio={PAGE_PREVIEW_RATIO} bg={"app.epub.bg.preview"}>
-                <iframe
-                  title={`drag-preview-${draggedPage.id}`}
-                  srcDoc={draggedPage.previewHtml}
-                  sandbox=""
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    border: "none",
-                    pointerEvents: "none",
-                  }}
-                />
-              </AspectRatio>
-            </Box>
-          );
-        })()
-      ) : null}
+            );
+          })()
+        : null}
 
       {isInteractionDisabled ? (
         <Box

@@ -14,9 +14,7 @@ import {
   createDefaultSanitizationPolicy,
   DEFAULT_BOOK_TITLE,
 } from "../constants";
-import type {
-  AutoCoverRendererId,
-} from "../domain/cover";
+import type { AutoCoverRendererId } from "../domain/cover";
 import {
   createCoverHtml,
   COVER_TEMPLATE_OPTIONS,
@@ -61,7 +59,9 @@ const AUTO_COVER_RENDERER: AutoCoverRendererId = "raster-png";
 type PageFlashKind = "added" | "duplicate";
 type PageFlashEntry = { kind: PageFlashKind; token: number };
 
-function isBaseCoverTemplateId(value: CoverTemplateId): value is BaseCoverTemplateId {
+function isBaseCoverTemplateId(
+  value: CoverTemplateId,
+): value is BaseCoverTemplateId {
   return value !== "custom";
 }
 
@@ -223,7 +223,8 @@ export function useEpubMaker(): UseEpubMakerReturn {
   const [generationProgress, setGenerationProgress] = useState<number | null>(
     null,
   );
-  const [showDownloadCompleteIcon, setShowDownloadCompleteIcon] = useState(false);
+  const [showDownloadCompleteIcon, setShowDownloadCompleteIcon] =
+    useState(false);
   const [activeGenerationPageId, setActiveGenerationPageId] = useState<
     string | null
   >(null);
@@ -728,11 +729,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
           `${addedCount} pages were added from dropped files.`,
         );
       } else if (addedCount === 1) {
-        notify(
-          "success",
-          "Page added",
-          "1 page was added from dropped files.",
-        );
+        notify("success", "Page added", "1 page was added from dropped files.");
       }
 
       if (unsupportedCount > 0) {
@@ -961,9 +958,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
         Math.min(targetIndex, remaining.length),
       );
       remaining.splice(insertionIndex, 0, draggedPage);
-      if (
-        remaining.every((page, index) => page.id === prev[index]?.id)
-      ) {
+      if (remaining.every((page, index) => page.id === prev[index]?.id)) {
         return prev;
       }
       return remaining;
@@ -975,7 +970,11 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
     const uploadedFiles = Array.from(files);
     if (uploadedFiles.length === 0) {
-      notify("warning", "No cover file selected", "Choose an image file to set as cover.");
+      notify(
+        "warning",
+        "No cover file selected",
+        "Choose an image file to set as cover.",
+      );
       return;
     }
 
@@ -1005,7 +1004,11 @@ export function useEpubMaker(): UseEpubMakerReturn {
         };
       });
       setSummary("");
-      notify("success", "Cover updated", `Custom cover set from “${imageFile.name}”.`);
+      notify(
+        "success",
+        "Cover updated",
+        `Custom cover set from “${imageFile.name}”.`,
+      );
     } catch (error) {
       const message = `Could not set custom cover: ${String(error)}`;
       setErrors([message]);
@@ -1032,7 +1035,11 @@ export function useEpubMaker(): UseEpubMakerReturn {
         };
       });
       setSummary("");
-      notify("success", "Cover updated", "Custom cover set from clipboard image.");
+      notify(
+        "success",
+        "Cover updated",
+        "Custom cover set from clipboard image.",
+      );
     } catch (error) {
       const rawMessage = String(error);
       const normalizedMessage = rawMessage.toLowerCase();
@@ -1114,8 +1121,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     generationAbortControllerRef.current = abortController;
 
     if (pages.length === 0) {
-      const message =
-        "Add at least one page before generating EPUB.";
+      const message = "Add at least one page before generating EPUB.";
       setErrors([message]);
       notify("warning", "No pages added", message);
       setIsGenerating(false);
@@ -1191,7 +1197,11 @@ export function useEpubMaker(): UseEpubMakerReturn {
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
         setSummary("EPUB generation cancelled.");
-        notify("info", "Generation cancelled", "EPUB generation was cancelled.");
+        notify(
+          "info",
+          "Generation cancelled",
+          "EPUB generation was cancelled.",
+        );
         setShowDownloadCompleteIcon(false);
         setGenerationChapterStatusByPageId({});
         setIsGenerationStatusFading(false);
@@ -1283,7 +1293,6 @@ export function useEpubMaker(): UseEpubMakerReturn {
           prev.coverTemplateId === value &&
           prev.coverBaseTemplateId === value &&
           prev.coverTextScalePercent === defaults.textScalePercent &&
-          prev.coverTextPosition === "style_1" &&
           prev.coverTextColorMode === defaults.textColorMode
         ) {
           return prev;
@@ -1293,7 +1302,6 @@ export function useEpubMaker(): UseEpubMakerReturn {
           coverTemplateId: value,
           coverBaseTemplateId: value,
           coverTextScalePercent: defaults.textScalePercent,
-          coverTextPosition: "style_1",
           coverTextColorMode: defaults.textColorMode,
         };
       }),
@@ -1323,7 +1331,6 @@ export function useEpubMaker(): UseEpubMakerReturn {
           ? prev
           : {
               ...prev,
-              coverTemplateId: "custom",
               coverTextPosition: value,
             },
       ),
