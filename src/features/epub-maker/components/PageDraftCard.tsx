@@ -44,6 +44,7 @@ import type {
   CoverMode,
   CoverSizePresetId,
   CoverSizePresetOption,
+  CoverTextPosition,
   CoverTemplateId,
   CoverTemplateOption,
   PageDraft,
@@ -69,10 +70,12 @@ export function PageDraftCard({
   selectedCoverSizePresetId,
   coverSizePresetOptions,
   coverTextScalePercent,
+  coverTextPosition,
   includeTextOnCustomCover,
   onCoverTemplateChange,
   onCoverSizePresetChange,
   onCoverTextScalePercentChange,
+  onCoverTextPositionChange,
   onIncludeTextOnCustomCoverChange,
   onReplaceCoverFromFiles,
   onReplaceCoverFromClipboard,
@@ -107,10 +110,12 @@ export function PageDraftCard({
   selectedCoverSizePresetId?: CoverSizePresetId;
   coverSizePresetOptions?: CoverSizePresetOption[];
   coverTextScalePercent?: number;
+  coverTextPosition?: CoverTextPosition;
   includeTextOnCustomCover?: boolean;
   onCoverTemplateChange?: (templateId: CoverTemplateId) => void;
   onCoverSizePresetChange?: (presetId: CoverSizePresetId) => void;
   onCoverTextScalePercentChange?: (value: number) => void;
+  onCoverTextPositionChange?: (value: CoverTextPosition) => void;
   onIncludeTextOnCustomCoverChange?: (value: boolean) => void;
   onReplaceCoverFromFiles?: (files: FileList | File[]) => Promise<void>;
   onReplaceCoverFromClipboard?: () => Promise<void>;
@@ -372,8 +377,17 @@ export function PageDraftCard({
   const isCoverExportDisabled = Boolean(isCover && !isEffectiveCoverEnabled);
   const isCoverToolDisabled = isInteractionDisabled;
   const effectiveCoverTextScalePercent = coverTextScalePercent ?? 100;
+  const effectiveCoverTextPosition = coverTextPosition ?? "style_1";
   const isTextOnCustomCoverEnabled = includeTextOnCustomCover ?? true;
   const hasCustomCoverValue = hasCustomCover ?? false;
+  const coverTextStyles: CoverTextPosition[] = [
+    "style_1",
+    "style_2",
+    "style_3",
+    "style_4",
+    "style_5",
+    "style_6",
+  ];
 
   function handleCoverUploadChange(event: ChangeEvent<HTMLInputElement>) {
     if (!isCover || !onReplaceCoverFromFiles) return;
@@ -543,7 +557,11 @@ export function PageDraftCard({
                                   }
                                 >
                                   {(coverTemplateOptions ?? []).map((option) => (
-                                    <option key={option.id} value={option.id}>
+                                    <option
+                                      key={option.id}
+                                      value={option.id}
+                                      disabled={option.id === "custom"}
+                                    >
                                       {option.label}
                                     </option>
                                   ))}
@@ -614,6 +632,27 @@ export function PageDraftCard({
                                   color={"app.epub.fg.default"}
                                 />
                               </NumberInput.Root>
+                            </Box>
+
+                            <Box gridColumn={{ base: "auto", md: "1 / span 2" }}>
+                              <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
+                                Text style
+                              </Text>
+                              <Button
+                                {...dialogOutlineButtonProps}
+                                onClick={() => {
+                                  const currentIndex = coverTextStyles.indexOf(
+                                    effectiveCoverTextPosition,
+                                  );
+                                  const nextIndex =
+                                    (currentIndex + 1) % coverTextStyles.length;
+                                  onCoverTextPositionChange?.(coverTextStyles[nextIndex]);
+                                }}
+                                disabled={isInteractionDisabled}
+                              >
+                                Toggle style ({coverTextStyles.indexOf(effectiveCoverTextPosition) + 1}/
+                                {coverTextStyles.length})
+                              </Button>
                             </Box>
                           </Box>
                         </Box>

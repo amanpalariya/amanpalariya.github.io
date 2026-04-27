@@ -5,13 +5,21 @@ export type FileNameMode = "auto" | "manual";
 export type PageId = string;
 export type ChapterGenerationStatus = "pending" | "processing" | "completed";
 export type CoverMode = "auto" | "custom";
-export type CoverTemplateId =
+export type CoverTextPosition =
+  | "style_1"
+  | "style_2"
+  | "style_3"
+  | "style_4"
+  | "style_5"
+  | "style_6";
+export type BaseCoverTemplateId =
   | "classic"
   | "aurora"
   | "ember"
   | "midnight"
   | "sage"
   | "sunset";
+export type CoverTemplateId = BaseCoverTemplateId | "custom";
 
 export type CoverSizePresetId =
   | "kindle_portrait"
@@ -135,8 +143,10 @@ export interface EpubMakerPrefs {
   title: string;
   author: string;
   coverTemplateId: CoverTemplateId;
+  coverBaseTemplateId: BaseCoverTemplateId;
   coverSizePresetId: CoverSizePresetId;
   coverTextScalePercent: number;
+  coverTextPosition: CoverTextPosition;
   includeTextOnCustomCover: boolean;
   manualFileName: string;
   fileNameMode: FileNameMode;
@@ -154,6 +164,7 @@ export interface EpubMakerState {
   coverSizePresetId: CoverSizePresetId;
   coverSizePresetOptions: CoverSizePresetOption[];
   coverTextScalePercent: number;
+  coverTextPosition: CoverTextPosition;
   includeTextOnCustomCover: boolean;
   isCoverEnabled: boolean;
   coverPreviewHtml: string;

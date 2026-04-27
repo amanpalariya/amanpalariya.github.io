@@ -4,6 +4,7 @@ import {
   EPUB_MAKER_TOOL_ID,
 } from "../constants";
 import type {
+  BaseCoverTemplateId,
   CoverSizePresetId,
   CoverTemplateId,
   EpubMakerPrefs,
@@ -15,8 +16,10 @@ const defaultPrefs: EpubMakerPrefs = {
   title: "",
   author: "",
   coverTemplateId: "classic",
+  coverBaseTemplateId: "classic",
   coverSizePresetId: "kindle_portrait",
   coverTextScalePercent: 100,
+  coverTextPosition: "style_1",
   includeTextOnCustomCover: true,
   manualFileName: "",
   fileNameMode: "auto",
@@ -30,7 +33,7 @@ function isFileNameMode(value: unknown): value is FileNameMode {
   return value === "auto" || value === "manual";
 }
 
-function isCoverTemplateId(value: unknown): value is CoverTemplateId {
+function isBaseCoverTemplateId(value: unknown): value is BaseCoverTemplateId {
   return (
     value === "classic" ||
     value === "aurora" ||
@@ -39,6 +42,10 @@ function isCoverTemplateId(value: unknown): value is CoverTemplateId {
     value === "sage" ||
     value === "sunset"
   );
+}
+
+function isCoverTemplateId(value: unknown): value is CoverTemplateId {
+  return value === "custom" || isBaseCoverTemplateId(value);
 }
 
 function isCoverSizePresetId(value: unknown): value is CoverSizePresetId {
@@ -53,6 +60,17 @@ function isCoverSizePresetId(value: unknown): value is CoverSizePresetId {
 function clampCoverTextScalePercent(value: number): number {
   if (!Number.isFinite(value)) return defaultPrefs.coverTextScalePercent;
   return Math.max(70, Math.min(180, Math.round(value)));
+}
+
+function isCoverTextPosition(value: unknown): value is EpubMakerPrefs["coverTextPosition"] {
+  return (
+    value === "style_1" ||
+    value === "style_2" ||
+    value === "style_3" ||
+    value === "style_4" ||
+    value === "style_5" ||
+    value === "style_6"
+  );
 }
 
 function readToolString(field: string, fallback: string): string {
@@ -79,6 +97,10 @@ export function readEpubMakerPrefs(): EpubMakerPrefs {
       EPUB_MAKER_STORAGE_FIELDS.coverTemplateId,
       defaultPrefs.coverTemplateId,
     );
+    const coverBaseTemplateIdValue = readToolString(
+      EPUB_MAKER_STORAGE_FIELDS.coverBaseTemplateId,
+      defaultPrefs.coverBaseTemplateId,
+    );
     const coverSizePresetIdValue = readToolString(
       EPUB_MAKER_STORAGE_FIELDS.coverSizePresetId,
       defaultPrefs.coverSizePresetId,
@@ -89,16 +111,28 @@ export function readEpubMakerPrefs(): EpubMakerPrefs {
         String(defaultPrefs.coverTextScalePercent),
       ),
     );
+    const coverTextPositionValue = readToolString(
+      EPUB_MAKER_STORAGE_FIELDS.coverTextPosition,
+      defaultPrefs.coverTextPosition,
+    );
     return {
       title: readToolString(EPUB_MAKER_STORAGE_FIELDS.title, defaultPrefs.title),
       author: readToolString(EPUB_MAKER_STORAGE_FIELDS.author, defaultPrefs.author),
       coverTemplateId: isCoverTemplateId(coverTemplateIdValue)
         ? coverTemplateIdValue
         : defaultPrefs.coverTemplateId,
+      coverBaseTemplateId: isBaseCoverTemplateId(coverBaseTemplateIdValue)
+        ? coverBaseTemplateIdValue
+        : isBaseCoverTemplateId(coverTemplateIdValue)
+          ? coverTemplateIdValue
+          : defaultPrefs.coverBaseTemplateId,
       coverSizePresetId: isCoverSizePresetId(coverSizePresetIdValue)
         ? coverSizePresetIdValue
         : defaultPrefs.coverSizePresetId,
       coverTextScalePercent: clampCoverTextScalePercent(coverTextScalePercentValue),
+      coverTextPosition: isCoverTextPosition(coverTextPositionValue)
+        ? coverTextPositionValue
+        : defaultPrefs.coverTextPosition,
       includeTextOnCustomCover: readToolBoolean(
         EPUB_MAKER_STORAGE_FIELDS.includeTextOnCustomCover,
         defaultPrefs.includeTextOnCustomCover,
@@ -144,6 +178,13 @@ export function writeEpubMakerPrefs(prefs: EpubMakerPrefs): void {
     window.localStorage.setItem(
       buildToolStorageKey(
         EPUB_MAKER_TOOL_ID,
+        EPUB_MAKER_STORAGE_FIELDS.coverBaseTemplateId,
+      ),
+      prefs.coverBaseTemplateId,
+    );
+    window.localStorage.setItem(
+      buildToolStorageKey(
+        EPUB_MAKER_TOOL_ID,
         EPUB_MAKER_STORAGE_FIELDS.coverSizePresetId,
       ),
       prefs.coverSizePresetId,
@@ -154,6 +195,13 @@ export function writeEpubMakerPrefs(prefs: EpubMakerPrefs): void {
         EPUB_MAKER_STORAGE_FIELDS.coverTextScalePercent,
       ),
       String(clampCoverTextScalePercent(prefs.coverTextScalePercent)),
+    );
+    window.localStorage.setItem(
+      buildToolStorageKey(
+        EPUB_MAKER_TOOL_ID,
+        EPUB_MAKER_STORAGE_FIELDS.coverTextPosition,
+      ),
+      prefs.coverTextPosition,
     );
     window.localStorage.setItem(
       buildToolStorageKey(

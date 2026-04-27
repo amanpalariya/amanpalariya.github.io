@@ -174,6 +174,7 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
               coverSizePresetId={props.coverSizePresetId}
               coverSizePresetOptions={props.coverSizePresetOptions}
               coverTextScalePercent={props.coverTextScalePercent}
+              coverTextPosition={props.coverTextPosition}
               includeTextOnCustomCover={props.includeTextOnCustomCover}
               isCoverEnabled={props.isCoverEnabled}
               isAdding={props.isAdding}
@@ -192,6 +193,7 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
               onCoverTemplateChange={props.setCoverTemplateId}
               onCoverSizePresetChange={props.setCoverSizePresetId}
               onCoverTextScalePercentChange={props.setCoverTextScalePercent}
+              onCoverTextPositionChange={props.setCoverTextPosition}
               onIncludeTextOnCustomCoverChange={props.setIncludeTextOnCustomCover}
               onAddFromClipboard={props.addPageFromClipboard}
               onAddFromFiles={props.addPagesFromFiles}

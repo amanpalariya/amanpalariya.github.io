@@ -1,7 +1,9 @@
 import { DEFAULT_BOOK_TITLE } from "../constants";
 import type {
+  BaseCoverTemplateId,
   CoverSizePresetId,
   CoverSizePresetOption,
+  CoverTextPosition,
   CoverTemplateId,
   CoverTemplateOption,
 } from "../types";
@@ -11,18 +13,20 @@ export type AutoCoverRendererId = "raster-png" | "svg";
 export interface AutoCoverInput {
   title: string;
   author: string;
-  templateId: CoverTemplateId;
+  templateId: BaseCoverTemplateId;
   size: {
     width: number;
     height: number;
   };
   textScalePercent: number;
+  textPosition: CoverTextPosition;
 }
 
 export interface AutoCoverOptions {
-  templateId: CoverTemplateId;
+  templateId: BaseCoverTemplateId;
   sizePresetId: CoverSizePresetId;
   textScalePercent: number;
+  textPosition: CoverTextPosition;
 }
 
 export interface CoverHtmlOptions extends AutoCoverOptions {
@@ -33,7 +37,7 @@ export interface CoverHtmlOptions extends AutoCoverOptions {
 type AutoCoverRenderer = (input: AutoCoverInput) => string;
 
 type CoverTextLayout = {
-  align: "center" | "left";
+  align: "center" | "left" | "right";
   x: number;
   baseY: number;
   fontSize: number;
@@ -42,7 +46,7 @@ type CoverTextLayout = {
 };
 
 type CoverAuthorLayout = {
-  align: "center" | "left";
+  align: "center" | "left" | "right";
   x: number;
   mode: "after-title" | "fixed";
   baseY: number;
@@ -52,7 +56,7 @@ type CoverAuthorLayout = {
 };
 
 type CoverTemplateSpec = {
-  id: CoverTemplateId;
+  id: BaseCoverTemplateId;
   label: string;
   description: string;
   gradientStart: string;
@@ -73,6 +77,14 @@ const TITLE_FONT_SIZE_BOOST = 1.04;
 const AUTHOR_FONT_SIZE_BOOST = 1.22;
 const COVER_TEXT_BOUND_LEFT = 130;
 const COVER_TEXT_BOUND_RIGHT = 1070;
+const COVER_TEXT_STYLE_ORDER: CoverTextPosition[] = [
+  "style_1",
+  "style_2",
+  "style_3",
+  "style_4",
+  "style_5",
+  "style_6",
+];
 
 const COVER_SIZE_PRESETS: Record<CoverSizePresetId, CoverSizePresetOption> = {
   kindle_portrait: {
@@ -105,7 +117,7 @@ const COVER_SIZE_PRESETS: Record<CoverSizePresetId, CoverSizePresetOption> = {
   },
 };
 
-const COVER_TEMPLATE_SPECS: Record<CoverTemplateId, CoverTemplateSpec> = {
+const COVER_TEMPLATE_SPECS: Record<BaseCoverTemplateId, CoverTemplateSpec> = {
   classic: {
     id: "classic",
     label: "Monochrome",
@@ -276,6 +288,18 @@ const COVER_TEMPLATE_SPECS: Record<CoverTemplateId, CoverTemplateSpec> = {
   },
 };
 
+const COVER_TEMPLATE_DEFAULTS: Record<
+  BaseCoverTemplateId,
+  Pick<AutoCoverOptions, "textScalePercent">
+> = {
+  classic: { textScalePercent: 100 },
+  aurora: { textScalePercent: 100 },
+  ember: { textScalePercent: 100 },
+  midnight: { textScalePercent: 100 },
+  sage: { textScalePercent: 95 },
+  sunset: { textScalePercent: 95 },
+};
+
 export const COVER_TEMPLATE_OPTIONS: CoverTemplateOption[] = Object.values(
   COVER_TEMPLATE_SPECS,
 ).map((template) => ({
@@ -283,6 +307,18 @@ export const COVER_TEMPLATE_OPTIONS: CoverTemplateOption[] = Object.values(
   label: template.label,
   description: template.description,
 }));
+
+COVER_TEMPLATE_OPTIONS.push({
+  id: "custom",
+  label: "Custom",
+  description: "Created by editing size/text after choosing a template.",
+});
+
+export function resolveCoverTemplateDefaults(
+  templateId: BaseCoverTemplateId,
+): Pick<AutoCoverOptions, "textScalePercent"> {
+  return COVER_TEMPLATE_DEFAULTS[templateId] ?? COVER_TEMPLATE_DEFAULTS.classic;
+}
 
 export const COVER_SIZE_PRESET_OPTIONS: CoverSizePresetOption[] = Object.values(
   COVER_SIZE_PRESETS,
@@ -377,16 +413,25 @@ function wrapTextLines(
   return lines;
 }
 
-function resolveAvailableTextWidth(align: "center" | "left", x: number): number {
+function resolveAvailableTextWidth(
+  align: "center" | "left" | "right",
+  x: number,
+  leftBound: number,
+  rightBound: number,
+): number {
   if (align === "center") {
     const halfWidth = Math.max(
       0,
-      Math.min(x - COVER_TEXT_BOUND_LEFT, COVER_TEXT_BOUND_RIGHT - x),
+      Math.min(x - leftBound, rightBound - x),
     );
     return halfWidth * 2;
   }
 
-  return Math.max(0, COVER_TEXT_BOUND_RIGHT - x);
+  if (align === "right") {
+    return Math.max(0, x - leftBound);
+  }
+
+  return Math.max(0, rightBound - x);
 }
 
 function resolveWrapCharLimit(
@@ -399,7 +444,7 @@ function resolveWrapCharLimit(
   return Math.max(4, Math.min(maxCharsPerLine, visualMaxChars));
 }
 
-function resolveTemplate(templateId: CoverTemplateId): CoverTemplateSpec {
+function resolveTemplate(templateId: BaseCoverTemplateId): CoverTemplateSpec {
   return COVER_TEMPLATE_SPECS[templateId] ?? COVER_TEMPLATE_SPECS.classic;
 }
 
@@ -441,6 +486,101 @@ function scaleAuthorLayout(
   };
 }
 
+type CoverCanvasMetrics = {
+  scaleX: number;
+  scaleY: number;
+};
+
+function applyTextStyle(
+  titleLayout: CoverTextLayout,
+  authorLayout: CoverAuthorLayout,
+  textPosition: CoverTextPosition,
+): { titleLayout: CoverTextLayout; authorLayout: CoverAuthorLayout } {
+  const styleId = COVER_TEXT_STYLE_ORDER.includes(textPosition)
+    ? textPosition
+    : "style_1";
+  const rightX = COVER_TEXT_BOUND_RIGHT;
+  const leftX = COVER_TEXT_BOUND_LEFT;
+  const centerX = 600;
+
+  if (styleId === "style_1") {
+    return { titleLayout, authorLayout };
+  }
+
+  if (styleId === "style_2") {
+    return {
+      titleLayout: { ...titleLayout, align: "left", x: leftX },
+      authorLayout: { ...authorLayout, align: "left", x: leftX, mode: "after-title" },
+    };
+  }
+
+  if (styleId === "style_3") {
+    return {
+      titleLayout: { ...titleLayout, align: "right", x: rightX },
+      authorLayout: { ...authorLayout, align: "right", x: rightX, mode: "after-title" },
+    };
+  }
+
+  if (styleId === "style_4") {
+    return {
+      titleLayout: { ...titleLayout, align: "center", x: centerX, baseY: titleLayout.baseY + 240 },
+      authorLayout: {
+        ...authorLayout,
+        align: "center",
+        x: centerX,
+        mode: "fixed",
+        baseY: Math.max(200, titleLayout.baseY - titleLayout.lineHeight * 2.2),
+      },
+    };
+  }
+
+  if (styleId === "style_5") {
+    return {
+      titleLayout: { ...titleLayout, align: "left", x: leftX, baseY: titleLayout.baseY + 260 },
+      authorLayout: {
+        ...authorLayout,
+        align: "left",
+        x: leftX,
+        mode: "fixed",
+        baseY: Math.max(190, titleLayout.baseY - titleLayout.lineHeight * 2.2),
+      },
+    };
+  }
+
+  return {
+    titleLayout: { ...titleLayout, align: "center", x: centerX, baseY: 1180 },
+    authorLayout: { ...authorLayout, align: "center", x: centerX, mode: "after-title", baseY: 62 },
+  };
+}
+
+function scaleTextLayoutToCanvas(
+  layout: CoverTextLayout,
+  metrics: CoverCanvasMetrics,
+): CoverTextLayout {
+  const textScale = Math.min(metrics.scaleX, metrics.scaleY);
+  return {
+    ...layout,
+    x: Math.round(layout.x * metrics.scaleX),
+    baseY: Math.round(layout.baseY * metrics.scaleY),
+    fontSize: Math.max(14, Math.round(layout.fontSize * textScale)),
+    lineHeight: Math.max(18, Math.round(layout.lineHeight * textScale)),
+  };
+}
+
+function scaleAuthorLayoutToCanvas(
+  layout: CoverAuthorLayout,
+  metrics: CoverCanvasMetrics,
+): CoverAuthorLayout {
+  const textScale = Math.min(metrics.scaleX, metrics.scaleY);
+  return {
+    ...layout,
+    x: Math.round(layout.x * metrics.scaleX),
+    baseY: Math.round(layout.baseY * metrics.scaleY),
+    fontSize: Math.max(12, Math.round(layout.fontSize * textScale)),
+    lineHeight: Math.max(16, Math.round(layout.lineHeight * textScale)),
+  };
+}
+
 function computeTitleStartY(layout: CoverTextLayout, lineCount: number): number {
   return layout.baseY - Math.max(0, lineCount - 1) * (layout.lineHeight / 2);
 }
@@ -455,12 +595,24 @@ function computeAuthorStartY(
   return titleStartY + titleLineCount * titleLayout.lineHeight + layout.baseY;
 }
 
-function toSvgTextAnchor(align: "center" | "left"): "middle" | "start" {
-  return align === "center" ? "middle" : "start";
+function toSvgTextAnchor(align: "center" | "left" | "right"): "middle" | "start" | "end" {
+  if (align === "center") return "middle";
+  return align === "right" ? "end" : "start";
 }
 
-function toCanvasTextAlign(align: "center" | "left"): CanvasTextAlign {
-  return align === "center" ? "center" : "left";
+function toCanvasTextAlign(align: "center" | "left" | "right"): CanvasTextAlign {
+  if (align === "center") return "center";
+  return align === "right" ? "right" : "left";
+}
+
+function resolveCoverCanvasMetrics(
+  coverWidth: number,
+  coverHeight: number,
+): CoverCanvasMetrics {
+  return {
+    scaleX: coverWidth / AUTO_COVER_LAYOUT_WIDTH,
+    scaleY: coverHeight / AUTO_COVER_LAYOUT_HEIGHT,
+  };
 }
 
 function createSvgDecoration(template: CoverTemplateSpec): string {
@@ -484,21 +636,37 @@ function createSvgDecoration(template: CoverTemplateSpec): string {
 
 function createAutoCoverSvgDataUrl(input: AutoCoverInput): string {
   const template = resolveTemplate(input.templateId);
-  const titleLayout = scaleTextLayout(template.titleLayout, input.textScalePercent);
-  const authorLayout = scaleAuthorLayout(template.authorLayout, input.textScalePercent);
   const coverWidth = Math.max(800, Math.round(input.size.width));
   const coverHeight = Math.max(1000, Math.round(input.size.height));
-  const scaleX = coverWidth / AUTO_COVER_LAYOUT_WIDTH;
-  const scaleY = coverHeight / AUTO_COVER_LAYOUT_HEIGHT;
+  const metrics = resolveCoverCanvasMetrics(coverWidth, coverHeight);
+  const styledLayouts = applyTextStyle(
+    scaleTextLayout(template.titleLayout, input.textScalePercent),
+    scaleAuthorLayout(template.authorLayout, input.textScalePercent),
+    input.textPosition,
+  );
+  const titleLayout = scaleTextLayoutToCanvas(styledLayouts.titleLayout, metrics);
+  const authorLayout = scaleAuthorLayoutToCanvas(styledLayouts.authorLayout, metrics);
+  const textLeftBound = Math.round(COVER_TEXT_BOUND_LEFT * metrics.scaleX);
+  const textRightBound = Math.round(COVER_TEXT_BOUND_RIGHT * metrics.scaleX);
   const titleWrapLimit = resolveWrapCharLimit(
     titleLayout.maxCharsPerLine,
     titleLayout.fontSize,
-    resolveAvailableTextWidth(titleLayout.align, titleLayout.x),
+    resolveAvailableTextWidth(
+      titleLayout.align,
+      titleLayout.x,
+      textLeftBound,
+      textRightBound,
+    ),
   );
   const authorWrapLimit = resolveWrapCharLimit(
     authorLayout.maxCharsPerLine,
     authorLayout.fontSize,
-    resolveAvailableTextWidth(authorLayout.align, authorLayout.x),
+    resolveAvailableTextWidth(
+      authorLayout.align,
+      authorLayout.x,
+      textLeftBound,
+      textRightBound,
+    ),
   );
   const titleLines = wrapTextLines(
     input.title || DEFAULT_BOOK_TITLE,
@@ -534,7 +702,7 @@ function createAutoCoverSvgDataUrl(input: AutoCoverInput): string {
     )
     .join("");
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${coverWidth}" height="${coverHeight}" viewBox="0 0 ${coverWidth} ${coverHeight}" role="img" aria-label="Book cover"><defs><linearGradient id="coverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${template.gradientStart}"/><stop offset="100%" stop-color="${template.gradientEnd}"/></linearGradient></defs><rect width="${coverWidth}" height="${coverHeight}" fill="url(#coverGradient)"/><g transform="scale(${scaleX} ${scaleY})">${createSvgDecoration(template)}<rect x="76" y="76" width="1048" height="1648" rx="40" fill="none" stroke="${template.frameStroke}" stroke-width="4"/><text fill="${template.titleColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>${authorTspans ? `<text fill="${template.authorColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>` : ""}</g></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${coverWidth}" height="${coverHeight}" viewBox="0 0 ${coverWidth} ${coverHeight}" role="img" aria-label="Book cover"><defs><linearGradient id="coverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${template.gradientStart}"/><stop offset="100%" stop-color="${template.gradientEnd}"/></linearGradient></defs><rect width="${coverWidth}" height="${coverHeight}" fill="url(#coverGradient)"/><g transform="scale(${metrics.scaleX} ${metrics.scaleY})">${createSvgDecoration(template)}<rect x="76" y="76" width="1048" height="1648" rx="40" fill="none" stroke="${template.frameStroke}" stroke-width="4"/></g><text fill="${template.titleColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>${authorTspans ? `<text fill="${template.authorColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>` : ""}</svg>`;
 
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
@@ -763,12 +931,18 @@ function createAutoCoverRasterDataUrl(input: AutoCoverInput): string {
   }
 
   const template = resolveTemplate(input.templateId);
-  const titleLayout = scaleTextLayout(template.titleLayout, input.textScalePercent);
-  const authorLayout = scaleAuthorLayout(template.authorLayout, input.textScalePercent);
   const coverWidth = Math.max(800, Math.round(input.size.width));
   const coverHeight = Math.max(1000, Math.round(input.size.height));
-  const scaleX = coverWidth / AUTO_COVER_LAYOUT_WIDTH;
-  const scaleY = coverHeight / AUTO_COVER_LAYOUT_HEIGHT;
+  const metrics = resolveCoverCanvasMetrics(coverWidth, coverHeight);
+  const styledLayouts = applyTextStyle(
+    scaleTextLayout(template.titleLayout, input.textScalePercent),
+    scaleAuthorLayout(template.authorLayout, input.textScalePercent),
+    input.textPosition,
+  );
+  const titleLayout = scaleTextLayoutToCanvas(styledLayouts.titleLayout, metrics);
+  const authorLayout = scaleAuthorLayoutToCanvas(styledLayouts.authorLayout, metrics);
+  const textLeftBound = Math.round(COVER_TEXT_BOUND_LEFT * metrics.scaleX);
+  const textRightBound = Math.round(COVER_TEXT_BOUND_RIGHT * metrics.scaleX);
   const canvas = document.createElement("canvas");
   canvas.width = coverWidth;
   canvas.height = coverHeight;
@@ -785,29 +959,35 @@ function createAutoCoverRasterDataUrl(input: AutoCoverInput): string {
   context.fillRect(0, 0, canvas.width, canvas.height);
 
   context.save();
-  context.scale(scaleX, scaleY);
+  context.scale(metrics.scaleX, metrics.scaleY);
 
-  drawCanvasDecoration(
-    context,
-    template,
-    AUTO_COVER_LAYOUT_WIDTH,
-    AUTO_COVER_LAYOUT_HEIGHT,
-  );
+  drawCanvasDecoration(context, template, AUTO_COVER_LAYOUT_WIDTH, AUTO_COVER_LAYOUT_HEIGHT);
 
   context.strokeStyle = template.frameStroke;
   context.lineWidth = 4;
   drawRoundedRectPath(context, 76, 76, 1048, 1648, 40);
   context.stroke();
+  context.restore();
 
   const titleWrapLimit = resolveWrapCharLimit(
     titleLayout.maxCharsPerLine,
     titleLayout.fontSize,
-    resolveAvailableTextWidth(titleLayout.align, titleLayout.x),
+    resolveAvailableTextWidth(
+      titleLayout.align,
+      titleLayout.x,
+      textLeftBound,
+      textRightBound,
+    ),
   );
   const authorWrapLimit = resolveWrapCharLimit(
     authorLayout.maxCharsPerLine,
     authorLayout.fontSize,
-    resolveAvailableTextWidth(authorLayout.align, authorLayout.x),
+    resolveAvailableTextWidth(
+      authorLayout.align,
+      authorLayout.x,
+      textLeftBound,
+      textRightBound,
+    ),
   );
   const titleLines = wrapTextLines(
     input.title || DEFAULT_BOOK_TITLE,
@@ -851,8 +1031,6 @@ function createAutoCoverRasterDataUrl(input: AutoCoverInput): string {
       );
     }
   }
-
-  context.restore();
 
   return canvas.toDataURL("image/png");
 }
@@ -902,6 +1080,7 @@ export function createAutoCoverHtml(
         height: coverSize.height,
       },
       textScalePercent: options.textScalePercent,
+      textPosition: options.textPosition,
     },
     preferredRenderer,
   );
@@ -918,21 +1097,37 @@ function createCustomCoverSvgDataUrl(
   customImageSrc: string,
 ): string {
   const template = resolveTemplate(input.templateId);
-  const titleLayout = scaleTextLayout(template.titleLayout, input.textScalePercent);
-  const authorLayout = scaleAuthorLayout(template.authorLayout, input.textScalePercent);
   const coverWidth = Math.max(800, Math.round(input.size.width));
   const coverHeight = Math.max(1000, Math.round(input.size.height));
-  const scaleX = coverWidth / AUTO_COVER_LAYOUT_WIDTH;
-  const scaleY = coverHeight / AUTO_COVER_LAYOUT_HEIGHT;
+  const metrics = resolveCoverCanvasMetrics(coverWidth, coverHeight);
+  const styledLayouts = applyTextStyle(
+    scaleTextLayout(template.titleLayout, input.textScalePercent),
+    scaleAuthorLayout(template.authorLayout, input.textScalePercent),
+    input.textPosition,
+  );
+  const titleLayout = scaleTextLayoutToCanvas(styledLayouts.titleLayout, metrics);
+  const authorLayout = scaleAuthorLayoutToCanvas(styledLayouts.authorLayout, metrics);
+  const textLeftBound = Math.round(COVER_TEXT_BOUND_LEFT * metrics.scaleX);
+  const textRightBound = Math.round(COVER_TEXT_BOUND_RIGHT * metrics.scaleX);
   const titleWrapLimit = resolveWrapCharLimit(
     titleLayout.maxCharsPerLine,
     titleLayout.fontSize,
-    resolveAvailableTextWidth(titleLayout.align, titleLayout.x),
+    resolveAvailableTextWidth(
+      titleLayout.align,
+      titleLayout.x,
+      textLeftBound,
+      textRightBound,
+    ),
   );
   const authorWrapLimit = resolveWrapCharLimit(
     authorLayout.maxCharsPerLine,
     authorLayout.fontSize,
-    resolveAvailableTextWidth(authorLayout.align, authorLayout.x),
+    resolveAvailableTextWidth(
+      authorLayout.align,
+      authorLayout.x,
+      textLeftBound,
+      textRightBound,
+    ),
   );
 
   const titleLines = wrapTextLines(
@@ -967,7 +1162,7 @@ function createCustomCoverSvgDataUrl(
     )
     .join("");
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${coverWidth}" height="${coverHeight}" viewBox="0 0 ${coverWidth} ${coverHeight}" role="img" aria-label="Book cover"><image href="${escapeXmlText(customImageSrc)}" x="0" y="0" width="${coverWidth}" height="${coverHeight}" preserveAspectRatio="xMidYMid slice"/><rect width="${coverWidth}" height="${coverHeight}" fill="rgba(0,0,0,0.2)"/><g transform="scale(${scaleX} ${scaleY})"><text fill="${template.titleColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>${authorTspans ? `<text fill="${template.authorColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>` : ""}</g></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${coverWidth}" height="${coverHeight}" viewBox="0 0 ${coverWidth} ${coverHeight}" role="img" aria-label="Book cover"><image href="${escapeXmlText(customImageSrc)}" x="0" y="0" width="${coverWidth}" height="${coverHeight}" preserveAspectRatio="xMidYMid slice"/><rect width="${coverWidth}" height="${coverHeight}" fill="rgba(0,0,0,0.2)"/><text fill="${template.titleColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${titleLayout.fontSize}" font-weight="700" text-anchor="${titleAnchor}">${titleTspans}</text>${authorTspans ? `<text fill="${template.authorColor}" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>` : ""}</svg>`;
 
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
@@ -993,6 +1188,7 @@ export function createCoverHtml(
             templateId: options.templateId,
             size: { width: coverSize.width, height: coverSize.height },
             textScalePercent: options.textScalePercent,
+            textPosition: options.textPosition,
           },
           customImageSrc,
         )

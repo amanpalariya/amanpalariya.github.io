@@ -23,6 +23,7 @@ import type {
   CoverMode,
   CoverSizePresetId,
   CoverSizePresetOption,
+  CoverTextPosition,
   CoverTemplateId,
   CoverTemplateOption,
   PageDraft,
@@ -50,6 +51,7 @@ export function PageDraftGrid({
   coverSizePresetId,
   coverSizePresetOptions,
   coverTextScalePercent,
+  coverTextPosition,
   includeTextOnCustomCover,
   isCoverEnabled,
   isAdding,
@@ -68,6 +70,7 @@ export function PageDraftGrid({
   onCoverTemplateChange,
   onCoverSizePresetChange,
   onCoverTextScalePercentChange,
+  onCoverTextPositionChange,
   onIncludeTextOnCustomCoverChange,
   onAddFromClipboard,
   onAddFromFiles,
@@ -85,6 +88,7 @@ export function PageDraftGrid({
   coverSizePresetId: CoverSizePresetId;
   coverSizePresetOptions: CoverSizePresetOption[];
   coverTextScalePercent: number;
+  coverTextPosition: CoverTextPosition;
   includeTextOnCustomCover: boolean;
   isCoverEnabled: boolean;
   isAdding: boolean;
@@ -103,6 +107,7 @@ export function PageDraftGrid({
   onCoverTemplateChange: (templateId: CoverTemplateId) => void;
   onCoverSizePresetChange: (presetId: CoverSizePresetId) => void;
   onCoverTextScalePercentChange: (value: number) => void;
+  onCoverTextPositionChange: (value: CoverTextPosition) => void;
   onIncludeTextOnCustomCoverChange: (value: boolean) => void;
   onAddFromClipboard: () => Promise<void>;
   onAddFromFiles: (files: FileList | File[]) => Promise<void>;
@@ -363,10 +368,12 @@ export function PageDraftGrid({
             selectedCoverSizePresetId={coverSizePresetId}
             coverSizePresetOptions={coverSizePresetOptions}
             coverTextScalePercent={coverTextScalePercent}
+            coverTextPosition={coverTextPosition}
             includeTextOnCustomCover={includeTextOnCustomCover}
             onCoverTemplateChange={onCoverTemplateChange}
             onCoverSizePresetChange={onCoverSizePresetChange}
             onCoverTextScalePercentChange={onCoverTextScalePercentChange}
+            onCoverTextPositionChange={onCoverTextPositionChange}
             onIncludeTextOnCustomCoverChange={onIncludeTextOnCustomCoverChange}
             onReplaceCoverFromFiles={onReplaceCoverFromFiles}
             onReplaceCoverFromClipboard={onReplaceCoverFromClipboard}

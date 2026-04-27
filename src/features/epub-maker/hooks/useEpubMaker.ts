@@ -21,11 +21,14 @@ import {
   createCoverHtml,
   COVER_TEMPLATE_OPTIONS,
   COVER_SIZE_PRESET_OPTIONS,
+  resolveCoverTemplateDefaults,
   resolveCoverSizePreset,
 } from "../domain/cover";
 import type {
+  BaseCoverTemplateId,
   BuildEpubProgressUpdate,
   CoverSizePresetId,
+  CoverTextPosition,
   CoverTemplateId,
   CoverDraft,
   CoverMode,
@@ -56,6 +59,10 @@ const PAGE_HISTORY_LIMIT = 100;
 const AUTO_COVER_RENDERER: AutoCoverRendererId = "raster-png";
 type PageFlashKind = "added" | "duplicate";
 type PageFlashEntry = { kind: PageFlashKind; token: number };
+
+function isBaseCoverTemplateId(value: CoverTemplateId): value is BaseCoverTemplateId {
+  return value !== "custom";
+}
 
 type DraftSnapshot = {
   pages: PageDraft[];
@@ -186,6 +193,7 @@ export type UseEpubMakerReturn = EpubMakerState & {
   setCoverTemplateId: (value: CoverTemplateId) => void;
   setCoverSizePresetId: (value: CoverSizePresetId) => void;
   setCoverTextScalePercent: (value: number) => void;
+  setCoverTextPosition: (value: CoverTextPosition) => void;
   setIncludeTextOnCustomCover: (value: boolean) => void;
   setManualFileName: (value: string) => void;
   toggleFileNameMode: () => void;
@@ -430,6 +438,9 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
   const normalizedBookTitle = getNormalizedBookTitle(prefs.title);
   const normalizedBookAuthor = prefs.author.trim();
+  const effectiveCoverTemplateId = isBaseCoverTemplateId(prefs.coverTemplateId)
+    ? prefs.coverTemplateId
+    : prefs.coverBaseTemplateId;
   const autoEpubFileName = buildAutoEpubFileName(
     normalizedBookTitle,
     normalizedBookAuthor,
@@ -449,9 +460,10 @@ export function useEpubMaker(): UseEpubMakerReturn {
         normalizedBookTitle,
         normalizedBookAuthor,
         {
-          templateId: prefs.coverTemplateId,
+          templateId: effectiveCoverTemplateId,
           sizePresetId: prefs.coverSizePresetId,
           textScalePercent: prefs.coverTextScalePercent,
+          textPosition: prefs.coverTextPosition,
           customCoverHtml,
           includeTextOnCustomCover: prefs.includeTextOnCustomCover,
         },
@@ -461,10 +473,13 @@ export function useEpubMaker(): UseEpubMakerReturn {
       normalizedBookTitle,
       normalizedBookAuthor,
       prefs.coverTemplateId,
+      prefs.coverBaseTemplateId,
       prefs.coverSizePresetId,
       prefs.coverTextScalePercent,
+      prefs.coverTextPosition,
       prefs.includeTextOnCustomCover,
       customCoverHtml,
+      effectiveCoverTemplateId,
     ],
   );
 
@@ -1215,6 +1230,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     coverSizePresetId: prefs.coverSizePresetId,
     coverSizePresetOptions: COVER_SIZE_PRESET_OPTIONS,
     coverTextScalePercent: prefs.coverTextScalePercent,
+    coverTextPosition: prefs.coverTextPosition,
     includeTextOnCustomCover: prefs.includeTextOnCustomCover,
     isCoverEnabled: coverEnabled,
     coverPreviewHtml: coverDraft.previewHtml,
@@ -1262,14 +1278,25 @@ export function useEpubMaker(): UseEpubMakerReturn {
     setAuthor: (value: string) =>
       setPrefs((prev) => ({ ...prev, author: value })),
     setCoverTemplateId: (value: CoverTemplateId) =>
-      setPrefs((prev) =>
-        prev.coverTemplateId === value
-          ? prev
-          : {
-              ...prev,
-              coverTemplateId: value,
-            },
-      ),
+      setPrefs((prev) => {
+        if (!isBaseCoverTemplateId(value)) return prev;
+        const defaults = resolveCoverTemplateDefaults(value);
+        if (
+          prev.coverTemplateId === value &&
+          prev.coverBaseTemplateId === value &&
+          prev.coverTextScalePercent === defaults.textScalePercent &&
+          prev.coverTextPosition === "style_1"
+        ) {
+          return prev;
+        }
+        return {
+          ...prev,
+          coverTemplateId: value,
+          coverBaseTemplateId: value,
+          coverTextScalePercent: defaults.textScalePercent,
+          coverTextPosition: "style_1",
+        };
+      }),
     setCoverSizePresetId: (value: CoverSizePresetId) =>
       setPrefs((prev) =>
         prev.coverSizePresetId === value
@@ -1286,9 +1313,20 @@ export function useEpubMaker(): UseEpubMakerReturn {
           ? prev
           : {
               ...prev,
+              coverTemplateId: "custom",
               coverTextScalePercent: nextValue,
             };
       }),
+    setCoverTextPosition: (value: CoverTextPosition) =>
+      setPrefs((prev) =>
+        prev.coverTextPosition === value
+          ? prev
+          : {
+              ...prev,
+              coverTemplateId: "custom",
+              coverTextPosition: value,
+            },
+      ),
     setIncludeTextOnCustomCover: (value: boolean) =>
       setPrefs((prev) =>
         prev.includeTextOnCustomCover === value
