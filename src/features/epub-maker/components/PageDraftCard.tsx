@@ -942,6 +942,8 @@ export function PageDraftCard({
                                     borderColor={"app.epub.border.default"}
                                     minW={"220px"}
                                     p={2}
+                                    rounded={"lg"}
+                                    overflow={"hidden"}
                                     display={"grid"}
                                     gridTemplateColumns={
                                       "repeat(3, minmax(0, 1fr))"
@@ -975,18 +977,31 @@ export function PageDraftCard({
                                             <Box
                                               w={"full"}
                                               h={"72px"}
-                                              rounded={"md"}
+                                              rounded={"sm"}
                                               borderWidth={
-                                                isSelected ? "2px" : "1px"
+                                                isSelected ? "3px" : "1px"
                                               }
                                               borderColor={
                                                 isSelected
-                                                  ? "app.epub.border.accent"
+                                                  ? "app.epub.button.primary.border"
                                                   : "app.epub.border.default"
                                               }
                                               bg={"app.epub.bg.preview"}
                                               position={"relative"}
                                               overflow={"hidden"}
+                                              outline={
+                                                isSelected
+                                                  ? "2px solid"
+                                                  : "none"
+                                              }
+                                              outlineColor={
+                                                isSelected
+                                                  ? "app.epub.button.primary.border"
+                                                  : "transparent"
+                                              }
+                                              transition={
+                                                "border-color 0.16s ease"
+                                              }
                                             >
                                               <Box
                                                 position={"absolute"}
@@ -1012,6 +1027,32 @@ export function PageDraftCard({
                                                   COVER_PREVIEW_AUTHOR_OPACITY
                                                 }
                                               />
+                                              {isSelected ? (
+                                                <Box
+                                                  position={"absolute"}
+                                                  top={1}
+                                                  right={1}
+                                                  w={"16px"}
+                                                  h={"16px"}
+                                                  rounded={"full"}
+                                                  bg={
+                                                    "app.epub.button.primary.bg"
+                                                  }
+                                                  color={
+                                                    "app.epub.button.primary.fg"
+                                                  }
+                                                  display={"grid"}
+                                                  placeItems={"center"}
+                                                  borderWidth={"1px"}
+                                                  borderColor={
+                                                    "app.epub.bg.card"
+                                                  }
+                                                >
+                                                  <Icon boxSize={2.5}>
+                                                    <LuCheck />
+                                                  </Icon>
+                                                </Box>
+                                              ) : null}
                                             </Box>
                                           </Menu.Item>
                                         );

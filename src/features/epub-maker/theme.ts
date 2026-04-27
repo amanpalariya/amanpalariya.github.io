@@ -38,6 +38,7 @@ export const SEMANTIC_TOKENS = {
       bg: semanticColor("#004e98", "#003f7a"),
       hoverBg: semanticColor("#004281", "#003565"),
       fg: semanticColor("{colors.white}", "{colors.white}"),
+      border: semanticColor("#4f82b2", "#4678a8"),
       divider: semanticColor("#4f82b2", "#4f82b2"),
     },
     success: {
@@ -60,7 +61,13 @@ export const SEMANTIC_TOKENS = {
     label: semanticColor("{colors.gray.700}", "{colors.gray.200}"),
   },
   overlay: {
-    section: semanticColor("{colors.blackAlpha.300}", "{colors.blackAlpha.450}"),
-    preview: semanticColor("{colors.blackAlpha.250}", "{colors.blackAlpha.400}"),
+    section: semanticColor(
+      "{colors.blackAlpha.300}",
+      "{colors.blackAlpha.450}",
+    ),
+    preview: semanticColor(
+      "{colors.blackAlpha.250}",
+      "{colors.blackAlpha.400}",
+    ),
   },
 } as const;
