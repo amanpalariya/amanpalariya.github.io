@@ -6,25 +6,25 @@ import type {
 import {
   drawFramedGradientBackgroundCanvas,
   renderFramedGradientBackgroundSvg,
-} from "./template-utils";
+} from "./background-utils";
 
 export const GEOMETRIC_BACKGROUND_ID = "geometric" as const;
 export const GEOMETRIC_BACKGROUND_LABEL = "Geometric" as const;
 
-const geometricTemplateTheme = {
+const geometricBackgroundTheme = {
   gradientStart: "#fffef8",
   gradientEnd: "#f0ede4",
   frameStroke: "rgba(0,0,0,0.24)",
   accentColor: "rgba(0,0,0,0.14)",
 } as const;
 
-export class GeometricTemplateRenderer implements CoverBackgroundRenderer {
+export class GeometricBackgroundRenderer implements CoverBackgroundRenderer {
   readonly id = GEOMETRIC_BACKGROUND_ID;
 
   resolveAdaptiveTextSeed() {
     return {
-      startColor: geometricTemplateTheme.gradientStart,
-      endColor: geometricTemplateTheme.gradientEnd,
+      startColor: geometricBackgroundTheme.gradientStart,
+      endColor: geometricBackgroundTheme.gradientEnd,
     };
   }
 
@@ -58,7 +58,7 @@ export class GeometricTemplateRenderer implements CoverBackgroundRenderer {
   }
 
   private renderSvgDecoration(metrics: CoverBackgroundSvgContext["metrics"], width: number, height: number): string {
-    return `<g>${this.createDotField(width, height, metrics.unitScale, geometricTemplateTheme.accentColor)}</g>`;
+    return `<g>${this.createDotField(width, height, metrics.unitScale, geometricBackgroundTheme.accentColor)}</g>`;
   }
 
   renderSvgBackground({ metrics, width, height }: CoverBackgroundSvgContext): string {
@@ -66,9 +66,9 @@ export class GeometricTemplateRenderer implements CoverBackgroundRenderer {
       width,
       height,
       metrics,
-      gradientStart: geometricTemplateTheme.gradientStart,
-      gradientEnd: geometricTemplateTheme.gradientEnd,
-      frameStroke: geometricTemplateTheme.frameStroke,
+      gradientStart: geometricBackgroundTheme.gradientStart,
+      gradientEnd: geometricBackgroundTheme.gradientEnd,
+      frameStroke: geometricBackgroundTheme.frameStroke,
       decorationSvg: this.renderSvgDecoration(metrics, width, height),
     });
   }
@@ -88,7 +88,7 @@ export class GeometricTemplateRenderer implements CoverBackgroundRenderer {
     const centerX = (left + right) / 2;
     const halfWidth = Math.max(1, (right - left) / 2);
 
-    context.fillStyle = geometricTemplateTheme.accentColor;
+    context.fillStyle = geometricBackgroundTheme.accentColor;
     for (let row = 0, y = top; y <= bottom; row += 1, y += stepY) {
       const rowOffset = row % 2 === 0 ? 0 : stepX / 2;
       for (let x = left + rowOffset; x <= right; x += stepX) {
@@ -114,9 +114,9 @@ export class GeometricTemplateRenderer implements CoverBackgroundRenderer {
       width,
       height,
       metrics,
-      gradientStart: geometricTemplateTheme.gradientStart,
-      gradientEnd: geometricTemplateTheme.gradientEnd,
-      frameStroke: geometricTemplateTheme.frameStroke,
+      gradientStart: geometricBackgroundTheme.gradientStart,
+      gradientEnd: geometricBackgroundTheme.gradientEnd,
+      frameStroke: geometricBackgroundTheme.frameStroke,
       drawDecoration: () => this.drawCanvasDecoration(context, metrics, width, height),
     });
   }

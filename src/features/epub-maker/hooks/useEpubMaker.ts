@@ -478,10 +478,10 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
   useEffect(() => {
     setPrefs((prev) => {
-      const nextTemplateId: CoverBackgroundId =
+      const nextBackgroundId: CoverBackgroundId =
         customCoverHtml !== null ? "custom" : coverBaseBackgroundId;
       if (
-        prev.coverBackgroundId === nextTemplateId &&
+        prev.coverBackgroundId === nextBackgroundId &&
         prev.coverBaseBackgroundId === coverBaseBackgroundId &&
         prev.coverSizePresetId === coverSizePresetId &&
         prev.coverTextScalePercent === coverTextScalePercent &&
@@ -494,7 +494,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
       return {
         ...prev,
-        coverBackgroundId: nextTemplateId,
+        coverBackgroundId: nextBackgroundId,
         coverBaseBackgroundId,
         coverSizePresetId,
         coverTextScalePercent,

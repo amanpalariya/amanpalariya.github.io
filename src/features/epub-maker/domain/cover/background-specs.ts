@@ -3,7 +3,7 @@ import type {
   CoverSizePresetOption,
   CoverBackgroundOption,
 } from "../../types";
-import { COVER_BASE_BACKGROUND_SPECS } from "./templates";
+import { COVER_BASE_BACKGROUND_SPECS } from "./backgrounds";
 
 const COVER_SIZE_PRESET_CATALOG: CoverSizePresetOption[] = [
   {

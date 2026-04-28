@@ -7,25 +7,25 @@ import {
   createScaleHelpers,
   drawFramedGradientBackgroundCanvas,
   renderFramedGradientBackgroundSvg,
-} from "./template-utils";
+} from "./background-utils";
 
 export const NOIR_BACKGROUND_ID = "noir" as const;
 export const NOIR_BACKGROUND_LABEL = "Noir" as const;
 
-const noirTemplateTheme = {
+const noirBackgroundTheme = {
   gradientStart: "#080808",
   gradientEnd: "#1a1a1a",
   frameStroke: "rgba(255,255,255,0.24)",
   accentColor: "rgba(255,255,255,0.16)",
 } as const;
 
-export class NoirTemplateRenderer implements CoverBackgroundRenderer {
+export class NoirBackgroundRenderer implements CoverBackgroundRenderer {
   readonly id = NOIR_BACKGROUND_ID;
 
   resolveAdaptiveTextSeed() {
     return {
-      startColor: noirTemplateTheme.gradientStart,
-      endColor: noirTemplateTheme.gradientEnd,
+      startColor: noirBackgroundTheme.gradientStart,
+      endColor: noirBackgroundTheme.gradientEnd,
     };
   }
 
@@ -37,7 +37,7 @@ export class NoirTemplateRenderer implements CoverBackgroundRenderer {
     const sx = (value: number) => value * metrics.scaleX;
     const sy = (value: number) => value * metrics.scaleY;
     const su = (value: number) => value * metrics.unitScale;
-    return `<circle cx="${sx(980)}" cy="${sy(260)}" r="${su(148)}" fill="${noirTemplateTheme.accentColor}"/><circle cx="${sx(1040)}" cy="${sy(228)}" r="${su(118)}" fill="rgba(8,8,8,0.9)"/><circle cx="${sx(980)}" cy="${sy(260)}" r="${su(205)}" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="${su(2)}"/><circle cx="${sx(980)}" cy="${sy(260)}" r="${su(270)}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="${su(1.5)}"/><circle cx="${sx(240)}" cy="${sy(260)}" r="${su(8)}" fill="rgba(255,255,255,0.45)"/><circle cx="${sx(350)}" cy="${sy(420)}" r="${su(5)}" fill="rgba(255,255,255,0.4)"/><circle cx="${sx(860)}" cy="${sy(340)}" r="${su(6)}" fill="rgba(255,255,255,0.36)"/><circle cx="${sx(1080)}" cy="${sy(470)}" r="${su(4)}" fill="rgba(255,255,255,0.42)"/><path d="M${sx(0)},${sy(1460)} C${sx(220)},${sy(1360)} ${sx(430)},${sy(1520)} ${sx(620)},${sy(1450)} C${sx(820)},${sy(1375)} ${sx(980)},${sy(1470)} ${width},${sy(1380)} L${width},${height} L${sx(0)},${height} Z" fill="rgba(24,24,24,0.3)"/>`;
+    return `<circle cx="${sx(980)}" cy="${sy(260)}" r="${su(148)}" fill="${noirBackgroundTheme.accentColor}"/><circle cx="${sx(1040)}" cy="${sy(228)}" r="${su(118)}" fill="rgba(8,8,8,0.9)"/><circle cx="${sx(980)}" cy="${sy(260)}" r="${su(205)}" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="${su(2)}"/><circle cx="${sx(980)}" cy="${sy(260)}" r="${su(270)}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="${su(1.5)}"/><circle cx="${sx(240)}" cy="${sy(260)}" r="${su(8)}" fill="rgba(255,255,255,0.45)"/><circle cx="${sx(350)}" cy="${sy(420)}" r="${su(5)}" fill="rgba(255,255,255,0.4)"/><circle cx="${sx(860)}" cy="${sy(340)}" r="${su(6)}" fill="rgba(255,255,255,0.36)"/><circle cx="${sx(1080)}" cy="${sy(470)}" r="${su(4)}" fill="rgba(255,255,255,0.42)"/><path d="M${sx(0)},${sy(1460)} C${sx(220)},${sy(1360)} ${sx(430)},${sy(1520)} ${sx(620)},${sy(1450)} C${sx(820)},${sy(1375)} ${sx(980)},${sy(1470)} ${width},${sy(1380)} L${width},${height} L${sx(0)},${height} Z" fill="rgba(24,24,24,0.3)"/>`;
   }
 
   renderSvgBackground({ metrics, width, height }: CoverBackgroundSvgContext): string {
@@ -45,9 +45,9 @@ export class NoirTemplateRenderer implements CoverBackgroundRenderer {
       width,
       height,
       metrics,
-      gradientStart: noirTemplateTheme.gradientStart,
-      gradientEnd: noirTemplateTheme.gradientEnd,
-      frameStroke: noirTemplateTheme.frameStroke,
+      gradientStart: noirBackgroundTheme.gradientStart,
+      gradientEnd: noirBackgroundTheme.gradientEnd,
+      frameStroke: noirBackgroundTheme.frameStroke,
       decorationSvg: this.renderSvgDecoration(metrics, width, height),
     });
   }
@@ -60,7 +60,7 @@ export class NoirTemplateRenderer implements CoverBackgroundRenderer {
   ): void {
     const { sx, sy, su } = createScaleHelpers(metrics);
 
-    context.fillStyle = noirTemplateTheme.accentColor;
+    context.fillStyle = noirBackgroundTheme.accentColor;
     context.beginPath();
     context.arc(sx(980), sy(260), su(148), 0, Math.PI * 2);
     context.fill();
@@ -111,9 +111,9 @@ export class NoirTemplateRenderer implements CoverBackgroundRenderer {
       width,
       height,
       metrics,
-      gradientStart: noirTemplateTheme.gradientStart,
-      gradientEnd: noirTemplateTheme.gradientEnd,
-      frameStroke: noirTemplateTheme.frameStroke,
+      gradientStart: noirBackgroundTheme.gradientStart,
+      gradientEnd: noirBackgroundTheme.gradientEnd,
+      frameStroke: noirBackgroundTheme.frameStroke,
       drawDecoration: () => this.drawCanvasDecoration(context, metrics, width, height),
     });
   }

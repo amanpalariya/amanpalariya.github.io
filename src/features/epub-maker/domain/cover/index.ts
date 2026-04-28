@@ -22,7 +22,7 @@ import {
   COVER_SIZE_PRESET_OPTIONS,
   COVER_BACKGROUND_OPTIONS,
   resolveCoverSizePreset,
-} from "./template-specs";
+} from "./background-specs";
 import {
   applyTextStyle,
   computeAuthorStartY,

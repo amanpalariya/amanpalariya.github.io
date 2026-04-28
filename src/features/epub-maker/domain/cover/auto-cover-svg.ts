@@ -11,7 +11,7 @@ import {
 } from "./constants";
 import type { AutoCoverInput, CoverCanvasMetrics } from "./core-types";
 import { resolveTextPalette } from "./color-utils";
-import { resolveBackgroundRenderer } from "./templates";
+import { resolveBackgroundRenderer } from "./backgrounds";
 import {
   applyTextStyle,
   computeAuthorStartY,

@@ -95,15 +95,15 @@ const COVER_PREVIEW_AUTHOR_HEIGHT = "2px";
 const COVER_PREVIEW_TITLE_OPACITY = 0.95;
 const COVER_PREVIEW_AUTHOR_OPACITY = 0.55;
 const COVER_GRID_TILE_RATIO = 40 / 56;
-type CoverTemplateLabelMode = "none" | "bottom" | "side";
-const COVER_TEMPLATE_LABEL_MODE: CoverTemplateLabelMode = "bottom";
-const SHOW_TEMPLATE_DESCRIPTIONS = false;
+type CoverBackgroundLabelMode = "none" | "bottom" | "side";
+const COVER_BACKGROUND_LABEL_MODE: CoverBackgroundLabelMode = "bottom";
+const SHOW_BACKGROUND_DESCRIPTIONS = false;
 type CoverSizeLabelMode = "none" | "bottom" | "side";
 const COVER_SIZE_LABEL_MODE: CoverSizeLabelMode = "side";
 const SHOW_SIZE_DESCRIPTIONS = true;
 const COVER_GRID_HOVER_BG = "app.status.info.bg" as const;
 const COVER_GRID_SELECTED_BORDER_COLOR = "app.epub.button.primary.border" as const;
-const COVER_AUTO_DEFAULT_TEMPLATE_ID: BaseCoverBackgroundId = "aurora";
+const COVER_AUTO_DEFAULT_BACKGROUND_ID: BaseCoverBackgroundId = "aurora";
 const COVER_AUTO_DEFAULT_SIZE_PRESET_ID: CoverSizePresetId = "ratio_1_1_6";
 
 const dropdownGridItemInteractionProps = {
@@ -316,7 +316,7 @@ function resolveCoverTextPreviewLines(style: CoverTextPosition): {
   };
 }
 
-function isBaseTemplateId(
+function isBaseBackgroundId(
   value: CoverBackgroundId,
 ): value is BaseCoverBackgroundId {
   return (
@@ -435,14 +435,14 @@ export function PageDraftCard({
     ? `0 0 0 2px rgba(${flashColorBase}, ${flashOpacity * 0.62})`
     : "none";
   const buildCoverSettingsFromCurrentProps = useCallback((): CoverSettingsState => {
-    const fallbackTemplateId =
-      selectedCoverBackgroundId && isBaseTemplateId(selectedCoverBackgroundId)
+    const fallbackBackgroundId =
+      selectedCoverBackgroundId && isBaseBackgroundId(selectedCoverBackgroundId)
         ? selectedCoverBackgroundId
         : "aurora";
     return {
       coverEnabled: isCoverEnabled ?? true,
       customCoverHtml: hasCustomCover ? (customCoverHtml ?? null) : null,
-      coverBaseBackgroundId: fallbackTemplateId,
+      coverBaseBackgroundId: fallbackBackgroundId,
       coverSizePresetId: selectedCoverSizePresetId ?? COVER_AUTO_DEFAULT_SIZE_PRESET_ID,
       coverTextScalePercent: coverTextScalePercent ?? 100,
       coverTextPosition: coverTextPosition ?? "style_1",
@@ -729,20 +729,20 @@ export function PageDraftCard({
   const selectableCoverBackgroundOptions = availableCoverBackgroundOptions.filter(
     (option) => option.id !== "custom",
   );
-  const selectedTemplateMenuId =
+  const selectedBackgroundMenuId =
     selectedCoverBackgroundIdEffective &&
     selectableCoverBackgroundOptions.some(
       (option) => option.id === selectedCoverBackgroundIdEffective,
     )
       ? selectedCoverBackgroundIdEffective
       : (selectableCoverBackgroundOptions[0]?.id ?? "monochrome");
-  const isCustomTemplateSelected = hasCustomCoverValue && activeCoverMode === "custom";
-  const isTemplateSelectionDisabled =
+  const isCustomBackgroundSelected = hasCustomCoverValue && activeCoverMode === "custom";
+  const isBackgroundSelectionDisabled =
     isInteractionDisabled || selectableCoverBackgroundOptions.length === 0;
-  const templatePreviewById = useMemo(() => {
+  const backgroundPreviewById = useMemo(() => {
     const previewEntries: [CoverBackgroundId, string][] =
       selectableCoverBackgroundOptions.map((option) => {
-        const backgroundId = isBaseTemplateId(option.id)
+        const backgroundId = isBaseBackgroundId(option.id)
           ? option.id
           : "monochrome";
         const previewSrc = createAutoCoverDataUrl(
@@ -768,17 +768,17 @@ export function PageDraftCard({
     selectableCoverBackgroundOptions,
   ]);
 
-  const selectedCoverTemplatePreviewSrc =
-    (isCustomTemplateSelected
+  const selectedCoverBackgroundPreviewSrc =
+    (isCustomBackgroundSelected
       ? extractFirstImageSrcFromHtml(activeCoverSettings.customCoverHtml ?? page.previewHtml)
       : undefined) ??
-    templatePreviewById[selectedTemplateMenuId] ??
-    templatePreviewById.monochrome ??
+    backgroundPreviewById[selectedBackgroundMenuId] ??
+    backgroundPreviewById.monochrome ??
     "";
-  const selectedCoverTemplateLabel = isCustomTemplateSelected
+  const selectedCoverBackgroundLabel = isCustomBackgroundSelected
     ? "Custom"
     : (availableCoverBackgroundOptions.find(
-        (option) => option.id === selectedTemplateMenuId,
+        (option) => option.id === selectedBackgroundMenuId,
       )?.label ?? "Background");
   const selectedCoverTextPreviewLines = resolveCoverTextPreviewLines(
     effectiveCoverTextPosition,
@@ -1029,7 +1029,7 @@ export function PageDraftCard({
                                 ...previous,
                                 coverEnabled: true,
                                 customCoverHtml: null,
-                                coverBaseBackgroundId: COVER_AUTO_DEFAULT_TEMPLATE_ID,
+                                coverBaseBackgroundId: COVER_AUTO_DEFAULT_BACKGROUND_ID,
                                 coverSizePresetId: COVER_AUTO_DEFAULT_SIZE_PRESET_ID,
                                 coverTextPosition: "style_1",
                                 coverTextScalePercent: 100,
@@ -1102,7 +1102,7 @@ export function PageDraftCard({
                                       minW={0}
                                       p={1}
                                       justifyContent={"flex-start"}
-                                      disabled={isTemplateSelectionDisabled}
+                                      disabled={isBackgroundSelectionDisabled}
                                       aria-label={"Select cover background"}
                                     >
                                       <HStack
@@ -1120,8 +1120,8 @@ export function PageDraftCard({
                                             bg={"app.epub.bg.preview"}
                                             style={{
                                               backgroundImage:
-                                                selectedCoverTemplatePreviewSrc
-                                                  ? `url("${selectedCoverTemplatePreviewSrc}")`
+                                                selectedCoverBackgroundPreviewSrc
+                                                  ? `url("${selectedCoverBackgroundPreviewSrc}")`
                                                   : undefined,
                                               backgroundSize: "cover",
                                               backgroundPosition: "center",
@@ -1136,7 +1136,7 @@ export function PageDraftCard({
                                             lineClamp={1}
                                             textAlign={"left"}
                                           >
-                                            {selectedCoverTemplateLabel}
+                                            {selectedCoverBackgroundLabel}
                                           </Text>
                                         </HStack>
                                         <Icon
@@ -1213,7 +1213,7 @@ export function PageDraftCard({
                                     <Box
                                       display={"grid"}
                                       gridTemplateColumns={
-                                        COVER_TEMPLATE_LABEL_MODE === "side"
+                                        COVER_BACKGROUND_LABEL_MODE === "side"
                                           ? "minmax(0, 1fr)"
                                           : "repeat(3, minmax(0, 1fr))"
                                       }
@@ -1222,10 +1222,10 @@ export function PageDraftCard({
                                       {selectableCoverBackgroundOptions.map(
                                         (option) => {
                                           const previewSrc =
-                                            templatePreviewById[option.id];
+                                            backgroundPreviewById[option.id];
                                           const isSelected =
-                                            !isCustomTemplateSelected &&
-                                            option.id === selectedTemplateMenuId;
+                                            !isCustomBackgroundSelected &&
+                                            option.id === selectedBackgroundMenuId;
                                           const selectionFrameProps =
                                             resolveGridSelectionFrameProps(
                                               isSelected,
@@ -1242,7 +1242,7 @@ export function PageDraftCard({
                                                   (previous) => ({
                                                     ...previous,
                                                     customCoverHtml: null,
-                                                    coverBaseBackgroundId: isBaseTemplateId(
+                                                    coverBaseBackgroundId: isBaseBackgroundId(
                                                       option.id,
                                                     )
                                                       ? option.id
@@ -1253,7 +1253,7 @@ export function PageDraftCard({
                                             >
                                               <VStack
                                                 align={
-                                                  COVER_TEMPLATE_LABEL_MODE ===
+                                                  COVER_BACKGROUND_LABEL_MODE ===
                                                   "side"
                                                     ? "start"
                                                     : "stretch"
@@ -1264,7 +1264,7 @@ export function PageDraftCard({
                                                 <HStack
                                                   align={"start"}
                                                   gap={
-                                                    COVER_TEMPLATE_LABEL_MODE ===
+                                                    COVER_BACKGROUND_LABEL_MODE ===
                                                     "side"
                                                       ? 2
                                                       : 0
@@ -1274,7 +1274,7 @@ export function PageDraftCard({
                                                     ratio={COVER_GRID_TILE_RATIO}
                                                     w={"full"}
                                                     flex={
-                                                      COVER_TEMPLATE_LABEL_MODE ===
+                                                      COVER_BACKGROUND_LABEL_MODE ===
                                                       "side"
                                                         ? "0 0 64px"
                                                         : undefined
@@ -1315,25 +1315,25 @@ export function PageDraftCard({
                                                       )}
                                                     </Box>
                                                   </AspectRatio>
-                                                  {COVER_TEMPLATE_LABEL_MODE ===
+                                                  {COVER_BACKGROUND_LABEL_MODE ===
                                                   "side"
                                                     ? renderGridOptionMeta({
                                                         labelMode:
-                                                          COVER_TEMPLATE_LABEL_MODE,
+                                                          COVER_BACKGROUND_LABEL_MODE,
                                                         label: option.label,
                                                         showDescription:
-                                                          SHOW_TEMPLATE_DESCRIPTIONS,
+                                                          SHOW_BACKGROUND_DESCRIPTIONS,
                                                       })
                                                     : null}
                                                 </HStack>
-                                                {COVER_TEMPLATE_LABEL_MODE ===
+                                                {COVER_BACKGROUND_LABEL_MODE ===
                                                 "bottom"
                                                   ? renderGridOptionMeta({
                                                       labelMode:
-                                                        COVER_TEMPLATE_LABEL_MODE,
+                                                        COVER_BACKGROUND_LABEL_MODE,
                                                       label: option.label,
                                                       showDescription:
-                                                        SHOW_TEMPLATE_DESCRIPTIONS,
+                                                        SHOW_BACKGROUND_DESCRIPTIONS,
                                                     })
                                                   : null}
                                               </VStack>
