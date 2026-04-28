@@ -163,6 +163,21 @@ function buildCoverDraft(
   };
 }
 
+function useDebouncedValue<T>(value: T, delayMs: number): T {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedValue(value);
+    }, delayMs);
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [delayMs, value]);
+
+  return debouncedValue;
+}
+
 export type UseEpubMakerReturn = EpubMakerState & {
   normalizedBookTitle: string;
   normalizedBookAuthor: string;
@@ -252,6 +267,10 @@ export function useEpubMaker(): UseEpubMakerReturn {
   const pageFlashClearTimerRef = useRef<number | null>(null);
   const flashSequenceRef = useRef(0);
   const generationAbortControllerRef = useRef<AbortController | null>(null);
+  const coverRenderTaskIdRef = useRef(0);
+  const coverRenderWaitersRef = useRef<Array<() => void>>([]);
+  const coverDraftRef = useRef<CoverDraft | null>(null);
+  const isCoverRenderPendingRef = useRef(false);
   const pages = draftHistory.present.pages;
   const customCoverHtml = draftHistory.present.customCoverHtml;
   const coverEnabled = draftHistory.present.coverEnabled;
@@ -300,6 +319,9 @@ export function useEpubMaker(): UseEpubMakerReturn {
         window.clearTimeout(pageFlashClearTimerRef.current);
       }
       generationAbortControllerRef.current?.abort();
+      const waiters = coverRenderWaitersRef.current;
+      coverRenderWaitersRef.current = [];
+      waiters.forEach((resolve) => resolve());
     };
   }, []);
 
@@ -440,6 +462,8 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
   const normalizedBookTitle = getNormalizedBookTitle(prefs.title);
   const normalizedBookAuthor = prefs.author.trim();
+  const debouncedCoverTitle = useDebouncedValue(normalizedBookTitle, 140);
+  const debouncedCoverAuthor = useDebouncedValue(normalizedBookAuthor, 140);
   const effectiveCoverTemplateId = isBaseCoverTemplateId(prefs.coverTemplateId)
     ? prefs.coverTemplateId
     : prefs.coverBaseTemplateId;
@@ -456,37 +480,6 @@ export function useEpubMaker(): UseEpubMakerReturn {
         )
       : autoEpubFileName;
 
-  const coverRawHtml = useMemo(
-    () =>
-      createCoverHtml(
-        normalizedBookTitle,
-        normalizedBookAuthor,
-        {
-          templateId: effectiveCoverTemplateId,
-          sizePresetId: prefs.coverSizePresetId,
-          textScalePercent: prefs.coverTextScalePercent,
-          textPosition: prefs.coverTextPosition,
-          textColorMode: prefs.coverTextColorMode,
-          customCoverHtml,
-          hideCoverText: prefs.hideCoverText,
-        },
-        AUTO_COVER_RENDERER,
-      ),
-    [
-      normalizedBookTitle,
-      normalizedBookAuthor,
-      prefs.coverTemplateId,
-      prefs.coverBaseTemplateId,
-      prefs.coverSizePresetId,
-      prefs.coverTextScalePercent,
-      prefs.coverTextPosition,
-      prefs.coverTextColorMode,
-      prefs.hideCoverText,
-      customCoverHtml,
-      effectiveCoverTemplateId,
-    ],
-  );
-
   const sanitizePolicy = useMemo(() => {
     const policy = createDefaultSanitizationPolicy();
     policy.embedRemoteImages = prefs.sanitizeOptions.embedRemoteImages;
@@ -497,15 +490,87 @@ export function useEpubMaker(): UseEpubMakerReturn {
     prefs.sanitizeOptions.allowExternalLinks,
   ]);
 
-  const coverDraft = useMemo(() => {
-    return buildCoverDraft(
-      coverRawHtml,
-      customCoverHtml ? "custom" : "auto",
-      sanitizePolicy,
+  const coverMode: CoverMode = customCoverHtml ? "custom" : "auto";
+  const [coverDraft, setCoverDraft] = useState<CoverDraft>(() => {
+    const initialRawHtml = createCoverHtml(
+      debouncedCoverTitle,
+      debouncedCoverAuthor,
+      {
+        templateId: effectiveCoverTemplateId,
+        sizePresetId: prefs.coverSizePresetId,
+        textScalePercent: prefs.coverTextScalePercent,
+        textPosition: prefs.coverTextPosition,
+        textColorMode: prefs.coverTextColorMode,
+        customCoverHtml,
+        hideCoverText: prefs.hideCoverText,
+      },
+      AUTO_COVER_RENDERER,
     );
-  }, [coverRawHtml, customCoverHtml, sanitizePolicy]);
+
+    return buildCoverDraft(initialRawHtml, coverMode, sanitizePolicy);
+  });
   const hasCustomCover = customCoverHtml !== null;
 
+  useEffect(() => {
+    coverDraftRef.current = coverDraft;
+  }, [coverDraft]);
+
+  useEffect(() => {
+    const taskId = coverRenderTaskIdRef.current + 1;
+    coverRenderTaskIdRef.current = taskId;
+    isCoverRenderPendingRef.current = true;
+
+    const timeoutId = window.setTimeout(() => {
+      try {
+        const nextRawHtml = createCoverHtml(
+          debouncedCoverTitle,
+          debouncedCoverAuthor,
+          {
+            templateId: effectiveCoverTemplateId,
+            sizePresetId: prefs.coverSizePresetId,
+            textScalePercent: prefs.coverTextScalePercent,
+            textPosition: prefs.coverTextPosition,
+            textColorMode: prefs.coverTextColorMode,
+            customCoverHtml,
+            hideCoverText: prefs.hideCoverText,
+          },
+          AUTO_COVER_RENDERER,
+        );
+
+        const nextCoverDraft = buildCoverDraft(
+          nextRawHtml,
+          coverMode,
+          sanitizePolicy,
+        );
+        if (coverRenderTaskIdRef.current !== taskId) return;
+
+        setCoverDraft(nextCoverDraft);
+        coverDraftRef.current = nextCoverDraft;
+      } finally {
+        if (coverRenderTaskIdRef.current !== taskId) return;
+        isCoverRenderPendingRef.current = false;
+        const waiters = coverRenderWaitersRef.current;
+        coverRenderWaitersRef.current = [];
+        waiters.forEach((resolve) => resolve());
+      }
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [
+    debouncedCoverTitle,
+    debouncedCoverAuthor,
+    effectiveCoverTemplateId,
+    prefs.coverSizePresetId,
+    prefs.coverTextScalePercent,
+    prefs.coverTextPosition,
+    prefs.coverTextColorMode,
+    prefs.hideCoverText,
+    customCoverHtml,
+    coverMode,
+    sanitizePolicy,
+  ]);
   useEffect(() => {
     setPrefs(readEpubMakerPrefs());
     setIsPrefsLoaded(true);
@@ -1158,6 +1223,12 @@ export function useEpubMaker(): UseEpubMakerReturn {
     }
 
     try {
+      if (isCoverRenderPendingRef.current) {
+        await new Promise<void>((resolve) => {
+          coverRenderWaitersRef.current.push(resolve);
+        });
+      }
+
       const pageIds = pages.map((page) => page.id);
       setGenerationChapterStatusByPageId(() =>
         pageIds.reduce<EpubMakerState["generationChapterStatusByPageId"]>(
@@ -1174,7 +1245,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
         bookAuthor: normalizedBookAuthor,
         downloadFileName: effectiveFileName,
         pages,
-        cover: coverEnabled ? coverDraft : undefined,
+        cover: coverEnabled ? (coverDraftRef.current ?? coverDraft) : undefined,
         sanitizePolicy,
         signal: abortController.signal,
         onProgress: (update: BuildEpubProgressUpdate) => {
@@ -1255,7 +1326,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
   return {
     pages,
-    coverMode: coverDraft.mode,
+    coverMode,
     coverTemplateId: effectiveCoverTemplateId,
     coverTemplateOptions: COVER_TEMPLATE_OPTIONS,
     coverSizePresetId: prefs.coverSizePresetId,
