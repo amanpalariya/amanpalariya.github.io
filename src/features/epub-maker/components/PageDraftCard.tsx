@@ -991,7 +991,7 @@ export function PageDraftCard({
                             color={"app.epub.fg.default"}
                             mb={3}
                           >
-                            Cover background
+                            Background
                           </Text>
                           <Box
                             display={"grid"}
@@ -1007,7 +1007,7 @@ export function PageDraftCard({
                                 color={"app.epub.fg.muted"}
                                 mb={1}
                               >
-                                Cover background
+                                Background
                               </Text>
                               <Menu.Root
                                 positioning={{
@@ -1283,7 +1283,7 @@ export function PageDraftCard({
                                 color={"app.epub.fg.muted"}
                                 mb={1}
                               >
-                                Cover size
+                                Size
                               </Text>
                               <Menu.Root
                                 positioning={{
@@ -1574,7 +1574,7 @@ export function PageDraftCard({
                               fontWeight={"semibold"}
                               color={"app.epub.fg.default"}
                             >
-                              Cover text
+                              Text
                             </Text>
                           </HStack>
                           <VStack align={"stretch"} gap={2}>
@@ -1592,7 +1592,7 @@ export function PageDraftCard({
                                   color={"app.epub.fg.muted"}
                                   mb={1}
                                 >
-                                  Cover text size (%)
+                                  Text size (%)
                                 </Text>
                                 <NumberInput.Root
                                   {...dialogFieldProps}
