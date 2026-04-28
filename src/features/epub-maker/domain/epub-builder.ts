@@ -1,9 +1,11 @@
-import JSZip from "jszip";
 import { sanitizeHtmlContent } from "./html-sanitizer";
 import { chapterBodyFromPageDraft } from "./page-draft";
 import { registerImageAsset } from "./images";
 import type { BuildEpubInput, BuildEpubResult, EpubImage } from "../types";
 import { escapeXml } from "../utils/xml";
+import { serializeBodyToXhtml } from "./epub-xhtml-serializer";
+import { buildPackageDocuments } from "./epub-package-docs";
+import { buildEpubZipBlob } from "./epub-zip";
 
 type Chapter = {
   id: string;
@@ -11,55 +13,6 @@ type Chapter = {
   title: string;
   content: string;
 };
-
-const XHTML_VOID_TAGS = new Set([
-  "area",
-  "base",
-  "br",
-  "col",
-  "embed",
-  "hr",
-  "img",
-  "input",
-  "link",
-  "meta",
-  "param",
-  "source",
-  "track",
-  "wbr",
-]);
-
-function serializeNodeToXhtml(node: Node): string {
-  if (node.nodeType === Node.TEXT_NODE) {
-    return escapeXml(node.textContent || "");
-  }
-
-  if (node.nodeType !== Node.ELEMENT_NODE) {
-    return "";
-  }
-
-  const element = node as Element;
-  const tag = element.tagName.toLowerCase();
-  const attrs = Array.from(element.attributes)
-    .map((attribute) => ` ${attribute.name}="${escapeXml(attribute.value)}"`)
-    .join("");
-
-  const children = Array.from(element.childNodes)
-    .map((child) => serializeNodeToXhtml(child))
-    .join("");
-
-  if (XHTML_VOID_TAGS.has(tag) && children.length === 0) {
-    return `<${tag}${attrs} />`;
-  }
-
-  return `<${tag}${attrs}>${children}</${tag}>`;
-}
-
-function serializeBodyToXhtml(body: HTMLElement): string {
-  return Array.from(body.childNodes)
-    .map((node) => serializeNodeToXhtml(node))
-    .join("");
-}
 
 export async function buildEpub(input: BuildEpubInput): Promise<BuildEpubResult> {
   const startedAt = Date.now();
@@ -236,141 +189,27 @@ export async function buildEpub(input: BuildEpubInput): Promise<BuildEpubResult>
       ? crypto.randomUUID()
       : `book-${Date.now()}`;
 
-  const navItems = chapters
-    .map(
-      (chapter) =>
-        `<li><a href="${escapeXml(chapter.href)}">${escapeXml(chapter.title)}</a></li>`,
-    )
-    .join("\n");
-
-  const ncxItems = chapters
-    .map(
-      (chapter, index) => `
-    <navPoint id="navPoint-${index + 1}" playOrder="${index + 1}">
-      <navLabel><text>${escapeXml(chapter.title)}</text></navLabel>
-      <content src="${escapeXml(chapter.href)}"/>
-    </navPoint>`,
-    )
-    .join("\n");
-
-  const manifestChapterItems = chapters
-    .map(
-      (chapter) =>
-        `<item id="${chapter.id}" href="${chapter.href}" media-type="application/xhtml+xml"/>`,
-    )
-    .join("\n    ");
-  const manifestCoverChapterItem = coverChapter
-    ? `<item id="${coverChapter.id}" href="${coverChapter.href}" media-type="application/xhtml+xml"/>`
-    : "";
-
   const images = Array.from(imagesByKey.values());
-  const manifestImageItems = images
-    .map(
-      (image) =>
-        `<item id="${image.id}" href="${image.href}" media-type="${escapeXml(image.mediaType)}"${coverImageId === image.id ? ' properties="cover-image"' : ""}/>` ,
-    )
-    .join("\n    ");
-
-  const spineItems = [
-    ...(coverChapter ? [`<itemref idref="${coverChapter.id}"/>`] : []),
-    ...chapters.map((chapter) => `<itemref idref="${chapter.id}"/>`),
-  ].join("\n    ");
-
-  const contentOpf = `<?xml version="1.0" encoding="UTF-8"?>
-<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="book-id" version="3.0">
-  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
-    <dc:identifier id="book-id">urn:uuid:${escapeXml(bookId)}</dc:identifier>
-    <dc:title>${escapeXml(input.bookTitle)}</dc:title>
-    ${input.bookAuthor ? `<dc:creator>${escapeXml(input.bookAuthor)}</dc:creator>` : ""}
-    <dc:language>en</dc:language>
-    ${coverImageId ? `<meta name="cover" content="${escapeXml(coverImageId)}"/>` : ""}
-    <meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d{3}Z$/, "Z")}</meta>
-  </metadata>
-  <manifest>
-    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
-    <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
-    ${manifestCoverChapterItem}
-    ${manifestChapterItems}
-    ${manifestImageItems}
-  </manifest>
-  <spine toc="ncx">
-    ${spineItems}
-  </spine>
-</package>`;
-
-  const navXhtml = `<?xml version="1.0" encoding="UTF-8"?>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
-  <head>
-    <title>${escapeXml(input.bookTitle)}</title>
-  </head>
-  <body>
-    <nav epub:type="toc" id="toc">
-      <h1>Table of Contents</h1>
-      <ol>
-        ${navItems}
-      </ol>
-    </nav>
-  </body>
-</html>`;
-
-  const tocNcx = `<?xml version="1.0" encoding="UTF-8"?>
-<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
-  <head>
-    <meta name="dtb:uid" content="urn:uuid:${escapeXml(bookId)}"/>
-    <meta name="dtb:depth" content="1"/>
-    <meta name="dtb:totalPageCount" content="0"/>
-    <meta name="dtb:maxPageNumber" content="0"/>
-  </head>
-  <docTitle>
-    <text>${escapeXml(input.bookTitle)}</text>
-  </docTitle>
-  <navMap>
-    ${ncxItems}
-  </navMap>
-</ncx>`;
+  const { contentOpf, navXhtml, tocNcx } = buildPackageDocuments({
+    input,
+    chapters,
+    coverChapter,
+    images,
+    bookId,
+    coverImageId,
+  });
 
   emitProgress(90, "finalizing");
 
-  throwIfAborted();
-  const zip = new JSZip();
-  zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
-  zip.file(
-    "META-INF/container.xml",
-    `<?xml version="1.0" encoding="UTF-8"?>
-<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
-  <rootfiles>
-    <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
-  </rootfiles>
-</container>`,
-  );
-
-  const oebps = zip.folder("OEBPS");
-  if (!oebps) {
-    throw new Error("Failed to create EPUB structure.");
-  }
-
-  oebps.file("content.opf", contentOpf);
-  oebps.file("nav.xhtml", navXhtml);
-  oebps.file("toc.ncx", tocNcx);
-
-  if (coverChapter) {
-    oebps.file(coverChapter.href, coverChapter.content);
-  }
-
-  for (const chapter of chapters) {
-    oebps.file(chapter.href, chapter.content);
-  }
-
-  for (const image of images) {
-    oebps.file(image.href, image.bytes, { binary: true });
-  }
-
   emitProgress(95, "finalizing");
-
   throwIfAborted();
-  const blob = await zip.generateAsync({
-    type: "blob",
-    mimeType: "application/epub+zip",
+  const blob = await buildEpubZipBlob({
+    contentOpf,
+    navXhtml,
+    tocNcx,
+    chapters,
+    coverChapter,
+    images,
   });
 
   throwIfAborted();
