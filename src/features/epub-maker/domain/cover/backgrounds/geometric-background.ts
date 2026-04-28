@@ -13,9 +13,9 @@ export const GEOMETRIC_BACKGROUND_ID = "geometric" as const;
 export const GEOMETRIC_BACKGROUND_LABEL = "Geometric" as const;
 
 const geometricBackgroundTheme = {
-  gradientStart: "#fffef8",
-  gradientEnd: "#f0ede4",
-  frameStroke: "rgba(0,0,0,0.24)",
+  gradientStart: "#eef3ff",
+  gradientEnd: "#cfdaf5",
+  frameStroke: "rgba(28,42,84,0.28)",
 } as const;
 
 export class GeometricBackgroundRenderer implements CoverBackgroundRenderer {
@@ -62,8 +62,8 @@ export class GeometricBackgroundRenderer implements CoverBackgroundRenderer {
   ): string {
     const noise = this.shadeForTriangle(row, col, pointsUp);
     const baseBlend = Math.max(0, Math.min(1, (y - frameY) / Math.max(1, frameHeight)));
-    const blendWithNoise = Math.max(0, Math.min(1, baseBlend + (noise - 0.5) * 0.62));
-    const contrastBlend = Math.max(0, Math.min(1, (blendWithNoise - 0.5) * 1.35 + 0.5));
+    const blendWithNoise = Math.max(0, Math.min(1, baseBlend + (noise - 0.5) * 0.68));
+    const contrastBlend = Math.max(0, Math.min(1, (blendWithNoise - 0.5) * 1.45 + 0.5));
     const red = Math.round(startColor.red + (endColor.red - startColor.red) * contrastBlend);
     const green = Math.round(startColor.green + (endColor.green - startColor.green) * contrastBlend);
     const blue = Math.round(startColor.blue + (endColor.blue - startColor.blue) * contrastBlend);
