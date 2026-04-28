@@ -196,12 +196,12 @@ export function useEpubMaker(): UseEpubMakerReturn {
       pages: [],
       customCoverHtml: null,
       coverEnabled: true,
-      coverBaseBackgroundId: initialPrefs.coverBaseBackgroundId,
-      coverSizePresetId: initialPrefs.coverSizePresetId,
-      coverTextScalePercent: initialPrefs.coverTextScalePercent,
-      coverTextPosition: initialPrefs.coverTextPosition,
-      coverTextColorMode: initialPrefs.coverTextColorMode,
-      hideCoverText: initialPrefs.hideCoverText,
+      coverBaseBackgroundId: initialPrefs.cover.baseBackgroundId,
+      coverSizePresetId: initialPrefs.cover.sizePresetId,
+      coverTextScalePercent: initialPrefs.cover.textScalePercent,
+      coverTextPosition: initialPrefs.cover.textPosition,
+      coverTextColorMode: initialPrefs.cover.textColorMode,
+      hideCoverText: initialPrefs.cover.hideText,
     },
     future: [],
   });
@@ -450,12 +450,12 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
   const sanitizePolicy = useMemo(() => {
     const policy = createDefaultSanitizationPolicy();
-    policy.embedRemoteImages = prefs.sanitizeOptions.embedRemoteImages;
-    policy.allowExternalLinks = prefs.sanitizeOptions.allowExternalLinks;
+    policy.embedRemoteImages = prefs.generationOptions.embedRemoteImages;
+    policy.allowExternalLinks = prefs.generationOptions.allowExternalLinks;
     return policy;
   }, [
-    prefs.sanitizeOptions.embedRemoteImages,
-    prefs.sanitizeOptions.allowExternalLinks,
+    prefs.generationOptions.embedRemoteImages,
+    prefs.generationOptions.allowExternalLinks,
   ]);
 
   const { coverMode, hasCustomCover, coverDraft, coverDraftRef, waitForCoverRenderIfPending } =
@@ -481,26 +481,28 @@ export function useEpubMaker(): UseEpubMakerReturn {
       const nextBackgroundId: CoverBackgroundId =
         customCoverHtml !== null ? "custom" : coverBaseBackgroundId;
       if (
-        prev.coverBackgroundId === nextBackgroundId &&
-        prev.coverBaseBackgroundId === coverBaseBackgroundId &&
-        prev.coverSizePresetId === coverSizePresetId &&
-        prev.coverTextScalePercent === coverTextScalePercent &&
-        prev.coverTextPosition === coverTextPosition &&
-        prev.coverTextColorMode === coverTextColorMode &&
-        prev.hideCoverText === hideCoverText
+        prev.cover.backgroundId === nextBackgroundId &&
+        prev.cover.baseBackgroundId === coverBaseBackgroundId &&
+        prev.cover.sizePresetId === coverSizePresetId &&
+        prev.cover.textScalePercent === coverTextScalePercent &&
+        prev.cover.textPosition === coverTextPosition &&
+        prev.cover.textColorMode === coverTextColorMode &&
+        prev.cover.hideText === hideCoverText
       ) {
         return prev;
       }
 
       return {
         ...prev,
-        coverBackgroundId: nextBackgroundId,
-        coverBaseBackgroundId,
-        coverSizePresetId,
-        coverTextScalePercent,
-        coverTextPosition,
-        coverTextColorMode,
-        hideCoverText,
+        cover: {
+          backgroundId: nextBackgroundId,
+          baseBackgroundId: coverBaseBackgroundId,
+          sizePresetId: coverSizePresetId,
+          textScalePercent: coverTextScalePercent,
+          textPosition: coverTextPosition,
+          textColorMode: coverTextColorMode,
+          hideText: hideCoverText,
+        },
       };
     });
   }, [
@@ -1418,12 +1420,18 @@ export function useEpubMaker(): UseEpubMakerReturn {
     setEmbedRemoteImages: (value: boolean) =>
       setPrefs((prev) => ({
         ...prev,
-        sanitizeOptions: { ...prev.sanitizeOptions, embedRemoteImages: value },
+        generationOptions: {
+          ...prev.generationOptions,
+          embedRemoteImages: value,
+        },
       })),
     setAllowExternalLinks: (value: boolean) =>
       setPrefs((prev) => ({
         ...prev,
-        sanitizeOptions: { ...prev.sanitizeOptions, allowExternalLinks: value },
+        generationOptions: {
+          ...prev.generationOptions,
+          allowExternalLinks: value,
+        },
       })),
     replaceCoverFromFiles,
     replaceCoverFromClipboard,

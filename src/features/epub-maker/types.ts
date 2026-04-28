@@ -149,16 +149,18 @@ export interface BuildEpubResult {
 export interface EpubMakerPrefs {
   title: string;
   author: string;
-  coverBackgroundId: CoverBackgroundId;
-  coverBaseBackgroundId: BaseCoverBackgroundId;
-  coverSizePresetId: CoverSizePresetId;
-  coverTextScalePercent: number;
-  coverTextPosition: CoverTextPosition;
-  coverTextColorMode: CoverTextColorMode;
-  hideCoverText: boolean;
+  cover: {
+    backgroundId: CoverBackgroundId;
+    baseBackgroundId: BaseCoverBackgroundId;
+    sizePresetId: CoverSizePresetId;
+    textScalePercent: number;
+    textPosition: CoverTextPosition;
+    textColorMode: CoverTextColorMode;
+    hideText: boolean;
+  };
   manualFileName: string;
   fileNameMode: FileNameMode;
-  sanitizeOptions: {
+  generationOptions: {
     embedRemoteImages: boolean;
     allowExternalLinks: boolean;
   };
