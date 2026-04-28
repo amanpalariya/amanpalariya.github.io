@@ -16,16 +16,18 @@ import { buildToolStorageKey } from "@utils/storage";
 const defaultPrefs: EpubMakerPrefs = {
   title: "",
   author: "",
-  coverBackgroundId: "monochrome",
-  coverBaseBackgroundId: "monochrome",
-  coverSizePresetId: "ratio_1_1_6",
-  coverTextScalePercent: 100,
-  coverTextPosition: "style_1",
-  coverTextColorMode: "adaptive",
-  hideCoverText: false,
+  cover: {
+    backgroundId: "monochrome",
+    baseBackgroundId: "monochrome",
+    sizePresetId: "ratio_1_1_6",
+    textScalePercent: 100,
+    textPosition: "style_1",
+    textColorMode: "adaptive",
+    hideText: false,
+  },
   manualFileName: "",
   fileNameMode: "auto",
-  sanitizeOptions: {
+  generationOptions: {
     embedRemoteImages: true,
     allowExternalLinks: true,
   },
@@ -55,11 +57,13 @@ function isCoverSizePresetId(value: unknown): value is CoverSizePresetId {
 }
 
 function clampCoverTextScalePercent(value: number): number {
-  if (!Number.isFinite(value)) return defaultPrefs.coverTextScalePercent;
+  if (!Number.isFinite(value)) return defaultPrefs.cover.textScalePercent;
   return Math.max(70, Math.min(180, Math.round(value)));
 }
 
-function isCoverTextPosition(value: unknown): value is EpubMakerPrefs["coverTextPosition"] {
+function isCoverTextPosition(
+  value: unknown,
+): value is EpubMakerPrefs["cover"]["textPosition"] {
   return (
     value === "style_1" ||
     value === "style_2" ||
@@ -79,11 +83,17 @@ function readToolString(field: string, fallback: string): string {
   return typeof value === "string" ? value : fallback;
 }
 
-function readToolBoolean(field: string, fallback: boolean): boolean {
-  const value = window.localStorage.getItem(buildToolStorageKey(EPUB_MAKER_TOOL_ID, field));
-  if (value === "true") return true;
-  if (value === "false") return false;
-  return fallback;
+function readToolJson<T>(field: string, fallback: T): T {
+  const value = window.localStorage.getItem(
+    buildToolStorageKey(EPUB_MAKER_TOOL_ID, field),
+  );
+  if (typeof value !== "string") return fallback;
+
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return fallback;
+  }
 }
 
 export function readEpubMakerPrefs(): EpubMakerPrefs {
@@ -94,57 +104,56 @@ export function readEpubMakerPrefs(): EpubMakerPrefs {
       EPUB_MAKER_STORAGE_FIELDS.fileNameMode,
       defaultPrefs.fileNameMode,
     );
-    const coverBackgroundIdValue = readToolString(
-      EPUB_MAKER_STORAGE_FIELDS.coverBackgroundId,
-      defaultPrefs.coverBackgroundId,
+    const coverValue = readToolJson<Partial<EpubMakerPrefs["cover"]>>(
+      EPUB_MAKER_STORAGE_FIELDS.cover,
+      defaultPrefs.cover,
     );
-    const coverBaseBackgroundIdValue = readToolString(
-      EPUB_MAKER_STORAGE_FIELDS.coverBaseBackgroundId,
-      defaultPrefs.coverBaseBackgroundId,
+    const generationOptionsValue = readToolJson<
+      Partial<EpubMakerPrefs["generationOptions"]>
+    >(
+      EPUB_MAKER_STORAGE_FIELDS.generationOptions,
+      defaultPrefs.generationOptions,
     );
-    const coverSizePresetIdValue = readToolString(
-      EPUB_MAKER_STORAGE_FIELDS.coverSizePresetId,
-      defaultPrefs.coverSizePresetId,
-    );
-    const coverTextScalePercentValue = Number(
-      readToolString(
-        EPUB_MAKER_STORAGE_FIELDS.coverTextScalePercent,
-        String(defaultPrefs.coverTextScalePercent),
-      ),
-    );
-    const coverTextPositionValue = readToolString(
-      EPUB_MAKER_STORAGE_FIELDS.coverTextPosition,
-      defaultPrefs.coverTextPosition,
-    );
-    const coverTextColorModeValue = readToolString(
-      EPUB_MAKER_STORAGE_FIELDS.coverTextColorMode,
-      defaultPrefs.coverTextColorMode,
-    );
+    const coverBackgroundIdValue = coverValue.backgroundId;
+    const coverBaseBackgroundIdValue = coverValue.baseBackgroundId;
+    const coverSizePresetIdValue = coverValue.sizePresetId;
+    const coverTextScalePercentValue = Number(coverValue.textScalePercent);
+    const coverTextPositionValue = coverValue.textPosition;
+    const coverTextColorModeValue = coverValue.textColorMode;
+    const hideCoverTextValue = coverValue.hideText;
+
+    const normalizedCoverBackgroundId = isCoverBackgroundId(coverBackgroundIdValue)
+      ? coverBackgroundIdValue
+      : defaultPrefs.cover.backgroundId;
+    const normalizedCoverBaseBackgroundId = isBaseCoverBackgroundId(
+      coverBaseBackgroundIdValue,
+    )
+      ? coverBaseBackgroundIdValue
+      : isBaseCoverBackgroundId(normalizedCoverBackgroundId)
+        ? normalizedCoverBackgroundId
+        : defaultPrefs.cover.baseBackgroundId;
+
     return {
       title: readToolString(EPUB_MAKER_STORAGE_FIELDS.title, defaultPrefs.title),
       author: readToolString(EPUB_MAKER_STORAGE_FIELDS.author, defaultPrefs.author),
-      coverBackgroundId: isCoverBackgroundId(coverBackgroundIdValue)
-        ? coverBackgroundIdValue
-        : defaultPrefs.coverBackgroundId,
-      coverBaseBackgroundId: isBaseCoverBackgroundId(coverBaseBackgroundIdValue)
-        ? coverBaseBackgroundIdValue
-        : isBaseCoverBackgroundId(coverBackgroundIdValue)
-          ? coverBackgroundIdValue
-          : defaultPrefs.coverBaseBackgroundId,
-      coverSizePresetId: isCoverSizePresetId(coverSizePresetIdValue)
-        ? coverSizePresetIdValue
-        : defaultPrefs.coverSizePresetId,
-      coverTextScalePercent: clampCoverTextScalePercent(coverTextScalePercentValue),
-      coverTextPosition: isCoverTextPosition(coverTextPositionValue)
-        ? coverTextPositionValue
-        : defaultPrefs.coverTextPosition,
-      coverTextColorMode: isCoverTextColorMode(coverTextColorModeValue)
-        ? coverTextColorModeValue
-        : defaultPrefs.coverTextColorMode,
-      hideCoverText: readToolBoolean(
-        EPUB_MAKER_STORAGE_FIELDS.hideCoverText,
-        defaultPrefs.hideCoverText,
-      ),
+      cover: {
+        backgroundId: normalizedCoverBackgroundId,
+        baseBackgroundId: normalizedCoverBaseBackgroundId,
+        sizePresetId: isCoverSizePresetId(coverSizePresetIdValue)
+          ? coverSizePresetIdValue
+          : defaultPrefs.cover.sizePresetId,
+        textScalePercent: clampCoverTextScalePercent(coverTextScalePercentValue),
+        textPosition: isCoverTextPosition(coverTextPositionValue)
+          ? coverTextPositionValue
+          : defaultPrefs.cover.textPosition,
+        textColorMode: isCoverTextColorMode(coverTextColorModeValue)
+          ? coverTextColorModeValue
+          : defaultPrefs.cover.textColorMode,
+        hideText:
+          typeof hideCoverTextValue === "boolean"
+            ? hideCoverTextValue
+            : defaultPrefs.cover.hideText,
+      },
       manualFileName: readToolString(
         EPUB_MAKER_STORAGE_FIELDS.manualFileName,
         defaultPrefs.manualFileName,
@@ -152,15 +161,15 @@ export function readEpubMakerPrefs(): EpubMakerPrefs {
       fileNameMode: isFileNameMode(fileNameModeValue)
         ? fileNameModeValue
         : defaultPrefs.fileNameMode,
-      sanitizeOptions: {
-        embedRemoteImages: readToolBoolean(
-          EPUB_MAKER_STORAGE_FIELDS.sanitizeEmbedRemoteImages,
-          defaultPrefs.sanitizeOptions.embedRemoteImages,
-        ),
-        allowExternalLinks: readToolBoolean(
-          EPUB_MAKER_STORAGE_FIELDS.sanitizeAllowExternalLinks,
-          defaultPrefs.sanitizeOptions.allowExternalLinks,
-        ),
+      generationOptions: {
+        embedRemoteImages:
+          typeof generationOptionsValue.embedRemoteImages === "boolean"
+            ? generationOptionsValue.embedRemoteImages
+            : defaultPrefs.generationOptions.embedRemoteImages,
+        allowExternalLinks:
+          typeof generationOptionsValue.allowExternalLinks === "boolean"
+            ? generationOptionsValue.allowExternalLinks
+            : defaultPrefs.generationOptions.allowExternalLinks,
       },
     };
   } catch {
@@ -180,72 +189,50 @@ export function writeEpubMakerPrefs(prefs: EpubMakerPrefs): void {
       prefs.author,
     );
     window.localStorage.setItem(
-      buildToolStorageKey(EPUB_MAKER_TOOL_ID, EPUB_MAKER_STORAGE_FIELDS.coverBackgroundId),
-      prefs.coverBackgroundId,
+      buildToolStorageKey(EPUB_MAKER_TOOL_ID, EPUB_MAKER_STORAGE_FIELDS.cover),
+      JSON.stringify({
+        backgroundId: isCoverBackgroundId(prefs.cover.backgroundId)
+          ? prefs.cover.backgroundId
+          : defaultPrefs.cover.backgroundId,
+        baseBackgroundId: isBaseCoverBackgroundId(prefs.cover.baseBackgroundId)
+          ? prefs.cover.baseBackgroundId
+          : defaultPrefs.cover.baseBackgroundId,
+        sizePresetId: isCoverSizePresetId(prefs.cover.sizePresetId)
+          ? prefs.cover.sizePresetId
+          : defaultPrefs.cover.sizePresetId,
+        textScalePercent: clampCoverTextScalePercent(prefs.cover.textScalePercent),
+        textPosition: isCoverTextPosition(prefs.cover.textPosition)
+          ? prefs.cover.textPosition
+          : defaultPrefs.cover.textPosition,
+        textColorMode: isCoverTextColorMode(prefs.cover.textColorMode)
+          ? prefs.cover.textColorMode
+          : defaultPrefs.cover.textColorMode,
+        hideText: Boolean(prefs.cover.hideText),
+      } satisfies EpubMakerPrefs["cover"]),
     );
     window.localStorage.setItem(
       buildToolStorageKey(
         EPUB_MAKER_TOOL_ID,
-        EPUB_MAKER_STORAGE_FIELDS.coverBaseBackgroundId,
+        EPUB_MAKER_STORAGE_FIELDS.manualFileName,
       ),
-      prefs.coverBaseBackgroundId,
-    );
-    window.localStorage.setItem(
-      buildToolStorageKey(
-        EPUB_MAKER_TOOL_ID,
-        EPUB_MAKER_STORAGE_FIELDS.coverSizePresetId,
-      ),
-      prefs.coverSizePresetId,
-    );
-    window.localStorage.setItem(
-      buildToolStorageKey(
-        EPUB_MAKER_TOOL_ID,
-        EPUB_MAKER_STORAGE_FIELDS.coverTextScalePercent,
-      ),
-      String(clampCoverTextScalePercent(prefs.coverTextScalePercent)),
-    );
-    window.localStorage.setItem(
-      buildToolStorageKey(
-        EPUB_MAKER_TOOL_ID,
-        EPUB_MAKER_STORAGE_FIELDS.coverTextPosition,
-      ),
-      prefs.coverTextPosition,
-    );
-    window.localStorage.setItem(
-      buildToolStorageKey(
-        EPUB_MAKER_TOOL_ID,
-        EPUB_MAKER_STORAGE_FIELDS.coverTextColorMode,
-      ),
-      prefs.coverTextColorMode,
-    );
-    window.localStorage.setItem(
-      buildToolStorageKey(
-        EPUB_MAKER_TOOL_ID,
-        EPUB_MAKER_STORAGE_FIELDS.hideCoverText,
-      ),
-      prefs.hideCoverText ? "true" : "false",
-    );
-    window.localStorage.setItem(
-      buildToolStorageKey(EPUB_MAKER_TOOL_ID, EPUB_MAKER_STORAGE_FIELDS.manualFileName),
       prefs.manualFileName,
     );
     window.localStorage.setItem(
-      buildToolStorageKey(EPUB_MAKER_TOOL_ID, EPUB_MAKER_STORAGE_FIELDS.fileNameMode),
+      buildToolStorageKey(
+        EPUB_MAKER_TOOL_ID,
+        EPUB_MAKER_STORAGE_FIELDS.fileNameMode,
+      ),
       prefs.fileNameMode,
     );
     window.localStorage.setItem(
       buildToolStorageKey(
         EPUB_MAKER_TOOL_ID,
-        EPUB_MAKER_STORAGE_FIELDS.sanitizeEmbedRemoteImages,
+        EPUB_MAKER_STORAGE_FIELDS.generationOptions,
       ),
-      prefs.sanitizeOptions.embedRemoteImages ? "true" : "false",
-    );
-    window.localStorage.setItem(
-      buildToolStorageKey(
-        EPUB_MAKER_TOOL_ID,
-        EPUB_MAKER_STORAGE_FIELDS.sanitizeAllowExternalLinks,
-      ),
-      prefs.sanitizeOptions.allowExternalLinks ? "true" : "false",
+      JSON.stringify({
+        embedRemoteImages: Boolean(prefs.generationOptions.embedRemoteImages),
+        allowExternalLinks: Boolean(prefs.generationOptions.allowExternalLinks),
+      } satisfies EpubMakerPrefs["generationOptions"]),
     );
   } catch {
     // ignore localStorage write failures

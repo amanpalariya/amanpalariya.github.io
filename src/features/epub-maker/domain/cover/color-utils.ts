@@ -67,6 +67,17 @@ function relativeLuminance(color: { red: number; green: number; blue: number }):
   return red * 0.2126 + green * 0.7152 + blue * 0.0722;
 }
 
+function contrastRatio(
+  foreground: { red: number; green: number; blue: number },
+  background: { red: number; green: number; blue: number },
+): number {
+  const foregroundLum = relativeLuminance(foreground);
+  const backgroundLum = relativeLuminance(background);
+  const lighter = Math.max(foregroundLum, backgroundLum);
+  const darker = Math.min(foregroundLum, backgroundLum);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
 function resolveAdaptivePalette(
   gradientStart: string,
   gradientEnd: string,
@@ -82,23 +93,35 @@ function resolveAdaptivePalette(
   }
 
   const midpoint = mixRgb(start, end, 0.5);
-  const isLightBackground = relativeLuminance(midpoint) >= 0.58;
-  if (isLightBackground) {
-    const title = mixRgb(midpoint, { red: 0, green: 0, blue: 0 }, 0.88);
-    const author = mixRgb(midpoint, { red: 0, green: 0, blue: 0 }, 0.72);
-    return {
-      titleColor: rgbToHex(title.red, title.green, title.blue),
-      authorColor: rgbToHex(author.red, author.green, author.blue),
-      strokeColor: COVER_TEXT_LIGHT_STROKE_COLOR,
-    };
-  }
+  const black = { red: 0, green: 0, blue: 0 };
+  const white = { red: 255, green: 255, blue: 255 };
+  const contrastAgainstBlack = contrastRatio(black, midpoint);
+  const contrastAgainstWhite = contrastRatio(white, midpoint);
+  const useDarkText = contrastAgainstBlack >= contrastAgainstWhite;
 
-  const title = mixRgb(midpoint, { red: 255, green: 255, blue: 255 }, 0.9);
-  const author = mixRgb(midpoint, { red: 255, green: 255, blue: 255 }, 0.76);
+  const contrastGap = Math.abs(contrastAgainstBlack - contrastAgainstWhite);
+  const blendBoost = Math.max(0, Math.min(1, contrastGap / 4));
+
+  const darkTitleTarget = { red: 28, green: 32, blue: 38 };
+  const darkAuthorTarget = { red: 62, green: 68, blue: 78 };
+  const lightTitleTarget = { red: 247, green: 247, blue: 247 };
+  const lightAuthorTarget = { red: 222, green: 226, blue: 232 };
+
+  const titleTarget = useDarkText ? darkTitleTarget : lightTitleTarget;
+  const authorTarget = useDarkText ? darkAuthorTarget : lightAuthorTarget;
+  const titleBlend = useDarkText
+    ? Math.min(0.9, 0.62 + blendBoost * 0.18)
+    : Math.min(0.92, 0.64 + blendBoost * 0.18);
+  const authorBlend = useDarkText
+    ? Math.min(0.82, 0.5 + blendBoost * 0.14)
+    : Math.min(0.84, 0.54 + blendBoost * 0.14);
+  const title = mixRgb(midpoint, titleTarget, titleBlend);
+  const author = mixRgb(midpoint, authorTarget, authorBlend);
+
   return {
     titleColor: rgbToHex(title.red, title.green, title.blue),
     authorColor: rgbToHex(author.red, author.green, author.blue),
-    strokeColor: COVER_TEXT_STROKE_COLOR,
+    strokeColor: useDarkText ? COVER_TEXT_LIGHT_STROKE_COLOR : COVER_TEXT_STROKE_COLOR,
   };
 }
 

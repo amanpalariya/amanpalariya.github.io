@@ -7,30 +7,30 @@ import {
   createScaleHelpers,
   drawFramedGradientBackgroundCanvas,
   renderFramedGradientBackgroundSvg,
-} from "./template-utils";
+} from "./background-utils";
 
 export const MONOCHROME_BACKGROUND_ID = "monochrome" as const;
 export const MONOCHROME_BACKGROUND_LABEL = "Monochrome" as const;
 
-const monochromeTemplateTheme = {
+const monochromeBackgroundTheme = {
   gradientStart: "#ffffff",
   gradientEnd: "#f4f4f4",
   frameStroke: "rgba(0,0,0,0.28)",
   accentColor: "rgba(0,0,0,0.08)",
 } as const;
 
-export class MonochromeTemplateRenderer implements CoverBackgroundRenderer {
+export class MonochromeBackgroundRenderer implements CoverBackgroundRenderer {
   readonly id = MONOCHROME_BACKGROUND_ID;
 
   resolveAdaptiveTextSeed() {
     return {
-      startColor: monochromeTemplateTheme.gradientStart,
-      endColor: monochromeTemplateTheme.gradientEnd,
+      startColor: monochromeBackgroundTheme.gradientStart,
+      endColor: monochromeBackgroundTheme.gradientEnd,
     };
   }
 
   private renderSvgDecoration(metrics: CoverBackgroundSvgContext["metrics"]): string {
-    return `<line x1="${180 * metrics.scaleX}" y1="${220 * metrics.scaleY}" x2="${1020 * metrics.scaleX}" y2="${220 * metrics.scaleY}" stroke="${monochromeTemplateTheme.accentColor}" stroke-width="${2 * metrics.unitScale}"/><line x1="${180 * metrics.scaleX}" y1="${1580 * metrics.scaleY}" x2="${1020 * metrics.scaleX}" y2="${1580 * metrics.scaleY}" stroke="${monochromeTemplateTheme.accentColor}" stroke-width="${2 * metrics.unitScale}"/>`;
+    return `<line x1="${180 * metrics.scaleX}" y1="${220 * metrics.scaleY}" x2="${1020 * metrics.scaleX}" y2="${220 * metrics.scaleY}" stroke="${monochromeBackgroundTheme.accentColor}" stroke-width="${2 * metrics.unitScale}"/><line x1="${180 * metrics.scaleX}" y1="${1580 * metrics.scaleY}" x2="${1020 * metrics.scaleX}" y2="${1580 * metrics.scaleY}" stroke="${monochromeBackgroundTheme.accentColor}" stroke-width="${2 * metrics.unitScale}"/>`;
   }
 
   renderSvgBackground({ metrics, width, height }: CoverBackgroundSvgContext): string {
@@ -38,9 +38,9 @@ export class MonochromeTemplateRenderer implements CoverBackgroundRenderer {
       width,
       height,
       metrics,
-      gradientStart: monochromeTemplateTheme.gradientStart,
-      gradientEnd: monochromeTemplateTheme.gradientEnd,
-      frameStroke: monochromeTemplateTheme.frameStroke,
+      gradientStart: monochromeBackgroundTheme.gradientStart,
+      gradientEnd: monochromeBackgroundTheme.gradientEnd,
+      frameStroke: monochromeBackgroundTheme.frameStroke,
       decorationSvg: this.renderSvgDecoration(metrics),
     });
   }
@@ -50,7 +50,7 @@ export class MonochromeTemplateRenderer implements CoverBackgroundRenderer {
     metrics: CoverBackgroundCanvasContext["metrics"],
   ): void {
     const { sx, sy, su } = createScaleHelpers(metrics);
-    context.strokeStyle = monochromeTemplateTheme.accentColor;
+    context.strokeStyle = monochromeBackgroundTheme.accentColor;
     context.lineWidth = su(2);
     context.beginPath();
     context.moveTo(sx(180), sy(220));
@@ -66,9 +66,9 @@ export class MonochromeTemplateRenderer implements CoverBackgroundRenderer {
       width,
       height,
       metrics,
-      gradientStart: monochromeTemplateTheme.gradientStart,
-      gradientEnd: monochromeTemplateTheme.gradientEnd,
-      frameStroke: monochromeTemplateTheme.frameStroke,
+      gradientStart: monochromeBackgroundTheme.gradientStart,
+      gradientEnd: monochromeBackgroundTheme.gradientEnd,
+      frameStroke: monochromeBackgroundTheme.frameStroke,
       drawDecoration: () => this.drawCanvasDecoration(context, metrics),
     });
   }

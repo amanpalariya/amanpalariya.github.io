@@ -143,7 +143,7 @@ export function EpubMetadataForm({
         <HStack gap={2}>
           <Switch
             {...switchProps}
-            checked={prefs.sanitizeOptions.embedRemoteImages}
+            checked={prefs.generationOptions.embedRemoteImages}
             onCheckedChange={(details) =>
               onEmbedRemoteImagesChange(details.checked)
             }
@@ -171,7 +171,7 @@ export function EpubMetadataForm({
         <HStack gap={2}>
           <Switch
             {...switchProps}
-            checked={prefs.sanitizeOptions.allowExternalLinks}
+            checked={prefs.generationOptions.allowExternalLinks}
             onCheckedChange={(details) =>
               onAllowExternalLinksChange(details.checked)
             }

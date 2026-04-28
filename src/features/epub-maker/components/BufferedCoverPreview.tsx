@@ -70,7 +70,6 @@ function BufferedPreviewIframe({
               pointerEvents: "none",
               opacity: isActive ? 1 : 0,
               filter,
-              transition: "opacity 0.12s linear, filter 0.2s ease",
             }}
           />
         );
@@ -170,7 +169,6 @@ function BufferedPreviewImage({
               userSelect: "none",
               opacity: isActive ? 1 : 0,
               filter,
-              transition: "opacity 0.12s linear, filter 0.2s ease",
             }}
           />
         );

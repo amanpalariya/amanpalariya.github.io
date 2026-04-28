@@ -3,41 +3,41 @@ import type { CoverBackgroundRenderer, CoverBackgroundSpec } from "../core-types
 import {
   AURORA_BACKGROUND_ID,
   AURORA_BACKGROUND_LABEL,
-  AuroraTemplateRenderer,
-} from "./aurora-template";
+  AuroraBackgroundRenderer,
+} from "./aurora-background";
 import {
   EMBER_BACKGROUND_ID,
   EMBER_BACKGROUND_LABEL,
-  EmberTemplateRenderer,
-} from "./ember-template";
+  EmberBackgroundRenderer,
+} from "./ember-background";
 import {
   FLORAL_BACKGROUND_ID,
   FLORAL_BACKGROUND_LABEL,
-  FloralTemplateRenderer,
-} from "./floral-template";
+  FloralBackgroundRenderer,
+} from "./floral-background";
 import {
   GEOMETRIC_BACKGROUND_ID,
   GEOMETRIC_BACKGROUND_LABEL,
-  GeometricTemplateRenderer,
-} from "./geometric-template";
+  GeometricBackgroundRenderer,
+} from "./geometric-background";
 import {
   MONOCHROME_BACKGROUND_ID,
   MONOCHROME_BACKGROUND_LABEL,
-  MonochromeTemplateRenderer,
-} from "./monochrome-template";
+  MonochromeBackgroundRenderer,
+} from "./monochrome-background";
 import {
   NOIR_BACKGROUND_ID,
   NOIR_BACKGROUND_LABEL,
-  NoirTemplateRenderer,
-} from "./noir-template";
+  NoirBackgroundRenderer,
+} from "./noir-background";
 
 const backgroundRenderers: CoverBackgroundRenderer[] = [
-  new MonochromeTemplateRenderer(),
-  new AuroraTemplateRenderer(),
-  new EmberTemplateRenderer(),
-  new NoirTemplateRenderer(),
-  new GeometricTemplateRenderer(),
-  new FloralTemplateRenderer(),
+  new MonochromeBackgroundRenderer(),
+  new AuroraBackgroundRenderer(),
+  new EmberBackgroundRenderer(),
+  new NoirBackgroundRenderer(),
+  new GeometricBackgroundRenderer(),
+  new FloralBackgroundRenderer(),
 ];
 
 const rendererById = new Map<BaseCoverBackgroundId, CoverBackgroundRenderer>(

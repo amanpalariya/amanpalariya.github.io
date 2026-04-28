@@ -199,6 +199,7 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
               onRename={props.renamePage}
               onReorder={props.reorderPages}
               onApplyCoverSettings={props.applyCoverSettings}
+              onNotifyUser={props.notifyUser}
               onAddFromClipboard={props.addPageFromClipboard}
               onAddFromFiles={props.addPagesFromFiles}
               pastedInput={props.pastedInput}
