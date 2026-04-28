@@ -4,6 +4,13 @@ export const EPUB_MAKER_TOOL_ID = "epub-maker";
 export const EPUB_MAKER_STORAGE_FIELDS = {
   title: "title",
   author: "author",
+  coverBackgroundId: "cover-background-id",
+  coverBaseBackgroundId: "cover-base-background-id",
+  coverSizePresetId: "cover-size-preset-id",
+  coverTextScalePercent: "cover-text-scale-percent",
+  coverTextPosition: "cover-text-position",
+  coverTextColorMode: "cover-text-color-mode",
+  hideCoverText: "hide-cover-text",
   manualFileName: "manual-file-name",
   fileNameMode: "file-name-mode",
   sanitizeEmbedRemoteImages: "sanitize.embed-remote-images",

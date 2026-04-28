@@ -5,6 +5,37 @@ export type FileNameMode = "auto" | "manual";
 export type PageId = string;
 export type ChapterGenerationStatus = "pending" | "processing" | "completed";
 export type CoverMode = "auto" | "custom";
+export type CoverTextPosition =
+  | "style_1"
+  | "style_2"
+  | "style_3"
+  | "style_4"
+  | "style_5"
+  | "style_6";
+export type CoverTextColorMode = "light" | "dark" | "adaptive";
+export type BaseCoverBackgroundId =
+  | "monochrome"
+  | "aurora"
+  | "ember"
+  | "noir"
+  | "geometric"
+  | "floral";
+export type CoverBackgroundId = BaseCoverBackgroundId | "custom";
+
+export type CoverSizePresetId = string;
+
+export interface CoverBackgroundOption {
+  id: CoverBackgroundId;
+  label: string;
+}
+
+export interface CoverSizePresetOption {
+  id: CoverSizePresetId;
+  label: string;
+  description: string;
+  width: number;
+  height: number;
+}
 
 export interface PageDraft {
   id: PageId;
@@ -79,6 +110,17 @@ export interface CoverDraft {
   previewHtml: string;
 }
 
+export interface CoverSettingsState {
+  coverEnabled: boolean;
+  customCoverHtml: string | null;
+  coverBaseBackgroundId: BaseCoverBackgroundId;
+  coverSizePresetId: CoverSizePresetId;
+  coverTextScalePercent: number;
+  coverTextPosition: CoverTextPosition;
+  coverTextColorMode: CoverTextColorMode;
+  hideCoverText: boolean;
+}
+
 export interface BuildEpubInput {
   bookTitle: string;
   bookAuthor?: string;
@@ -107,6 +149,13 @@ export interface BuildEpubResult {
 export interface EpubMakerPrefs {
   title: string;
   author: string;
+  coverBackgroundId: CoverBackgroundId;
+  coverBaseBackgroundId: BaseCoverBackgroundId;
+  coverSizePresetId: CoverSizePresetId;
+  coverTextScalePercent: number;
+  coverTextPosition: CoverTextPosition;
+  coverTextColorMode: CoverTextColorMode;
+  hideCoverText: boolean;
   manualFileName: string;
   fileNameMode: FileNameMode;
   sanitizeOptions: {
@@ -118,6 +167,14 @@ export interface EpubMakerPrefs {
 export interface EpubMakerState {
   pages: PageDraft[];
   coverMode: CoverMode;
+  coverBackgroundId: CoverBackgroundId;
+  coverBackgroundOptions: CoverBackgroundOption[];
+  coverSizePresetId: CoverSizePresetId;
+  coverSizePresetOptions: CoverSizePresetOption[];
+  coverTextScalePercent: number;
+  coverTextPosition: CoverTextPosition;
+  coverTextColorMode: CoverTextColorMode;
+  hideCoverText: boolean;
   isCoverEnabled: boolean;
   coverPreviewHtml: string;
   hasCustomCover: boolean;

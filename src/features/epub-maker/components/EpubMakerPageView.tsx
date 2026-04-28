@@ -27,7 +27,14 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
 
   useEffect(() => {
     function handleUndoRedoHotkeys(event: KeyboardEvent) {
+      if (event.defaultPrevented) return;
       if (isEditableTarget(event.target)) return;
+      if (
+        event.target instanceof HTMLElement &&
+        event.target.closest("[role='dialog']")
+      ) {
+        return;
+      }
       if (event.altKey) return;
       if (!event.metaKey && !event.ctrlKey) return;
 
@@ -166,22 +173,32 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
           <Box minH={"340px"} px={0} py={0}>
             <PageDraftGrid
               pages={props.pages}
+              previewBookTitle={props.normalizedBookTitle}
+              previewBookAuthor={props.normalizedBookAuthor}
               coverPreviewHtml={props.coverPreviewHtml}
+              coverCustomHtml={props.coverCustomHtml}
               hasCustomCover={props.hasCustomCover}
+              coverBackgroundId={props.coverBackgroundId}
+              coverBackgroundOptions={props.coverBackgroundOptions}
+              coverSizePresetId={props.coverSizePresetId}
+              coverSizePresetOptions={props.coverSizePresetOptions}
+              coverTextScalePercent={props.coverTextScalePercent}
+              coverTextPosition={props.coverTextPosition}
+              coverTextColorMode={props.coverTextColorMode}
+              hideCoverText={props.hideCoverText}
               isCoverEnabled={props.isCoverEnabled}
               isAdding={props.isAdding}
               isGenerating={props.isGenerating}
-              generationChapterStatusByPageId={props.generationChapterStatusByPageId}
+              generationChapterStatusByPageId={
+                props.generationChapterStatusByPageId
+              }
               activeGenerationPageId={props.activeGenerationPageId}
               isGenerationStatusFading={props.isGenerationStatusFading}
               pageFlashById={props.pageFlashById}
               onRemove={props.removePage}
               onRename={props.renamePage}
               onReorder={props.reorderPages}
-              onReplaceCoverFromFiles={props.replaceCoverFromFiles}
-              onReplaceCoverFromClipboard={props.replaceCoverFromClipboard}
-              onResetCoverToAuto={props.resetCoverToAuto}
-              onToggleCoverEnabled={props.toggleCoverEnabled}
+              onApplyCoverSettings={props.applyCoverSettings}
               onAddFromClipboard={props.addPageFromClipboard}
               onAddFromFiles={props.addPagesFromFiles}
               pastedInput={props.pastedInput}
@@ -220,14 +237,23 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
             justifyContent={"center"}
             pointerEvents={"none"}
           >
-            <VStack gap={2} color={"app.epub.fg.muted"} textAlign={"center"} px={4}>
+            <VStack
+              gap={2}
+              color={"app.epub.fg.muted"}
+              textAlign={"center"}
+              px={4}
+            >
               <Icon boxSize={8}>
                 <LuFilePlus />
               </Icon>
               <Text fontFamily={"ui"} fontSize={"sm"} fontWeight={"semibold"}>
                 Drop files to add pages
               </Text>
-              <Text fontFamily={"ui"} fontSize={"xs"} color={"app.epub.fg.subtle"}>
+              <Text
+                fontFamily={"ui"}
+                fontSize={"xs"}
+                color={"app.epub.fg.subtle"}
+              >
                 Supports Markdown, text, HTML, and image files.
               </Text>
             </VStack>

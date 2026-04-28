@@ -14,10 +14,20 @@ import {
   createDefaultSanitizationPolicy,
   DEFAULT_BOOK_TITLE,
 } from "../constants";
+import type { AutoCoverRendererId } from "../domain/cover";
+import {
+  COVER_BACKGROUND_OPTIONS,
+  COVER_SIZE_PRESET_OPTIONS,
+  resolveCoverSizePreset,
+} from "../domain/cover";
 import type {
+  BaseCoverBackgroundId,
   BuildEpubProgressUpdate,
-  CoverDraft,
-  CoverMode,
+  CoverSettingsState,
+  CoverSizePresetId,
+  CoverTextColorMode,
+  CoverTextPosition,
+  CoverBackgroundId,
   EpubMakerState,
   GenerationWarning,
   PageId,
@@ -26,7 +36,6 @@ import type {
 } from "../types";
 import { buildAutoEpubFileName, buildEpubFileName } from "../utils/file-name";
 import { createPageDraftFromInput } from "../domain/page-draft";
-import { sanitizeHtmlContent } from "../domain/html-sanitizer";
 import {
   clipboardImageBlobToHtml,
   readClipboardImageBlob,
@@ -40,16 +49,22 @@ import {
 import { buildEpub } from "../domain/epub-builder";
 import { downloadBlob } from "../services/download";
 import { renderMarkdownToHtml } from "@utils/markdown";
+import { useCoverDraftState } from "./useCoverDraftState";
 
 const PAGE_HISTORY_LIMIT = 100;
+const AUTO_COVER_RENDERER: AutoCoverRendererId = "raster-png";
 type PageFlashKind = "added" | "duplicate";
 type PageFlashEntry = { kind: PageFlashKind; token: number };
 
+function isBaseCoverBackgroundId(
+  value: CoverBackgroundId,
+): value is BaseCoverBackgroundId {
+  return value !== "custom";
+}
+
 type DraftSnapshot = {
   pages: PageDraft[];
-  customCoverHtml: string | null;
-  coverEnabled: boolean;
-};
+} & CoverSettingsState;
 
 interface DraftHistoryState {
   past: DraftSnapshot[];
@@ -128,115 +143,8 @@ function isMarkdownFile(file: File): boolean {
   );
 }
 
-function escapeXmlText(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
-function wrapTextLines(
-  value: string,
-  maxCharsPerLine: number,
-  maxLines: number,
-): string[] {
-  const words = value.trim().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return [];
-
-  const lines: string[] = [];
-  let currentLine = "";
-
-  const pushCurrentLine = () => {
-    if (!currentLine) return;
-    lines.push(currentLine);
-    currentLine = "";
-  };
-
-  for (const word of words) {
-    const candidate = currentLine ? `${currentLine} ${word}` : word;
-    if (candidate.length <= maxCharsPerLine) {
-      currentLine = candidate;
-      continue;
-    }
-
-    if (!currentLine && word.length > maxCharsPerLine) {
-      lines.push(word.slice(0, maxCharsPerLine));
-      const remainder = word.slice(maxCharsPerLine);
-      currentLine = remainder;
-      if (lines.length >= maxLines) break;
-      continue;
-    }
-
-    pushCurrentLine();
-    currentLine = word;
-    if (lines.length >= maxLines) break;
-  }
-
-  pushCurrentLine();
-
-  if (lines.length > maxLines) {
-    lines.length = maxLines;
-  }
-
-  if (words.join(" ").length > lines.join(" ").length) {
-    const lastLineIndex = lines.length - 1;
-    if (lastLineIndex >= 0) {
-      lines[lastLineIndex] = `${lines[lastLineIndex].replace(/[\s.]+$/g, "")}…`;
-    }
-  }
-
-  return lines;
-}
-
-function createAutoCoverSvgDataUrl(title: string, author: string): string {
-  const titleLines = wrapTextLines(title || DEFAULT_BOOK_TITLE, 18, 4);
-  const authorLines = wrapTextLines(author || "", 24, 2);
-
-  const titleStartY = 700 - Math.max(0, titleLines.length - 1) * 58;
-  const titleTspans = titleLines
-    .map(
-      (line, index) =>
-        `<tspan x="600" y="${titleStartY + index * 116}">${escapeXmlText(line)}</tspan>`,
-    )
-    .join("");
-  const authorStartY = titleStartY + titleLines.length * 120 + 60;
-  const authorTspans = authorLines
-    .map(
-      (line, index) =>
-        `<tspan x="600" y="${authorStartY + index * 72}">${escapeXmlText(line)}</tspan>`,
-    )
-    .join("");
-
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1800" viewBox="0 0 1200 1800" role="img" aria-label="Book cover"><defs><linearGradient id="coverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#173753"/><stop offset="100%" stop-color="#3a6ea5"/></linearGradient></defs><rect width="1200" height="1800" fill="url(#coverGradient)"/><rect x="76" y="76" width="1048" height="1648" rx="40" fill="none" stroke="rgba(255,255,255,0.34)" stroke-width="4"/><text fill="#f8fbff" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="92" font-weight="700" text-anchor="middle">${titleTspans}</text>${authorTspans ? `<text fill="#d8e7f6" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="54" font-weight="500" text-anchor="middle">${authorTspans}</text>` : ""}</svg>`;
-
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-}
-
-function createAutoCoverHtml(title: string, author: string): string {
-  const safeTitle = title || DEFAULT_BOOK_TITLE;
-  const coverSrc = createAutoCoverSvgDataUrl(title, author);
-  return `<figure><img src="${coverSrc}" alt="Cover for ${escapeXmlText(safeTitle)}" /></figure>`;
-}
-
-function buildCoverDraft(
-  rawHtml: string,
-  mode: CoverMode,
-  sanitizePolicy: SanitizationPolicy,
-): CoverDraft {
-  const sanitized = sanitizeHtmlContent(rawHtml, "Cover", sanitizePolicy, {
-    variant: "cover",
-  });
-  return {
-    mode,
-    title: "Cover",
-    rawHtml,
-    previewHtml: sanitized.previewHtml,
-  };
-}
-
 export type UseEpubMakerReturn = EpubMakerState & {
+  coverCustomHtml: string | null;
   normalizedBookTitle: string;
   normalizedBookAuthor: string;
   autoEpubFileName: string;
@@ -263,6 +171,13 @@ export type UseEpubMakerReturn = EpubMakerState & {
   dismissNotification: (id: string) => void;
   setTitle: (value: string) => void;
   setAuthor: (value: string) => void;
+  setCoverBackgroundId: (value: CoverBackgroundId) => void;
+  setCoverSizePresetId: (value: CoverSizePresetId) => void;
+  setCoverTextScalePercent: (value: number) => void;
+  setCoverTextPosition: (value: CoverTextPosition) => void;
+  setCoverTextColorMode: (value: CoverTextColorMode) => void;
+  setHideCoverText: (value: boolean) => void;
+  applyCoverSettings: (value: CoverSettingsState) => void;
   setManualFileName: (value: string) => void;
   toggleFileNameMode: () => void;
   setEmbedRemoteImages: (value: boolean) => void;
@@ -274,12 +189,19 @@ export type UseEpubMakerReturn = EpubMakerState & {
 };
 
 export function useEpubMaker(): UseEpubMakerReturn {
+  const [initialPrefs] = useState(() => readEpubMakerPrefs());
   const [draftHistory, dispatchDraftHistory] = useReducer(draftHistoryReducer, {
     past: [],
     present: {
       pages: [],
       customCoverHtml: null,
       coverEnabled: true,
+      coverBaseBackgroundId: initialPrefs.coverBaseBackgroundId,
+      coverSizePresetId: initialPrefs.coverSizePresetId,
+      coverTextScalePercent: initialPrefs.coverTextScalePercent,
+      coverTextPosition: initialPrefs.coverTextPosition,
+      coverTextColorMode: initialPrefs.coverTextColorMode,
+      hideCoverText: initialPrefs.hideCoverText,
     },
     future: [],
   });
@@ -289,7 +211,8 @@ export function useEpubMaker(): UseEpubMakerReturn {
   const [generationProgress, setGenerationProgress] = useState<number | null>(
     null,
   );
-  const [showDownloadCompleteIcon, setShowDownloadCompleteIcon] = useState(false);
+  const [showDownloadCompleteIcon, setShowDownloadCompleteIcon] =
+    useState(false);
   const [activeGenerationPageId, setActiveGenerationPageId] = useState<
     string | null
   >(null);
@@ -308,8 +231,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
   const [pageFlashById, setPageFlashById] = useState<
     Record<PageId, PageFlashEntry>
   >({});
-  const [prefs, setPrefs] =
-    useState<EpubMakerState["prefs"]>(readEpubMakerPrefs());
+  const [prefs, setPrefs] = useState<EpubMakerState["prefs"]>(initialPrefs);
   const [isPrefsLoaded, setIsPrefsLoaded] = useState(false);
   const isFileImportInProgressRef = useRef(false);
   const generationStatusFadeTimerRef = useRef<number | null>(null);
@@ -506,6 +428,13 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
   const normalizedBookTitle = getNormalizedBookTitle(prefs.title);
   const normalizedBookAuthor = prefs.author.trim();
+  const coverBaseBackgroundId = draftHistory.present.coverBaseBackgroundId;
+  const coverSizePresetId = draftHistory.present.coverSizePresetId;
+  const coverTextScalePercent = draftHistory.present.coverTextScalePercent;
+  const coverTextPosition = draftHistory.present.coverTextPosition;
+  const coverTextColorMode = draftHistory.present.coverTextColorMode;
+  const hideCoverText = draftHistory.present.hideCoverText;
+  const effectiveCoverBackgroundId = coverBaseBackgroundId;
   const autoEpubFileName = buildAutoEpubFileName(
     normalizedBookTitle,
     normalizedBookAuthor,
@@ -519,11 +448,6 @@ export function useEpubMaker(): UseEpubMakerReturn {
         )
       : autoEpubFileName;
 
-  const autoCoverRawHtml = useMemo(
-    () => createAutoCoverHtml(normalizedBookTitle, normalizedBookAuthor),
-    [normalizedBookTitle, normalizedBookAuthor],
-  );
-
   const sanitizePolicy = useMemo(() => {
     const policy = createDefaultSanitizationPolicy();
     policy.embedRemoteImages = prefs.sanitizeOptions.embedRemoteImages;
@@ -534,18 +458,60 @@ export function useEpubMaker(): UseEpubMakerReturn {
     prefs.sanitizeOptions.allowExternalLinks,
   ]);
 
-  const coverDraft = useMemo(() => {
-    if (customCoverHtml) {
-      return buildCoverDraft(customCoverHtml, "custom", sanitizePolicy);
-    }
-    return buildCoverDraft(autoCoverRawHtml, "auto", sanitizePolicy);
-  }, [autoCoverRawHtml, customCoverHtml, sanitizePolicy]);
-  const hasCustomCover = customCoverHtml !== null;
-
+  const { coverMode, hasCustomCover, coverDraft, coverDraftRef, waitForCoverRenderIfPending } =
+    useCoverDraftState({
+      normalizedBookTitle,
+      normalizedBookAuthor,
+      backgroundId: effectiveCoverBackgroundId,
+      sizePresetId: coverSizePresetId,
+      textScalePercent: coverTextScalePercent,
+      textPosition: coverTextPosition,
+      textColorMode: coverTextColorMode,
+      customCoverHtml,
+      hideCoverText,
+      sanitizePolicy,
+      rendererId: AUTO_COVER_RENDERER,
+    });
   useEffect(() => {
-    setPrefs(readEpubMakerPrefs());
     setIsPrefsLoaded(true);
   }, []);
+
+  useEffect(() => {
+    setPrefs((prev) => {
+      const nextTemplateId: CoverBackgroundId =
+        customCoverHtml !== null ? "custom" : coverBaseBackgroundId;
+      if (
+        prev.coverBackgroundId === nextTemplateId &&
+        prev.coverBaseBackgroundId === coverBaseBackgroundId &&
+        prev.coverSizePresetId === coverSizePresetId &&
+        prev.coverTextScalePercent === coverTextScalePercent &&
+        prev.coverTextPosition === coverTextPosition &&
+        prev.coverTextColorMode === coverTextColorMode &&
+        prev.hideCoverText === hideCoverText
+      ) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        coverBackgroundId: nextTemplateId,
+        coverBaseBackgroundId,
+        coverSizePresetId,
+        coverTextScalePercent,
+        coverTextPosition,
+        coverTextColorMode,
+        hideCoverText,
+      };
+    });
+  }, [
+    customCoverHtml,
+    coverBaseBackgroundId,
+    coverSizePresetId,
+    coverTextScalePercent,
+    coverTextPosition,
+    coverTextColorMode,
+    hideCoverText,
+  ]);
 
   useEffect(() => {
     if (!isPrefsLoaded) return;
@@ -764,11 +730,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
           `${addedCount} pages were added from dropped files.`,
         );
       } else if (addedCount === 1) {
-        notify(
-          "success",
-          "Page added",
-          "1 page was added from dropped files.",
-        );
+        notify("success", "Page added", "1 page was added from dropped files.");
       }
 
       if (unsupportedCount > 0) {
@@ -997,9 +959,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
         Math.min(targetIndex, remaining.length),
       );
       remaining.splice(insertionIndex, 0, draggedPage);
-      if (
-        remaining.every((page, index) => page.id === prev[index]?.id)
-      ) {
+      if (remaining.every((page, index) => page.id === prev[index]?.id)) {
         return prev;
       }
       return remaining;
@@ -1011,7 +971,11 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
     const uploadedFiles = Array.from(files);
     if (uploadedFiles.length === 0) {
-      notify("warning", "No cover file selected", "Choose an image file to set as cover.");
+      notify(
+        "warning",
+        "No cover file selected",
+        "Choose an image file to set as cover.",
+      );
       return;
     }
 
@@ -1041,7 +1005,11 @@ export function useEpubMaker(): UseEpubMakerReturn {
         };
       });
       setSummary("");
-      notify("success", "Cover updated", `Custom cover set from “${imageFile.name}”.`);
+      notify(
+        "success",
+        "Cover updated",
+        `Custom cover set from “${imageFile.name}”.`,
+      );
     } catch (error) {
       const message = `Could not set custom cover: ${String(error)}`;
       setErrors([message]);
@@ -1068,7 +1036,11 @@ export function useEpubMaker(): UseEpubMakerReturn {
         };
       });
       setSummary("");
-      notify("success", "Cover updated", "Custom cover set from clipboard image.");
+      notify(
+        "success",
+        "Cover updated",
+        "Custom cover set from clipboard image.",
+      );
     } catch (error) {
       const rawMessage = String(error);
       const normalizedMessage = rawMessage.toLowerCase();
@@ -1092,44 +1064,75 @@ export function useEpubMaker(): UseEpubMakerReturn {
     }
   }
 
-  function resetCoverToAuto() {
+  function applyCoverSettings(nextCoverSettings: CoverSettingsState) {
     if (isGenerating) return;
-    if (!hasCustomCover) return;
 
     commitDraftChange((previousDraft) => {
-      if (previousDraft.customCoverHtml === null) {
+      const normalizedSizePresetId = resolveCoverSizePreset(
+        nextCoverSettings.coverSizePresetId,
+      ).id;
+      const normalizedTextScale = Math.max(
+        70,
+        Math.min(180, Math.round(nextCoverSettings.coverTextScalePercent)),
+      );
+      if (
+        previousDraft.coverEnabled === nextCoverSettings.coverEnabled &&
+        previousDraft.customCoverHtml === nextCoverSettings.customCoverHtml &&
+        previousDraft.coverBaseBackgroundId ===
+          nextCoverSettings.coverBaseBackgroundId &&
+        previousDraft.coverSizePresetId === normalizedSizePresetId &&
+        previousDraft.coverTextScalePercent === normalizedTextScale &&
+        previousDraft.coverTextPosition === nextCoverSettings.coverTextPosition &&
+        previousDraft.coverTextColorMode ===
+          nextCoverSettings.coverTextColorMode &&
+        previousDraft.hideCoverText === nextCoverSettings.hideCoverText
+      ) {
         return previousDraft;
       }
+
       return {
         ...previousDraft,
-        customCoverHtml: null,
+        coverEnabled: nextCoverSettings.coverEnabled,
+        customCoverHtml: nextCoverSettings.customCoverHtml,
+        coverBaseBackgroundId: nextCoverSettings.coverBaseBackgroundId,
+        coverSizePresetId: normalizedSizePresetId,
+        coverTextScalePercent: normalizedTextScale,
+        coverTextPosition: nextCoverSettings.coverTextPosition,
+        coverTextColorMode: nextCoverSettings.coverTextColorMode,
+        hideCoverText: nextCoverSettings.hideCoverText,
       };
     });
     setSummary("");
-    notify("info", "Cover reset", "Switched back to the auto-generated cover.");
+  }
+
+  function resetCoverToAuto() {
+    if (isGenerating) return;
+
+    applyCoverSettings({
+      coverEnabled: true,
+      customCoverHtml: null,
+      coverBaseBackgroundId: "aurora",
+      coverSizePresetId: "ratio_1_1_6",
+      coverTextPosition: "style_1",
+      coverTextScalePercent: 100,
+      coverTextColorMode: "adaptive",
+      hideCoverText: false,
+    });
   }
 
   function toggleCoverEnabled() {
     if (isGenerating) return;
 
-    const nextCoverEnabled = !coverEnabled;
-    commitDraftChange((previousDraft) => {
-      if (previousDraft.coverEnabled === nextCoverEnabled) {
-        return previousDraft;
-      }
-      return {
-        ...previousDraft,
-        coverEnabled: nextCoverEnabled,
-      };
+    applyCoverSettings({
+      coverEnabled: !coverEnabled,
+      customCoverHtml,
+      coverBaseBackgroundId,
+      coverSizePresetId,
+      coverTextScalePercent,
+      coverTextPosition,
+      coverTextColorMode,
+      hideCoverText,
     });
-    setSummary("");
-    notify(
-      "info",
-      nextCoverEnabled ? "Cover enabled" : "Cover disabled",
-      nextCoverEnabled
-        ? "Cover will be included in generated EPUB files."
-        : "Cover preview is kept, but cover is excluded from EPUB generation.",
-    );
   }
 
   async function generateEpub() {
@@ -1157,8 +1160,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     generationAbortControllerRef.current = abortController;
 
     if (pages.length === 0) {
-      const message =
-        "Add at least one page before generating EPUB.";
+      const message = "Add at least one page before generating EPUB.";
       setErrors([message]);
       notify("warning", "No pages added", message);
       setIsGenerating(false);
@@ -1171,6 +1173,8 @@ export function useEpubMaker(): UseEpubMakerReturn {
     }
 
     try {
+      await waitForCoverRenderIfPending();
+
       const pageIds = pages.map((page) => page.id);
       setGenerationChapterStatusByPageId(() =>
         pageIds.reduce<EpubMakerState["generationChapterStatusByPageId"]>(
@@ -1187,7 +1191,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
         bookAuthor: normalizedBookAuthor,
         downloadFileName: effectiveFileName,
         pages,
-        cover: coverEnabled ? coverDraft : undefined,
+        cover: coverEnabled ? (coverDraftRef.current ?? coverDraft) : undefined,
         sanitizePolicy,
         signal: abortController.signal,
         onProgress: (update: BuildEpubProgressUpdate) => {
@@ -1234,7 +1238,11 @@ export function useEpubMaker(): UseEpubMakerReturn {
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
         setSummary("EPUB generation cancelled.");
-        notify("info", "Generation cancelled", "EPUB generation was cancelled.");
+        notify(
+          "info",
+          "Generation cancelled",
+          "EPUB generation was cancelled.",
+        );
         setShowDownloadCompleteIcon(false);
         setGenerationChapterStatusByPageId({});
         setIsGenerationStatusFading(false);
@@ -1264,9 +1272,18 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
   return {
     pages,
-    coverMode: coverDraft.mode,
+    coverMode,
+    coverBackgroundId: hasCustomCover ? "custom" : effectiveCoverBackgroundId,
+    coverBackgroundOptions: COVER_BACKGROUND_OPTIONS,
+    coverSizePresetId,
+    coverSizePresetOptions: COVER_SIZE_PRESET_OPTIONS,
+    coverTextScalePercent,
+    coverTextPosition,
+    coverTextColorMode,
+    hideCoverText,
     isCoverEnabled: coverEnabled,
     coverPreviewHtml: coverDraft.previewHtml,
+    coverCustomHtml: customCoverHtml,
     hasCustomCover,
     isAdding,
     isGenerating,
@@ -1310,6 +1327,75 @@ export function useEpubMaker(): UseEpubMakerReturn {
       setPrefs((prev) => ({ ...prev, title: value })),
     setAuthor: (value: string) =>
       setPrefs((prev) => ({ ...prev, author: value })),
+    setCoverBackgroundId: (value: CoverBackgroundId) => {
+      if (!isBaseCoverBackgroundId(value)) return;
+      applyCoverSettings({
+        coverEnabled,
+        customCoverHtml: null,
+        coverBaseBackgroundId: value,
+        coverSizePresetId,
+        coverTextScalePercent,
+        coverTextPosition,
+        coverTextColorMode,
+        hideCoverText,
+      });
+    },
+    setCoverSizePresetId: (value: CoverSizePresetId) =>
+      applyCoverSettings({
+        coverEnabled,
+        customCoverHtml,
+        coverBaseBackgroundId,
+        coverSizePresetId: value,
+        coverTextScalePercent,
+        coverTextPosition,
+        coverTextColorMode,
+        hideCoverText,
+      }),
+    setCoverTextScalePercent: (value: number) =>
+      applyCoverSettings({
+        coverEnabled,
+        customCoverHtml,
+        coverBaseBackgroundId,
+        coverSizePresetId,
+        coverTextScalePercent: value,
+        coverTextPosition,
+        coverTextColorMode,
+        hideCoverText,
+      }),
+    setCoverTextPosition: (value: CoverTextPosition) =>
+      applyCoverSettings({
+        coverEnabled,
+        customCoverHtml,
+        coverBaseBackgroundId,
+        coverSizePresetId,
+        coverTextScalePercent,
+        coverTextPosition: value,
+        coverTextColorMode,
+        hideCoverText,
+      }),
+    setCoverTextColorMode: (value: CoverTextColorMode) =>
+      applyCoverSettings({
+        coverEnabled,
+        customCoverHtml,
+        coverBaseBackgroundId,
+        coverSizePresetId,
+        coverTextScalePercent,
+        coverTextPosition,
+        coverTextColorMode: value,
+        hideCoverText,
+      }),
+    setHideCoverText: (value: boolean) =>
+      applyCoverSettings({
+        coverEnabled,
+        customCoverHtml,
+        coverBaseBackgroundId,
+        coverSizePresetId,
+        coverTextScalePercent,
+        coverTextPosition,
+        coverTextColorMode,
+        hideCoverText: value,
+      }),
+    applyCoverSettings,
     setManualFileName: (value: string) =>
       setPrefs((prev) => ({
         ...prev,
