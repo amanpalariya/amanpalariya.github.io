@@ -2,7 +2,6 @@ import {
   AspectRatio,
   Box,
   Button,
-  Dialog,
   FileUpload,
   HStack,
   Icon,
@@ -15,7 +14,6 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { DialogCloseTrigger, DialogContent } from "@components/ui/dialog";
 import { Switch } from "@components/ui/switch";
 import { Tooltip } from "@components/ui/tooltip";
 import {
@@ -27,11 +25,7 @@ import {
   LuEyeOff,
   LuGripVertical,
   LuLoaderCircle,
-  LuRefreshCw,
-  LuRedo2,
-  LuSettings2,
   LuTrash2,
-  LuUndo2,
   LuUpload,
 } from "react-icons/lu";
 import {
@@ -72,6 +66,7 @@ import {
   BufferedCoverPreview,
   extractFirstImageSrcFromHtml,
 } from "./BufferedCoverPreview";
+import { CoverSettingsDialog } from "./CoverSettingsDialog";
 
 type DragPreviewAnchor = {
   clientX: number;
@@ -941,126 +936,36 @@ export function PageDraftCard({
                   {isEffectiveCoverEnabled ? <LuEye /> : <LuEyeOff />}
                 </IconButton>
               </Tooltip>
-              <Dialog.Root
+              <CoverSettingsDialog
                 open={isCoverSettingsOpen}
                 onOpenChange={handleCoverSettingsOpenChange}
+                activeCoverMode={activeCoverMode}
+                isInteractionDisabled={isInteractionDisabled}
+                isEffectiveCoverEnabled={isEffectiveCoverEnabled}
+                canUndo={canUndoCoverSettings}
+                canRedo={canRedoCoverSettings}
+                onUndo={undoCoverSettings}
+                onRedo={redoCoverSettings}
+                onToggleCover={() =>
+                  commitCoverSettingsChange((previous) => ({
+                    ...previous,
+                    coverEnabled: !previous.coverEnabled,
+                  }))
+                }
+                onReset={() =>
+                  commitCoverSettingsChange((previous) => ({
+                    ...previous,
+                    coverEnabled: true,
+                    customCoverHtml: null,
+                    coverBaseTemplateId: COVER_AUTO_DEFAULT_TEMPLATE_ID,
+                    coverSizePresetId: COVER_AUTO_DEFAULT_SIZE_PRESET_ID,
+                    coverTextPosition: "style_1",
+                    coverTextScalePercent: 100,
+                    coverTextColorMode: "adaptive",
+                    hideCoverText: false,
+                  }))
+                }
               >
-                <Tooltip content={"Cover settings"}>
-                  <Dialog.Trigger asChild>
-                    <IconButton
-                      size={"xs"}
-                      variant={"ghost"}
-                      aria-label={`Open cover settings (${activeCoverMode === "custom" ? "custom image" : "auto-generated"})`}
-                      disabled={isInteractionDisabled}
-                    >
-                      <LuSettings2 />
-                    </IconButton>
-                  </Dialog.Trigger>
-                </Tooltip>
-
-                <DialogContent
-                  bg={"app.epub.bg.surface"}
-                  color={"app.epub.fg.default"}
-                  rounded={"2xl"}
-                  borderWidth={"1px"}
-                  borderColor={"app.epub.border.default"}
-                  maxW={"1120px"}
-                >
-                  <Dialog.Header
-                    display={"flex"}
-                    alignItems={"center"}
-                    justifyContent={"flex-start"}
-                  >
-                    <Dialog.Title fontFamily={"ui"}>
-                      Cover settings
-                    </Dialog.Title>
-                  </Dialog.Header>
-
-                  <Dialog.Body>
-                    <HStack gap={2} mb={4} wrap={"wrap"}>
-                      <HStack gap={0} align={"stretch"}>
-                        <Button
-                          {...dialogOutlineButtonProps}
-                          size={"sm"}
-                          roundedRight={0}
-                          borderRightWidth={"0"}
-                          onClick={undoCoverSettings}
-                          disabled={isInteractionDisabled || !canUndoCoverSettings}
-                        >
-                          <HStack gap={1.5}>
-                            <Icon boxSize={4}>
-                              <LuUndo2 />
-                            </Icon>
-                            <Text>Undo</Text>
-                          </HStack>
-                        </Button>
-                        <Tooltip content={"Redo"}>
-                          <IconButton
-                            {...dialogOutlineButtonProps}
-                            aria-label={"Redo cover settings change"}
-                            size={"sm"}
-                            roundedLeft={0}
-                            borderLeftWidth={"1px"}
-                            borderLeftColor={"app.epub.border.default"}
-                            onClick={redoCoverSettings}
-                            disabled={isInteractionDisabled || !canRedoCoverSettings}
-                          >
-                            <LuRedo2 />
-                          </IconButton>
-                        </Tooltip>
-                      </HStack>
-                      <Button
-                        {...dialogOutlineButtonProps}
-                        size={"sm"}
-                        onClick={() =>
-                          commitCoverSettingsChange((previous) => ({
-                            ...previous,
-                            coverEnabled: !previous.coverEnabled,
-                          }))
-                        }
-                        disabled={isInteractionDisabled}
-                      >
-                        <HStack gap={1.5}>
-                          <Icon boxSize={4}>
-                            {isEffectiveCoverEnabled ? <LuEyeOff /> : <LuEye />}
-                          </Icon>
-                          <Text>
-                            {isEffectiveCoverEnabled
-                              ? "Disable cover"
-                              : "Enable cover"}
-                          </Text>
-                        </HStack>
-                      </Button>
-                      <Button
-                        size={"sm"}
-                        variant={"ghost"}
-                        rounded={"lg"}
-                        bg={"transparent"}
-                        color={"app.epub.fg.danger"}
-                        _hover={{ bg: "app.status.danger.bg" }}
-                        onClick={() =>
-                          commitCoverSettingsChange((previous) => ({
-                            ...previous,
-                            coverEnabled: true,
-                            customCoverHtml: null,
-                            coverBaseTemplateId: COVER_AUTO_DEFAULT_TEMPLATE_ID,
-                            coverSizePresetId: COVER_AUTO_DEFAULT_SIZE_PRESET_ID,
-                            coverTextPosition: "style_1",
-                            coverTextScalePercent: 100,
-                            coverTextColorMode: "adaptive",
-                            hideCoverText: false,
-                          }))
-                        }
-                        disabled={isInteractionDisabled}
-                      >
-                        <HStack gap={1.5}>
-                          <Icon boxSize={4}>
-                            <LuRefreshCw />
-                          </Icon>
-                          <Text>Reset</Text>
-                        </HStack>
-                      </Button>
-                    </HStack>
 
                     <Box
                       display={"grid"}
@@ -2036,11 +1941,7 @@ export function PageDraftCard({
                         </AspectRatio>
                       </Box>
                     </Box>
-                  </Dialog.Body>
-
-                  <DialogCloseTrigger />
-                </DialogContent>
-              </Dialog.Root>
+              </CoverSettingsDialog>
             </HStack>
           </HStack>
         ) : (
