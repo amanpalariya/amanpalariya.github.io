@@ -179,6 +179,23 @@ function resolveRatioFrameSize(
   };
 }
 
+function resolveMiniRatioSwatchSize(
+  ratio: number,
+  maxSizePx: number = 14,
+): { widthPx: number; heightPx: number } {
+  const normalizedRatio = Math.max(0.2, Math.min(3, ratio));
+  if (normalizedRatio >= 1) {
+    return {
+      widthPx: maxSizePx,
+      heightPx: Math.max(3, Math.round(maxSizePx / normalizedRatio)),
+    };
+  }
+  return {
+    widthPx: Math.max(3, Math.round(maxSizePx * normalizedRatio)),
+    heightPx: maxSizePx,
+  };
+}
+
 function renderGridOptionMeta({
   labelMode,
   label,
@@ -639,6 +656,15 @@ export function PageDraftCard({
   const availableCoverSizePresetOptions = coverSizePresetOptions ?? [];
   const selectedCoverSizePreviewOption =
     selectedCoverSizePreset ?? availableCoverSizePresetOptions[0] ?? undefined;
+  const selectedCoverSizePreviewWidth = selectedCoverSizePreviewOption?.width ?? 1600;
+  const selectedCoverSizePreviewHeight =
+    selectedCoverSizePreviewOption?.height ?? 2560;
+  const selectedCoverSizePreviewLabel = selectedCoverSizePreviewOption?.label ?? "Default";
+  const selectedCoverSizePreviewRatioValue =
+    selectedCoverSizePreviewWidth / selectedCoverSizePreviewHeight;
+  const selectedCoverRatioSwatchSize = resolveMiniRatioSwatchSize(
+    selectedCoverSizePreviewRatioValue,
+  );
   const selectedCoverSizePreviewRatio = selectedCoverSizePreviewOption
     ? selectedCoverSizePreviewOption.width /
       selectedCoverSizePreviewOption.height
@@ -1915,6 +1941,65 @@ export function PageDraftCard({
         cursor={"default"}
       >
         <Box position={"relative"} w={"full"} h={"full"}>
+          {isCover ? (
+            <Box
+              position={"absolute"}
+              top={0}
+              left={0}
+              right={0}
+              zIndex={5}
+              pointerEvents={"none"}
+            >
+              <HStack
+                align={"stretch"}
+                gap={1.5}
+                w={"full"}
+                px={2}
+                py={1}
+                rounded={"none"}
+                bg={"blackAlpha.600"}
+                color={"white"}
+                borderWidth={"1px"}
+                borderColor={"whiteAlpha.400"}
+              >
+                <Box
+                  w={"18px"}
+                  h={"auto"}
+                  rounded={"sm"}
+                  borderWidth={"1px"}
+                  borderColor={"whiteAlpha.500"}
+                  bg={"blackAlpha.400"}
+                  display={"grid"}
+                  placeItems={"center"}
+                  flexShrink={0}
+                  alignSelf={"stretch"}
+                >
+                  <Box
+                    rounded={"1px"}
+                    bg={"whiteAlpha.900"}
+                    style={{
+                      width: `${selectedCoverRatioSwatchSize.widthPx}px`,
+                      height: `${selectedCoverRatioSwatchSize.heightPx}px`,
+                    }}
+                  />
+                </Box>
+                <VStack align={"start"} gap={0} minW={0}>
+                  <Text
+                    fontFamily={"ui"}
+                    fontSize={"2xs"}
+                    fontWeight={"semibold"}
+                    lineClamp={1}
+                  >
+                    {selectedCoverSizePreviewLabel}
+                  </Text>
+                  <Text fontFamily={"ui"} fontSize={"2xs"} color={"whiteAlpha.900"}>
+                    {selectedCoverSizePreviewWidth} x {selectedCoverSizePreviewHeight}
+                  </Text>
+                </VStack>
+              </HStack>
+            </Box>
+          ) : null}
+
           {!isCover ? (
             <Tooltip content={"Drag to reorder"}>
               <Button
