@@ -687,6 +687,11 @@ export function PageDraftCard({
   const selectedCoverBackgroundIdEffective = activeCoverSettings.coverBaseBackgroundId;
   const selectedCoverSizePresetIdEffective = activeCoverSettings.coverSizePresetId;
   const effectiveCoverTextScalePercent = activeCoverSettings.coverTextScalePercent;
+  const sanitizedCoverTextScalePercent = Number.isFinite(
+    effectiveCoverTextScalePercent,
+  )
+    ? Math.max(70, Math.min(180, Math.round(effectiveCoverTextScalePercent)))
+    : 100;
   const effectiveCoverTextPosition = activeCoverSettings.coverTextPosition;
   const effectiveCoverTextColorMode = activeCoverSettings.coverTextColorMode;
   const isCoverTextHidden = activeCoverSettings.hideCoverText;
@@ -789,7 +794,7 @@ export function PageDraftCard({
     {
       backgroundId: activeCoverSettings.coverBaseBackgroundId,
       sizePresetId: activeCoverSettings.coverSizePresetId,
-      textScalePercent: activeCoverSettings.coverTextScalePercent,
+      textScalePercent: sanitizedCoverTextScalePercent,
       textPosition: activeCoverSettings.coverTextPosition,
       textColorMode: activeCoverSettings.coverTextColorMode,
       customCoverHtml: activeCoverSettings.customCoverHtml,
@@ -866,10 +871,11 @@ export function PageDraftCard({
 
   function handleCoverTextScaleChange(value: string) {
     const parsed = Number(value);
-    if (Number.isNaN(parsed)) return;
+    if (!Number.isFinite(parsed)) return;
+    const nextTextScalePercent = Math.max(70, Math.min(180, Math.round(parsed)));
     commitCoverSettingsChange((previous) => ({
       ...previous,
-      coverTextScalePercent: parsed,
+      coverTextScalePercent: nextTextScalePercent,
     }));
   }
 
@@ -1667,7 +1673,7 @@ export function PageDraftCard({
                                 <NumberInput.Root
                                   {...dialogFieldProps}
                                   size={"md"}
-                                  value={String(effectiveCoverTextScalePercent)}
+                                  value={String(sanitizedCoverTextScalePercent)}
                                   min={70}
                                   max={180}
                                   step={5}
@@ -1706,21 +1712,23 @@ export function PageDraftCard({
                                     fontFamily={"ui"}
                                     fontSize={"sm"}
                                     rounded={"lg"}
-                                    value={effectiveCoverTextColorMode}
+                                    value={effectiveCoverTextColorMode ?? "adaptive"}
                                     aria-label={"Select cover text color mode"}
-                                    onChange={(event) =>
+                                    onChange={(event) => {
+                                      const nextCoverTextColorMode =
+                                        event.currentTarget
+                                          .value as CoverTextColorMode;
                                       commitCoverSettingsChange((previous) => ({
                                         ...previous,
-                                        coverTextColorMode: event.currentTarget
-                                          .value as CoverTextColorMode,
-                                      }))
-                                    }
+                                        coverTextColorMode:
+                                          nextCoverTextColorMode,
+                                      }));
+                                    }}
                                   >
                                     <option value={"light"}>Light</option>
                                     <option value={"dark"}>Dark</option>
                                     <option value={"adaptive"}>Adaptive</option>
                                   </NativeSelect.Field>
-                                  <NativeSelect.Indicator />
                                 </NativeSelect.Root>
                               </Box>
                             </Box>
