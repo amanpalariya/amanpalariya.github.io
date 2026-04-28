@@ -25,7 +25,10 @@ import {
   LuEyeOff,
   LuGripVertical,
   LuLoaderCircle,
+  LuRedo2,
+  LuRefreshCw,
   LuTrash2,
+  LuUndo2,
   LuUpload,
 } from "react-icons/lu";
 import {
@@ -942,30 +945,6 @@ export function PageDraftCard({
                 onOpenChange={handleCoverSettingsOpenChange}
                 activeCoverMode={activeCoverMode}
                 isInteractionDisabled={isInteractionDisabled}
-                isEffectiveCoverEnabled={isEffectiveCoverEnabled}
-                canUndo={canUndoCoverSettings}
-                canRedo={canRedoCoverSettings}
-                onUndo={undoCoverSettings}
-                onRedo={redoCoverSettings}
-                onToggleCover={() =>
-                  commitCoverSettingsChange((previous) => ({
-                    ...previous,
-                    coverEnabled: !previous.coverEnabled,
-                  }))
-                }
-                onReset={() =>
-                  commitCoverSettingsChange((previous) => ({
-                    ...previous,
-                    coverEnabled: true,
-                    customCoverHtml: null,
-                    coverBaseBackgroundId: COVER_AUTO_DEFAULT_TEMPLATE_ID,
-                    coverSizePresetId: COVER_AUTO_DEFAULT_SIZE_PRESET_ID,
-                    coverTextPosition: "style_1",
-                    coverTextScalePercent: 100,
-                    coverTextColorMode: "adaptive",
-                    hideCoverText: false,
-                  }))
-                }
               >
 
                     <Box
@@ -978,6 +957,97 @@ export function PageDraftCard({
                       alignItems={"start"}
                     >
                       <VStack align={"stretch"} gap={3}>
+                        <HStack gap={2} wrap={"wrap"}>
+                          <HStack gap={0} align={"stretch"}>
+                            <Button
+                              {...dialogOutlineButtonProps}
+                              size={"sm"}
+                              roundedRight={0}
+                              borderRightWidth={"0"}
+                              onClick={undoCoverSettings}
+                              disabled={isInteractionDisabled || !canUndoCoverSettings}
+                            >
+                              <HStack gap={1.5}>
+                                <Icon boxSize={4}>
+                                  <LuUndo2 />
+                                </Icon>
+                                <Text>Undo</Text>
+                              </HStack>
+                            </Button>
+                            <Tooltip content={"Redo"}>
+                              <IconButton
+                                {...dialogOutlineButtonProps}
+                                aria-label={"Redo cover settings change"}
+                                size={"sm"}
+                                roundedLeft={0}
+                                borderLeftWidth={"1px"}
+                                borderLeftColor={"app.epub.border.default"}
+                                onClick={redoCoverSettings}
+                                disabled={isInteractionDisabled || !canRedoCoverSettings}
+                              >
+                                <LuRedo2 />
+                              </IconButton>
+                            </Tooltip>
+                          </HStack>
+
+                          <Button
+                            size={"sm"}
+                            variant={"ghost"}
+                            rounded={"lg"}
+                            bg={"transparent"}
+                            color={"app.epub.fg.default"}
+                            _hover={{ bg: "app.status.info.bg" }}
+                            onClick={() =>
+                              commitCoverSettingsChange((previous) => ({
+                                ...previous,
+                                coverEnabled: !previous.coverEnabled,
+                              }))
+                            }
+                            disabled={isInteractionDisabled}
+                          >
+                            <HStack gap={1.5}>
+                              <Icon boxSize={4}>
+                                {isEffectiveCoverEnabled ? <LuEyeOff /> : <LuEye />}
+                              </Icon>
+                              <Text>
+                                {isEffectiveCoverEnabled
+                                  ? "Disable cover"
+                                  : "Enable cover"}
+                              </Text>
+                            </HStack>
+                          </Button>
+
+                          <Button
+                            size={"sm"}
+                            variant={"ghost"}
+                            rounded={"lg"}
+                            bg={"transparent"}
+                            color={"app.epub.fg.danger"}
+                            _hover={{ bg: "app.status.danger.bg" }}
+                            onClick={() =>
+                              commitCoverSettingsChange((previous) => ({
+                                ...previous,
+                                coverEnabled: true,
+                                customCoverHtml: null,
+                                coverBaseBackgroundId: COVER_AUTO_DEFAULT_TEMPLATE_ID,
+                                coverSizePresetId: COVER_AUTO_DEFAULT_SIZE_PRESET_ID,
+                                coverTextPosition: "style_1",
+                                coverTextScalePercent: 100,
+                                coverTextColorMode: "adaptive",
+                                hideCoverText: false,
+                              }))
+                            }
+                            disabled={isInteractionDisabled}
+                          >
+                            <HStack gap={1.5}>
+                              <Icon boxSize={4}>
+                                <LuRefreshCw />
+                              </Icon>
+                              <Text>Reset</Text>
+                            </HStack>
+                          </Button>
+                        </HStack>
+
                         <Box
                           p={4}
                           rounded={"xl"}
