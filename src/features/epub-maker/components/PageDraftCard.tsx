@@ -1001,12 +1001,12 @@ export function PageDraftCard({
                                     }
                                     disabled={isCoverToolDisabled}
                                   >
-                                    <HStack gap={1.5}>
+                                    <VStack gap={0.5}>
                                       <Icon>
                                         <LuClipboardPaste />
                                       </Icon>
                                       <Text>Paste</Text>
-                                    </HStack>
+                                    </VStack>
                                   </Button>
                                   <FileUpload.Root maxFiles={1}>
                                     <FileUpload.HiddenInput
@@ -1015,26 +1015,27 @@ export function PageDraftCard({
                                       accept={"image/*"}
                                       onChange={handleCoverUploadChange}
                                     />
-                                    <Tooltip content={"Upload custom image"}>
-                                      <IconButton
-                                        {...dialogOutlineButtonProps}
-                                        roundedLeft={0}
-                                        borderLeftWidth={"1px"}
-                                        borderLeftColor={
-                                          "app.epub.border.default"
-                                        }
-                                        size={"md"}
-                                        h={"64px"}
-                                        minH={"64px"}
-                                        aria-label={"Upload custom image"}
-                                        onClick={() =>
-                                          coverUploadInputRef.current?.click()
-                                        }
-                                        disabled={isCoverToolDisabled}
-                                      >
-                                        <LuUpload />
-                                      </IconButton>
-                                    </Tooltip>
+                                    <Button
+                                      {...dialogOutlineButtonProps}
+                                      roundedLeft={0}
+                                      borderLeftWidth={"1px"}
+                                      borderLeftColor={"app.epub.border.default"}
+                                      size={"md"}
+                                      h={"64px"}
+                                      minH={"64px"}
+                                      aria-label={"Upload custom image"}
+                                      onClick={() =>
+                                        coverUploadInputRef.current?.click()
+                                      }
+                                      disabled={isCoverToolDisabled}
+                                    >
+                                      <VStack gap={0.5}>
+                                        <Icon>
+                                          <LuUpload />
+                                        </Icon>
+                                        <Text>Upload</Text>
+                                      </VStack>
+                                    </Button>
                                   </FileUpload.Root>
                                 </Box>
                                 <Menu.Positioner>
@@ -1479,7 +1480,7 @@ export function PageDraftCard({
                               gap={3}
                               gridTemplateColumns={{
                                 base: "minmax(0, 1fr)",
-                                lg: "repeat(2, minmax(0, 1fr))",
+                                sm: "repeat(2, minmax(0, 1fr))",
                               }}
                             >
                               <Box>
