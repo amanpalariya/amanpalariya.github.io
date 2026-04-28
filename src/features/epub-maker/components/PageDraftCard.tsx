@@ -55,6 +55,7 @@ import type {
   CoverBackgroundId,
   CoverBackgroundOption,
   PageDraft,
+  UiNotification,
 } from "../types";
 import {
   createCoverHtml,
@@ -347,6 +348,7 @@ export function PageDraftCard({
   coverTextColorMode,
   hideCoverText,
   onApplyCoverSettings,
+  onNotifyUser,
   onRemove,
   onRename,
   onDragStart,
@@ -382,6 +384,11 @@ export function PageDraftCard({
   coverTextColorMode?: CoverTextColorMode;
   hideCoverText?: boolean;
   onApplyCoverSettings?: (settings: CoverSettingsState) => void;
+  onNotifyUser?: (
+    type: UiNotification["type"],
+    title: string,
+    description?: ReactNode,
+  ) => void;
   onRemove: (id: string) => void;
   onRename: (id: string, value: string) => void;
   onDragStart: (id: string, anchor: DragPreviewAnchor) => void;
@@ -820,7 +827,25 @@ export function PageDraftCard({
               customCoverHtml: coverHtml,
             },
       );
-    } catch {
+    } catch (error) {
+      const rawMessage = String(error);
+      const normalizedMessage = rawMessage.toLowerCase();
+      if (
+        normalizedMessage.includes("clipboard") ||
+        normalizedMessage.includes("not supported")
+      ) {
+        onNotifyUser?.(
+          "warning",
+          "No clipboard image found",
+          "Copy an image first, then use Paste.",
+        );
+        return;
+      }
+      onNotifyUser?.(
+        "error",
+        "Couldn’t update cover background",
+        `Could not paste cover image: ${rawMessage}`,
+      );
       return;
     }
   }
@@ -834,19 +859,32 @@ export function PageDraftCard({
       file.type.toLowerCase().startsWith("image/"),
     );
     if (!imageFile) {
+      onNotifyUser?.(
+        "warning",
+        "Cover background not updated",
+        "Selected file is not an image.",
+      );
       event.target.value = "";
       return;
     }
-    void clipboardImageBlobToHtml(imageFile).then((coverHtml) => {
-      commitCoverSettingsChange((previous) =>
-        previous.customCoverHtml === coverHtml
-          ? previous
-          : {
-              ...previous,
-              customCoverHtml: coverHtml,
-            },
-      );
-    });
+    void clipboardImageBlobToHtml(imageFile)
+      .then((coverHtml) => {
+        commitCoverSettingsChange((previous) =>
+          previous.customCoverHtml === coverHtml
+            ? previous
+            : {
+                ...previous,
+                customCoverHtml: coverHtml,
+              },
+        );
+      })
+      .catch((error) => {
+        onNotifyUser?.(
+          "error",
+          "Couldn’t update cover background",
+          `Could not upload cover image: ${String(error)}`,
+        );
+      });
     event.target.value = "";
   }
 

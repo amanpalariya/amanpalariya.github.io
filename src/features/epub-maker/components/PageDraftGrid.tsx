@@ -13,6 +13,7 @@ import {
 import {
   type ChangeEvent,
   type ClipboardEvent,
+  type ReactNode,
   useRef,
 } from "react";
 import { LuFilePlus, LuUpload } from "react-icons/lu";
@@ -26,6 +27,7 @@ import type {
   CoverBackgroundId,
   CoverBackgroundOption,
   PageDraft,
+  UiNotification,
 } from "../types";
 import { usePageGridDnd } from "../hooks/usePageGridDnd";
 import { PageDraftCard } from "./PageDraftCard";
@@ -59,6 +61,7 @@ export function PageDraftGrid({
   onRename,
   onReorder,
   onApplyCoverSettings,
+  onNotifyUser,
   onAddFromClipboard,
   onAddFromFiles,
   pastedInput,
@@ -91,6 +94,11 @@ export function PageDraftGrid({
   onRename: (id: string, value: string) => void;
   onReorder: (draggedId: string, targetIndex: number) => void;
   onApplyCoverSettings: (settings: CoverSettingsState) => void;
+  onNotifyUser: (
+    type: UiNotification["type"],
+    title: string,
+    description?: ReactNode,
+  ) => void;
   onAddFromClipboard: () => Promise<void>;
   onAddFromFiles: (files: FileList | File[]) => Promise<void>;
   pastedInput: string;
@@ -195,6 +203,7 @@ export function PageDraftGrid({
             coverTextColorMode={coverTextColorMode}
             hideCoverText={hideCoverText}
             onApplyCoverSettings={onApplyCoverSettings}
+            onNotifyUser={onNotifyUser}
             onRemove={onRemove}
             onRename={onRename}
             onDragStart={() => {}}

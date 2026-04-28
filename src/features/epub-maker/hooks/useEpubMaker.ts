@@ -169,6 +169,11 @@ export type UseEpubMakerReturn = EpubMakerState & {
   setPastedInput: (value: string) => void;
   setWarnings: (value: GenerationWarning[]) => void;
   dismissNotification: (id: string) => void;
+  notifyUser: (
+    type: "success" | "error" | "warning" | "info",
+    title: string,
+    description?: ReactNode,
+  ) => void;
   setTitle: (value: string) => void;
   setAuthor: (value: string) => void;
   setCoverBackgroundId: (value: CoverBackgroundId) => void;
@@ -1325,6 +1330,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     setPastedInput,
     setWarnings,
     dismissNotification,
+    notifyUser: notify,
     setTitle: (value: string) =>
       setPrefs((prev) => ({ ...prev, title: value })),
     setAuthor: (value: string) =>
