@@ -47,6 +47,7 @@ export function PageDraftGrid({
   previewBookTitle,
   previewBookAuthor,
   coverPreviewHtml,
+  coverCustomHtml,
   hasCustomCover,
   coverTemplateId,
   coverTemplateOptions,
@@ -78,6 +79,7 @@ export function PageDraftGrid({
   previewBookTitle: string;
   previewBookAuthor: string;
   coverPreviewHtml: string;
+  coverCustomHtml: string | null;
   hasCustomCover: boolean;
   coverTemplateId: CoverTemplateId;
   coverTemplateOptions: CoverTemplateOption[];
@@ -353,6 +355,7 @@ export function PageDraftGrid({
             previewBookAuthor={previewBookAuthor}
             chapterNumber={"C"}
             isCover={true}
+            customCoverHtml={coverCustomHtml}
             hasCustomCover={hasCustomCover}
             isCoverEnabled={isCoverEnabled}
             selectedCoverTemplateId={coverTemplateId}

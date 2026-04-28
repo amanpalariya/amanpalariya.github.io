@@ -178,6 +178,7 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
 }
 
 export type UseEpubMakerReturn = EpubMakerState & {
+  coverCustomHtml: string | null;
   normalizedBookTitle: string;
   normalizedBookAuthor: string;
   autoEpubFileName: string;
@@ -1396,6 +1397,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     hideCoverText,
     isCoverEnabled: coverEnabled,
     coverPreviewHtml: coverDraft.previewHtml,
+    coverCustomHtml: customCoverHtml,
     hasCustomCover,
     isAdding,
     isGenerating,

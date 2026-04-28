@@ -176,6 +176,7 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
               previewBookTitle={props.normalizedBookTitle}
               previewBookAuthor={props.normalizedBookAuthor}
               coverPreviewHtml={props.coverPreviewHtml}
+              coverCustomHtml={props.coverCustomHtml}
               hasCustomCover={props.hasCustomCover}
               coverTemplateId={props.coverTemplateId}
               coverTemplateOptions={props.coverTemplateOptions}
