@@ -28,8 +28,10 @@ import {
   LuGripVertical,
   LuLoaderCircle,
   LuRefreshCw,
+  LuRedo2,
   LuSettings2,
   LuTrash2,
+  LuUndo2,
   LuUpload,
 } from "react-icons/lu";
 import {
@@ -40,12 +42,13 @@ import {
   type ReactNode,
   type ChangeEvent,
   type DragEvent,
-  type KeyboardEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import type {
   BaseCoverTemplateId,
   ChapterGenerationStatus,
+  CoverSettingsState,
   CoverMode,
   CoverSizePresetId,
   CoverSizePresetOption,
@@ -56,8 +59,13 @@ import type {
   PageDraft,
 } from "../types";
 import {
+  createCoverHtml,
   createAutoCoverDataUrl,
 } from "../domain/cover";
+import {
+  clipboardImageBlobToHtml,
+  readClipboardImageBlob,
+} from "../services/clipboard";
 
 type DragPreviewAnchor = {
   clientX: number;
@@ -91,6 +99,31 @@ const COVER_SIZE_LABEL_MODE: CoverSizeLabelMode = "side";
 const SHOW_SIZE_DESCRIPTIONS = true;
 const COVER_GRID_HOVER_BG = "app.status.info.bg" as const;
 const COVER_GRID_SELECTED_BORDER_COLOR = "app.epub.button.primary.border" as const;
+const COVER_SETTINGS_HISTORY_LIMIT = 100;
+const COVER_AUTO_DEFAULT_TEMPLATE_ID: BaseCoverTemplateId = "aurora";
+const COVER_AUTO_DEFAULT_SIZE_PRESET_ID: CoverSizePresetId = "ratio_1_1_6";
+
+type CoverSettingsHistoryState = {
+  past: CoverSettingsState[];
+  present: CoverSettingsState;
+  future: CoverSettingsState[];
+};
+
+function isSameCoverSettingsState(
+  left: CoverSettingsState,
+  right: CoverSettingsState,
+): boolean {
+  return (
+    left.coverEnabled === right.coverEnabled &&
+    left.customCoverHtml === right.customCoverHtml &&
+    left.coverBaseTemplateId === right.coverBaseTemplateId &&
+    left.coverSizePresetId === right.coverSizePresetId &&
+    left.coverTextScalePercent === right.coverTextScalePercent &&
+    left.coverTextPosition === right.coverTextPosition &&
+    left.coverTextColorMode === right.coverTextColorMode &&
+    left.hideCoverText === right.hideCoverText
+  );
+}
 
 const dropdownGridItemInteractionProps = {
   p: 1,
@@ -307,6 +340,13 @@ function extractFirstImageSrcFromHtml(html: string): string | null {
   return match?.[1] ?? null;
 }
 
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  if (target.isContentEditable) return true;
+  const tagName = target.tagName.toLowerCase();
+  return tagName === "input" || tagName === "textarea" || tagName === "select";
+}
+
 function isBaseTemplateId(
   value: CoverTemplateId,
 ): value is BaseCoverTemplateId {
@@ -515,7 +555,6 @@ export function PageDraftCard({
   previewBookAuthor,
   chapterNumber,
   isCover,
-  coverMode,
   hasCustomCover,
   isCoverEnabled,
   selectedCoverTemplateId,
@@ -526,16 +565,7 @@ export function PageDraftCard({
   coverTextPosition,
   coverTextColorMode,
   hideCoverText,
-  onCoverTemplateChange,
-  onCoverSizePresetChange,
-  onCoverTextScalePercentChange,
-  onCoverTextPositionChange,
-  onCoverTextColorModeChange,
-  onHideCoverTextChange,
-  onReplaceCoverFromFiles,
-  onReplaceCoverFromClipboard,
-  onResetCoverToAuto,
-  onToggleCoverEnabled,
+  onApplyCoverSettings,
   onRemove,
   onRename,
   onDragStart,
@@ -559,7 +589,6 @@ export function PageDraftCard({
   previewBookAuthor?: string;
   chapterNumber: number | string;
   isCover?: boolean;
-  coverMode?: CoverMode;
   hasCustomCover?: boolean;
   isCoverEnabled?: boolean;
   selectedCoverTemplateId?: CoverTemplateId;
@@ -570,16 +599,7 @@ export function PageDraftCard({
   coverTextPosition?: CoverTextPosition;
   coverTextColorMode?: CoverTextColorMode;
   hideCoverText?: boolean;
-  onCoverTemplateChange?: (templateId: CoverTemplateId) => void;
-  onCoverSizePresetChange?: (presetId: CoverSizePresetId) => void;
-  onCoverTextScalePercentChange?: (value: number) => void;
-  onCoverTextPositionChange?: (value: CoverTextPosition) => void;
-  onCoverTextColorModeChange?: (value: CoverTextColorMode) => void;
-  onHideCoverTextChange?: (value: boolean) => void;
-  onReplaceCoverFromFiles?: (files: FileList | File[]) => Promise<void>;
-  onReplaceCoverFromClipboard?: () => Promise<void>;
-  onResetCoverToAuto?: () => void;
-  onToggleCoverEnabled?: () => void;
+  onApplyCoverSettings?: (settings: CoverSettingsState) => void;
   onRemove: (id: string) => void;
   onRename: (id: string, value: string) => void;
   onDragStart: (id: string, anchor: DragPreviewAnchor) => void;
@@ -632,6 +652,46 @@ export function PageDraftCard({
   const flashShadow = flashColorBase
     ? `0 0 0 2px rgba(${flashColorBase}, ${flashOpacity * 0.62})`
     : "none";
+  const [isCoverSettingsOpen, setIsCoverSettingsOpen] = useState(false);
+  const [coverSettingsHistory, setCoverSettingsHistory] =
+    useState<CoverSettingsHistoryState | null>(null);
+
+  function buildCoverSettingsFromCurrentProps(): CoverSettingsState {
+    const fallbackTemplateId =
+      selectedCoverTemplateId && isBaseTemplateId(selectedCoverTemplateId)
+        ? selectedCoverTemplateId
+        : "aurora";
+    return {
+      coverEnabled: isCoverEnabled ?? true,
+      customCoverHtml: hasCustomCover ? page.previewHtml : null,
+      coverBaseTemplateId: fallbackTemplateId,
+      coverSizePresetId: selectedCoverSizePresetId ?? COVER_AUTO_DEFAULT_SIZE_PRESET_ID,
+      coverTextScalePercent: coverTextScalePercent ?? 100,
+      coverTextPosition: coverTextPosition ?? "style_1",
+      coverTextColorMode: coverTextColorMode ?? "adaptive",
+      hideCoverText: hideCoverText ?? false,
+    };
+  }
+
+  function commitCoverSettingsChange(
+    updater: (previous: CoverSettingsState) => CoverSettingsState,
+  ) {
+    setCoverSettingsHistory((previousHistory) => {
+      if (!previousHistory) return previousHistory;
+      const nextSettings = updater(previousHistory.present);
+      if (isSameCoverSettingsState(nextSettings, previousHistory.present)) {
+        return previousHistory;
+      }
+      return {
+        past: [
+          ...previousHistory.past.slice(-(COVER_SETTINGS_HISTORY_LIMIT - 1)),
+          previousHistory.present,
+        ],
+        present: nextSettings,
+        future: [],
+      };
+    });
+  }
 
   useEffect(() => {
     setTitleDraft(page.title);
@@ -668,7 +728,7 @@ export function PageDraftCard({
     onRename(page.id, titleDraft);
   }
 
-  function handleTitleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+  function handleTitleKeyDown(event: ReactKeyboardEvent<HTMLInputElement>) {
     if (event.key !== "Enter") return;
     event.currentTarget.blur();
   }
@@ -836,10 +896,27 @@ export function PageDraftCard({
   const isRemoveDisabled = isInteractionDisabled || isCover;
   const isTitleDisabled = isInteractionDisabled || isCover;
   const canDrag = !isInteractionDisabled && !isCover;
+  const baseCoverSettings = buildCoverSettingsFromCurrentProps();
+  const activeCoverSettings = coverSettingsHistory?.present ?? baseCoverSettings;
+  const activeCoverMode: CoverMode =
+    activeCoverSettings.customCoverHtml !== null ? "custom" : "auto";
+  const hasCustomCoverValue = activeCoverSettings.customCoverHtml !== null;
+  const selectedCoverTemplateIdEffective = activeCoverSettings.coverBaseTemplateId;
+  const selectedCoverSizePresetIdEffective = activeCoverSettings.coverSizePresetId;
+  const effectiveCoverTextScalePercent = activeCoverSettings.coverTextScalePercent;
+  const effectiveCoverTextPosition = activeCoverSettings.coverTextPosition;
+  const effectiveCoverTextColorMode = activeCoverSettings.coverTextColorMode;
+  const isCoverTextHidden = activeCoverSettings.hideCoverText;
+  const isEffectiveCoverEnabled = activeCoverSettings.coverEnabled;
+  const isCoverExportDisabled = Boolean(isCover && !isEffectiveCoverEnabled);
+  const isCoverToolDisabled = isInteractionDisabled;
+  const isCoverTextEnabled = !isCoverTextHidden;
+  const isCoverTextControlsDisabled =
+    isInteractionDisabled || !isCoverTextEnabled;
   const selectedCoverSizePreset =
-    selectedCoverSizePresetId && coverSizePresetOptions
+    selectedCoverSizePresetIdEffective && coverSizePresetOptions
       ? coverSizePresetOptions.find(
-          (option) => option.id === selectedCoverSizePresetId,
+          (option) => option.id === selectedCoverSizePresetIdEffective,
         )
       : undefined;
   const availableCoverSizePresetOptions = coverSizePresetOptions ?? [];
@@ -865,29 +942,18 @@ export function PageDraftCard({
   const dialogPreviewRatio =
     (selectedCoverSizePreset?.width ?? 1600) /
     (selectedCoverSizePreset?.height ?? 2560);
-  const isEffectiveCoverEnabled = isCoverEnabled ?? true;
-  const isCoverExportDisabled = Boolean(isCover && !isEffectiveCoverEnabled);
-  const isCoverToolDisabled = isInteractionDisabled;
-  const effectiveCoverTextScalePercent = coverTextScalePercent ?? 100;
-  const effectiveCoverTextPosition = coverTextPosition ?? "style_1";
-  const effectiveCoverTextColorMode = coverTextColorMode ?? "adaptive";
-  const isCoverTextHidden = hideCoverText ?? false;
-  const isCoverTextEnabled = !isCoverTextHidden;
-  const isCoverTextControlsDisabled =
-    isInteractionDisabled || !isCoverTextEnabled;
-  const hasCustomCoverValue = hasCustomCover ?? false;
   const availableCoverTemplateOptions = coverTemplateOptions ?? [];
   const selectableCoverTemplateOptions = availableCoverTemplateOptions.filter(
     (option) => option.id !== "custom",
   );
   const selectedTemplateMenuId =
-    selectedCoverTemplateId &&
+    selectedCoverTemplateIdEffective &&
     selectableCoverTemplateOptions.some(
-      (option) => option.id === selectedCoverTemplateId,
+      (option) => option.id === selectedCoverTemplateIdEffective,
     )
-      ? selectedCoverTemplateId
+      ? selectedCoverTemplateIdEffective
       : (selectableCoverTemplateOptions[0]?.id ?? "classic");
-  const isCustomTemplateSelected = hasCustomCoverValue && coverMode === "custom";
+  const isCustomTemplateSelected = hasCustomCoverValue && activeCoverMode === "custom";
   const isTemplateSelectionDisabled =
     isInteractionDisabled || selectableCoverTemplateOptions.length === 0;
   const templatePreviewById = useMemo(() => {
@@ -921,7 +987,7 @@ export function PageDraftCard({
 
   const selectedCoverTemplatePreviewSrc =
     (isCustomTemplateSelected
-      ? extractFirstImageSrcFromHtml(page.previewHtml)
+      ? extractFirstImageSrcFromHtml(activeCoverSettings.customCoverHtml ?? page.previewHtml)
       : undefined) ??
     templatePreviewById[selectedTemplateMenuId] ??
     templatePreviewById.classic ??
@@ -934,33 +1000,201 @@ export function PageDraftCard({
   const selectedCoverTextPreviewLines = resolveCoverTextPreviewLines(
     effectiveCoverTextPosition,
   );
+  const coverPreviewHtmlForDialog = createCoverHtml(
+    previewBookTitle ?? "",
+    previewBookAuthor ?? "",
+    {
+      templateId: activeCoverSettings.coverBaseTemplateId,
+      sizePresetId: activeCoverSettings.coverSizePresetId,
+      textScalePercent: activeCoverSettings.coverTextScalePercent,
+      textPosition: activeCoverSettings.coverTextPosition,
+      textColorMode: activeCoverSettings.coverTextColorMode,
+      customCoverHtml: activeCoverSettings.customCoverHtml,
+      hideCoverText: activeCoverSettings.hideCoverText,
+    },
+    "svg",
+  );
   const previewFilter =
     isInteractionDisabled || isCoverExportDisabled
       ? "blur(2.5px) grayscale(0.35) saturate(0.75) brightness(0.82)"
       : "none";
+  const canUndoCoverSettings = (coverSettingsHistory?.past.length ?? 0) > 0;
+  const canRedoCoverSettings = (coverSettingsHistory?.future.length ?? 0) > 0;
+
+  async function handlePasteCoverFromClipboard() {
+    if (!isCover || isCoverToolDisabled) return;
+    try {
+      const imageBlob = await readClipboardImageBlob();
+      const coverHtml = await clipboardImageBlobToHtml(imageBlob);
+      commitCoverSettingsChange((previous) =>
+        previous.customCoverHtml === coverHtml
+          ? previous
+          : {
+              ...previous,
+              customCoverHtml: coverHtml,
+            },
+      );
+    } catch {
+      return;
+    }
+  }
 
   function handleCoverUploadChange(event: ChangeEvent<HTMLInputElement>) {
-    if (!isCover || !onReplaceCoverFromFiles) return;
+    if (!isCover || isCoverToolDisabled) return;
     const files = event.target.files;
     if (!files || files.length === 0) return;
-    void onReplaceCoverFromFiles(files);
+    const uploadedFiles = Array.from(files);
+    const imageFile = uploadedFiles.find((file) =>
+      file.type.toLowerCase().startsWith("image/"),
+    );
+    if (!imageFile) {
+      event.target.value = "";
+      return;
+    }
+    void clipboardImageBlobToHtml(imageFile).then((coverHtml) => {
+      commitCoverSettingsChange((previous) =>
+        previous.customCoverHtml === coverHtml
+          ? previous
+          : {
+              ...previous,
+              customCoverHtml: coverHtml,
+            },
+      );
+    });
     event.target.value = "";
   }
 
   function handleCoverDisabledOverlayKeyDown(
-    event: KeyboardEvent<HTMLDivElement>,
+    event: ReactKeyboardEvent<HTMLDivElement>,
   ) {
     if (!isCoverExportDisabled || isInteractionDisabled) return;
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
-    onToggleCoverEnabled?.();
+    if (isCoverSettingsOpen) {
+      commitCoverSettingsChange((previous) => ({
+        ...previous,
+        coverEnabled: true,
+      }));
+      return;
+    }
+    onApplyCoverSettings?.({
+      ...baseCoverSettings,
+      coverEnabled: true,
+    });
   }
 
   function handleCoverTextScaleChange(value: string) {
     const parsed = Number(value);
     if (Number.isNaN(parsed)) return;
-    onCoverTextScalePercentChange?.(parsed);
+    commitCoverSettingsChange((previous) => ({
+      ...previous,
+      coverTextScalePercent: parsed,
+    }));
   }
+
+  function openCoverSettingsDialog() {
+    const initialCoverSettings = buildCoverSettingsFromCurrentProps();
+    setCoverSettingsHistory({
+      past: [],
+      present: initialCoverSettings,
+      future: [],
+    });
+    setIsCoverSettingsOpen(true);
+  }
+
+  function closeCoverSettingsDialog() {
+    if (coverSettingsHistory) {
+      const latestFromMain = buildCoverSettingsFromCurrentProps();
+      if (!isSameCoverSettingsState(coverSettingsHistory.present, latestFromMain)) {
+        onApplyCoverSettings?.(coverSettingsHistory.present);
+      }
+    }
+    setCoverSettingsHistory(null);
+    setIsCoverSettingsOpen(false);
+  }
+
+  function handleCoverSettingsOpenChange(details: { open: boolean }) {
+    if (details.open) {
+      openCoverSettingsDialog();
+      return;
+    }
+    closeCoverSettingsDialog();
+  }
+
+  function undoCoverSettings() {
+    setCoverSettingsHistory((previousHistory) => {
+      if (!previousHistory || previousHistory.past.length === 0) {
+        return previousHistory;
+      }
+      const previousSettings =
+        previousHistory.past[previousHistory.past.length - 1];
+      return {
+        past: previousHistory.past.slice(0, -1),
+        present: previousSettings,
+        future: [
+          ...previousHistory.future.slice(-(COVER_SETTINGS_HISTORY_LIMIT - 1)),
+          previousHistory.present,
+        ],
+      };
+    });
+  }
+
+  function redoCoverSettings() {
+    setCoverSettingsHistory((previousHistory) => {
+      if (!previousHistory || previousHistory.future.length === 0) {
+        return previousHistory;
+      }
+      const nextSettings =
+        previousHistory.future[previousHistory.future.length - 1];
+      return {
+        past: [
+          ...previousHistory.past.slice(-(COVER_SETTINGS_HISTORY_LIMIT - 1)),
+          previousHistory.present,
+        ],
+        present: nextSettings,
+        future: previousHistory.future.slice(0, -1),
+      };
+    });
+  }
+
+  useEffect(() => {
+    if (!isCoverSettingsOpen) return;
+
+    function handleCoverSettingsUndoRedoHotkeys(event: KeyboardEvent) {
+      if (isInteractionDisabled) return;
+      if (isEditableTarget(event.target)) return;
+      if (event.altKey) return;
+      if (!event.metaKey && !event.ctrlKey) return;
+
+      const key = event.key.toLowerCase();
+      const isUndoKey = key === "z" && !event.shiftKey;
+      const isRedoKey =
+        (key === "z" && event.shiftKey) || (!event.metaKey && key === "y");
+
+      if (isUndoKey) {
+        if (!canUndoCoverSettings) return;
+        event.preventDefault();
+        undoCoverSettings();
+        return;
+      }
+
+      if (isRedoKey) {
+        if (!canRedoCoverSettings) return;
+        event.preventDefault();
+        redoCoverSettings();
+      }
+    }
+
+    window.addEventListener("keydown", handleCoverSettingsUndoRedoHotkeys);
+    return () => {
+      window.removeEventListener("keydown", handleCoverSettingsUndoRedoHotkeys);
+    };
+  }, [
+    isCoverSettingsOpen,
+    isInteractionDisabled,
+    canUndoCoverSettings,
+    canRedoCoverSettings,
+  ]);
 
   return (
     <Box
@@ -1013,7 +1247,12 @@ export function PageDraftCard({
                   aria-label={
                     isEffectiveCoverEnabled ? "Disable cover" : "Enable cover"
                   }
-                  onClick={() => onToggleCoverEnabled?.()}
+                  onClick={() =>
+                    onApplyCoverSettings?.({
+                      ...baseCoverSettings,
+                      coverEnabled: !isEffectiveCoverEnabled,
+                    })
+                  }
                   disabled={isInteractionDisabled}
                   color={
                     isEffectiveCoverEnabled
@@ -1024,13 +1263,16 @@ export function PageDraftCard({
                   {isEffectiveCoverEnabled ? <LuEye /> : <LuEyeOff />}
                 </IconButton>
               </Tooltip>
-              <Dialog.Root>
+              <Dialog.Root
+                open={isCoverSettingsOpen}
+                onOpenChange={handleCoverSettingsOpenChange}
+              >
                 <Tooltip content={"Cover settings"}>
                   <Dialog.Trigger asChild>
                     <IconButton
                       size={"xs"}
                       variant={"ghost"}
-                      aria-label={`Open cover settings (${coverMode === "custom" ? "custom image" : "auto-generated"})`}
+                      aria-label={`Open cover settings (${activeCoverMode === "custom" ? "custom image" : "auto-generated"})`}
                       disabled={isInteractionDisabled}
                     >
                       <LuSettings2 />
@@ -1050,48 +1292,98 @@ export function PageDraftCard({
                     display={"flex"}
                     alignItems={"center"}
                     justifyContent={"flex-start"}
-                    gap={2}
                   >
                     <Dialog.Title fontFamily={"ui"}>
                       Cover settings
                     </Dialog.Title>
-                    <Button
-                      {...dialogOutlineButtonProps}
-                      size={"sm"}
-                      onClick={() => onToggleCoverEnabled?.()}
-                      disabled={isInteractionDisabled}
-                    >
-                      <HStack gap={1.5}>
-                        <Icon boxSize={4}>
-                          {isEffectiveCoverEnabled ? <LuEyeOff /> : <LuEye />}
-                        </Icon>
-                        <Text>
-                          {isEffectiveCoverEnabled
-                            ? "Disable cover"
-                            : "Enable cover"}
-                        </Text>
-                      </HStack>
-                    </Button>
-                    <Button
-                      size={"sm"}
-                      variant={"ghost"}
-                      rounded={"lg"}
-                      bg={"transparent"}
-                      color={"app.epub.fg.danger"}
-                      _hover={{ bg: "app.status.danger.bg" }}
-                      onClick={() => onResetCoverToAuto?.()}
-                      disabled={isInteractionDisabled}
-                    >
-                      <HStack gap={1.5}>
-                        <Icon boxSize={4}>
-                          <LuRefreshCw />
-                        </Icon>
-                        <Text>Reset</Text>
-                      </HStack>
-                    </Button>
                   </Dialog.Header>
 
                   <Dialog.Body>
+                    <HStack gap={2} mb={4} wrap={"wrap"}>
+                      <HStack gap={0} align={"stretch"}>
+                        <Button
+                          {...dialogOutlineButtonProps}
+                          size={"sm"}
+                          roundedRight={0}
+                          borderRightWidth={"0"}
+                          onClick={undoCoverSettings}
+                          disabled={isInteractionDisabled || !canUndoCoverSettings}
+                        >
+                          <HStack gap={1.5}>
+                            <Icon boxSize={4}>
+                              <LuUndo2 />
+                            </Icon>
+                            <Text>Undo</Text>
+                          </HStack>
+                        </Button>
+                        <Tooltip content={"Redo"}>
+                          <IconButton
+                            {...dialogOutlineButtonProps}
+                            aria-label={"Redo cover settings change"}
+                            size={"sm"}
+                            roundedLeft={0}
+                            borderLeftWidth={"1px"}
+                            borderLeftColor={"app.epub.border.default"}
+                            onClick={redoCoverSettings}
+                            disabled={isInteractionDisabled || !canRedoCoverSettings}
+                          >
+                            <LuRedo2 />
+                          </IconButton>
+                        </Tooltip>
+                      </HStack>
+                      <Button
+                        {...dialogOutlineButtonProps}
+                        size={"sm"}
+                        onClick={() =>
+                          commitCoverSettingsChange((previous) => ({
+                            ...previous,
+                            coverEnabled: !previous.coverEnabled,
+                          }))
+                        }
+                        disabled={isInteractionDisabled}
+                      >
+                        <HStack gap={1.5}>
+                          <Icon boxSize={4}>
+                            {isEffectiveCoverEnabled ? <LuEyeOff /> : <LuEye />}
+                          </Icon>
+                          <Text>
+                            {isEffectiveCoverEnabled
+                              ? "Disable cover"
+                              : "Enable cover"}
+                          </Text>
+                        </HStack>
+                      </Button>
+                      <Button
+                        size={"sm"}
+                        variant={"ghost"}
+                        rounded={"lg"}
+                        bg={"transparent"}
+                        color={"app.epub.fg.danger"}
+                        _hover={{ bg: "app.status.danger.bg" }}
+                        onClick={() =>
+                          commitCoverSettingsChange((previous) => ({
+                            ...previous,
+                            coverEnabled: true,
+                            customCoverHtml: null,
+                            coverBaseTemplateId: COVER_AUTO_DEFAULT_TEMPLATE_ID,
+                            coverSizePresetId: COVER_AUTO_DEFAULT_SIZE_PRESET_ID,
+                            coverTextPosition: "style_1",
+                            coverTextScalePercent: 100,
+                            coverTextColorMode: "adaptive",
+                            hideCoverText: false,
+                          }))
+                        }
+                        disabled={isInteractionDisabled}
+                      >
+                        <HStack gap={1.5}>
+                          <Icon boxSize={4}>
+                            <LuRefreshCw />
+                          </Icon>
+                          <Text>Reset</Text>
+                        </HStack>
+                      </Button>
+                    </HStack>
+
                     <Box
                       display={"grid"}
                       gap={5}
@@ -1216,7 +1508,7 @@ export function PageDraftCard({
                                     h={"64px"}
                                     minH={"64px"}
                                     onClick={() =>
-                                      void onReplaceCoverFromClipboard?.()
+                                      void handlePasteCoverFromClipboard()
                                     }
                                     disabled={isCoverToolDisabled}
                                   >
@@ -1294,8 +1586,16 @@ export function PageDraftCard({
                                               rounded={"md"}
                                               {...dropdownGridItemInteractionProps}
                                               onClick={() =>
-                                                onCoverTemplateChange?.(
-                                                  option.id,
+                                                commitCoverSettingsChange(
+                                                  (previous) => ({
+                                                    ...previous,
+                                                    customCoverHtml: null,
+                                                    coverBaseTemplateId: isBaseTemplateId(
+                                                      option.id,
+                                                    )
+                                                      ? option.id
+                                                      : previous.coverBaseTemplateId,
+                                                  }),
                                                 )
                                               }
                                             >
@@ -1548,8 +1848,11 @@ export function PageDraftCard({
                                             rounded={"md"}
                                             {...dropdownGridItemInteractionProps}
                                             onClick={() =>
-                                              onCoverSizePresetChange?.(
-                                                option.id,
+                                              commitCoverSettingsChange(
+                                                (previous) => ({
+                                                  ...previous,
+                                                  coverSizePresetId: option.id,
+                                                }),
                                               )
                                             }
                                           >
@@ -1677,7 +1980,10 @@ export function PageDraftCard({
                               {...switchProps}
                               checked={isCoverTextEnabled}
                               onCheckedChange={(details) =>
-                                onHideCoverTextChange?.(!details.checked)
+                                commitCoverSettingsChange((previous) => ({
+                                  ...previous,
+                                  hideCoverText: !details.checked,
+                                }))
                               }
                               disabled={isInteractionDisabled}
                               inputProps={{
@@ -1755,10 +2061,11 @@ export function PageDraftCard({
                                     value={effectiveCoverTextColorMode}
                                     aria-label={"Select cover text color mode"}
                                     onChange={(event) =>
-                                      onCoverTextColorModeChange?.(
-                                        event.currentTarget
+                                      commitCoverSettingsChange((previous) => ({
+                                        ...previous,
+                                        coverTextColorMode: event.currentTarget
                                           .value as CoverTextColorMode,
-                                      )
+                                      }))
                                     }
                                   >
                                     <option value={"light"}>Light</option>
@@ -1882,8 +2189,11 @@ export function PageDraftCard({
                                             rounded={"md"}
                                             {...dropdownGridItemInteractionProps}
                                             onClick={() =>
-                                              onCoverTextPositionChange?.(
-                                                styleOption,
+                                              commitCoverSettingsChange(
+                                                (previous) => ({
+                                                  ...previous,
+                                                  coverTextPosition: styleOption,
+                                                }),
                                               )
                                             }
                                           >
@@ -1962,7 +2272,7 @@ export function PageDraftCard({
                           >
                             <BufferedCoverPreview
                               title={`cover-dialog-preview-${page.id}`}
-                              srcDoc={page.previewHtml}
+                              srcDoc={coverPreviewHtmlForDialog}
                               filter={previewFilter}
                             />
                             {!isEffectiveCoverEnabled ? (
@@ -2001,7 +2311,10 @@ export function PageDraftCard({
                                   ) {
                                     return;
                                   }
-                                  onToggleCoverEnabled?.();
+                                  commitCoverSettingsChange((previous) => ({
+                                    ...previous,
+                                    coverEnabled: true,
+                                  }));
                                 }}
                                 onKeyDown={handleCoverDisabledOverlayKeyDown}
                               >
@@ -2232,7 +2545,7 @@ export function PageDraftCard({
           {isCover ? (
             <BufferedCoverPreview
               title={`preview-${page.id}`}
-              srcDoc={page.previewHtml}
+              srcDoc={coverPreviewHtmlForDialog}
               filter={previewFilter}
             />
           ) : (
@@ -2276,7 +2589,17 @@ export function PageDraftCard({
               }
               onClick={() => {
                 if (!isCoverExportDisabled || isInteractionDisabled) return;
-                onToggleCoverEnabled?.();
+                if (isCoverSettingsOpen) {
+                  commitCoverSettingsChange((previous) => ({
+                    ...previous,
+                    coverEnabled: true,
+                  }));
+                  return;
+                }
+                onApplyCoverSettings?.({
+                  ...baseCoverSettings,
+                  coverEnabled: true,
+                });
               }}
               onKeyDown={handleCoverDisabledOverlayKeyDown}
             >

@@ -20,7 +20,7 @@ import {
 import { LuFilePlus, LuUpload } from "react-icons/lu";
 import type {
   ChapterGenerationStatus,
-  CoverMode,
+  CoverSettingsState,
   CoverSizePresetId,
   CoverSizePresetOption,
   CoverTextColorMode,
@@ -47,7 +47,6 @@ export function PageDraftGrid({
   previewBookTitle,
   previewBookAuthor,
   coverPreviewHtml,
-  coverMode,
   hasCustomCover,
   coverTemplateId,
   coverTemplateOptions,
@@ -67,16 +66,7 @@ export function PageDraftGrid({
   onRemove,
   onRename,
   onReorder,
-  onReplaceCoverFromFiles,
-  onReplaceCoverFromClipboard,
-  onResetCoverToAuto,
-  onToggleCoverEnabled,
-  onCoverTemplateChange,
-  onCoverSizePresetChange,
-  onCoverTextScalePercentChange,
-  onCoverTextPositionChange,
-  onCoverTextColorModeChange,
-  onHideCoverTextChange,
+  onApplyCoverSettings,
   onAddFromClipboard,
   onAddFromFiles,
   pastedInput,
@@ -88,7 +78,6 @@ export function PageDraftGrid({
   previewBookTitle: string;
   previewBookAuthor: string;
   coverPreviewHtml: string;
-  coverMode: CoverMode;
   hasCustomCover: boolean;
   coverTemplateId: CoverTemplateId;
   coverTemplateOptions: CoverTemplateOption[];
@@ -108,16 +97,7 @@ export function PageDraftGrid({
   onRemove: (id: string) => void;
   onRename: (id: string, value: string) => void;
   onReorder: (draggedId: string, targetIndex: number) => void;
-  onReplaceCoverFromFiles: (files: FileList | File[]) => Promise<void>;
-  onReplaceCoverFromClipboard: () => Promise<void>;
-  onResetCoverToAuto: () => void;
-  onToggleCoverEnabled: () => void;
-  onCoverTemplateChange: (templateId: CoverTemplateId) => void;
-  onCoverSizePresetChange: (presetId: CoverSizePresetId) => void;
-  onCoverTextScalePercentChange: (value: number) => void;
-  onCoverTextPositionChange: (value: CoverTextPosition) => void;
-  onCoverTextColorModeChange: (value: CoverTextColorMode) => void;
-  onHideCoverTextChange: (value: boolean) => void;
+  onApplyCoverSettings: (settings: CoverSettingsState) => void;
   onAddFromClipboard: () => Promise<void>;
   onAddFromFiles: (files: FileList | File[]) => Promise<void>;
   pastedInput: string;
@@ -373,7 +353,6 @@ export function PageDraftGrid({
             previewBookAuthor={previewBookAuthor}
             chapterNumber={"C"}
             isCover={true}
-            coverMode={coverMode}
             hasCustomCover={hasCustomCover}
             isCoverEnabled={isCoverEnabled}
             selectedCoverTemplateId={coverTemplateId}
@@ -384,16 +363,7 @@ export function PageDraftGrid({
             coverTextPosition={coverTextPosition}
             coverTextColorMode={coverTextColorMode}
             hideCoverText={hideCoverText}
-            onCoverTemplateChange={onCoverTemplateChange}
-            onCoverSizePresetChange={onCoverSizePresetChange}
-            onCoverTextScalePercentChange={onCoverTextScalePercentChange}
-            onCoverTextPositionChange={onCoverTextPositionChange}
-            onCoverTextColorModeChange={onCoverTextColorModeChange}
-            onHideCoverTextChange={onHideCoverTextChange}
-            onReplaceCoverFromFiles={onReplaceCoverFromFiles}
-            onReplaceCoverFromClipboard={onReplaceCoverFromClipboard}
-            onResetCoverToAuto={onResetCoverToAuto}
-            onToggleCoverEnabled={onToggleCoverEnabled}
+            onApplyCoverSettings={onApplyCoverSettings}
             onRemove={onRemove}
             onRename={onRename}
             onDragStart={() => {}}

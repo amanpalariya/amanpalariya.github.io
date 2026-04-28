@@ -27,7 +27,14 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
 
   useEffect(() => {
     function handleUndoRedoHotkeys(event: KeyboardEvent) {
+      if (event.defaultPrevented) return;
       if (isEditableTarget(event.target)) return;
+      if (
+        event.target instanceof HTMLElement &&
+        event.target.closest("[role='dialog']")
+      ) {
+        return;
+      }
       if (event.altKey) return;
       if (!event.metaKey && !event.ctrlKey) return;
 
@@ -169,7 +176,6 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
               previewBookTitle={props.normalizedBookTitle}
               previewBookAuthor={props.normalizedBookAuthor}
               coverPreviewHtml={props.coverPreviewHtml}
-              coverMode={props.coverMode}
               hasCustomCover={props.hasCustomCover}
               coverTemplateId={props.coverTemplateId}
               coverTemplateOptions={props.coverTemplateOptions}
@@ -191,16 +197,7 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
               onRemove={props.removePage}
               onRename={props.renamePage}
               onReorder={props.reorderPages}
-              onReplaceCoverFromFiles={props.replaceCoverFromFiles}
-              onReplaceCoverFromClipboard={props.replaceCoverFromClipboard}
-              onResetCoverToAuto={props.resetCoverToAuto}
-              onToggleCoverEnabled={props.toggleCoverEnabled}
-              onCoverTemplateChange={props.setCoverTemplateId}
-              onCoverSizePresetChange={props.setCoverSizePresetId}
-              onCoverTextScalePercentChange={props.setCoverTextScalePercent}
-              onCoverTextPositionChange={props.setCoverTextPosition}
-              onCoverTextColorModeChange={props.setCoverTextColorMode}
-              onHideCoverTextChange={props.setHideCoverText}
+              onApplyCoverSettings={props.applyCoverSettings}
               onAddFromClipboard={props.addPageFromClipboard}
               onAddFromFiles={props.addPagesFromFiles}
               pastedInput={props.pastedInput}

@@ -111,6 +111,17 @@ export interface CoverDraft {
   previewHtml: string;
 }
 
+export interface CoverSettingsState {
+  coverEnabled: boolean;
+  customCoverHtml: string | null;
+  coverBaseTemplateId: BaseCoverTemplateId;
+  coverSizePresetId: CoverSizePresetId;
+  coverTextScalePercent: number;
+  coverTextPosition: CoverTextPosition;
+  coverTextColorMode: CoverTextColorMode;
+  hideCoverText: boolean;
+}
+
 export interface BuildEpubInput {
   bookTitle: string;
   bookAuthor?: string;
