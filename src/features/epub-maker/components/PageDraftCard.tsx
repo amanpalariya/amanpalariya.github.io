@@ -623,6 +623,7 @@ export function PageDraftCard({
     fontSize: "sm",
     rounded: "xl",
   } as const;
+  // Keep cover settings cards borderless, but preserve borders on controls.
   const dialogFieldProps = {
     fontFamily: "ui",
     fontSize: "sm",
@@ -981,8 +982,7 @@ export function PageDraftCard({
                           p={4}
                           rounded={"xl"}
                           bg={coverDialogSectionCardBg}
-                          borderWidth={"1px"}
-                          borderColor={"app.epub.border.default"}
+                          boxShadow={"sm"}
                         >
                           <Text
                             fontFamily={"ui"}
@@ -1046,9 +1046,7 @@ export function PageDraftCard({
                                             h={"56px"}
                                             rounded={"sm"}
                                             borderWidth={"1px"}
-                                            borderColor={
-                                              "app.epub.border.default"
-                                            }
+                                            borderColor={"app.epub.border.default"}
                                             bg={"app.epub.bg.preview"}
                                             style={{
                                               backgroundImage:
@@ -1135,6 +1133,7 @@ export function PageDraftCard({
                                 <Menu.Positioner>
                                   <Menu.Content
                                     bg={"app.epub.bg.card"}
+                                    borderWidth={"1px"}
                                     borderColor={"app.epub.border.default"}
                                     minW={"220px"}
                                     p={2}
@@ -1393,6 +1392,7 @@ export function PageDraftCard({
                                 <Menu.Positioner>
                                   <Menu.Content
                                     bg={"app.epub.bg.card"}
+                                    borderWidth={"1px"}
                                     borderColor={"app.epub.border.default"}
                                     minW={"220px"}
                                     p={2}
@@ -1551,8 +1551,7 @@ export function PageDraftCard({
                           p={4}
                           rounded={"xl"}
                           bg={coverDialogSectionCardBg}
-                          borderWidth={"1px"}
-                          borderColor={"app.epub.border.default"}
+                          boxShadow={"sm"}
                         >
                           <HStack gap={2} mb={3}>
                             <Switch
@@ -1736,6 +1735,7 @@ export function PageDraftCard({
                                 <Menu.Positioner>
                                   <Menu.Content
                                     bg={"app.epub.bg.card"}
+                                    borderWidth={"1px"}
                                     borderColor={"app.epub.border.default"}
                                     minW={"220px"}
                                     p={2}
@@ -1843,8 +1843,6 @@ export function PageDraftCard({
                         <AspectRatio ratio={dialogPreviewRatio}>
                           <Box
                             position={"relative"}
-                            borderWidth={"1px"}
-                            borderColor={"app.epub.border.default"}
                             rounded={"lg"}
                             overflow={"hidden"}
                             bg={"app.epub.bg.preview"}

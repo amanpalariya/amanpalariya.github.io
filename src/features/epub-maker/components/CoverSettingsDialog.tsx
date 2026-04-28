@@ -79,8 +79,7 @@ export function CoverSettingsDialog({
         bg={"app.epub.bg.surface"}
         color={"app.epub.fg.default"}
         rounded={"2xl"}
-        borderWidth={"1px"}
-        borderColor={"app.epub.border.default"}
+        boxShadow={"lg"}
         maxW={"1120px"}
       >
         <Dialog.Header display={"flex"} alignItems={"center"} justifyContent={"flex-start"}>
