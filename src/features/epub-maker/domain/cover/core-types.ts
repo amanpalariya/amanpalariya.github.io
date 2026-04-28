@@ -1,5 +1,5 @@
 import type {
-  BaseCoverTemplateId,
+  BaseCoverBackgroundId,
   CoverSizePresetId,
   CoverTextColorMode,
   CoverTextPosition,
@@ -10,7 +10,7 @@ export type AutoCoverRendererId = "raster-png" | "svg";
 export interface AutoCoverInput {
   title: string;
   author: string;
-  templateId: BaseCoverTemplateId;
+  backgroundId: BaseCoverBackgroundId;
   size: {
     width: number;
     height: number;
@@ -22,7 +22,7 @@ export interface AutoCoverInput {
 }
 
 export interface AutoCoverOptions {
-  templateId: BaseCoverTemplateId;
+  backgroundId: BaseCoverBackgroundId;
   sizePresetId: CoverSizePresetId;
   textScalePercent: number;
   textPosition: CoverTextPosition;
@@ -53,18 +53,9 @@ export type CoverAuthorLayout = {
   maxCharsPerLine: number;
 };
 
-export type CoverTemplateSpec = {
-  id: BaseCoverTemplateId;
+export type CoverBackgroundSpec = {
+  id: BaseCoverBackgroundId;
   label: string;
-  description: string;
-  gradientStart: string;
-  gradientEnd: string;
-  titleColor: string;
-  authorColor: string;
-  frameStroke: string;
-  accentColor: string;
-  titleLayout: CoverTextLayout;
-  authorLayout: CoverAuthorLayout;
 };
 
 export type CoverCanvasMetrics = {
@@ -73,23 +64,22 @@ export type CoverCanvasMetrics = {
   unitScale: number;
 };
 
-export type CoverTemplateSvgContext = {
-  template: CoverTemplateSpec;
+export type CoverBackgroundSvgContext = {
   metrics: CoverCanvasMetrics;
   width: number;
   height: number;
 };
 
-export type CoverTemplateCanvasContext = {
+export type CoverBackgroundCanvasContext = {
   context: CanvasRenderingContext2D;
-  template: CoverTemplateSpec;
   metrics: CoverCanvasMetrics;
   width: number;
   height: number;
 };
 
-export interface CoverTemplateRenderer {
-  id: BaseCoverTemplateId;
-  renderSvgDecoration(context: CoverTemplateSvgContext): string;
-  drawCanvasDecoration(context: CoverTemplateCanvasContext): void;
+export interface CoverBackgroundRenderer {
+  id: BaseCoverBackgroundId;
+  renderSvgBackground(context: CoverBackgroundSvgContext): string;
+  drawCanvasBackground(context: CoverBackgroundCanvasContext): void;
+  resolveAdaptiveTextSeed(): { startColor: string; endColor: string };
 }

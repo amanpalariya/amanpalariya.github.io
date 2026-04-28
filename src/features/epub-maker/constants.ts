@@ -4,8 +4,8 @@ export const EPUB_MAKER_TOOL_ID = "epub-maker";
 export const EPUB_MAKER_STORAGE_FIELDS = {
   title: "title",
   author: "author",
-  coverTemplateId: "cover-template-id",
-  coverBaseTemplateId: "cover-base-template-id",
+  coverBackgroundId: "cover-background-id",
+  coverBaseBackgroundId: "cover-base-background-id",
   coverSizePresetId: "cover-size-preset-id",
   coverTextScalePercent: "cover-text-scale-percent",
   coverTextPosition: "cover-text-position",

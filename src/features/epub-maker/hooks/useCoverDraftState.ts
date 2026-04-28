@@ -9,7 +9,7 @@ import type {
   CoverSizePresetId,
   CoverTextColorMode,
   CoverTextPosition,
-  BaseCoverTemplateId,
+  BaseCoverBackgroundId,
 } from "../types";
 
 function buildCoverDraft(
@@ -46,7 +46,7 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
 export function useCoverDraftState({
   normalizedBookTitle,
   normalizedBookAuthor,
-  templateId,
+  backgroundId,
   sizePresetId,
   textScalePercent,
   textPosition,
@@ -58,7 +58,7 @@ export function useCoverDraftState({
 }: {
   normalizedBookTitle: string;
   normalizedBookAuthor: string;
-  templateId: BaseCoverTemplateId;
+  backgroundId: BaseCoverBackgroundId;
   sizePresetId: CoverSizePresetId;
   textScalePercent: number;
   textPosition: CoverTextPosition;
@@ -77,7 +77,7 @@ export function useCoverDraftState({
       debouncedCoverTitle,
       debouncedCoverAuthor,
       {
-        templateId,
+        backgroundId,
         sizePresetId,
         textScalePercent,
         textPosition,
@@ -110,7 +110,7 @@ export function useCoverDraftState({
           debouncedCoverTitle,
           debouncedCoverAuthor,
           {
-            templateId,
+            backgroundId,
             sizePresetId,
             textScalePercent,
             textPosition,
@@ -145,7 +145,7 @@ export function useCoverDraftState({
   }, [
     debouncedCoverTitle,
     debouncedCoverAuthor,
-    templateId,
+    backgroundId,
     sizePresetId,
     textScalePercent,
     textPosition,

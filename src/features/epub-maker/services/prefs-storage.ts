@@ -4,10 +4,10 @@ import {
   EPUB_MAKER_TOOL_ID,
 } from "../constants";
 import type {
-  BaseCoverTemplateId,
+  BaseCoverBackgroundId,
   CoverTextColorMode,
   CoverSizePresetId,
-  CoverTemplateId,
+  CoverBackgroundId,
   EpubMakerPrefs,
   FileNameMode,
 } from "../types";
@@ -16,8 +16,8 @@ import { buildToolStorageKey } from "@utils/storage";
 const defaultPrefs: EpubMakerPrefs = {
   title: "",
   author: "",
-  coverTemplateId: "classic",
-  coverBaseTemplateId: "classic",
+  coverBackgroundId: "monochrome",
+  coverBaseBackgroundId: "monochrome",
   coverSizePresetId: "ratio_1_1_6",
   coverTextScalePercent: 100,
   coverTextPosition: "style_1",
@@ -35,19 +35,19 @@ function isFileNameMode(value: unknown): value is FileNameMode {
   return value === "auto" || value === "manual";
 }
 
-function isBaseCoverTemplateId(value: unknown): value is BaseCoverTemplateId {
+function isBaseCoverBackgroundId(value: unknown): value is BaseCoverBackgroundId {
   return (
-    value === "classic" ||
+    value === "monochrome" ||
     value === "aurora" ||
     value === "ember" ||
-    value === "midnight" ||
-    value === "sage" ||
-    value === "sunset"
+    value === "noir" ||
+    value === "geometric" ||
+    value === "floral"
   );
 }
 
-function isCoverTemplateId(value: unknown): value is CoverTemplateId {
-  return value === "custom" || isBaseCoverTemplateId(value);
+function isCoverBackgroundId(value: unknown): value is CoverBackgroundId {
+  return value === "custom" || isBaseCoverBackgroundId(value);
 }
 
 function isCoverSizePresetId(value: unknown): value is CoverSizePresetId {
@@ -94,13 +94,13 @@ export function readEpubMakerPrefs(): EpubMakerPrefs {
       EPUB_MAKER_STORAGE_FIELDS.fileNameMode,
       defaultPrefs.fileNameMode,
     );
-    const coverTemplateIdValue = readToolString(
-      EPUB_MAKER_STORAGE_FIELDS.coverTemplateId,
-      defaultPrefs.coverTemplateId,
+    const coverBackgroundIdValue = readToolString(
+      EPUB_MAKER_STORAGE_FIELDS.coverBackgroundId,
+      defaultPrefs.coverBackgroundId,
     );
-    const coverBaseTemplateIdValue = readToolString(
-      EPUB_MAKER_STORAGE_FIELDS.coverBaseTemplateId,
-      defaultPrefs.coverBaseTemplateId,
+    const coverBaseBackgroundIdValue = readToolString(
+      EPUB_MAKER_STORAGE_FIELDS.coverBaseBackgroundId,
+      defaultPrefs.coverBaseBackgroundId,
     );
     const coverSizePresetIdValue = readToolString(
       EPUB_MAKER_STORAGE_FIELDS.coverSizePresetId,
@@ -123,14 +123,14 @@ export function readEpubMakerPrefs(): EpubMakerPrefs {
     return {
       title: readToolString(EPUB_MAKER_STORAGE_FIELDS.title, defaultPrefs.title),
       author: readToolString(EPUB_MAKER_STORAGE_FIELDS.author, defaultPrefs.author),
-      coverTemplateId: isCoverTemplateId(coverTemplateIdValue)
-        ? coverTemplateIdValue
-        : defaultPrefs.coverTemplateId,
-      coverBaseTemplateId: isBaseCoverTemplateId(coverBaseTemplateIdValue)
-        ? coverBaseTemplateIdValue
-        : isBaseCoverTemplateId(coverTemplateIdValue)
-          ? coverTemplateIdValue
-          : defaultPrefs.coverBaseTemplateId,
+      coverBackgroundId: isCoverBackgroundId(coverBackgroundIdValue)
+        ? coverBackgroundIdValue
+        : defaultPrefs.coverBackgroundId,
+      coverBaseBackgroundId: isBaseCoverBackgroundId(coverBaseBackgroundIdValue)
+        ? coverBaseBackgroundIdValue
+        : isBaseCoverBackgroundId(coverBackgroundIdValue)
+          ? coverBackgroundIdValue
+          : defaultPrefs.coverBaseBackgroundId,
       coverSizePresetId: isCoverSizePresetId(coverSizePresetIdValue)
         ? coverSizePresetIdValue
         : defaultPrefs.coverSizePresetId,
@@ -180,15 +180,15 @@ export function writeEpubMakerPrefs(prefs: EpubMakerPrefs): void {
       prefs.author,
     );
     window.localStorage.setItem(
-      buildToolStorageKey(EPUB_MAKER_TOOL_ID, EPUB_MAKER_STORAGE_FIELDS.coverTemplateId),
-      prefs.coverTemplateId,
+      buildToolStorageKey(EPUB_MAKER_TOOL_ID, EPUB_MAKER_STORAGE_FIELDS.coverBackgroundId),
+      prefs.coverBackgroundId,
     );
     window.localStorage.setItem(
       buildToolStorageKey(
         EPUB_MAKER_TOOL_ID,
-        EPUB_MAKER_STORAGE_FIELDS.coverBaseTemplateId,
+        EPUB_MAKER_STORAGE_FIELDS.coverBaseBackgroundId,
       ),
-      prefs.coverBaseTemplateId,
+      prefs.coverBaseBackgroundId,
     );
     window.localStorage.setItem(
       buildToolStorageKey(

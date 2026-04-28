@@ -41,7 +41,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import type {
-  BaseCoverTemplateId,
+  BaseCoverBackgroundId,
   ChapterGenerationStatus,
   CoverSettingsState,
   CoverMode,
@@ -49,8 +49,8 @@ import type {
   CoverSizePresetOption,
   CoverTextColorMode,
   CoverTextPosition,
-  CoverTemplateId,
-  CoverTemplateOption,
+  CoverBackgroundId,
+  CoverBackgroundOption,
   PageDraft,
 } from "../types";
 import {
@@ -100,7 +100,7 @@ const COVER_SIZE_LABEL_MODE: CoverSizeLabelMode = "side";
 const SHOW_SIZE_DESCRIPTIONS = true;
 const COVER_GRID_HOVER_BG = "app.status.info.bg" as const;
 const COVER_GRID_SELECTED_BORDER_COLOR = "app.epub.button.primary.border" as const;
-const COVER_AUTO_DEFAULT_TEMPLATE_ID: BaseCoverTemplateId = "aurora";
+const COVER_AUTO_DEFAULT_TEMPLATE_ID: BaseCoverBackgroundId = "aurora";
 const COVER_AUTO_DEFAULT_SIZE_PRESET_ID: CoverSizePresetId = "ratio_1_1_6";
 
 const dropdownGridItemInteractionProps = {
@@ -314,15 +314,15 @@ function resolveCoverTextPreviewLines(style: CoverTextPosition): {
 }
 
 function isBaseTemplateId(
-  value: CoverTemplateId,
-): value is BaseCoverTemplateId {
+  value: CoverBackgroundId,
+): value is BaseCoverBackgroundId {
   return (
-    value === "classic" ||
+    value === "monochrome" ||
     value === "aurora" ||
     value === "ember" ||
-    value === "midnight" ||
-    value === "sage" ||
-    value === "sunset"
+    value === "noir" ||
+    value === "geometric" ||
+    value === "floral"
   );
 }
 
@@ -335,8 +335,8 @@ export function PageDraftCard({
   customCoverHtml,
   hasCustomCover,
   isCoverEnabled,
-  selectedCoverTemplateId,
-  coverTemplateOptions,
+  selectedCoverBackgroundId,
+  coverBackgroundOptions,
   selectedCoverSizePresetId,
   coverSizePresetOptions,
   coverTextScalePercent,
@@ -370,8 +370,8 @@ export function PageDraftCard({
   customCoverHtml?: string | null;
   hasCustomCover?: boolean;
   isCoverEnabled?: boolean;
-  selectedCoverTemplateId?: CoverTemplateId;
-  coverTemplateOptions?: CoverTemplateOption[];
+  selectedCoverBackgroundId?: CoverBackgroundId;
+  coverBackgroundOptions?: CoverBackgroundOption[];
   selectedCoverSizePresetId?: CoverSizePresetId;
   coverSizePresetOptions?: CoverSizePresetOption[];
   coverTextScalePercent?: number;
@@ -433,13 +433,13 @@ export function PageDraftCard({
     : "none";
   const buildCoverSettingsFromCurrentProps = useCallback((): CoverSettingsState => {
     const fallbackTemplateId =
-      selectedCoverTemplateId && isBaseTemplateId(selectedCoverTemplateId)
-        ? selectedCoverTemplateId
+      selectedCoverBackgroundId && isBaseTemplateId(selectedCoverBackgroundId)
+        ? selectedCoverBackgroundId
         : "aurora";
     return {
       coverEnabled: isCoverEnabled ?? true,
       customCoverHtml: hasCustomCover ? (customCoverHtml ?? null) : null,
-      coverBaseTemplateId: fallbackTemplateId,
+      coverBaseBackgroundId: fallbackTemplateId,
       coverSizePresetId: selectedCoverSizePresetId ?? COVER_AUTO_DEFAULT_SIZE_PRESET_ID,
       coverTextScalePercent: coverTextScalePercent ?? 100,
       coverTextPosition: coverTextPosition ?? "style_1",
@@ -447,7 +447,7 @@ export function PageDraftCard({
       hideCoverText: hideCoverText ?? false,
     };
   }, [
-    selectedCoverTemplateId,
+    selectedCoverBackgroundId,
     isCoverEnabled,
     hasCustomCover,
     customCoverHtml,
@@ -680,7 +680,7 @@ export function PageDraftCard({
   const activeCoverMode: CoverMode =
     activeCoverSettings.customCoverHtml !== null ? "custom" : "auto";
   const hasCustomCoverValue = activeCoverSettings.customCoverHtml !== null;
-  const selectedCoverTemplateIdEffective = activeCoverSettings.coverBaseTemplateId;
+  const selectedCoverBackgroundIdEffective = activeCoverSettings.coverBaseBackgroundId;
   const selectedCoverSizePresetIdEffective = activeCoverSettings.coverSizePresetId;
   const effectiveCoverTextScalePercent = activeCoverSettings.coverTextScalePercent;
   const effectiveCoverTextPosition = activeCoverSettings.coverTextPosition;
@@ -721,31 +721,31 @@ export function PageDraftCard({
   const dialogPreviewRatio =
     (selectedCoverSizePreset?.width ?? 1600) /
     (selectedCoverSizePreset?.height ?? 2560);
-  const availableCoverTemplateOptions = coverTemplateOptions ?? [];
-  const selectableCoverTemplateOptions = availableCoverTemplateOptions.filter(
+  const availableCoverBackgroundOptions = coverBackgroundOptions ?? [];
+  const selectableCoverBackgroundOptions = availableCoverBackgroundOptions.filter(
     (option) => option.id !== "custom",
   );
   const selectedTemplateMenuId =
-    selectedCoverTemplateIdEffective &&
-    selectableCoverTemplateOptions.some(
-      (option) => option.id === selectedCoverTemplateIdEffective,
+    selectedCoverBackgroundIdEffective &&
+    selectableCoverBackgroundOptions.some(
+      (option) => option.id === selectedCoverBackgroundIdEffective,
     )
-      ? selectedCoverTemplateIdEffective
-      : (selectableCoverTemplateOptions[0]?.id ?? "classic");
+      ? selectedCoverBackgroundIdEffective
+      : (selectableCoverBackgroundOptions[0]?.id ?? "monochrome");
   const isCustomTemplateSelected = hasCustomCoverValue && activeCoverMode === "custom";
   const isTemplateSelectionDisabled =
-    isInteractionDisabled || selectableCoverTemplateOptions.length === 0;
+    isInteractionDisabled || selectableCoverBackgroundOptions.length === 0;
   const templatePreviewById = useMemo(() => {
-    const previewEntries: [CoverTemplateId, string][] =
-      selectableCoverTemplateOptions.map((option) => {
-        const templateId = isBaseTemplateId(option.id)
+    const previewEntries: [CoverBackgroundId, string][] =
+      selectableCoverBackgroundOptions.map((option) => {
+        const backgroundId = isBaseTemplateId(option.id)
           ? option.id
-          : "classic";
+          : "monochrome";
         const previewSrc = createAutoCoverDataUrl(
           {
             title: "",
             author: "",
-            templateId,
+            backgroundId,
             size: { width: 520, height: 780 },
             textScalePercent: 100,
             textPosition: "style_1",
@@ -757,11 +757,11 @@ export function PageDraftCard({
       });
 
     return Object.fromEntries(previewEntries) as Record<
-      CoverTemplateId,
+      CoverBackgroundId,
       string
     >;
   }, [
-    selectableCoverTemplateOptions,
+    selectableCoverBackgroundOptions,
   ]);
 
   const selectedCoverTemplatePreviewSrc =
@@ -769,13 +769,13 @@ export function PageDraftCard({
       ? extractFirstImageSrcFromHtml(activeCoverSettings.customCoverHtml ?? page.previewHtml)
       : undefined) ??
     templatePreviewById[selectedTemplateMenuId] ??
-    templatePreviewById.classic ??
+    templatePreviewById.monochrome ??
     "";
   const selectedCoverTemplateLabel = isCustomTemplateSelected
     ? "Custom"
-    : (availableCoverTemplateOptions.find(
+    : (availableCoverBackgroundOptions.find(
         (option) => option.id === selectedTemplateMenuId,
-      )?.label ?? "Template");
+      )?.label ?? "Background");
   const selectedCoverTextPreviewLines = resolveCoverTextPreviewLines(
     effectiveCoverTextPosition,
   );
@@ -783,7 +783,7 @@ export function PageDraftCard({
     previewBookTitle ?? "",
     previewBookAuthor ?? "",
     {
-      templateId: activeCoverSettings.coverBaseTemplateId,
+      backgroundId: activeCoverSettings.coverBaseBackgroundId,
       sizePresetId: activeCoverSettings.coverSizePresetId,
       textScalePercent: activeCoverSettings.coverTextScalePercent,
       textPosition: activeCoverSettings.coverTextPosition,
@@ -957,7 +957,7 @@ export function PageDraftCard({
                     ...previous,
                     coverEnabled: true,
                     customCoverHtml: null,
-                    coverBaseTemplateId: COVER_AUTO_DEFAULT_TEMPLATE_ID,
+                    coverBaseBackgroundId: COVER_AUTO_DEFAULT_TEMPLATE_ID,
                     coverSizePresetId: COVER_AUTO_DEFAULT_SIZE_PRESET_ID,
                     coverTextPosition: "style_1",
                     coverTextScalePercent: 100,
@@ -1007,7 +1007,7 @@ export function PageDraftCard({
                                 color={"app.epub.fg.muted"}
                                 mb={1}
                               >
-                                Cover template
+                                Cover background
                               </Text>
                               <Menu.Root
                                 positioning={{
@@ -1033,7 +1033,7 @@ export function PageDraftCard({
                                       p={1}
                                       justifyContent={"flex-start"}
                                       disabled={isTemplateSelectionDisabled}
-                                      aria-label={"Select cover template"}
+                                      aria-label={"Select cover background"}
                                     >
                                       <HStack
                                         w={"full"}
@@ -1150,7 +1150,7 @@ export function PageDraftCard({
                                       }
                                       gap={2}
                                     >
-                                      {selectableCoverTemplateOptions.map(
+                                      {selectableCoverBackgroundOptions.map(
                                         (option) => {
                                           const previewSrc =
                                             templatePreviewById[option.id];
@@ -1173,11 +1173,11 @@ export function PageDraftCard({
                                                   (previous) => ({
                                                     ...previous,
                                                     customCoverHtml: null,
-                                                    coverBaseTemplateId: isBaseTemplateId(
+                                                    coverBaseBackgroundId: isBaseTemplateId(
                                                       option.id,
                                                     )
                                                       ? option.id
-                                                      : previous.coverBaseTemplateId,
+                                                      : previous.coverBaseBackgroundId,
                                                   }),
                                                 )
                                               }
@@ -1252,8 +1252,6 @@ export function PageDraftCard({
                                                         labelMode:
                                                           COVER_TEMPLATE_LABEL_MODE,
                                                         label: option.label,
-                                                        description:
-                                                          option.description,
                                                         showDescription:
                                                           SHOW_TEMPLATE_DESCRIPTIONS,
                                                       })
@@ -1265,8 +1263,6 @@ export function PageDraftCard({
                                                       labelMode:
                                                         COVER_TEMPLATE_LABEL_MODE,
                                                       label: option.label,
-                                                      description:
-                                                        option.description,
                                                       showDescription:
                                                         SHOW_TEMPLATE_DESCRIPTIONS,
                                                     })

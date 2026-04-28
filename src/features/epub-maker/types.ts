@@ -13,21 +13,20 @@ export type CoverTextPosition =
   | "style_5"
   | "style_6";
 export type CoverTextColorMode = "light" | "dark" | "adaptive";
-export type BaseCoverTemplateId =
-  | "classic"
+export type BaseCoverBackgroundId =
+  | "monochrome"
   | "aurora"
   | "ember"
-  | "midnight"
-  | "sage"
-  | "sunset";
-export type CoverTemplateId = BaseCoverTemplateId | "custom";
+  | "noir"
+  | "geometric"
+  | "floral";
+export type CoverBackgroundId = BaseCoverBackgroundId | "custom";
 
 export type CoverSizePresetId = string;
 
-export interface CoverTemplateOption {
-  id: CoverTemplateId;
+export interface CoverBackgroundOption {
+  id: CoverBackgroundId;
   label: string;
-  description: string;
 }
 
 export interface CoverSizePresetOption {
@@ -114,7 +113,7 @@ export interface CoverDraft {
 export interface CoverSettingsState {
   coverEnabled: boolean;
   customCoverHtml: string | null;
-  coverBaseTemplateId: BaseCoverTemplateId;
+  coverBaseBackgroundId: BaseCoverBackgroundId;
   coverSizePresetId: CoverSizePresetId;
   coverTextScalePercent: number;
   coverTextPosition: CoverTextPosition;
@@ -150,8 +149,8 @@ export interface BuildEpubResult {
 export interface EpubMakerPrefs {
   title: string;
   author: string;
-  coverTemplateId: CoverTemplateId;
-  coverBaseTemplateId: BaseCoverTemplateId;
+  coverBackgroundId: CoverBackgroundId;
+  coverBaseBackgroundId: BaseCoverBackgroundId;
   coverSizePresetId: CoverSizePresetId;
   coverTextScalePercent: number;
   coverTextPosition: CoverTextPosition;
@@ -168,8 +167,8 @@ export interface EpubMakerPrefs {
 export interface EpubMakerState {
   pages: PageDraft[];
   coverMode: CoverMode;
-  coverTemplateId: CoverTemplateId;
-  coverTemplateOptions: CoverTemplateOption[];
+  coverBackgroundId: CoverBackgroundId;
+  coverBackgroundOptions: CoverBackgroundOption[];
   coverSizePresetId: CoverSizePresetId;
   coverSizePresetOptions: CoverSizePresetOption[];
   coverTextScalePercent: number;

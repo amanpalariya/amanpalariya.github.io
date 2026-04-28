@@ -178,8 +178,8 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
               coverPreviewHtml={props.coverPreviewHtml}
               coverCustomHtml={props.coverCustomHtml}
               hasCustomCover={props.hasCustomCover}
-              coverTemplateId={props.coverTemplateId}
-              coverTemplateOptions={props.coverTemplateOptions}
+              coverBackgroundId={props.coverBackgroundId}
+              coverBackgroundOptions={props.coverBackgroundOptions}
               coverSizePresetId={props.coverSizePresetId}
               coverSizePresetOptions={props.coverSizePresetOptions}
               coverTextScalePercent={props.coverTextScalePercent}

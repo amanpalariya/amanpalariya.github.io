@@ -20,9 +20,8 @@ import type {
 import { resolveTextPalette } from "./color-utils";
 import {
   COVER_SIZE_PRESET_OPTIONS,
-  COVER_TEMPLATE_OPTIONS,
+  COVER_BACKGROUND_OPTIONS,
   resolveCoverSizePreset,
-  resolveCoverTemplateDefaults,
 } from "./template-specs";
 import {
   applyTextStyle,
@@ -42,9 +41,8 @@ import { createAutoCoverRasterDataUrl } from "./auto-cover-raster";
 export type { AutoCoverInput, AutoCoverOptions, AutoCoverRendererId, CoverHtmlOptions };
 export {
   COVER_SIZE_PRESET_OPTIONS,
-  COVER_TEMPLATE_OPTIONS,
+  COVER_BACKGROUND_OPTIONS,
   resolveCoverSizePreset,
-  resolveCoverTemplateDefaults,
 };
 
 function escapeXmlText(value: string): string {
@@ -121,7 +119,7 @@ export function createAutoCoverHtml(
     {
       title,
       author,
-      templateId: options.templateId,
+      backgroundId: options.backgroundId,
       size: {
         width: coverSize.width,
         height: coverSize.height,
@@ -221,7 +219,7 @@ export function createCoverHtml(
           {
             title,
             author,
-            templateId: options.templateId,
+            backgroundId: options.backgroundId,
             size: { width: coverSize.width, height: coverSize.height },
             textScalePercent: options.textScalePercent,
             textPosition: options.textPosition,

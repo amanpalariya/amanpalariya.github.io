@@ -3,8 +3,6 @@ import type { CoverTextColorMode } from "../../types";
 import {
   AUTO_COVER_LAYOUT_HEIGHT,
   AUTO_COVER_LAYOUT_WIDTH,
-  COVER_FRAME_INSET,
-  COVER_FRAME_RADIUS,
   COVER_TEXT_BOUND_LEFT,
   COVER_TEXT_BOUND_RIGHT,
   COVER_TEXT_STROKE_WIDTH,
@@ -13,8 +11,7 @@ import {
 } from "./constants";
 import type { AutoCoverInput, CoverCanvasMetrics } from "./core-types";
 import { resolveTextPalette } from "./color-utils";
-import { resolveTemplateSpec } from "./template-specs";
-import { resolveTemplateRenderer } from "./templates";
+import { resolveBackgroundRenderer } from "./templates";
 import {
   applyTextStyle,
   computeAuthorStartY,
@@ -66,11 +63,12 @@ function resolveTextPaletteForInput(
 }
 
 export function createAutoCoverSvgDataUrl(input: AutoCoverInput): string {
-  const template = resolveTemplateSpec(input.templateId);
+  const backgroundRenderer = resolveBackgroundRenderer(input.backgroundId);
+  const adaptiveTextSeed = backgroundRenderer.resolveAdaptiveTextSeed();
   const textPalette = resolveTextPaletteForInput(
     input.textColorMode,
-    template.gradientStart,
-    template.gradientEnd,
+    adaptiveTextSeed.startColor,
+    adaptiveTextSeed.endColor,
   );
 
   const coverWidth = Math.max(800, Math.round(input.size.width));
@@ -137,17 +135,8 @@ export function createAutoCoverSvgDataUrl(input: AutoCoverInput): string {
     )
     .join("");
 
-  const frameInset = Math.round(COVER_FRAME_INSET * metrics.unitScale);
-  const frameRadius = Math.round(COVER_FRAME_RADIUS * metrics.unitScale);
-  const frameX = frameInset;
-  const frameY = frameInset;
-  const frameWidth = Math.max(0, coverWidth - frameInset * 2);
-  const frameHeight = Math.max(0, coverHeight - frameInset * 2);
   const textStrokeWidth = COVER_TEXT_STROKE_WIDTH * metrics.unitScale;
-
-  const templateRenderer = resolveTemplateRenderer(template.id);
-  const decorationSvg = templateRenderer.renderSvgDecoration({
-    template,
+  const backgroundSvg = backgroundRenderer.renderSvgBackground({
     metrics,
     width: coverWidth,
     height: coverHeight,
@@ -161,7 +150,7 @@ export function createAutoCoverSvgDataUrl(input: AutoCoverInput): string {
       ? ""
       : `<text fill="${textPalette.authorColor}" stroke="${textPalette.strokeColor}" stroke-width="${textStrokeWidth}" paint-order="stroke fill" font-family="Inter, Segoe UI, Roboto, Arial, sans-serif" font-size="${authorLayout.fontSize}" font-weight="500" text-anchor="${authorAnchor}">${authorTspans}</text>`;
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${coverWidth}" height="${coverHeight}" viewBox="0 0 ${coverWidth} ${coverHeight}" role="img" aria-label="Book cover"><defs><linearGradient id="coverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${template.gradientStart}"/><stop offset="100%" stop-color="${template.gradientEnd}"/></linearGradient></defs><rect width="${coverWidth}" height="${coverHeight}" fill="url(#coverGradient)"/>${decorationSvg}<rect x="${frameX}" y="${frameY}" width="${frameWidth}" height="${frameHeight}" rx="${frameRadius}" fill="none" stroke="${template.frameStroke}" stroke-width="${4 * metrics.unitScale}"/>${titleTextSvg}${authorTextSvg}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${coverWidth}" height="${coverHeight}" viewBox="0 0 ${coverWidth} ${coverHeight}" role="img" aria-label="Book cover">${backgroundSvg}${titleTextSvg}${authorTextSvg}</svg>`;
 
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }

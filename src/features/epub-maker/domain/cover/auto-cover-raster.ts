@@ -3,8 +3,6 @@ import type { CoverTextColorMode } from "../../types";
 import {
   AUTO_COVER_LAYOUT_HEIGHT,
   AUTO_COVER_LAYOUT_WIDTH,
-  COVER_FRAME_INSET,
-  COVER_FRAME_RADIUS,
   COVER_TEXT_BOUND_LEFT,
   COVER_TEXT_BOUND_RIGHT,
   COVER_TEXT_STROKE_WIDTH,
@@ -13,9 +11,7 @@ import {
 } from "./constants";
 import type { AutoCoverInput, CoverCanvasMetrics } from "./core-types";
 import { resolveTextPalette } from "./color-utils";
-import { resolveTemplateSpec } from "./template-specs";
-import { resolveTemplateRenderer } from "./templates";
-import { drawRoundedRectPath } from "./templates/template-utils";
+import { resolveBackgroundRenderer } from "./templates";
 import {
   applyTextStyle,
   computeAuthorStartY,
@@ -59,11 +55,12 @@ function resolveTextPaletteForInput(
 export function createAutoCoverRasterDataUrl(input: AutoCoverInput): string {
   if (typeof document === "undefined") return createAutoCoverSvgDataUrl(input);
 
-  const template = resolveTemplateSpec(input.templateId);
+  const backgroundRenderer = resolveBackgroundRenderer(input.backgroundId);
+  const adaptiveTextSeed = backgroundRenderer.resolveAdaptiveTextSeed();
   const textPalette = resolveTextPaletteForInput(
     input.textColorMode,
-    template.gradientStart,
-    template.gradientEnd,
+    adaptiveTextSeed.startColor,
+    adaptiveTextSeed.endColor,
   );
 
   const coverWidth = Math.max(800, Math.round(input.size.width));
@@ -89,33 +86,12 @@ export function createAutoCoverRasterDataUrl(input: AutoCoverInput): string {
 
   if (!context) return createAutoCoverSvgDataUrl(input);
 
-  const gradient = context.createLinearGradient(0, 0, canvas.width, canvas.height);
-  gradient.addColorStop(0, template.gradientStart);
-  gradient.addColorStop(1, template.gradientEnd);
-  context.fillStyle = gradient;
-  context.fillRect(0, 0, canvas.width, canvas.height);
-
-  resolveTemplateRenderer(template.id).drawCanvasDecoration({
+  backgroundRenderer.drawCanvasBackground({
     context,
-    template,
     metrics,
     width: coverWidth,
     height: coverHeight,
   });
-
-  const frameInset = COVER_FRAME_INSET * metrics.unitScale;
-  const frameRadius = COVER_FRAME_RADIUS * metrics.unitScale;
-  context.strokeStyle = template.frameStroke;
-  context.lineWidth = 4 * metrics.unitScale;
-  drawRoundedRectPath(
-    context,
-    frameInset,
-    frameInset,
-    Math.max(0, coverWidth - frameInset * 2),
-    Math.max(0, coverHeight - frameInset * 2),
-    frameRadius,
-  );
-  context.stroke();
 
   const titleWrapLimit = resolveWrapCharLimit(
     titleLayout.maxCharsPerLine,

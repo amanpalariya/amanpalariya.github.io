@@ -23,8 +23,8 @@ import type {
   CoverSizePresetOption,
   CoverTextColorMode,
   CoverTextPosition,
-  CoverTemplateId,
-  CoverTemplateOption,
+  CoverBackgroundId,
+  CoverBackgroundOption,
   PageDraft,
 } from "../types";
 import { usePageGridDnd } from "../hooks/usePageGridDnd";
@@ -40,8 +40,8 @@ export function PageDraftGrid({
   coverPreviewHtml,
   coverCustomHtml,
   hasCustomCover,
-  coverTemplateId,
-  coverTemplateOptions,
+  coverBackgroundId,
+  coverBackgroundOptions,
   coverSizePresetId,
   coverSizePresetOptions,
   coverTextScalePercent,
@@ -72,8 +72,8 @@ export function PageDraftGrid({
   coverPreviewHtml: string;
   coverCustomHtml: string | null;
   hasCustomCover: boolean;
-  coverTemplateId: CoverTemplateId;
-  coverTemplateOptions: CoverTemplateOption[];
+  coverBackgroundId: CoverBackgroundId;
+  coverBackgroundOptions: CoverBackgroundOption[];
   coverSizePresetId: CoverSizePresetId;
   coverSizePresetOptions: CoverSizePresetOption[];
   coverTextScalePercent: number;
@@ -186,8 +186,8 @@ export function PageDraftGrid({
             customCoverHtml={coverCustomHtml}
             hasCustomCover={hasCustomCover}
             isCoverEnabled={isCoverEnabled}
-            selectedCoverTemplateId={coverTemplateId}
-            coverTemplateOptions={coverTemplateOptions}
+            selectedCoverBackgroundId={coverBackgroundId}
+            coverBackgroundOptions={coverBackgroundOptions}
             selectedCoverSizePresetId={coverSizePresetId}
             coverSizePresetOptions={coverSizePresetOptions}
             coverTextScalePercent={coverTextScalePercent}

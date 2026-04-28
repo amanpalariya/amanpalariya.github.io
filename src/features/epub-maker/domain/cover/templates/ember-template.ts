@@ -1,22 +1,64 @@
 import type {
-  CoverTemplateCanvasContext,
-  CoverTemplateRenderer,
-  CoverTemplateSvgContext,
+  CoverBackgroundCanvasContext,
+  CoverBackgroundRenderer,
+  CoverBackgroundSvgContext,
 } from "../core-types";
-import { createScaleHelpers } from "./template-utils";
+import {
+  createScaleHelpers,
+  drawFramedGradientBackgroundCanvas,
+  renderFramedGradientBackgroundSvg,
+} from "./template-utils";
 
-export class EmberTemplateRenderer implements CoverTemplateRenderer {
-  readonly id = "ember" as const;
+export const EMBER_BACKGROUND_ID = "ember" as const;
+export const EMBER_BACKGROUND_LABEL = "Ember" as const;
 
-  renderSvgDecoration({ template, metrics, width, height }: CoverTemplateSvgContext): string {
-    const sx = (value: number) => value * metrics.scaleX;
-    const sy = (value: number) => value * metrics.scaleY;
-    return `<path d="M${sx(0)},${sy(1560)} L${width},${sy(1180)} L${width},${height} L${sx(0)},${height} Z" fill="${template.accentColor}"/><path d="M${sx(0)},${sy(0)} L${sx(760)},${sy(0)} L${sx(0)},${sy(760)} Z" fill="rgba(255,166,107,0.14)"/>`;
+const emberTemplateTheme = {
+  gradientStart: "#4a1d12",
+  gradientEnd: "#b23a24",
+  frameStroke: "rgba(255,228,204,0.34)",
+  accentColor: "rgba(255,211,153,0.22)",
+} as const;
+
+export class EmberTemplateRenderer implements CoverBackgroundRenderer {
+  readonly id = EMBER_BACKGROUND_ID;
+
+  resolveAdaptiveTextSeed() {
+    return {
+      startColor: emberTemplateTheme.gradientStart,
+      endColor: emberTemplateTheme.gradientEnd,
+    };
   }
 
-  drawCanvasDecoration({ context, template, metrics, width, height }: CoverTemplateCanvasContext): void {
+  private renderSvgDecoration(
+    metrics: CoverBackgroundSvgContext["metrics"],
+    width: number,
+    height: number,
+  ): string {
+    const sx = (value: number) => value * metrics.scaleX;
+    const sy = (value: number) => value * metrics.scaleY;
+    return `<path d="M${sx(0)},${sy(1560)} L${width},${sy(1180)} L${width},${height} L${sx(0)},${height} Z" fill="${emberTemplateTheme.accentColor}"/><path d="M${sx(0)},${sy(0)} L${sx(760)},${sy(0)} L${sx(0)},${sy(760)} Z" fill="rgba(255,166,107,0.14)"/>`;
+  }
+
+  renderSvgBackground({ metrics, width, height }: CoverBackgroundSvgContext): string {
+    return renderFramedGradientBackgroundSvg({
+      width,
+      height,
+      metrics,
+      gradientStart: emberTemplateTheme.gradientStart,
+      gradientEnd: emberTemplateTheme.gradientEnd,
+      frameStroke: emberTemplateTheme.frameStroke,
+      decorationSvg: this.renderSvgDecoration(metrics, width, height),
+    });
+  }
+
+  private drawCanvasDecoration(
+    context: CoverBackgroundCanvasContext["context"],
+    metrics: CoverBackgroundCanvasContext["metrics"],
+    width: number,
+    height: number,
+  ): void {
     const { sx, sy } = createScaleHelpers(metrics);
-    context.fillStyle = template.accentColor;
+    context.fillStyle = emberTemplateTheme.accentColor;
     context.beginPath();
     context.moveTo(sx(0), sy(1560));
     context.lineTo(width, sy(1180));
@@ -32,5 +74,18 @@ export class EmberTemplateRenderer implements CoverTemplateRenderer {
     context.lineTo(sx(0), sy(760));
     context.closePath();
     context.fill();
+  }
+
+  drawCanvasBackground({ context, metrics, width, height }: CoverBackgroundCanvasContext): void {
+    drawFramedGradientBackgroundCanvas({
+      context,
+      width,
+      height,
+      metrics,
+      gradientStart: emberTemplateTheme.gradientStart,
+      gradientEnd: emberTemplateTheme.gradientEnd,
+      frameStroke: emberTemplateTheme.frameStroke,
+      drawDecoration: () => this.drawCanvasDecoration(context, metrics, width, height),
+    });
   }
 }

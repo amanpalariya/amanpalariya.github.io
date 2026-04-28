@@ -23,7 +23,7 @@ function isSameCoverSettingsState(
   return (
     left.coverEnabled === right.coverEnabled &&
     left.customCoverHtml === right.customCoverHtml &&
-    left.coverBaseTemplateId === right.coverBaseTemplateId &&
+    left.coverBaseBackgroundId === right.coverBaseBackgroundId &&
     left.coverSizePresetId === right.coverSizePresetId &&
     left.coverTextScalePercent === right.coverTextScalePercent &&
     left.coverTextPosition === right.coverTextPosition &&
