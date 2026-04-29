@@ -1,5 +1,6 @@
 import {
   DEFAULT_BOOK_TITLE,
+  createDefaultCoverPrefs,
   EPUB_MAKER_STORAGE_FIELDS,
   EPUB_MAKER_TOOL_ID,
 } from "../constants";
@@ -16,15 +17,7 @@ import { buildToolStorageKey } from "@utils/storage";
 const defaultPrefs: EpubMakerPrefs = {
   title: "",
   author: "",
-  cover: {
-    backgroundId: "monochrome",
-    baseBackgroundId: "monochrome",
-    sizePresetId: "ratio_1_1_6",
-    textScalePercent: 100,
-    textPosition: "style_1",
-    textColorMode: "adaptive",
-    hideText: false,
-  },
+  cover: createDefaultCoverPrefs(),
   manualFileName: "",
   fileNameMode: "auto",
   generationOptions: {

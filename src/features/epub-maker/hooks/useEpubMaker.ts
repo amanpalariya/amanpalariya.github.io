@@ -11,6 +11,7 @@ import {
 } from "react";
 import { LuChevronDown, LuFilePlus } from "react-icons/lu";
 import {
+  createDefaultCoverSettings,
   createDefaultSanitizationPolicy,
   DEFAULT_BOOK_TITLE,
 } from "../constants";
@@ -1115,16 +1116,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
   function resetCoverToAuto() {
     if (isGenerating) return;
 
-    applyCoverSettings({
-      coverEnabled: true,
-      customCoverHtml: null,
-      coverBaseBackgroundId: "monochrome",
-      coverSizePresetId: "ratio_1_1_6",
-      coverTextPosition: "style_1",
-      coverTextScalePercent: 100,
-      coverTextColorMode: "adaptive",
-      hideCoverText: false,
-    });
+    applyCoverSettings(createDefaultCoverSettings());
   }
 
   function toggleCoverEnabled() {
