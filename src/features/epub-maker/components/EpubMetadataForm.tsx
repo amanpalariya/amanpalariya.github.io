@@ -10,6 +10,7 @@ import {
 import { Switch } from "@components/ui/switch";
 import { Tooltip } from "@components/ui/tooltip";
 import { LuCircleHelp, LuSettings2 } from "react-icons/lu";
+import { DEFAULT_BOOK_TITLE } from "../constants";
 import type { EpubMakerState } from "../types";
 
 export function EpubMetadataForm({
@@ -65,7 +66,7 @@ export function EpubMetadataForm({
           </Text>
           <Input
             {...controlInputProps}
-            placeholder={"EPUB Maker"}
+            placeholder={DEFAULT_BOOK_TITLE}
             bg={"app.epub.bg.card"}
             color={"app.epub.fg.default"}
             borderColor={"app.epub.border.default"}
