@@ -81,7 +81,7 @@ export function EpubMetadataForm({
           </Text>
           <Input
             {...controlInputProps}
-            placeholder={"Your name"}
+            placeholder={"Name"}
             bg={"app.epub.bg.card"}
             color={"app.epub.fg.default"}
             borderColor={"app.epub.border.default"}
