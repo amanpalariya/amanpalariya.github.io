@@ -25,7 +25,7 @@ const TOOL_SEEDS: ToolSeed[] = [
     tagline: "Convert pasted HTML, text, or images into clean EPUB files",
     description:
       "Paste HTML pages, plain text, or images, reorder chapters, set metadata, and generate a downloadable EPUB.",
-    status: "beta",
+    status: "stable",
     tags: [{ id: "epub", label: "EPUB" }],
     path: "/tools/epub-maker/",
     sortOrder: 10,

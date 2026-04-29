@@ -65,6 +65,14 @@ import {
   clipboardImageBlobToHtml,
   readClipboardImageBlob,
 } from "../services/clipboard";
+import {
+  DEFAULT_COVER_BASE_BACKGROUND_ID,
+  DEFAULT_COVER_HIDE_TEXT,
+  DEFAULT_COVER_SIZE_PRESET_ID,
+  DEFAULT_COVER_TEXT_COLOR_MODE,
+  DEFAULT_COVER_TEXT_POSITION,
+  DEFAULT_COVER_TEXT_SCALE_PERCENT,
+} from "../constants";
 import { useCoverSettingsSession } from "../hooks/useCoverSettingsSession";
 import {
   BufferedCoverPreview,
@@ -104,8 +112,10 @@ const COVER_SIZE_LABEL_MODE: CoverSizeLabelMode = "side";
 const SHOW_SIZE_DESCRIPTIONS = true;
 const COVER_GRID_HOVER_BG = "app.status.info.bg" as const;
 const COVER_GRID_SELECTED_BORDER_COLOR = "app.epub.button.primary.border" as const;
-const COVER_AUTO_DEFAULT_BACKGROUND_ID: BaseCoverBackgroundId = "aurora";
-const COVER_AUTO_DEFAULT_SIZE_PRESET_ID: CoverSizePresetId = "ratio_1_1_6";
+const COVER_AUTO_DEFAULT_BACKGROUND_ID: BaseCoverBackgroundId =
+  DEFAULT_COVER_BASE_BACKGROUND_ID;
+const COVER_AUTO_DEFAULT_SIZE_PRESET_ID: CoverSizePresetId =
+  DEFAULT_COVER_SIZE_PRESET_ID;
 
 const dropdownGridItemInteractionProps = {
   p: 1,
@@ -445,16 +455,17 @@ export function PageDraftCard({
     const fallbackBackgroundId =
       selectedCoverBackgroundId && isBaseBackgroundId(selectedCoverBackgroundId)
         ? selectedCoverBackgroundId
-        : "aurora";
+        : COVER_AUTO_DEFAULT_BACKGROUND_ID;
     return {
       coverEnabled: isCoverEnabled ?? true,
       customCoverHtml: hasCustomCover ? (customCoverHtml ?? null) : null,
       coverBaseBackgroundId: fallbackBackgroundId,
       coverSizePresetId: selectedCoverSizePresetId ?? COVER_AUTO_DEFAULT_SIZE_PRESET_ID,
-      coverTextScalePercent: coverTextScalePercent ?? 100,
-      coverTextPosition: coverTextPosition ?? "style_1",
-      coverTextColorMode: coverTextColorMode ?? "adaptive",
-      hideCoverText: hideCoverText ?? false,
+      coverTextScalePercent:
+        coverTextScalePercent ?? DEFAULT_COVER_TEXT_SCALE_PERCENT,
+      coverTextPosition: coverTextPosition ?? DEFAULT_COVER_TEXT_POSITION,
+      coverTextColorMode: coverTextColorMode ?? DEFAULT_COVER_TEXT_COLOR_MODE,
+      hideCoverText: hideCoverText ?? DEFAULT_COVER_HIDE_TEXT,
     };
   }, [
     selectedCoverBackgroundId,
@@ -1075,10 +1086,11 @@ export function PageDraftCard({
                                 customCoverHtml: null,
                                 coverBaseBackgroundId: COVER_AUTO_DEFAULT_BACKGROUND_ID,
                                 coverSizePresetId: COVER_AUTO_DEFAULT_SIZE_PRESET_ID,
-                                coverTextPosition: "style_1",
-                                coverTextScalePercent: 100,
-                                coverTextColorMode: "adaptive",
-                                hideCoverText: false,
+                                coverTextPosition: DEFAULT_COVER_TEXT_POSITION,
+                                coverTextScalePercent:
+                                  DEFAULT_COVER_TEXT_SCALE_PERCENT,
+                                coverTextColorMode: DEFAULT_COVER_TEXT_COLOR_MODE,
+                                hideCoverText: DEFAULT_COVER_HIDE_TEXT,
                               }))
                             }
                             disabled={isInteractionDisabled}
