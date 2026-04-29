@@ -1118,7 +1118,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     applyCoverSettings({
       coverEnabled: true,
       customCoverHtml: null,
-      coverBaseBackgroundId: "aurora",
+      coverBaseBackgroundId: "monochrome",
       coverSizePresetId: "ratio_1_1_6",
       coverTextPosition: "style_1",
       coverTextScalePercent: 100,

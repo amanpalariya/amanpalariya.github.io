@@ -9,7 +9,7 @@ export const EPUB_MAKER_STORAGE_FIELDS = {
   fileNameMode: "file-name-mode",
   generationOptions: "generation-options",
 } as const;
-export const DEFAULT_BOOK_TITLE = "EPUB Maker Pages";
+export const DEFAULT_BOOK_TITLE = "EPUB Maker";
 
 const DROP_TAGS = [
   "script",

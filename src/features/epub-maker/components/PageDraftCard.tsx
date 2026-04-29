@@ -104,7 +104,7 @@ const COVER_SIZE_LABEL_MODE: CoverSizeLabelMode = "side";
 const SHOW_SIZE_DESCRIPTIONS = true;
 const COVER_GRID_HOVER_BG = "app.status.info.bg" as const;
 const COVER_GRID_SELECTED_BORDER_COLOR = "app.epub.button.primary.border" as const;
-const COVER_AUTO_DEFAULT_BACKGROUND_ID: BaseCoverBackgroundId = "aurora";
+const COVER_AUTO_DEFAULT_BACKGROUND_ID: BaseCoverBackgroundId = "monochrome";
 const COVER_AUTO_DEFAULT_SIZE_PRESET_ID: CoverSizePresetId = "ratio_1_1_6";
 
 const dropdownGridItemInteractionProps = {
@@ -445,7 +445,7 @@ export function PageDraftCard({
     const fallbackBackgroundId =
       selectedCoverBackgroundId && isBaseBackgroundId(selectedCoverBackgroundId)
         ? selectedCoverBackgroundId
-        : "aurora";
+        : "monochrome";
     return {
       coverEnabled: isCoverEnabled ?? true,
       customCoverHtml: hasCustomCover ? (customCoverHtml ?? null) : null,
