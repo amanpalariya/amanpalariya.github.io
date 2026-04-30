@@ -1,4 +1,4 @@
-import type { DateParts } from "../domain/doomsday";
+import type { DateParts } from "../domain/weekday";
 
 export type WeekdayChoice = {
   value: string;
@@ -8,6 +8,7 @@ export type WeekdayChoice = {
 
 export type PracticeQuestion = {
   date: DateParts;
+  formattedDate: string;
   choices: WeekdayChoice[];
   correctValue: string;
   prompt: string;

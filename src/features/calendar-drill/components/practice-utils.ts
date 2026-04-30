@@ -3,8 +3,8 @@ import {
   type DateParts,
   type WeekdayIndex,
   WEEKDAYS,
-} from "../domain/doomsday";
-import type { PracticeSettings } from "../types";
+} from "../domain/weekday";
+import type { DateFormatPreference, PracticeSettings } from "../types";
 import type {
   PracticeQuestion,
   PracticeStats,
@@ -17,6 +17,21 @@ export const MAX_ALLOWED_YEAR = 2399;
 
 const SUNDAY_FIRST_ORDER: WeekdayIndex[] = [0, 1, 2, 3, 4, 5, 6];
 const MONDAY_FIRST_ORDER: WeekdayIndex[] = [1, 2, 3, 4, 5, 6, 0];
+export const ALL_MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
+export const MONTH_LABELS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+] as const;
 
 type CalendarDrillSignalColorToken =
   | "app.calendarDrill.signal.positive"
@@ -37,25 +52,58 @@ export function normalizeYearRange(
   return { minYear: safeMax, maxYear: safeMin };
 }
 
-export function formatDateHuman(parts: DateParts): string {
-  return new Date(Date.UTC(parts.year, parts.month - 1, parts.day)).toLocaleDateString(
-    "en-US",
-    {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      timeZone: "UTC",
-    },
-  );
+function padDatePart(value: number): string {
+  return String(value).padStart(2, "0");
 }
 
-export function getRandomDate(minYear: number, maxYear: number): DateParts {
+export function normalizeSelectedMonths(months: number[]): number[] {
+  return Array.from(new Set(months))
+    .filter((month) => Number.isInteger(month) && month >= 1 && month <= 12)
+    .sort((left, right) => left - right);
+}
+
+function resolveQuestionMonths(months: number[]): number[] {
+  const selectedMonths = normalizeSelectedMonths(months);
+  return selectedMonths.length > 0 ? selectedMonths : [...ALL_MONTHS];
+}
+
+export function formatDateHuman(
+  parts: DateParts,
+  dateFormat: DateFormatPreference = "locale",
+): string {
+  if (dateFormat === "iso") {
+    return `${parts.year}-${padDatePart(parts.month)}-${padDatePart(parts.day)}`;
+  }
+
+  const date = new Date(Date.UTC(parts.year, parts.month - 1, parts.day));
+  const options: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  };
+
+  if (dateFormat === "month-day-year")
+    return date.toLocaleDateString("en-US", options);
+  if (dateFormat === "day-month-year")
+    return date.toLocaleDateString("en-GB", options);
+
+  return date.toLocaleDateString(undefined, options);
+}
+
+export function getRandomDate(
+  minYear: number,
+  maxYear: number,
+  selectedMonths: number[],
+): DateParts {
   const { minYear: boundedMin, maxYear: boundedMax } = normalizeYearRange(
     minYear,
     maxYear,
   );
-  const year = Math.floor(Math.random() * (boundedMax - boundedMin + 1)) + boundedMin;
-  const month = Math.floor(Math.random() * 12) + 1;
+  const monthPool = resolveQuestionMonths(selectedMonths);
+  const year =
+    Math.floor(Math.random() * (boundedMax - boundedMin + 1)) + boundedMin;
+  const month = monthPool[Math.floor(Math.random() * monthPool.length)];
   const maxDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
   const day = Math.floor(Math.random() * maxDay) + 1;
 
@@ -64,7 +112,9 @@ export function getRandomDate(minYear: number, maxYear: number): DateParts {
 
 export function weekdayChoices(settings: PracticeSettings): WeekdayChoice[] {
   const weekdayOrder =
-    settings.weekStartDay === "monday" ? MONDAY_FIRST_ORDER : SUNDAY_FIRST_ORDER;
+    settings.weekStartDay === "monday"
+      ? MONDAY_FIRST_ORDER
+      : SUNDAY_FIRST_ORDER;
 
   return weekdayOrder.map((weekdayIndex, displayIndex) => ({
     value: String(weekdayIndex),
@@ -74,15 +124,23 @@ export function weekdayChoices(settings: PracticeSettings): WeekdayChoice[] {
 }
 
 export function buildQuestion(settings: PracticeSettings): PracticeQuestion {
-  const date = getRandomDate(settings.minYear, settings.maxYear);
+  const date = getRandomDate(
+    settings.minYear,
+    settings.maxYear,
+    settings.selectedMonths,
+  );
+  const formattedDate = formatDateHuman(date, settings.dateFormat);
   const correctWeekday = getWeekdayForDate(date);
-  const correctIndex = WEEKDAYS.findIndex((weekday) => weekday === correctWeekday);
+  const correctIndex = WEEKDAYS.findIndex(
+    (weekday) => weekday === correctWeekday,
+  );
 
   return {
     date,
+    formattedDate,
     choices: weekdayChoices(settings),
     correctValue: String(correctIndex),
-    prompt: `Weekday for ${formatDateHuman(date)}?`,
+    prompt: `Weekday for ${formattedDate}?`,
   };
 }
 

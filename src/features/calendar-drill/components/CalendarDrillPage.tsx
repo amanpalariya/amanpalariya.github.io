@@ -7,6 +7,7 @@ import {
   Grid,
   HStack,
   Icon,
+  NativeSelect,
   Text,
   VStack,
 } from "@chakra-ui/react";
@@ -15,12 +16,22 @@ import { NumberInput } from "@components/ui/number-input";
 import { ShortcutHint } from "@components/core/ShortcutHint";
 import { Switch } from "@components/ui/switch";
 import HighlightedSection from "@components/page/common/HighlightedSection";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import {
   LuCalendarRange,
+  LuChevronDown,
   LuCornerDownLeft,
+  LuKeyboard,
   LuPlay,
   LuRotateCcw,
+  LuSettings2,
 } from "react-icons/lu";
 import {
   createDefaultPracticeSettings,
@@ -40,9 +51,12 @@ import {
   clampYear,
   createInitialPracticeStats,
   createInitialPracticeTrends,
+  ALL_MONTHS,
   formatDateHuman,
+  MONTH_LABELS,
   MAX_ALLOWED_YEAR,
   MIN_ALLOWED_YEAR,
+  normalizeSelectedMonths,
   normalizeYearRange,
   toDisplayedAvgMs,
 } from "./practice-utils";
@@ -57,13 +71,26 @@ const CALENDAR_DRILL_PRIMARY_ACTION_BUTTON_STYLES = {
   },
 } as const;
 
+const DATE_FORMAT_OPTIONS: {
+  value: PracticeSettings["dateFormat"];
+  label: string;
+}[] = [
+  { value: "month-day-year", label: "Apr 30, 2026" },
+  { value: "day-month-year", label: "30 Apr 2026" },
+  { value: "iso", label: "2026-04-30" },
+];
+
+type MonthDragMode = "select" | "deselect" | null;
+
 function isTextEntryInputElement(input: HTMLInputElement): boolean {
   const inputType = input.type.toLowerCase();
 
   return inputType !== "checkbox" && inputType !== "radio";
 }
 
-function isKeyboardEventFromInteractiveElement(target: EventTarget | null): boolean {
+function isKeyboardEventFromInteractiveElement(
+  target: EventTarget | null,
+): boolean {
   if (!(target instanceof HTMLElement)) return false;
   if (target.isContentEditable) return true;
 
@@ -71,7 +98,10 @@ function isKeyboardEventFromInteractiveElement(target: EventTarget | null): bool
     return isTextEntryInputElement(target);
   }
 
-  if (target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) {
+  if (
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement
+  ) {
     return true;
   }
 
@@ -91,6 +121,9 @@ export function CalendarDrillPage() {
   const [settingsDraft, setSettingsDraft] = useState<PracticeSettings>(
     createDefaultPracticeSettings,
   );
+  const [isAdvancedSettingsOpen, setIsAdvancedSettingsOpen] = useState(false);
+  const monthDragModeRef = useRef<MonthDragMode>(null);
+  const didHandleMonthPointerRef = useRef(false);
 
   const [settings, setSettings] = useState<PracticeSettings>(settingsDraft);
   const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
@@ -103,11 +136,38 @@ export function CalendarDrillPage() {
   const [prefix, setPrefix] = useState("");
 
   const [stats, setStats] = useState<PracticeStats>(createInitialPracticeStats);
-  const [trends, setTrends] = useState<PracticeTrends>(createInitialPracticeTrends);
+  const [trends, setTrends] = useState<PracticeTrends>(
+    createInitialPracticeTrends,
+  );
 
-  const accuracy = stats.attempts > 0 ? Math.round((stats.correct / stats.attempts) * 100) : 0;
-  const avgResponseMs = stats.attempts > 0 ? Math.round(stats.totalResponseMs / stats.attempts) : 0;
-  const displayedAvgResponseMs = avgResponseMs > 0 ? toDisplayedAvgMs(avgResponseMs) : 0;
+  const accuracy =
+    stats.attempts > 0 ? Math.round((stats.correct / stats.attempts) * 100) : 0;
+  const avgResponseMs =
+    stats.attempts > 0 ? Math.round(stats.totalResponseMs / stats.attempts) : 0;
+  const displayedAvgResponseMs =
+    avgResponseMs > 0 ? toDisplayedAvgMs(avgResponseMs) : 0;
+  const selectedMonths = normalizeSelectedMonths(settingsDraft.selectedMonths);
+  const areAllMonthsSelected = selectedMonths.length === ALL_MONTHS.length;
+  const currentLocaleDateFormatLabel = `Current locale (${formatDateHuman(
+    { year: 2026, month: 4, day: 30 },
+    "locale",
+  )})`;
+  const dateFormatOptions = [
+    {
+      value: "locale" as const,
+      label: currentLocaleDateFormatLabel,
+    },
+    ...DATE_FORMAT_OPTIONS,
+  ];
+  const selectedDateFormatLabel =
+    dateFormatOptions.find(
+      (option) => option.value === settingsDraft.dateFormat,
+    )?.label ?? currentLocaleDateFormatLabel;
+  const monthFilterLabel =
+    areAllMonthsSelected || selectedMonths.length === 0
+      ? "All months"
+      : `${selectedMonths.length} month${selectedMonths.length === 1 ? "" : "s"}`;
+  const advancedSettingsSummary = `${monthFilterLabel} · ${selectedDateFormatLabel}`;
 
   const requiredPrefixLengthByChoiceValue = useMemo(() => {
     if (!question) return new Map<string, number>();
@@ -119,7 +179,11 @@ export function CalendarDrillPage() {
       const lowerLabel = choice.label.toLowerCase();
       let requiredLength = lowerLabel.length;
 
-      for (let prefixLength = 1; prefixLength <= lowerLabel.length; prefixLength += 1) {
+      for (
+        let prefixLength = 1;
+        prefixLength <= lowerLabel.length;
+        prefixLength += 1
+      ) {
         const prefixSlice = lowerLabel.slice(0, prefixLength);
         const isUnique = choices.every(
           (otherChoice) =>
@@ -152,10 +216,14 @@ export function CalendarDrillPage() {
   }, [isSettingsLoaded, settingsDraft]);
 
   const startSession = useCallback(() => {
-    const normalizedRange = normalizeYearRange(settingsDraft.minYear, settingsDraft.maxYear);
+    const normalizedRange = normalizeYearRange(
+      settingsDraft.minYear,
+      settingsDraft.maxYear,
+    );
     const nextSettings: PracticeSettings = {
       ...settingsDraft,
       ...normalizedRange,
+      selectedMonths: normalizeSelectedMonths(settingsDraft.selectedMonths),
     };
 
     setSettings(nextSettings);
@@ -172,41 +240,57 @@ export function CalendarDrillPage() {
     setStatus("running");
   }, [settingsDraft]);
 
-  const submitAnswer = useCallback((choiceValue: string) => {
-    if (!question || status !== "running" || answerState) return;
+  const submitAnswer = useCallback(
+    (choiceValue: string) => {
+      if (!question || status !== "running" || answerState) return;
 
-    const responseMs = Math.max(1, Date.now() - questionStartedAt);
-    const isCorrect = choiceValue === question.correctValue;
+      const responseMs = Math.max(1, Date.now() - questionStartedAt);
+      const isCorrect = choiceValue === question.correctValue;
 
-    const previousAccuracy =
-      stats.attempts > 0 ? Math.round((stats.correct / stats.attempts) * 100) : null;
-    const previousAvgResponseDisplayMs =
-      stats.attempts > 0 ? toDisplayedAvgMs(Math.round(stats.totalResponseMs / stats.attempts)) : null;
+      const previousAccuracy =
+        stats.attempts > 0
+          ? Math.round((stats.correct / stats.attempts) * 100)
+          : null;
+      const previousAvgResponseDisplayMs =
+        stats.attempts > 0
+          ? toDisplayedAvgMs(Math.round(stats.totalResponseMs / stats.attempts))
+          : null;
 
-    const attempts = stats.attempts + 1;
-    const correct = stats.correct + (isCorrect ? 1 : 0);
-    const streak = isCorrect ? stats.streak + 1 : 0;
-    const bestStreak = Math.max(stats.bestStreak, streak);
-    const totalResponseMs = stats.totalResponseMs + responseMs;
-    const nextStats: PracticeStats = { attempts, correct, streak, bestStreak, totalResponseMs };
+      const attempts = stats.attempts + 1;
+      const correct = stats.correct + (isCorrect ? 1 : 0);
+      const streak = isCorrect ? stats.streak + 1 : 0;
+      const bestStreak = Math.max(stats.bestStreak, streak);
+      const totalResponseMs = stats.totalResponseMs + responseMs;
+      const nextStats: PracticeStats = {
+        attempts,
+        correct,
+        streak,
+        bestStreak,
+        totalResponseMs,
+      };
 
-    const nextAccuracy = Math.round((nextStats.correct / nextStats.attempts) * 100);
-    const nextAvgResponseDisplayMs = toDisplayedAvgMs(
-      Math.round(nextStats.totalResponseMs / nextStats.attempts),
-    );
+      const nextAccuracy = Math.round(
+        (nextStats.correct / nextStats.attempts) * 100,
+      );
+      const nextAvgResponseDisplayMs = toDisplayedAvgMs(
+        Math.round(nextStats.totalResponseMs / nextStats.attempts),
+      );
 
-    setAnswerState({ selectedValue: choiceValue, isCorrect, responseMs });
-    setStats(nextStats);
-    setTrends({
-      accuracyDelta: previousAccuracy === null ? null : nextAccuracy - previousAccuracy,
-      avgResponseDeltaMs:
-        previousAvgResponseDisplayMs === null
-          ? null
-          : nextAvgResponseDisplayMs - previousAvgResponseDisplayMs,
-    });
+      setAnswerState({ selectedValue: choiceValue, isCorrect, responseMs });
+      setStats(nextStats);
+      setTrends({
+        accuracyDelta:
+          previousAccuracy === null ? null : nextAccuracy - previousAccuracy,
+        avgResponseDeltaMs:
+          previousAvgResponseDisplayMs === null
+            ? null
+            : nextAvgResponseDisplayMs - previousAvgResponseDisplayMs,
+      });
 
-    setPrefix("");
-  }, [answerState, question, questionStartedAt, stats, status]);
+      setPrefix("");
+    },
+    [answerState, question, questionStartedAt, stats, status],
+  );
 
   const nextQuestion = useCallback(() => {
     if (!question || !answerState) return;
@@ -229,6 +313,95 @@ export function CalendarDrillPage() {
     setTrends(createInitialPracticeTrends());
   }
 
+  function toggleAllMonths() {
+    setSettingsDraft((current) => ({
+      ...current,
+      selectedMonths:
+        normalizeSelectedMonths(current.selectedMonths).length ===
+        ALL_MONTHS.length
+          ? []
+          : [...ALL_MONTHS],
+    }));
+  }
+
+  function setMonthSelected(month: number, shouldSelect: boolean) {
+    setSettingsDraft((current) => {
+      const currentMonths = normalizeSelectedMonths(current.selectedMonths);
+      const isSelected = currentMonths.includes(month);
+
+      if (shouldSelect) {
+        if (isSelected) return current;
+
+        return {
+          ...current,
+          selectedMonths: normalizeSelectedMonths([...currentMonths, month]),
+        };
+      }
+
+      if (!isSelected) return current;
+
+      return {
+        ...current,
+        selectedMonths: normalizeSelectedMonths(
+          currentMonths.filter((selectedMonth) => selectedMonth !== month),
+        ),
+      };
+    });
+  }
+
+  function toggleMonth(month: number) {
+    setSettingsDraft((current) => {
+      const currentMonths = normalizeSelectedMonths(current.selectedMonths);
+      const nextMonths = currentMonths.includes(month)
+        ? currentMonths.filter((selectedMonth) => selectedMonth !== month)
+        : [...currentMonths, month];
+
+      return {
+        ...current,
+        selectedMonths: normalizeSelectedMonths(nextMonths),
+      };
+    });
+  }
+
+  function beginMonthDrag(
+    month: number,
+    isSelected: boolean,
+    event: ReactPointerEvent<HTMLButtonElement>,
+  ) {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+
+    const shouldSelect = !isSelected;
+    monthDragModeRef.current = shouldSelect ? "select" : "deselect";
+    didHandleMonthPointerRef.current = true;
+    setMonthSelected(month, shouldSelect);
+  }
+
+  function applyMonthDrag(month: number) {
+    const dragMode = monthDragModeRef.current;
+    if (!dragMode) return;
+
+    didHandleMonthPointerRef.current = true;
+    setMonthSelected(month, dragMode === "select");
+  }
+
+  function applyMonthDragFromPointer(event: ReactPointerEvent<HTMLElement>) {
+    const dragMode = monthDragModeRef.current;
+    if (!dragMode) return;
+
+    const target = document.elementFromPoint(event.clientX, event.clientY);
+    const monthElement =
+      target instanceof Element
+        ? target.closest("[data-calendar-drill-month]")
+        : null;
+    const month = Number(
+      monthElement?.getAttribute("data-calendar-drill-month"),
+    );
+
+    if (Number.isInteger(month)) {
+      applyMonthDrag(month);
+    }
+  }
+
   useEffect(() => {
     if (status !== "running" || !question || answerState) return;
     const activeQuestion = question;
@@ -240,7 +413,9 @@ export function CalendarDrillPage() {
 
       if (/^[0-9]$/.test(pressedKey)) {
         event.preventDefault();
-        const shortcutMatch = activeQuestion.choices.find((choice) => choice.shortcutKey === pressedKey);
+        const shortcutMatch = activeQuestion.choices.find(
+          (choice) => choice.shortcutKey === pressedKey,
+        );
         if (shortcutMatch) {
           submitAnswer(shortcutMatch.value);
         }
@@ -282,7 +457,8 @@ export function CalendarDrillPage() {
 
   useEffect(() => {
     function onGlobalEnter(event: KeyboardEvent) {
-      if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+      if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey)
+        return;
       if (event.key !== "Enter") return;
       if (isKeyboardEventFromInteractiveElement(event.target)) return;
 
@@ -302,6 +478,19 @@ export function CalendarDrillPage() {
     return () => window.removeEventListener("keydown", onGlobalEnter);
   }, [status, answerState, nextQuestion, startSession]);
 
+  useEffect(() => {
+    function stopMonthDrag() {
+      monthDragModeRef.current = null;
+    }
+
+    window.addEventListener("pointerup", stopMonthDrag);
+    window.addEventListener("pointercancel", stopMonthDrag);
+    return () => {
+      window.removeEventListener("pointerup", stopMonthDrag);
+      window.removeEventListener("pointercancel", stopMonthDrag);
+    };
+  }, []);
+
   return (
     <VStack align={"stretch"} gap={4} pt={4} pb={0}>
       <Box w={"full"} px={[4, 6]}>
@@ -317,13 +506,25 @@ export function CalendarDrillPage() {
           />
 
           <Box mx={{ base: -4, md: -6 }}>
-            <HighlightedSection contentPx={{ base: 3, md: 4 }} contentPy={{ base: 3, md: 4 }}>
-              <Card.Root borderColor={"app.border.default"} rounded={"2xl"} overflow={"hidden"}>
+            <HighlightedSection
+              contentPx={{ base: 3, md: 4 }}
+              contentPy={{ base: 3, md: 4 }}
+            >
+              <Card.Root
+                borderColor={"app.border.default"}
+                rounded={"2xl"}
+                overflow={"hidden"}
+              >
                 <Card.Body>
                   <VStack align={"stretch"} gap={4}>
                     {status === "running" && question ? (
                       <VStack align={"stretch"} gap={4}>
-                        <HStack justify={"space-between"} align={"center"} gap={3} wrap={"wrap"}>
+                        <HStack
+                          justify={"space-between"}
+                          align={"center"}
+                          gap={3}
+                          wrap={"wrap"}
+                        >
                           <HStack align={"center"} gap={2} wrap={"wrap"}>
                             <Box
                               as={"span"}
@@ -342,20 +543,31 @@ export function CalendarDrillPage() {
                               {questionIndex + 1}
                             </Box>
                             <Text fontSize={"2xl"} fontWeight={"normal"}>
-                              <Text as={"span"} color={"app.fg.muted"} fontWeight={"normal"}>
+                              <Text
+                                as={"span"}
+                                color={"app.fg.muted"}
+                                fontWeight={"normal"}
+                              >
                                 Weekday for
                               </Text>{" "}
                               <Text as={"span"} fontWeight={"semibold"}>
-                                {formatDateHuman(question.date)}
+                                {question.formattedDate}
                               </Text>
-                              <Text as={"span"} color={"app.fg.muted"} fontWeight={"normal"}>
+                              <Text
+                                as={"span"}
+                                color={"app.fg.muted"}
+                                fontWeight={"normal"}
+                              >
                                 ?
                               </Text>
                             </Text>
                           </HStack>
                         </HStack>
 
-                        <Grid templateColumns={["repeat(2, 1fr)", "repeat(4, 1fr)"]} gap={3}>
+                        <Grid
+                          templateColumns={["repeat(2, 1fr)", "repeat(4, 1fr)"]}
+                          gap={3}
+                        >
                           {question.choices.map((choice) => {
                             const hasAnswered = Boolean(answerState);
                             const hasPrefix = prefix.length > 0;
@@ -365,7 +577,9 @@ export function CalendarDrillPage() {
                                 key={choice.value}
                                 choice={choice}
                                 requiredPrefixLength={
-                                  requiredPrefixLengthByChoiceValue.get(choice.value) ?? 1
+                                  requiredPrefixLengthByChoiceValue.get(
+                                    choice.value,
+                                  ) ?? 1
                                 }
                                 correctValue={question.correctValue}
                                 selectedValue={answerState?.selectedValue}
@@ -378,7 +592,6 @@ export function CalendarDrillPage() {
                             );
                           })}
                         </Grid>
-
                       </VStack>
                     ) : (
                       <Fieldset.Root>
@@ -391,7 +604,10 @@ export function CalendarDrillPage() {
                         <Fieldset.Content>
                           <VStack align={"stretch"} gap={4}>
                             <Grid
-                              templateColumns={["1fr", "repeat(3, minmax(0, 1fr))"]}
+                              templateColumns={[
+                                "1fr",
+                                "repeat(3, minmax(0, 1fr))",
+                              ]}
                               gap={3}
                               alignItems={"end"}
                             >
@@ -405,15 +621,23 @@ export function CalendarDrillPage() {
                                   onValueChange={(details) => {
                                     const parsed = Number(details.value);
                                     if (!Number.isNaN(parsed)) {
+                                      const minYear = clampYear(parsed);
                                       setSettingsDraft((current) => ({
                                         ...current,
-                                        minYear: clampYear(parsed),
+                                        minYear,
+                                        maxYear: Math.max(
+                                          minYear,
+                                          current.maxYear,
+                                        ),
                                       }));
                                     }
                                   }}
                                 >
                                   <NumberInput.Control />
-                                  <NumberInput.Input rounded={"xl"} w={"full"} />
+                                  <NumberInput.Input
+                                    rounded={"xl"}
+                                    w={"full"}
+                                  />
                                 </NumberInput.Root>
                               </Field.Root>
 
@@ -427,15 +651,23 @@ export function CalendarDrillPage() {
                                   onValueChange={(details) => {
                                     const parsed = Number(details.value);
                                     if (!Number.isNaN(parsed)) {
+                                      const maxYear = clampYear(parsed);
                                       setSettingsDraft((current) => ({
                                         ...current,
-                                        maxYear: clampYear(parsed),
+                                        minYear: Math.min(
+                                          current.minYear,
+                                          maxYear,
+                                        ),
+                                        maxYear,
                                       }));
                                     }
                                   }}
                                 >
                                   <NumberInput.Control />
-                                  <NumberInput.Input rounded={"xl"} w={"full"} />
+                                  <NumberInput.Input
+                                    rounded={"xl"}
+                                    w={"full"}
+                                  />
                                 </NumberInput.Root>
                               </Field.Root>
 
@@ -456,31 +688,263 @@ export function CalendarDrillPage() {
                               </Button>
                             </Grid>
 
-                            <HStack gap={6} wrap={"wrap"}>
-                              <Switch
-                                checked={settingsDraft.weekStartDay === "monday"}
-                                onCheckedChange={(details) => {
-                                  setSettingsDraft((current) => ({
-                                    ...current,
-                                    weekStartDay: details.checked ? "monday" : "sunday",
-                                  }));
-                                }}
+                            <VStack align={"stretch"} gap={3}>
+                              <Button
+                                variant={"ghost"}
+                                justifyContent={"space-between"}
+                                rounded={"xl"}
+                                px={3}
+                                h={"auto"}
+                                py={3}
+                                onClick={() =>
+                                  setIsAdvancedSettingsOpen(
+                                    (current) => !current,
+                                  )
+                                }
+                                aria-expanded={isAdvancedSettingsOpen}
                               >
-                                Monday as first day
-                              </Switch>
+                                <HStack gap={3} minW={0}>
+                                  <Icon as={LuSettings2} />
+                                  <VStack align={"start"} gap={0} minW={0}>
+                                    <Text>Advanced Settings</Text>
+                                    <Text
+                                      fontSize={"xs"}
+                                      color={"app.fg.subtle"}
+                                      truncate
+                                    >
+                                      {advancedSettingsSummary}
+                                    </Text>
+                                  </VStack>
+                                </HStack>
+                                <Icon
+                                  as={LuChevronDown}
+                                  transform={
+                                    isAdvancedSettingsOpen
+                                      ? "rotate(180deg)"
+                                      : undefined
+                                  }
+                                  transition={"transform 0.15s ease"}
+                                />
+                              </Button>
 
-                              <Switch
-                                checked={settingsDraft.firstDayNumberBase === 0}
-                                onCheckedChange={(details) => {
-                                  setSettingsDraft((current) => ({
-                                    ...current,
-                                    firstDayNumberBase: details.checked ? 0 : 1,
-                                  }));
-                                }}
-                              >
-                                First day starts at 0
-                              </Switch>
-                            </HStack>
+                              {isAdvancedSettingsOpen ? (
+                                <VStack
+                                  align={"stretch"}
+                                  gap={5}
+                                  borderWidth={"1px"}
+                                  borderColor={"app.border.default"}
+                                  rounded={"xl"}
+                                  bg={"app.bg.subtle"}
+                                  p={{ base: 3, md: 4 }}
+                                >
+                                  <VStack align={"stretch"} gap={3}>
+                                    <HStack justify={"space-between"} gap={3}>
+                                      <HStack gap={2}>
+                                        <Icon
+                                          as={LuCalendarRange}
+                                          color={"app.fg.subtle"}
+                                        />
+                                        <Text fontWeight={"medium"}>
+                                          Date Display
+                                        </Text>
+                                      </HStack>
+                                    </HStack>
+
+                                    <Field.Root w={"full"}>
+                                      <Field.Label>Date Format</Field.Label>
+                                      <NativeSelect.Root w={"full"}>
+                                        <NativeSelect.Field
+                                          rounded={"xl"}
+                                          bg={"app.bg.default"}
+                                          value={settingsDraft.dateFormat}
+                                          aria-label={"Select date format"}
+                                          onChange={(event) => {
+                                            const dateFormat = event
+                                              .currentTarget
+                                              .value as PracticeSettings["dateFormat"];
+                                            setSettingsDraft((current) => ({
+                                              ...current,
+                                              dateFormat,
+                                            }));
+                                          }}
+                                        >
+                                          {dateFormatOptions.map((option) => (
+                                            <option
+                                              key={option.value}
+                                              value={option.value}
+                                            >
+                                              {option.label}
+                                            </option>
+                                          ))}
+                                        </NativeSelect.Field>
+                                        <NativeSelect.Indicator />
+                                      </NativeSelect.Root>
+                                    </Field.Root>
+                                  </VStack>
+
+                                  <Box
+                                    h={"1px"}
+                                    bg={"app.border.default"}
+                                    aria-hidden={"true"}
+                                  />
+
+                                  <VStack align={"stretch"} gap={3}>
+                                    <HStack
+                                      justify={"space-between"}
+                                      gap={3}
+                                      wrap={"wrap"}
+                                    >
+                                      <HStack gap={2}>
+                                        <Icon
+                                          as={LuCalendarRange}
+                                          color={"app.fg.subtle"}
+                                        />
+                                        <Text fontWeight={"medium"}>
+                                          Month Filter
+                                        </Text>
+                                      </HStack>
+                                      <HStack>
+                                        <Button
+                                          size={"xs"}
+                                          rounded={"full"}
+                                          variant={
+                                            areAllMonthsSelected
+                                              ? "subtle"
+                                              : "outline"
+                                          }
+                                          aria-pressed={areAllMonthsSelected}
+                                          onClick={toggleAllMonths}
+                                        >
+                                          All
+                                        </Button>
+                                      </HStack>
+                                    </HStack>
+
+                                    <Grid
+                                      templateColumns={[
+                                        "repeat(3, minmax(0, 1fr))",
+                                        "repeat(6, minmax(0, 1fr))",
+                                      ]}
+                                      gap={2}
+                                      onPointerMove={applyMonthDragFromPointer}
+                                    >
+                                      {ALL_MONTHS.map((month) => {
+                                        const isSelected =
+                                          selectedMonths.includes(month);
+
+                                        return (
+                                          <Button
+                                            key={month}
+                                            data-calendar-drill-month={month}
+                                            size={"sm"}
+                                            rounded={"lg"}
+                                            variant={
+                                              isSelected ? "subtle" : "ghost"
+                                            }
+                                            colorPalette={"gray"}
+                                            borderWidth={0}
+                                            bg={
+                                              isSelected
+                                                ? "app.bg.surface"
+                                                : "transparent"
+                                            }
+                                            color={
+                                              isSelected
+                                                ? "app.fg.default"
+                                                : undefined
+                                            }
+                                            _hover={{ bg: "app.bg.surface" }}
+                                            aria-pressed={isSelected}
+                                            onPointerDown={(event) =>
+                                              beginMonthDrag(
+                                                month,
+                                                isSelected,
+                                                event,
+                                              )
+                                            }
+                                            onPointerEnter={() =>
+                                              applyMonthDrag(month)
+                                            }
+                                            onClick={() => {
+                                              if (
+                                                didHandleMonthPointerRef.current
+                                              ) {
+                                                didHandleMonthPointerRef.current = false;
+                                                return;
+                                              }
+
+                                              toggleMonth(month);
+                                            }}
+                                          >
+                                            {MONTH_LABELS[month - 1]}
+                                          </Button>
+                                        );
+                                      })}
+                                    </Grid>
+                                  </VStack>
+
+                                  <Box
+                                    h={"1px"}
+                                    bg={"app.border.default"}
+                                    aria-hidden={"true"}
+                                  />
+
+                                  <VStack align={"stretch"} gap={3}>
+                                    <HStack gap={2}>
+                                      <Icon
+                                        as={LuKeyboard}
+                                        color={"app.fg.subtle"}
+                                      />
+                                      <Text fontWeight={"medium"}>
+                                        Weekdays Layout
+                                      </Text>
+                                    </HStack>
+
+                                    <Grid
+                                      templateColumns={[
+                                        "1fr",
+                                        "repeat(2, minmax(0, 1fr))",
+                                      ]}
+                                      gap={{ base: 3, md: 6 }}
+                                    >
+                                      <Switch
+                                        checked={
+                                          settingsDraft.weekStartDay ===
+                                          "monday"
+                                        }
+                                        onCheckedChange={(details) => {
+                                          const weekStartDay = details.checked
+                                            ? "monday"
+                                            : "sunday";
+                                          setSettingsDraft((current) => ({
+                                            ...current,
+                                            weekStartDay,
+                                          }));
+                                        }}
+                                      >
+                                        Monday as first day
+                                      </Switch>
+
+                                      <Switch
+                                        checked={
+                                          settingsDraft.firstDayNumberBase === 0
+                                        }
+                                        onCheckedChange={(details) => {
+                                          const firstDayNumberBase =
+                                            details.checked ? 0 : 1;
+                                          setSettingsDraft((current) => ({
+                                            ...current,
+                                            firstDayNumberBase,
+                                          }));
+                                        }}
+                                      >
+                                        First day starts at 0
+                                      </Switch>
+                                    </Grid>
+                                  </VStack>
+                                </VStack>
+                              ) : null}
+                            </VStack>
                           </VStack>
                         </Fieldset.Content>
                       </Fieldset.Root>
@@ -506,12 +970,21 @@ export function CalendarDrillPage() {
                           <Text>Next</Text>
                         </HStack>
                         {answerState ? (
-                          <Box position={"absolute"} insetEnd={{ base: 2, sm: 4 }}>
+                          <Box
+                            position={"absolute"}
+                            insetEnd={{ base: 2, sm: 4 }}
+                          >
                             <Box display={{ base: "none", sm: "block" }}>
-                              <ShortcutHint icon={LuCornerDownLeft} label={"Enter"} />
+                              <ShortcutHint
+                                icon={LuCornerDownLeft}
+                                label={"Enter"}
+                              />
                             </Box>
                             <Box display={{ base: "block", sm: "none" }}>
-                              <ShortcutHint icon={LuCornerDownLeft} label={""} />
+                              <ShortcutHint
+                                icon={LuCornerDownLeft}
+                                label={""}
+                              />
                             </Box>
                           </Box>
                         ) : null}
@@ -545,7 +1018,10 @@ export function CalendarDrillPage() {
                       </HStack>
                       <Box position={"absolute"} insetEnd={{ base: 2, sm: 4 }}>
                         <Box display={{ base: "none", sm: "block" }}>
-                          <ShortcutHint icon={LuCornerDownLeft} label={"Enter"} />
+                          <ShortcutHint
+                            icon={LuCornerDownLeft}
+                            label={"Enter"}
+                          />
                         </Box>
                         <Box display={{ base: "block", sm: "none" }}>
                           <ShortcutHint icon={LuCornerDownLeft} label={""} />
@@ -557,7 +1033,6 @@ export function CalendarDrillPage() {
               </Card.Root>
             </HighlightedSection>
           </Box>
-
         </VStack>
       </Box>
     </VStack>
