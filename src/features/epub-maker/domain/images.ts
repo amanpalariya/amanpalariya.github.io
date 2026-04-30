@@ -15,11 +15,17 @@ export function mediaTypeToExtension(mediaType: string): string {
 export function dataUrlToBytes(
   dataUrl: string,
 ): { bytes: Uint8Array; mediaType: string } | null {
-  const match = dataUrl.match(/^data:([^;,]+)?(?:;base64)?,([\s\S]*)$/);
-  if (!match) return null;
-  const mediaType = match[1] || "application/octet-stream";
-  const payload = match[2] || "";
-  const isBase64 = dataUrl.includes(";base64,");
+  if (!dataUrl.startsWith("data:")) return null;
+  const commaIndex = dataUrl.indexOf(",");
+  if (commaIndex < 0) return null;
+
+  const metadata = dataUrl.slice("data:".length, commaIndex);
+  const payload = dataUrl.slice(commaIndex + 1);
+  const metadataParts = metadata.split(";");
+  const mediaType = metadataParts[0] || "application/octet-stream";
+  const isBase64 = metadataParts
+    .slice(1)
+    .some((part) => part.toLowerCase() === "base64");
 
   try {
     if (isBase64) {
