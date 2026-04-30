@@ -1,5 +1,4 @@
 import {
-  Clipboard,
   HStack,
   VStack,
   Link,
@@ -8,6 +7,7 @@ import {
   WrapItem,
   Text,
 } from "@chakra-ui/react";
+import { Clipboard } from "@components/ui/clipboard";
 import { Heading2, ParagraphText } from "@components/core/Texts";
 import type { CvProfile } from "data/cv";
 import {

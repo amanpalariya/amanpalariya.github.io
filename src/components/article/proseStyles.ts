@@ -1,8 +1,9 @@
 "use client";
 
 import { useColorModeValue } from "@components/ui/color-mode";
+import type { CSSObject } from "@emotion/react";
 
-export function useProseStyles() {
+export function useProseStyles(): CSSObject {
   const proseBodyFontFamily =
     "'CMU Sans Serif', 'Computer Modern Sans', sans-serif";
   const proseHeadingFontFamily = "'Lexend', sans-serif";

@@ -8,12 +8,12 @@ import {
   IconButton,
   Input,
   InputGroup,
-  Menu,
   NativeSelect,
-  NumberInput,
   Text,
   VStack,
 } from "@chakra-ui/react";
+import { Menu } from "@components/ui/menu";
+import { NumberInput } from "@components/ui/number-input";
 import { Switch } from "@components/ui/switch";
 import { Tooltip } from "@components/ui/tooltip";
 import {

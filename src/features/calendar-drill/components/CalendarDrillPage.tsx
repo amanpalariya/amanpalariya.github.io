@@ -4,15 +4,14 @@ import {
   Box,
   Button,
   Card,
-  Field,
-  Fieldset,
   Grid,
   HStack,
   Icon,
-  NumberInput,
   Text,
   VStack,
 } from "@chakra-ui/react";
+import { Field, Fieldset } from "@components/ui/field";
+import { NumberInput } from "@components/ui/number-input";
 import { ShortcutHint } from "@components/core/ShortcutHint";
 import { Switch } from "@components/ui/switch";
 import HighlightedSection from "@components/page/common/HighlightedSection";

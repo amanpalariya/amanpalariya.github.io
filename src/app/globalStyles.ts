@@ -1,4 +1,6 @@
-type GlobalStyles = Record<string, Record<string, string | number> | unknown>;
+import type { CSSObject } from "@emotion/react";
+
+type GlobalStyles = CSSObject;
 
 const HANDWRITTEN_BASE_STYLES: GlobalStyles = {
   ".handwritten": {
@@ -52,7 +54,7 @@ const HANDWRITTEN_SQUIGGLE_STYLES: GlobalStyles = {
   },
 };
 
-export function getAppGlobalStyles(proseStyles: unknown): GlobalStyles {
+export function getAppGlobalStyles(proseStyles: CSSObject): GlobalStyles {
   return {
     ".skip-link": {
       position: "fixed",

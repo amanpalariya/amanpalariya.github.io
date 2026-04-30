@@ -1,6 +1,5 @@
 import {
   Box,
-  Dialog,
   HStack,
   IconButton,
   Separator,
@@ -8,7 +7,15 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { ShortcutHint } from "@components/core/ShortcutHint";
-import { DialogCloseTrigger, DialogContent } from "@components/ui/dialog";
+import {
+  DialogBody,
+  DialogCloseTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogRoot,
+  DialogTitle,
+  DialogTrigger,
+} from "@components/ui/dialog";
 import { Tooltip } from "@components/ui/tooltip";
 import { LuCircleHelp, LuCommand } from "react-icons/lu";
 
@@ -22,9 +29,9 @@ function ShortcutJoiner({ value }: { value: string }) {
 
 export function EpubHelpButton() {
   return (
-    <Dialog.Root>
+    <DialogRoot>
       <Tooltip content={"Help"}>
-        <Dialog.Trigger asChild>
+        <DialogTrigger asChild>
           <IconButton
             size={"md"}
             rounded={"full"}
@@ -39,7 +46,7 @@ export function EpubHelpButton() {
           >
             <LuCircleHelp size={20} />
           </IconButton>
-        </Dialog.Trigger>
+        </DialogTrigger>
       </Tooltip>
 
       <DialogContent
@@ -50,11 +57,11 @@ export function EpubHelpButton() {
         borderColor={"app.epub.border.default"}
         maxW={"560px"}
       >
-        <Dialog.Header>
-          <Dialog.Title fontFamily={"ui"}>EPUB Maker help</Dialog.Title>
-        </Dialog.Header>
+        <DialogHeader>
+          <DialogTitle fontFamily={"ui"}>EPUB Maker help</DialogTitle>
+        </DialogHeader>
 
-        <Dialog.Body>
+        <DialogBody>
           <VStack align={"stretch"} gap={5} fontFamily={"ui"} fontSize={"sm"}>
             <Box>
               <Text fontWeight={"semibold"} mb={2}>
@@ -104,7 +111,7 @@ export function EpubHelpButton() {
                   display={"list-item"}
                   color={"app.epub.fg.default"}
                 >
-                  Click "Save EPUB" to generate and download the final EPUB.
+                  Click &quot;Save EPUB&quot; to generate and download the final EPUB.
                 </Text>
               </VStack>
             </Box>
@@ -157,10 +164,10 @@ export function EpubHelpButton() {
               </VStack>
             </Box>
           </VStack>
-        </Dialog.Body>
+        </DialogBody>
 
         <DialogCloseTrigger />
       </DialogContent>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }

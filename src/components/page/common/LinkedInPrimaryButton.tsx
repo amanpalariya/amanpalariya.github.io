@@ -12,15 +12,18 @@ export default function LinkedInButton() {
       closeOnScroll
     >
       <PrimaryActionButton
-        as={"a"}
-        href={PersonalData.linkedIn.url}
-        target="_blank"
-        rel="noopener noreferrer"
+        asChild
         aria-label={"Open LinkedIn profile (opens in a new tab)"}
         icon={FaLinkedin}
         backgroundColor={"app.brand.linkedin.solid"}
       >
-        LinkedIn
+        <a
+          href={PersonalData.linkedIn.url}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          LinkedIn
+        </a>
       </PrimaryActionButton>
     </Tooltip>
   );
@@ -34,19 +37,22 @@ export function LinkedInButtonSmall() {
       closeOnScroll
     >
       <IconButton
-        as={"a"}
-        href={PersonalData.linkedIn.url}
-        target="_blank"
-        rel="noopener noreferrer"
+        asChild
         rounded={"full"}
         color={"app.brand.linkedin.contrast"}
         backgroundColor={"app.brand.linkedin.solid"}
         _hover={{ opacity: 0.9 }}
         aria-label={"Open LinkedIn profile (opens in a new tab)"}
       >
-        <Icon>
-          <FaLinkedin />
-        </Icon>
+        <a
+          href={PersonalData.linkedIn.url}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Icon>
+            <FaLinkedin />
+          </Icon>
+        </a>
       </IconButton>
     </Tooltip>
   );
