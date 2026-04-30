@@ -3,7 +3,7 @@ import {
   type DateParts,
   type WeekdayIndex,
   WEEKDAYS,
-} from "../domain/doomsday";
+} from "../domain/weekday";
 import type { DateFormatPreference, PracticeSettings } from "../types";
 import type {
   PracticeQuestion,

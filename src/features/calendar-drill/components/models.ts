@@ -1,4 +1,4 @@
-import type { DateParts } from "../domain/doomsday";
+import type { DateParts } from "../domain/weekday";
 
 export type WeekdayChoice = {
   value: string;
