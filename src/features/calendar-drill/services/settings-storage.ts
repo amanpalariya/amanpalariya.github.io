@@ -2,17 +2,26 @@ import {
   CALENDAR_DRILL_STORAGE_FIELDS,
   CALENDAR_DRILL_TOOL_ID,
 } from "../constants";
-import type { FirstDayNumberBase, PracticeSettings, WeekStartDay } from "../types";
+import type {
+  DateFormatPreference,
+  FirstDayNumberBase,
+  PracticeSettings,
+  WeekStartDay,
+} from "../types";
 import { buildToolStorageKey } from "@utils/storage";
 
 const MIN_ALLOWED_YEAR = 1600;
 const MAX_ALLOWED_YEAR = 2399;
+const ALL_MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
 function clampYear(value: number): number {
   return Math.max(MIN_ALLOWED_YEAR, Math.min(MAX_ALLOWED_YEAR, value));
 }
 
-function normalizeYearRange(minYear: number, maxYear: number): { minYear: number; maxYear: number } {
+function normalizeYearRange(
+  minYear: number,
+  maxYear: number,
+): { minYear: number; maxYear: number } {
   const safeMin = clampYear(minYear);
   const safeMax = clampYear(maxYear);
   if (safeMin <= safeMax) return { minYear: safeMin, maxYear: safeMax };
@@ -25,6 +34,21 @@ function isWeekStartDay(value: unknown): value is WeekStartDay {
 
 function isFirstDayNumberBase(value: unknown): value is FirstDayNumberBase {
   return value === 0 || value === 1;
+}
+
+function isDateFormatPreference(value: unknown): value is DateFormatPreference {
+  return (
+    value === "locale" ||
+    value === "month-day-year" ||
+    value === "day-month-year" ||
+    value === "iso"
+  );
+}
+
+function normalizeSelectedMonths(months: number[]): number[] {
+  return Array.from(new Set(months))
+    .filter((month) => Number.isInteger(month) && month >= 1 && month <= 12)
+    .sort((left, right) => left - right);
 }
 
 function readToolString(field: string, fallback: string): string {
@@ -41,10 +65,25 @@ function readToolNumber(field: string, fallback: number): number {
   return Number.isFinite(parsedValue) ? parsedValue : fallback;
 }
 
+function readToolNumberList(field: string, fallback: number[]): number[] {
+  const value = window.localStorage.getItem(
+    buildToolStorageKey(CALENDAR_DRILL_TOOL_ID, field),
+  );
+  if (value === null) return fallback;
+  if (value === "") return [];
+
+  return value
+    .split(",")
+    .map((item) => Number(item.trim()))
+    .filter((item) => Number.isFinite(item));
+}
+
 export function createDefaultPracticeSettings(): PracticeSettings {
   return {
     minYear: 2000,
     maxYear: new Date().getFullYear(),
+    selectedMonths: ALL_MONTHS,
+    dateFormat: "locale",
     weekStartDay: "sunday",
     firstDayNumberBase: 1,
   };
@@ -74,10 +113,22 @@ export function readCalendarDrillSettings(): PracticeSettings {
       CALENDAR_DRILL_STORAGE_FIELDS.firstDayNumberBase,
       defaultSettings.firstDayNumberBase,
     );
+    const selectedMonthsValue = readToolNumberList(
+      CALENDAR_DRILL_STORAGE_FIELDS.selectedMonths,
+      defaultSettings.selectedMonths,
+    );
+    const dateFormatValue = readToolString(
+      CALENDAR_DRILL_STORAGE_FIELDS.dateFormat,
+      defaultSettings.dateFormat,
+    );
 
     return {
       minYear: yearRange.minYear,
       maxYear: yearRange.maxYear,
+      selectedMonths: normalizeSelectedMonths(selectedMonthsValue),
+      dateFormat: isDateFormatPreference(dateFormatValue)
+        ? dateFormatValue
+        : defaultSettings.dateFormat,
       weekStartDay: isWeekStartDay(weekStartDayValue)
         ? weekStartDayValue
         : defaultSettings.weekStartDay,
@@ -94,6 +145,7 @@ export function writeCalendarDrillSettings(settings: PracticeSettings): void {
   if (typeof window === "undefined") return;
 
   const yearRange = normalizeYearRange(settings.minYear, settings.maxYear);
+  const selectedMonths = normalizeSelectedMonths(settings.selectedMonths);
   try {
     window.localStorage.setItem(
       buildToolStorageKey(
@@ -108,6 +160,20 @@ export function writeCalendarDrillSettings(settings: PracticeSettings): void {
         CALENDAR_DRILL_STORAGE_FIELDS.maxYear,
       ),
       String(yearRange.maxYear),
+    );
+    window.localStorage.setItem(
+      buildToolStorageKey(
+        CALENDAR_DRILL_TOOL_ID,
+        CALENDAR_DRILL_STORAGE_FIELDS.selectedMonths,
+      ),
+      selectedMonths.join(","),
+    );
+    window.localStorage.setItem(
+      buildToolStorageKey(
+        CALENDAR_DRILL_TOOL_ID,
+        CALENDAR_DRILL_STORAGE_FIELDS.dateFormat,
+      ),
+      settings.dateFormat,
     );
     window.localStorage.setItem(
       buildToolStorageKey(

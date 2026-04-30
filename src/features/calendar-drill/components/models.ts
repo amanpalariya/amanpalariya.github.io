@@ -8,6 +8,7 @@ export type WeekdayChoice = {
 
 export type PracticeQuestion = {
   date: DateParts;
+  formattedDate: string;
   choices: WeekdayChoice[];
   correctValue: string;
   prompt: string;
