@@ -1,5 +1,4 @@
-import { Icon, IconButton } from "@chakra-ui/react";
-import { PrimaryActionButton } from "@components/core/Buttons";
+import { Button, Icon, IconButton } from "@chakra-ui/react";
 import { PersonalData } from "data";
 import { FaLinkedin } from "react-icons/fa";
 import { Tooltip } from "@components/ui/tooltip";
@@ -11,20 +10,28 @@ export default function LinkedInButton() {
       showArrow
       closeOnScroll
     >
-      <PrimaryActionButton
+      <Button
         asChild
+        fontFamily="ui"
+        fontSize="sm"
+        px={2.5}
+        shadow="xs"
+        rounded="xl"
+        variant="solid"
+        background="app.brand.linkedin.solid"
         aria-label={"Open LinkedIn profile (opens in a new tab)"}
-        icon={FaLinkedin}
-        backgroundColor={"app.brand.linkedin.solid"}
       >
         <a
           href={PersonalData.linkedIn.url}
           target="_blank"
           rel="noopener noreferrer"
         >
+          <Icon>
+            <FaLinkedin />
+          </Icon>
           LinkedIn
         </a>
-      </PrimaryActionButton>
+      </Button>
     </Tooltip>
   );
 }
