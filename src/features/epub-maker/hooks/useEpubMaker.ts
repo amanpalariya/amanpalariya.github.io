@@ -449,35 +449,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     writeEpubMakerPrefs(prefs);
   }, [isPrefsLoaded, prefs]);
 
-  function evaluatePageInput(existingPages: PageDraft[], content: string) {
-    const trimmedContent = content.trim();
-    if (!trimmedContent) {
-      return { status: "empty" as const };
-    }
-
-    const isDuplicate = existingPages.some(
-      (page) => page.rawContent.trim() === trimmedContent,
-    );
-    if (isDuplicate) {
-      const duplicatePageIds = existingPages
-        .filter((page) => page.rawContent.trim() === trimmedContent)
-        .map((page) => page.id);
-      return { status: "duplicate" as const, duplicatePageIds };
-    }
-
-    const page = createPageDraftFromInput(
-      content,
-      existingPages.length + 1,
-      sanitizePolicy,
-    );
-    if (!page) {
-      return { status: "invalid" as const };
-    }
-
-    return { status: "ok" as const, page };
-  }
-
-  function evaluatePageInputWithOptions(
+  function evaluatePageInput(
     existingPages: PageDraft[],
     content: string,
     options?: Parameters<typeof createPageDraftFromInput>[3],
@@ -614,7 +586,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
         }
 
         const droppedFileTitle = fileNameToTitle(file.name);
-        const result = evaluatePageInputWithOptions(nextPages, content, {
+        const result = evaluatePageInput(nextPages, content, {
           defaultTitle: droppedFileTitle,
           textUseDefaultTitle: true,
           htmlUseHeadTitleOnly: !shouldInferTitleFromHtml,
