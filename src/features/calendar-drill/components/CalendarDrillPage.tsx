@@ -172,7 +172,7 @@ export function CalendarDrillPage() {
     setStatus("running");
   }, [settingsDraft]);
 
-  function submitAnswer(choiceValue: string) {
+  const submitAnswer = useCallback((choiceValue: string) => {
     if (!question || status !== "running" || answerState) return;
 
     const responseMs = Math.max(1, Date.now() - questionStartedAt);
@@ -206,7 +206,7 @@ export function CalendarDrillPage() {
     });
 
     setPrefix("");
-  }
+  }, [answerState, question, questionStartedAt, stats, status]);
 
   const nextQuestion = useCallback(() => {
     if (!question || !answerState) return;
@@ -278,7 +278,7 @@ export function CalendarDrillPage() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [status, question, answerState, prefix]);
+  }, [status, question, answerState, prefix, submitAnswer]);
 
   useEffect(() => {
     function onGlobalEnter(event: KeyboardEvent) {

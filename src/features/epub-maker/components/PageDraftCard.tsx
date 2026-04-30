@@ -259,7 +259,6 @@ export function PageDraftCard({
     isCoverEnabled,
     hasCustomCover,
     customCoverHtml,
-    page.previewHtml,
     selectedCoverSizePresetId,
     coverTextScalePercent,
     coverTextPosition,
