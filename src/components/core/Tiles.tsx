@@ -194,8 +194,8 @@ function formatBlogDateLabel({
   const updatedDate = parseBlogDate(updated);
   if (!updatedDate) {
     return (
-      <Text as="time" dateTime={publishedDate.toISOString()} fontSize={"sm"}>
-        {publishedLabel}
+      <Text as="span" fontSize={"sm"}>
+        <time dateTime={publishedDate.toISOString()}>{publishedLabel}</time>
       </Text>
     );
   }
@@ -208,13 +208,9 @@ function formatBlogDateLabel({
 
   return (
     <Text as="span" fontSize={"sm"}>
-      <Text as="time" dateTime={publishedDate.toISOString()}>
-        {publishedLabel}
-      </Text>
+      <time dateTime={publishedDate.toISOString()}>{publishedLabel}</time>
       {" · Updated "}
-      <Text as="time" dateTime={updatedDate.toISOString()}>
-        {updatedLabel}
-      </Text>
+      <time dateTime={updatedDate.toISOString()}>{updatedLabel}</time>
     </Text>
   );
 }

@@ -59,6 +59,11 @@ function toSvgTextAnchor(align: "center" | "left" | "right"): "middle" | "start"
   return align === "right" ? "end" : "start";
 }
 
+function toCanvasTextAlign(align: "center" | "left" | "right"): CanvasTextAlign {
+  if (align === "center") return "center";
+  return align === "right" ? "right" : "left";
+}
+
 function resolveCoverCanvasMetrics(
   coverWidth: number,
   coverHeight: number,
@@ -140,6 +145,33 @@ function extractFirstImageSrc(html: string): string | null {
   return match?.[1] ?? null;
 }
 
+function loadCoverImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Could not load custom cover image."));
+    image.src = src;
+  });
+}
+
+function drawCoverImageSlice(
+  context: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  width: number,
+  height: number,
+) {
+  const imageWidth = image.naturalWidth || image.width;
+  const imageHeight = image.naturalHeight || image.height;
+  if (imageWidth <= 0 || imageHeight <= 0) return;
+
+  const scale = Math.max(width / imageWidth, height / imageHeight);
+  const drawWidth = imageWidth * scale;
+  const drawHeight = imageHeight * scale;
+  const drawX = (width - drawWidth) / 2;
+  const drawY = (height - drawHeight) / 2;
+  context.drawImage(image, drawX, drawY, drawWidth, drawHeight);
+}
+
 function createCustomCoverSvgDataUrl(input: AutoCoverInput, customImageSrc: string): string {
   const textPalette = resolveTextPaletteForInput(input.textColorMode, "#2b2b2b", "#171717");
   const coverWidth = Math.max(800, Math.round(input.size.width));
@@ -200,6 +232,92 @@ function createCustomCoverSvgDataUrl(input: AutoCoverInput, customImageSrc: stri
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
+async function createCustomCoverRasterDataUrl(
+  input: AutoCoverInput,
+  customImageSrc: string,
+): Promise<string> {
+  if (typeof document === "undefined") {
+    return createCustomCoverSvgDataUrl(input, customImageSrc);
+  }
+
+  const coverWidth = Math.max(800, Math.round(input.size.width));
+  const coverHeight = Math.max(1000, Math.round(input.size.height));
+  const metrics = resolveCoverCanvasMetrics(coverWidth, coverHeight);
+  const canvas = document.createElement("canvas");
+  canvas.width = coverWidth;
+  canvas.height = coverHeight;
+  const context = canvas.getContext("2d");
+  if (!context) return createCustomCoverSvgDataUrl(input, customImageSrc);
+
+  const image = await loadCoverImage(customImageSrc);
+  drawCoverImageSlice(context, image, coverWidth, coverHeight);
+
+  if (!input.hideText) {
+    context.fillStyle = "rgba(0,0,0,0.2)";
+    context.fillRect(0, 0, coverWidth, coverHeight);
+
+    const textPalette = resolveTextPaletteForInput(input.textColorMode, "#2b2b2b", "#171717");
+    const styledLayouts = applyTextStyle(
+      scaleTextLayout(DEFAULT_TEXT_LAYOUT, input.textScalePercent),
+      scaleAuthorLayout(DEFAULT_AUTHOR_LAYOUT, input.textScalePercent),
+      input.textPosition,
+    );
+    const titleLayout = scaleTextLayoutToCanvas(styledLayouts.titleLayout, metrics);
+    const authorLayout = scaleAuthorLayoutToCanvas(styledLayouts.authorLayout, metrics);
+    const textLeftBound = Math.round(COVER_TEXT_BOUND_LEFT * metrics.scaleX);
+    const textRightBound = Math.round(COVER_TEXT_BOUND_RIGHT * metrics.scaleX);
+
+    const titleWrapLimit = resolveWrapCharLimit(
+      titleLayout.maxCharsPerLine,
+      titleLayout.fontSize,
+      resolveAvailableTextWidth(titleLayout.align, titleLayout.x, textLeftBound, textRightBound),
+    );
+    const authorWrapLimit = resolveWrapCharLimit(
+      authorLayout.maxCharsPerLine,
+      authorLayout.fontSize,
+      resolveAvailableTextWidth(authorLayout.align, authorLayout.x, textLeftBound, textRightBound),
+    );
+
+    const titleLines = wrapTextLines(input.title || DEFAULT_BOOK_TITLE, titleWrapLimit, 5);
+    const authorLines = wrapTextLines(input.author || "", authorWrapLimit, 3);
+    const titleStartY = computeTitleStartY(titleLayout, titleLines.length);
+
+    context.textAlign = toCanvasTextAlign(titleLayout.align);
+    context.textBaseline = "middle";
+    context.fillStyle = textPalette.titleColor;
+    context.strokeStyle = textPalette.strokeColor;
+    context.lineWidth = COVER_TEXT_STROKE_WIDTH * metrics.unitScale;
+    context.lineJoin = "round";
+    context.font = `700 ${titleLayout.fontSize}px Inter, Segoe UI, Roboto, Arial, sans-serif`;
+
+    for (let index = 0; index < titleLines.length; index += 1) {
+      const y = titleStartY + index * titleLayout.lineHeight;
+      context.strokeText(titleLines[index], titleLayout.x, y);
+      context.fillText(titleLines[index], titleLayout.x, y);
+    }
+
+    if (authorLines.length > 0) {
+      const authorStartY = computeAuthorStartY(
+        authorLayout,
+        titleLayout,
+        titleStartY,
+        titleLines.length,
+      );
+      context.textAlign = toCanvasTextAlign(authorLayout.align);
+      context.fillStyle = textPalette.authorColor;
+      context.font = `500 ${authorLayout.fontSize}px Inter, Segoe UI, Roboto, Arial, sans-serif`;
+
+      for (let index = 0; index < authorLines.length; index += 1) {
+        const y = authorStartY + index * authorLayout.lineHeight;
+        context.strokeText(authorLines[index], authorLayout.x, y);
+        context.fillText(authorLines[index], authorLayout.x, y);
+      }
+    }
+  }
+
+  return canvas.toDataURL("image/png");
+}
+
 export function createCoverHtml(
   title: string,
   author: string,
@@ -233,4 +351,41 @@ export function createCoverHtml(
   }
 
   return createAutoCoverHtml(title, author, options, preferredRenderer);
+}
+
+export async function createCoverHtmlAsync(
+  title: string,
+  author: string,
+  options: CoverHtmlOptions,
+  preferredRenderer: AutoCoverRendererId = DEFAULT_AUTO_COVER_RENDERER,
+): Promise<string> {
+  const safeTitle = title || DEFAULT_BOOK_TITLE;
+  const coverSize = resolveCoverSizePreset(options.sizePresetId);
+  const customImageSrc = options.customCoverHtml
+    ? extractFirstImageSrc(options.customCoverHtml)
+    : null;
+
+  if (!customImageSrc) {
+    return createCoverHtml(title, author, options, preferredRenderer);
+  }
+
+  try {
+    const finalSrc = await createCustomCoverRasterDataUrl(
+      {
+        title,
+        author,
+        backgroundId: options.backgroundId,
+        size: { width: coverSize.width, height: coverSize.height },
+        textScalePercent: options.textScalePercent,
+        textPosition: options.textPosition,
+        textColorMode: options.textColorMode,
+        hideText: options.hideCoverText,
+      },
+      customImageSrc,
+    );
+
+    return `<figure><img src="${finalSrc}" alt="Cover for ${escapeXmlText(safeTitle)}" /></figure>`;
+  } catch {
+    return createCoverHtml(title, author, options, preferredRenderer);
+  }
 }

@@ -56,15 +56,13 @@ function DateRow({
   return (
     <HStack gap={3} px={[4, 6]} fontSize="sm" color="app.fg.muted">
       <Text as="p">
-        <Text as="time" dateTime={publishedDate.toISOString()} color="app.fg.muted">
+        <time dateTime={publishedDate.toISOString()}>
           {publishedLabel}
-        </Text>
+        </time>
         {updatedDate && updatedLabel ? (
-          <Text
-            as="time"
-            dateTime={updatedDate.toISOString()}
-            color="app.fg.muted"
-          >{` (updated on ${updatedLabel})`}</Text>
+          <time dateTime={updatedDate.toISOString()}>
+            {` (updated on ${updatedLabel})`}
+          </time>
         ) : null}
       </Text>
     </HStack>

@@ -8,12 +8,12 @@ import {
   IconButton,
   Input,
   InputGroup,
-  Menu,
   NativeSelect,
-  NumberInput,
   Text,
   VStack,
 } from "@chakra-ui/react";
+import { Menu } from "@components/ui/menu";
+import { NumberInput } from "@components/ui/number-input";
 import { Switch } from "@components/ui/switch";
 import { Tooltip } from "@components/ui/tooltip";
 import {
@@ -79,6 +79,27 @@ import {
   extractFirstImageSrcFromHtml,
 } from "./BufferedCoverPreview";
 import { CoverSettingsDialog } from "./CoverSettingsDialog";
+import {
+  COVER_BACKGROUND_LABEL_MODE,
+  COVER_GRID_TILE_RATIO,
+  COVER_PREVIEW_AUTHOR_HEIGHT,
+  COVER_PREVIEW_AUTHOR_OPACITY,
+  COVER_PREVIEW_AUTHOR_WIDTH,
+  COVER_PREVIEW_TITLE_HEIGHT,
+  COVER_PREVIEW_TITLE_OPACITY,
+  COVER_PREVIEW_TITLE_WIDTH,
+  COVER_SIZE_LABEL_MODE,
+  COVER_TEXT_POSITION_OPTIONS,
+  SHOW_BACKGROUND_DESCRIPTIONS,
+  SHOW_SIZE_DESCRIPTIONS,
+  dropdownGridItemInteractionProps,
+  renderGridOptionMeta,
+  renderGridSelectionBadge,
+  resolveCoverTextPreviewLines,
+  resolveGridSelectionFrameProps,
+  resolveMiniRatioSwatchSize,
+  resolveRatioFrameSize,
+} from "./cover-menu-parts";
 
 type DragPreviewAnchor = {
   clientX: number;
@@ -88,244 +109,10 @@ type DragPreviewAnchor = {
   width: number;
 };
 
-const COVER_TEXT_POSITION_OPTIONS: CoverTextPosition[] = [
-  "style_1",
-  "style_2",
-  "style_3",
-  "style_4",
-  "style_5",
-  "style_6",
-];
-
-const COVER_PREVIEW_TITLE_WIDTH = "76%";
-const COVER_PREVIEW_AUTHOR_WIDTH = "44%";
-const COVER_PREVIEW_TITLE_HEIGHT = "3px";
-const COVER_PREVIEW_AUTHOR_HEIGHT = "2px";
-const COVER_PREVIEW_TITLE_OPACITY = 0.95;
-const COVER_PREVIEW_AUTHOR_OPACITY = 0.55;
-const COVER_GRID_TILE_RATIO = 40 / 56;
-type CoverBackgroundLabelMode = "none" | "bottom" | "side";
-const COVER_BACKGROUND_LABEL_MODE: CoverBackgroundLabelMode = "bottom";
-const SHOW_BACKGROUND_DESCRIPTIONS = false;
-type CoverSizeLabelMode = "none" | "bottom" | "side";
-const COVER_SIZE_LABEL_MODE: CoverSizeLabelMode = "side";
-const SHOW_SIZE_DESCRIPTIONS = true;
-const COVER_GRID_HOVER_BG = "app.status.info.bg" as const;
-const COVER_GRID_SELECTED_BORDER_COLOR = "app.epub.button.primary.border" as const;
 const COVER_AUTO_DEFAULT_BACKGROUND_ID: BaseCoverBackgroundId =
   DEFAULT_COVER_BASE_BACKGROUND_ID;
 const COVER_AUTO_DEFAULT_SIZE_PRESET_ID: CoverSizePresetId =
   DEFAULT_COVER_SIZE_PRESET_ID;
-
-const dropdownGridItemInteractionProps = {
-  p: 1,
-  bg: "transparent",
-  cursor: "pointer",
-  transition: "background 0.12s ease",
-  _highlighted: {
-    bg: COVER_GRID_HOVER_BG,
-    outline: "1px solid",
-    outlineColor: COVER_GRID_SELECTED_BORDER_COLOR,
-  },
-  _hover: {
-    bg: COVER_GRID_HOVER_BG,
-    outline: "1px solid",
-    outlineColor: COVER_GRID_SELECTED_BORDER_COLOR,
-  },
-} as const;
-
-function resolveGridSelectionFrameProps(isSelected: boolean): {
-  borderWidth: "3px" | "1px";
-  borderColor: string;
-  outline: "2px solid" | "none";
-  outlineColor: string;
-} {
-  if (isSelected) {
-    return {
-      borderWidth: "3px",
-      borderColor: COVER_GRID_SELECTED_BORDER_COLOR,
-      outline: "2px solid",
-      outlineColor: COVER_GRID_SELECTED_BORDER_COLOR,
-    };
-  }
-
-  return {
-    borderWidth: "1px",
-    borderColor: "app.epub.border.default",
-    outline: "none",
-    outlineColor: "transparent",
-  };
-}
-
-function renderGridSelectionBadge(isSelected: boolean): ReactNode {
-  if (!isSelected) return null;
-
-  return (
-    <Box
-      position={"absolute"}
-      top={1}
-      right={1}
-      w={"16px"}
-      h={"16px"}
-      rounded={"full"}
-      bg={"app.epub.button.primary.bg"}
-      color={"app.epub.button.primary.fg"}
-      display={"grid"}
-      placeItems={"center"}
-      borderWidth={"1px"}
-      borderColor={"app.epub.bg.card"}
-    >
-      <Icon boxSize={2.5}>
-        <LuCheck />
-      </Icon>
-    </Box>
-  );
-}
-
-function resolveRatioFrameSize(
-  ratio: number,
-  containerRatio: number = COVER_GRID_TILE_RATIO,
-): {
-  width: string;
-  height: string;
-} {
-  const normalizedRatio = Math.max(0.2, Math.min(3, ratio));
-  const normalizedContainerRatio = Math.max(0.2, Math.min(3, containerRatio));
-  const maxSize = 74;
-  if (normalizedRatio >= normalizedContainerRatio) {
-    return {
-      width: `${maxSize}%`,
-      height: `${((maxSize * normalizedContainerRatio) / normalizedRatio).toFixed(2)}%`,
-    };
-  }
-  return {
-    width: `${((maxSize * normalizedRatio) / normalizedContainerRatio).toFixed(2)}%`,
-    height: `${maxSize}%`,
-  };
-}
-
-function resolveMiniRatioSwatchSize(
-  ratio: number,
-  maxSizePx: number = 14,
-): { widthPx: number; heightPx: number } {
-  const normalizedRatio = Math.max(0.2, Math.min(3, ratio));
-  if (normalizedRatio >= 1) {
-    return {
-      widthPx: maxSizePx,
-      heightPx: Math.max(3, Math.round(maxSizePx / normalizedRatio)),
-    };
-  }
-  return {
-    widthPx: Math.max(3, Math.round(maxSizePx * normalizedRatio)),
-    heightPx: maxSizePx,
-  };
-}
-
-function renderGridOptionMeta({
-  labelMode,
-  label,
-  description,
-  showDescription,
-}: {
-  labelMode: "none" | "bottom" | "side";
-  label: string;
-  description?: string;
-  showDescription: boolean;
-}): ReactNode {
-  if (labelMode === "none") return null;
-
-  const descriptionNode =
-    showDescription && description ? (
-      <Text
-        fontFamily={"ui"}
-        fontSize={labelMode === "side" ? "xs" : "2xs"}
-        lineHeight={"shorter"}
-        color={"app.epub.fg.subtle"}
-      >
-        {description}
-      </Text>
-    ) : null;
-
-  if (labelMode === "side") {
-    return (
-      <VStack align={"start"} gap={0.5} minW={0}>
-        <Text
-          fontFamily={"ui"}
-          fontSize={"sm"}
-          color={"app.epub.fg.default"}
-          lineClamp={1}
-        >
-          {label}
-        </Text>
-        {descriptionNode}
-      </VStack>
-    );
-  }
-
-  return (
-    <VStack align={"start"} gap={0.5} pt={1} px={0.5}>
-      <Text
-        fontFamily={"ui"}
-        fontSize={"xs"}
-        color={"app.epub.fg.default"}
-        lineClamp={1}
-      >
-        {label}
-      </Text>
-      {descriptionNode}
-    </VStack>
-  );
-}
-
-type CoverTextPreviewLine = {
-  top: string;
-  left: string;
-};
-
-function resolveCoverTextPreviewLines(style: CoverTextPosition): {
-  title: CoverTextPreviewLine;
-  author: CoverTextPreviewLine;
-} {
-  if (style === "style_2") {
-    return {
-      title: { top: "46%", left: "12%" },
-      author: { top: "57%", left: "12%" },
-    };
-  }
-
-  if (style === "style_3") {
-    return {
-      title: { top: "46%", left: "20%" },
-      author: { top: "57%", left: "44%" },
-    };
-  }
-
-  if (style === "style_4") {
-    return {
-      title: { top: "58%", left: "12%" },
-      author: { top: "44%", left: "24%" },
-    };
-  }
-
-  if (style === "style_5") {
-    return {
-      title: { top: "58%", left: "12%" },
-      author: { top: "44%", left: "12%" },
-    };
-  }
-
-  if (style === "style_6") {
-    return {
-      title: { top: "74%", left: "12%" },
-      author: { top: "86%", left: "24%" },
-    };
-  }
-
-  return {
-    title: { top: "46%", left: "12%" },
-    author: { top: "57%", left: "24%" },
-  };
-}
 
 function isBaseBackgroundId(
   value: CoverBackgroundId,
@@ -472,7 +259,6 @@ export function PageDraftCard({
     isCoverEnabled,
     hasCustomCover,
     customCoverHtml,
-    page.previewHtml,
     selectedCoverSizePresetId,
     coverTextScalePercent,
     coverTextPosition,

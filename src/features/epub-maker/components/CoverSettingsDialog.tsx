@@ -1,9 +1,16 @@
 import {
-  Dialog,
   IconButton,
   type DialogOpenChangeDetails,
 } from "@chakra-ui/react";
-import { DialogCloseTrigger, DialogContent } from "@components/ui/dialog";
+import {
+  DialogBody,
+  DialogCloseTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogRoot,
+  DialogTitle,
+  DialogTrigger,
+} from "@components/ui/dialog";
 import { Tooltip } from "@components/ui/tooltip";
 import { LuSettings2 } from "react-icons/lu";
 import type { ReactNode } from "react";
@@ -22,9 +29,9 @@ export function CoverSettingsDialog({
   children: ReactNode;
 }) {
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+    <DialogRoot open={open} onOpenChange={onOpenChange}>
       <Tooltip content={"Cover settings"}>
-        <Dialog.Trigger asChild>
+        <DialogTrigger asChild>
           <IconButton
             size={"xs"}
             variant={"ghost"}
@@ -33,7 +40,7 @@ export function CoverSettingsDialog({
           >
             <LuSettings2 />
           </IconButton>
-        </Dialog.Trigger>
+        </DialogTrigger>
       </Tooltip>
 
       <DialogContent
@@ -43,16 +50,16 @@ export function CoverSettingsDialog({
         boxShadow={"lg"}
         maxW={"1120px"}
       >
-        <Dialog.Header display={"flex"} alignItems={"center"} justifyContent={"flex-start"}>
-          <Dialog.Title fontFamily={"ui"}>Cover settings</Dialog.Title>
-        </Dialog.Header>
+        <DialogHeader display={"flex"} alignItems={"center"} justifyContent={"flex-start"}>
+          <DialogTitle fontFamily={"ui"}>Cover settings</DialogTitle>
+        </DialogHeader>
 
-        <Dialog.Body>
+        <DialogBody>
           {children}
-        </Dialog.Body>
+        </DialogBody>
 
         <DialogCloseTrigger />
       </DialogContent>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }

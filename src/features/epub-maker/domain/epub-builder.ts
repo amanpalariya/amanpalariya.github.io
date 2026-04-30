@@ -160,7 +160,7 @@ export async function buildEpub(input: BuildEpubInput): Promise<BuildEpubResult>
 
       node.setAttribute(
         "src",
-        result.localHref ? `../${result.localHref}` : (result.absoluteSrc || src),
+        result.localHref ? result.localHref : (result.absoluteSrc || src),
       );
     }
 

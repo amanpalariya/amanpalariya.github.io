@@ -22,6 +22,13 @@ function isEditableTarget(target: EventTarget | null): boolean {
 }
 
 export function EpubMakerPageView(props: UseEpubMakerReturn) {
+  const {
+    canRedo,
+    canUndo,
+    onGlobalPaste,
+    redoPages,
+    undoPages,
+  } = props;
   const [isFileDragOver, setIsFileDragOver] = useState(false);
   const [dragDepth, setDragDepth] = useState(0);
 
@@ -44,16 +51,16 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
         (key === "z" && event.shiftKey) || (!event.metaKey && key === "y");
 
       if (isUndoKey) {
-        if (!props.canUndo) return;
+        if (!canUndo) return;
         event.preventDefault();
-        props.undoPages();
+        undoPages();
         return;
       }
 
       if (isRedoKey) {
-        if (!props.canRedo) return;
+        if (!canRedo) return;
         event.preventDefault();
-        props.redoPages();
+        redoPages();
       }
     }
 
@@ -61,19 +68,19 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
     return () => {
       window.removeEventListener("keydown", handleUndoRedoHotkeys);
     };
-  }, [props.canRedo, props.canUndo, props.redoPages, props.undoPages]);
+  }, [canRedo, canUndo, redoPages, undoPages]);
 
   useEffect(() => {
     function handleWindowPaste(event: ClipboardEvent) {
       if (isEditableTarget(event.target)) return;
-      props.onGlobalPaste(event);
+      onGlobalPaste(event);
     }
 
     window.addEventListener("paste", handleWindowPaste);
     return () => {
       window.removeEventListener("paste", handleWindowPaste);
     };
-  }, [props.onGlobalPaste]);
+  }, [onGlobalPaste]);
 
   function hasFiles(event: DragEvent<HTMLElement>) {
     return Array.from(event.dataTransfer?.types ?? []).includes("Files");

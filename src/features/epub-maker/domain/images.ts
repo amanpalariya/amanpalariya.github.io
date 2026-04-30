@@ -15,11 +15,17 @@ export function mediaTypeToExtension(mediaType: string): string {
 export function dataUrlToBytes(
   dataUrl: string,
 ): { bytes: Uint8Array; mediaType: string } | null {
-  const match = dataUrl.match(/^data:([^;,]+)?(?:;base64)?,([\s\S]*)$/);
-  if (!match) return null;
-  const mediaType = match[1] || "application/octet-stream";
-  const payload = match[2] || "";
-  const isBase64 = dataUrl.includes(";base64,");
+  if (!dataUrl.startsWith("data:")) return null;
+  const commaIndex = dataUrl.indexOf(",");
+  if (commaIndex < 0) return null;
+
+  const metadata = dataUrl.slice("data:".length, commaIndex);
+  const payload = dataUrl.slice(commaIndex + 1);
+  const metadataParts = metadata.split(";");
+  const mediaType = metadataParts[0] || "application/octet-stream";
+  const isBase64 = metadataParts
+    .slice(1)
+    .some((part) => part.toLowerCase() === "base64");
 
   try {
     if (isBase64) {
@@ -39,6 +45,38 @@ export function dataUrlToBytes(
   }
 }
 
+function bytesToText(bytes: Uint8Array): string {
+  return new TextDecoder().decode(bytes);
+}
+
+function textToBytes(value: string): Uint8Array {
+  return new TextEncoder().encode(value);
+}
+
+function escapeAttributeValue(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;");
+}
+
+function relativeAssetHref(fromHref: string, toHref: string): string {
+  const fromParts = fromHref.split("/");
+  const toParts = toHref.split("/");
+  fromParts.pop();
+
+  while (
+    fromParts.length > 0 &&
+    toParts.length > 0 &&
+    fromParts[0] === toParts[0]
+  ) {
+    fromParts.shift();
+    toParts.shift();
+  }
+
+  return `${"../".repeat(fromParts.length)}${toParts.join("/")}`;
+}
+
 export type RegisterImageParams = {
   src: string;
   baseUrl: string | null;
@@ -54,6 +92,50 @@ export type RegisterImageResult = {
   absoluteSrc: string | null;
   warning?: GenerationWarning;
 };
+
+async function rewriteEmbeddedSvgDataImages(
+  svgBytes: Uint8Array,
+  svgHref: string,
+  params: Omit<RegisterImageParams, "src">,
+): Promise<Uint8Array> {
+  const svg = bytesToText(svgBytes);
+  const imageHrefPattern =
+    /\b((?:xlink:)?href)=["'](data:image\/[^"']+)["']/gi;
+  const replacements = new Map<string, string>();
+
+  let match = imageHrefPattern.exec(svg);
+  while (match) {
+    const dataUrl = match[2];
+    if (replacements.has(dataUrl)) {
+      match = imageHrefPattern.exec(svg);
+      continue;
+    }
+
+    const result = await registerImageAsset({
+      ...params,
+      src: dataUrl,
+    });
+    if (!result.localHref) {
+      match = imageHrefPattern.exec(svg);
+      continue;
+    }
+
+    replacements.set(dataUrl, relativeAssetHref(svgHref, result.localHref));
+    match = imageHrefPattern.exec(svg);
+  }
+
+  if (replacements.size === 0) {
+    return svgBytes;
+  }
+
+  const rewrittenSvg = svg.replace(imageHrefPattern, (fullMatch, attr, dataUrl) => {
+    const replacement = replacements.get(dataUrl);
+    if (!replacement) return fullMatch;
+    return `${attr}="${escapeAttributeValue(replacement)}"`;
+  });
+
+  return textToBytes(rewrittenSvg);
+}
 
 export async function registerImageAsset(
   params: RegisterImageParams,
@@ -102,11 +184,22 @@ export async function registerImageAsset(
 
     const index = nextImageNumber();
     const ext = mediaTypeToExtension(parsed.mediaType);
+    const href = `images/image-${index}.${ext}`;
+    const bytes = parsed.mediaType.toLowerCase().includes("image/svg+xml")
+      ? await rewriteEmbeddedSvgDataImages(parsed.bytes, href, {
+          baseUrl,
+          pageId,
+          embedRemoteImages,
+          signal,
+          imagesByKey,
+          nextImageNumber,
+        })
+      : parsed.bytes;
     const image: EpubImage = {
       id: `img-${index}`,
-      href: `images/image-${index}.${ext}`,
+      href,
       mediaType: parsed.mediaType,
-      bytes: parsed.bytes,
+      bytes,
       sourceUrl: absoluteSrc,
     };
     imagesByKey.set(absoluteSrc, image);

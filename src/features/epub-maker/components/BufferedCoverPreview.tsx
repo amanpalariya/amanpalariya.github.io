@@ -78,6 +78,8 @@ function BufferedPreviewIframe({
   );
 }
 
+// Generated data URLs are already optimized and must render inside this buffered preview.
+/* eslint-disable @next/next/no-img-element */
 function BufferedPreviewImage({
   title,
   src,

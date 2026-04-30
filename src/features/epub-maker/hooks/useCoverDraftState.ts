@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { AutoCoverRendererId } from "../domain/cover";
-import { createCoverHtml } from "../domain/cover";
+import { createCoverHtml, createCoverHtmlAsync } from "../domain/cover";
 import { sanitizeHtmlContent } from "../domain/html-sanitizer";
 import type {
   CoverDraft,
@@ -105,38 +105,40 @@ export function useCoverDraftState({
     isCoverRenderPendingRef.current = true;
 
     const timeoutId = window.setTimeout(() => {
-      try {
-        const nextRawHtml = createCoverHtml(
-          debouncedCoverTitle,
-          debouncedCoverAuthor,
-          {
-            backgroundId,
-            sizePresetId,
-            textScalePercent,
-            textPosition,
-            textColorMode,
-            customCoverHtml,
-            hideCoverText,
-          },
-          rendererId,
-        );
+      void (async () => {
+        try {
+          const nextRawHtml = await createCoverHtmlAsync(
+            debouncedCoverTitle,
+            debouncedCoverAuthor,
+            {
+              backgroundId,
+              sizePresetId,
+              textScalePercent,
+              textPosition,
+              textColorMode,
+              customCoverHtml,
+              hideCoverText,
+            },
+            rendererId,
+          );
 
-        const nextCoverDraft = buildCoverDraft(
-          nextRawHtml,
-          coverMode,
-          sanitizePolicy,
-        );
-        if (coverRenderTaskIdRef.current !== taskId) return;
+          const nextCoverDraft = buildCoverDraft(
+            nextRawHtml,
+            coverMode,
+            sanitizePolicy,
+          );
+          if (coverRenderTaskIdRef.current !== taskId) return;
 
-        setCoverDraft(nextCoverDraft);
-        coverDraftRef.current = nextCoverDraft;
-      } finally {
-        if (coverRenderTaskIdRef.current !== taskId) return;
-        isCoverRenderPendingRef.current = false;
-        const waiters = coverRenderWaitersRef.current;
-        coverRenderWaitersRef.current = [];
-        waiters.forEach((resolve) => resolve());
-      }
+          setCoverDraft(nextCoverDraft);
+          coverDraftRef.current = nextCoverDraft;
+        } finally {
+          if (coverRenderTaskIdRef.current !== taskId) return;
+          isCoverRenderPendingRef.current = false;
+          const waiters = coverRenderWaitersRef.current;
+          coverRenderWaitersRef.current = [];
+          waiters.forEach((resolve) => resolve());
+        }
+      })();
     }, 0);
 
     return () => {

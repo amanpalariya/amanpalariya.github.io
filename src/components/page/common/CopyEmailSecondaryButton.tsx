@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Clipboard, Icon } from "@chakra-ui/react";
+import { Button, Icon } from "@chakra-ui/react";
+import { Clipboard } from "@components/ui/clipboard";
 import { PersonalData } from "data";
 import { FiCheck, FiCopy } from "react-icons/fi";
 import { Tooltip } from "@components/ui/tooltip";

@@ -2,12 +2,17 @@ import { Button, ButtonProps, Icon } from "@chakra-ui/react";
 import React from "react";
 import type { IconType } from "react-icons";
 
-const buttonProps: ButtonProps = {
+const actionButtonBaseProps = {
   fontFamily: "ui",
   fontSize: "sm",
   px: 2.5,
   shadow: "xs",
   rounded: "xl",
+} satisfies Pick<ButtonProps, "fontFamily" | "fontSize" | "px" | "shadow" | "rounded">;
+
+type ActionButtonProps = Omit<ButtonProps, "children"> & {
+  children: React.ReactNode;
+  icon?: IconType;
 };
 
 export function PrimaryActionButton({
@@ -15,20 +20,18 @@ export function PrimaryActionButton({
   icon,
   backgroundColor,
   ...props
-}: {
-  children: React.ReactNode;
-  icon?: IconType;
-  backgroundColor?: ButtonProps["background"];
-} & ButtonProps) {
+}: ActionButtonProps & { backgroundColor?: string }) {
   return (
     <Button
-      {...buttonProps}
+      {...actionButtonBaseProps}
       background={backgroundColor ? backgroundColor : "dodgerblue"}
       variant={"solid"}
       {...props}
     >
       {icon ? (
-        <Icon fontSize={buttonProps.fontSize}>{React.createElement(icon)}</Icon>
+        <Icon fontSize={actionButtonBaseProps.fontSize}>
+          {React.createElement(icon)}
+        </Icon>
       ) : undefined}{" "}
       {children}
     </Button>
@@ -39,14 +42,13 @@ export function SecondaryActionButton({
   children,
   icon,
   ...props
-}: {
-  children: React.ReactNode;
-  icon?: IconType;
-} & ButtonProps) {
+}: ActionButtonProps) {
   return (
-    <Button {...buttonProps} variant={"subtle"} {...props}>
+    <Button {...actionButtonBaseProps} variant={"subtle"} {...props}>
       {icon ? (
-        <Icon fontSize={buttonProps.fontSize}>{React.createElement(icon)}</Icon>
+        <Icon fontSize={actionButtonBaseProps.fontSize}>
+          {React.createElement(icon)}
+        </Icon>
       ) : undefined}
       {children}
     </Button>

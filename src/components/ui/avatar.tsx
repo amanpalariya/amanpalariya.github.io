@@ -19,12 +19,16 @@ export const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
   function Avatar(props, ref) {
     const { name, src, srcSet, loading, icon, fallback, children, ...rest } =
       props
+    const Fallback = ChakraAvatar.Fallback as React.ComponentType<{
+      children?: React.ReactNode
+      name?: string
+    }>
+    const Image = ChakraAvatar.Image as React.ComponentType<ImageProps>
+
     return (
       <ChakraAvatar.Root ref={ref} {...rest}>
-        <ChakraAvatar.Fallback name={name}>
-          {icon || fallback}
-        </ChakraAvatar.Fallback>
-        <ChakraAvatar.Image
+        <Fallback name={name}>{icon || fallback}</Fallback>
+        <Image
           src={src}
           srcSet={srcSet}
           loading={loading}

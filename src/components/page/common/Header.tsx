@@ -32,10 +32,17 @@ import NextLink from "next/link";
 import { useFeatureFlag } from "utils/features";
 import FeatureFlagsData from "data/features";
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { IconType } from "react-icons";
 
 export const HEADER_OFFSET_HEIGHT = { base: 20, sm: 24 };
 
-const HEADER_NAV_ITEMS = [
+type HeaderNavItem = {
+  icon: IconType;
+  tab: (typeof homepageTabs)[keyof typeof homepageTabs];
+  needsBlogsFeature?: boolean;
+};
+
+const HEADER_NAV_ITEMS: readonly HeaderNavItem[] = [
   {
     icon: FiHome,
     tab: homepageTabs.home,
@@ -61,7 +68,7 @@ const HEADER_NAV_ITEMS = [
     icon: FiTool,
     tab: homepageTabs.tools,
   },
-] as const;
+];
 
 function ColorModeToggleIconButton() {
   const { colorMode, toggleColorMode } = useColorMode();

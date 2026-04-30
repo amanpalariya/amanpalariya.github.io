@@ -1,6 +1,7 @@
 "use client";
 
-import { Clipboard, HStack } from "@chakra-ui/react";
+import { chakra } from "@chakra-ui/react";
+import { Clipboard } from "@components/ui/clipboard";
 import { useEffect, useState } from "react";
 import { FiCheck, FiLink } from "react-icons/fi";
 import { Tooltip } from "@components/ui/tooltip";
@@ -28,9 +29,11 @@ export default function CopyLinkSecondaryButton({
       <span>
         <Clipboard.Root value={currentUrl} timeout={1000}>
           <Clipboard.Trigger asChild>
-            <HStack
-              as="button"
+            <chakra.button
               type="button"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
               gap={iconOnly ? 0 : 2}
               fontFamily="ui"
               fontSize="sm"
@@ -61,7 +64,7 @@ export default function CopyLinkSecondaryButton({
                   {"Copy link"}
                 </Clipboard.Indicator>
               )}
-            </HStack>
+            </chakra.button>
           </Clipboard.Trigger>
         </Clipboard.Root>
       </span>

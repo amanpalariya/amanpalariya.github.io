@@ -36,6 +36,7 @@ import type {
   SanitizationPolicy,
 } from "../types";
 import { buildAutoEpubFileName, buildEpubFileName } from "../utils/file-name";
+import { fileNameToTitle, isMarkdownFile } from "../utils/import-files";
 import { createPageDraftFromInput } from "../domain/page-draft";
 import {
   clipboardImageBlobToHtml,
@@ -51,8 +52,11 @@ import { buildEpub } from "../domain/epub-builder";
 import { downloadBlob } from "../services/download";
 import { renderMarkdownToHtml } from "@utils/markdown";
 import { useCoverDraftState } from "./useCoverDraftState";
+import {
+  draftHistoryReducer,
+  type DraftSnapshot,
+} from "./draft-history";
 
-const PAGE_HISTORY_LIMIT = 100;
 const AUTO_COVER_RENDERER: AutoCoverRendererId = "raster-png";
 type PageFlashKind = "added" | "duplicate";
 type PageFlashEntry = { kind: PageFlashKind; token: number };
@@ -61,87 +65,6 @@ function isBaseCoverBackgroundId(
   value: CoverBackgroundId,
 ): value is BaseCoverBackgroundId {
   return value !== "custom";
-}
-
-type DraftSnapshot = {
-  pages: PageDraft[];
-} & CoverSettingsState;
-
-interface DraftHistoryState {
-  past: DraftSnapshot[];
-  present: DraftSnapshot;
-  future: DraftSnapshot[];
-}
-
-type DraftHistoryAction =
-  | { type: "commit"; updater: (previousDraft: DraftSnapshot) => DraftSnapshot }
-  | { type: "undo" }
-  | { type: "redo" };
-
-function draftHistoryReducer(
-  state: DraftHistoryState,
-  action: DraftHistoryAction,
-): DraftHistoryState {
-  if (action.type === "undo") {
-    if (state.past.length === 0) {
-      return state;
-    }
-
-    const previousDraft = state.past[state.past.length - 1];
-    return {
-      past: state.past.slice(0, -1),
-      present: previousDraft,
-      future: [...state.future.slice(-(PAGE_HISTORY_LIMIT - 1)), state.present],
-    };
-  }
-
-  if (action.type === "redo") {
-    if (state.future.length === 0) {
-      return state;
-    }
-
-    const nextDraft = state.future[state.future.length - 1];
-    return {
-      past: [...state.past.slice(-(PAGE_HISTORY_LIMIT - 1)), state.present],
-      present: nextDraft,
-      future: state.future.slice(0, -1),
-    };
-  }
-
-  const nextDraft = action.updater(state.present);
-  if (nextDraft === state.present) {
-    return state;
-  }
-
-  return {
-    past: [...state.past.slice(-(PAGE_HISTORY_LIMIT - 1)), state.present],
-    present: nextDraft,
-    future: [],
-  };
-}
-
-function fileNameToTitle(fileName: string): string {
-  const withoutExtension = fileName.replace(/\.[^./\\]+$/, "");
-  const normalized = withoutExtension
-    .replace(/[_-]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  return normalized || "Untitled";
-}
-
-function isMarkdownFile(file: File): boolean {
-  const fileName = file.name.toLowerCase();
-  const mimeType = file.type.toLowerCase();
-  return (
-    mimeType === "text/markdown" ||
-    mimeType === "text/x-markdown" ||
-    mimeType === "application/markdown" ||
-    fileName.endsWith(".md") ||
-    fileName.endsWith(".markdown") ||
-    fileName.endsWith(".mdown") ||
-    fileName.endsWith(".mkd") ||
-    fileName.endsWith(".mkdn")
-  );
 }
 
 export type UseEpubMakerReturn = EpubMakerState & {
@@ -526,35 +449,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     writeEpubMakerPrefs(prefs);
   }, [isPrefsLoaded, prefs]);
 
-  function evaluatePageInput(existingPages: PageDraft[], content: string) {
-    const trimmedContent = content.trim();
-    if (!trimmedContent) {
-      return { status: "empty" as const };
-    }
-
-    const isDuplicate = existingPages.some(
-      (page) => page.rawContent.trim() === trimmedContent,
-    );
-    if (isDuplicate) {
-      const duplicatePageIds = existingPages
-        .filter((page) => page.rawContent.trim() === trimmedContent)
-        .map((page) => page.id);
-      return { status: "duplicate" as const, duplicatePageIds };
-    }
-
-    const page = createPageDraftFromInput(
-      content,
-      existingPages.length + 1,
-      sanitizePolicy,
-    );
-    if (!page) {
-      return { status: "invalid" as const };
-    }
-
-    return { status: "ok" as const, page };
-  }
-
-  function evaluatePageInputWithOptions(
+  function evaluatePageInput(
     existingPages: PageDraft[],
     content: string,
     options?: Parameters<typeof createPageDraftFromInput>[3],
@@ -691,7 +586,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
         }
 
         const droppedFileTitle = fileNameToTitle(file.name);
-        const result = evaluatePageInputWithOptions(nextPages, content, {
+        const result = evaluatePageInput(nextPages, content, {
           defaultTitle: droppedFileTitle,
           textUseDefaultTitle: true,
           htmlUseHeadTitleOnly: !shouldInferTitleFromHtml,
