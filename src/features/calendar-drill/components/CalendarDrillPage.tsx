@@ -594,16 +594,18 @@ export function CalendarDrillPage() {
                         </Grid>
                       </VStack>
                     ) : (
-                      <Fieldset.Root>
+                      <Fieldset.Root w={"full"} minW={0}>
                         <Fieldset.Legend>
                           <HStack gap={2}>
                             <Icon as={LuCalendarRange} />
                             <Text>Year Range</Text>
                           </HStack>
                         </Fieldset.Legend>
-                        <Fieldset.Content>
-                          <VStack align={"stretch"} gap={4}>
+                        <Fieldset.Content minW={0}>
+                          <VStack align={"stretch"} gap={4} minW={0}>
                             <Grid
+                              w={"full"}
+                              minW={0}
                               templateColumns={[
                                 "1fr",
                                 "repeat(3, minmax(0, 1fr))",
@@ -690,12 +692,15 @@ export function CalendarDrillPage() {
 
                             <VStack align={"stretch"} gap={3}>
                               <Button
+                                w={"full"}
                                 variant={"ghost"}
                                 justifyContent={"space-between"}
                                 rounded={"xl"}
                                 px={3}
                                 h={"auto"}
                                 py={3}
+                                minW={0}
+                                overflow={"hidden"}
                                 onClick={() =>
                                   setIsAdvancedSettingsOpen(
                                     (current) => !current,
@@ -703,13 +708,25 @@ export function CalendarDrillPage() {
                                 }
                                 aria-expanded={isAdvancedSettingsOpen}
                               >
-                                <HStack gap={3} minW={0}>
-                                  <Icon as={LuSettings2} />
-                                  <VStack align={"start"} gap={0} minW={0}>
+                                <HStack
+                                  gap={3}
+                                  minW={0}
+                                  flex={1}
+                                  overflow={"hidden"}
+                                >
+                                  <Icon as={LuSettings2} flexShrink={0} />
+                                  <VStack
+                                    align={"start"}
+                                    gap={0}
+                                    minW={0}
+                                    flex={1}
+                                    overflow={"hidden"}
+                                  >
                                     <Text>Advanced Settings</Text>
                                     <Text
                                       fontSize={"xs"}
                                       color={"app.fg.subtle"}
+                                      maxW={"full"}
                                       truncate
                                     >
                                       {advancedSettingsSummary}
@@ -718,6 +735,7 @@ export function CalendarDrillPage() {
                                 </HStack>
                                 <Icon
                                   as={LuChevronDown}
+                                  flexShrink={0}
                                   transform={
                                     isAdvancedSettingsOpen
                                       ? "rotate(180deg)"
