@@ -1,4 +1,5 @@
 import { expect, test } from "../../support/fixtures";
+import fs from "node:fs/promises";
 import {
   expectImageManifestMatchesFiles,
   expectPngImage,
@@ -123,5 +124,96 @@ test.describe("EPUB Maker cover", () => {
     await expectImageManifestMatchesFiles(archive);
     expect(archive.fileNames).not.toContain("OEBPS/cover.xhtml");
     expect(imageFiles(archive)).toEqual([]);
+  });
+
+  test("uses uploaded custom cover image and can reset back to auto cover", async ({
+    page,
+    epubMaker,
+  }) => {
+    await epubMaker.goto();
+
+    await epubMaker.uploadCoverImage({
+      name: "custom-cover.png",
+      mimeType: "image/png",
+      buffer: await fs.readFile("src/app/icon.png"),
+    });
+    const coverTextSwitch = page.getByLabel("Toggle cover text visibility");
+    await coverTextSwitch.locator("..").click();
+    await expect(coverTextSwitch).not.toBeChecked();
+    await epubMaker.closeCoverSettings();
+    await expect(epubMaker.openCoverSettingsButton).toHaveAccessibleName(/custom image/);
+    await epubMaker.titleInput.fill("Custom Cover Book");
+    await epubMaker.addTextPage("Custom cover chapter\n\nThe uploaded image should become the cover.");
+
+    const customArchive = await loadEpubArchive(await epubMaker.generateDownload());
+    await expectWellFormedEpubPackage(customArchive, {
+      title: "Custom Cover Book",
+      spineHrefs: ["chapters/chapter-1.xhtml"],
+      navLabels: ["Custom cover chapter The uploaded image should become..."],
+      coverIncluded: true,
+    });
+    const customCover = await customArchive.text("OEBPS/cover.xhtml");
+    const customCoverImageSrc = imageSrcsFromXhtml(customCover)[0];
+    expect(customCoverImageSrc).toBeTruthy();
+    const { bytes: customCoverBytes } = await expectPngImage(
+      customArchive,
+      resolveImageSrc("OEBPS/cover.xhtml", customCoverImageSrc),
+      { width: 1600, height: 2560 },
+    );
+
+    await epubMaker.openCoverSettings();
+    await epubMaker.page.getByRole("button", { name: "Reset", exact: true }).click();
+    await expect(epubMaker.coverSizePresetButton).toContainText("Standard EPUB 1:1.6");
+    await epubMaker.closeCoverSettings();
+
+    const resetArchive = await loadEpubArchive(await epubMaker.generateDownload());
+    const resetCover = await resetArchive.text("OEBPS/cover.xhtml");
+    const resetCoverImageSrc = imageSrcsFromXhtml(resetCover)[0];
+    expect(resetCoverImageSrc).toBeTruthy();
+    const { bytes: resetCoverBytes } = await expectPngImage(
+      resetArchive,
+      resolveImageSrc("OEBPS/cover.xhtml", resetCoverImageSrc),
+      { width: 1600, height: 2560 },
+    );
+    expect(Buffer.compare(Buffer.from(customCoverBytes), Buffer.from(resetCoverBytes))).not.toBe(0);
+  });
+
+  test("persists cover background and text controls across refreshes", async ({
+    page,
+    epubMaker,
+  }) => {
+    await epubMaker.goto();
+    await epubMaker.openCoverSettings();
+
+    await page.getByRole("button", { name: "Select cover background" }).click();
+    await page.getByRole("menuitem", { name: "Ember" }).click();
+    await expect(page.getByRole("button", { name: "Select cover background" })).toContainText(
+      "Ember",
+    );
+
+    const coverTextSwitch = page.getByLabel("Toggle cover text visibility");
+    await coverTextSwitch.locator("..").click();
+    await expect(coverTextSwitch).not.toBeChecked();
+    await expect(page.getByLabel("Cover text size percent")).toBeDisabled();
+
+    await coverTextSwitch.locator("..").click();
+    await expect(coverTextSwitch).toBeChecked();
+    await page.getByLabel("Cover text size percent").fill("180");
+    await expect(page.getByLabel("Cover text size percent")).toHaveValue("180");
+
+    await page.getByLabel("Select cover text color mode").selectOption("dark");
+    await page.getByRole("button", { name: "Select cover text position style" }).click();
+    await page.getByRole("menuitem", { name: "Text position style 6" }).click();
+    await epubMaker.closeCoverSettings();
+
+    await page.reload();
+    await epubMaker.openCoverSettings();
+
+    await expect(page.getByRole("button", { name: "Select cover background" })).toContainText(
+      "Ember",
+    );
+    await expect(page.getByLabel("Toggle cover text visibility")).toBeChecked();
+    await expect(page.getByLabel("Cover text size percent")).toHaveValue("180");
+    await expect(page.getByLabel("Select cover text color mode")).toHaveValue("dark");
   });
 });

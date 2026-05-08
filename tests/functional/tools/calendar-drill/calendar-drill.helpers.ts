@@ -109,6 +109,9 @@ export class CalendarDrillPageObject {
   }
 
   async openAdvancedSettings() {
+    if (await this.page.getByLabel("Select date format").isVisible()) {
+      return;
+    }
     const button = this.page.getByRole("button", { name: /advanced settings/i });
     await button.click();
     await expect(this.page.getByLabel("Select date format")).toBeVisible();

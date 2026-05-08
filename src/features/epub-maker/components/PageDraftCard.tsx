@@ -1535,6 +1535,7 @@ export function PageDraftCard({
                                 >
                                   <NumberInput.Control />
                                   <NumberInput.Input
+                                    aria-label={"Cover text size percent"}
                                     fontFamily={"ui"}
                                     fontSize={"sm"}
                                     rounded={"lg"}
@@ -1693,6 +1694,7 @@ export function PageDraftCard({
                                           <Menu.Item
                                             key={styleOption}
                                             value={styleOption}
+                                            aria-label={`Text position ${styleOption.replace("_", " ")}`}
                                             rounded={"md"}
                                             {...dropdownGridItemInteractionProps}
                                             onClick={() =>

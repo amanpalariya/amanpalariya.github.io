@@ -1,6 +1,7 @@
 import { expect, type Download } from "@playwright/test";
 import fs from "node:fs/promises";
 import JSZip from "jszip";
+import { JSDOM } from "jsdom";
 
 export type EpubArchive = {
   zip: JSZip;
@@ -24,11 +25,6 @@ type PackageDocument = {
   metadataCreator: string | null;
   coverMetaId: string | null;
 };
-
-function attribute(value: string, name: string): string | null {
-  const match = new RegExp(`${name}="([^"]*)"`).exec(value);
-  return match?.[1] ?? null;
-}
 
 function normalizeRelativePath(baseFile: string, relativePath: string): string {
   if (/^[a-z][a-z0-9+.-]*:/i.test(relativePath)) return relativePath;
@@ -68,23 +64,36 @@ export function expectBytesEqual(actual: Uint8Array, expected: Uint8Array | Buff
   expect(Buffer.compare(Buffer.from(actual), Buffer.from(expected))).toBe(0);
 }
 
+function parseXml(xml: string, label: string): Document {
+  const document = new JSDOM(xml, { contentType: "text/xml" }).window.document;
+  const parserError = document.querySelector("parsererror");
+  if (parserError) {
+    throw new Error(`Malformed XML in ${label}: ${parserError.textContent ?? ""}`);
+  }
+  return document;
+}
+
+function textContent(document: Document, tagName: string): string {
+  return document.getElementsByTagName(tagName).item(0)?.textContent ?? "";
+}
+
 async function packageDocument(archive: EpubArchive): Promise<PackageDocument> {
   const opf = await archive.text("OEBPS/content.opf");
-  const manifestItems = Array.from(opf.matchAll(/<item\s+([^>]+?)\/>/g)).map(
-    (match) => {
-      const attrs = match[1];
-      const id = attribute(attrs, "id");
-      const href = attribute(attrs, "href");
-      const mediaType = attribute(attrs, "media-type");
+  const document = parseXml(opf, "OEBPS/content.opf");
+  const manifestItems = Array.from(document.getElementsByTagName("item")).map(
+    (item) => {
+      const id = item.getAttribute("id");
+      const href = item.getAttribute("href");
+      const mediaType = item.getAttribute("media-type");
       if (!id || !href || !mediaType) {
-        throw new Error(`Malformed OPF manifest item: ${match[0]}`);
+        throw new Error(`Malformed OPF manifest item: ${item.outerHTML}`);
       }
 
       return {
         id,
         href,
         mediaType,
-        properties: attribute(attrs, "properties") ?? "",
+        properties: item.getAttribute("properties") ?? "",
         fullPath: `OEBPS/${href}`,
       };
     },
@@ -92,12 +101,15 @@ async function packageDocument(archive: EpubArchive): Promise<PackageDocument> {
 
   return {
     manifestItems,
-    spineIdrefs: Array.from(opf.matchAll(/<itemref\s+idref="([^"]+)"\s*\/>/g)).map(
-      (match) => match[1],
-    ),
-    metadataTitle: opf.match(/<dc:title>([^<]*)<\/dc:title>/)?.[1] ?? "",
-    metadataCreator: opf.match(/<dc:creator>([^<]*)<\/dc:creator>/)?.[1] ?? null,
-    coverMetaId: opf.match(/<meta\s+name="cover"\s+content="([^"]+)"\s*\/>/)?.[1] ?? null,
+    spineIdrefs: Array.from(document.getElementsByTagName("itemref"))
+      .map((itemref) => itemref.getAttribute("idref"))
+      .filter((idref): idref is string => Boolean(idref)),
+    metadataTitle: textContent(document, "dc:title"),
+    metadataCreator: textContent(document, "dc:creator") || null,
+    coverMetaId:
+      Array.from(document.getElementsByTagName("meta"))
+        .find((meta) => meta.getAttribute("name") === "cover")
+        ?.getAttribute("content") ?? null,
   };
 }
 
@@ -152,7 +164,10 @@ export function resolveImageSrc(xhtmlPath: string, src: string) {
 }
 
 export function imageSrcsFromXhtml(xhtml: string) {
-  return Array.from(xhtml.matchAll(/<img\b[^>]*\bsrc="([^"]+)"/g)).map((match) => match[1]);
+  const document = parseXml(xhtml, "XHTML content");
+  return Array.from(document.getElementsByTagName("img"))
+    .map((image) => image.getAttribute("src"))
+    .filter((src): src is string => Boolean(src));
 }
 
 export async function expectPngImage(
@@ -222,11 +237,19 @@ export async function expectWellFormedEpubPackage(
     expect(pkg.coverMetaId).toBeNull();
   }
 
-  const nav = await archive.text("OEBPS/nav.xhtml");
-  for (const [index, label] of navLabels.entries()) {
-    expect(nav).toContain(`href="${spineHrefs[index]}"`);
-    expect(nav).toContain(`>${label}</a>`);
-  }
+  const nav = parseXml(await archive.text("OEBPS/nav.xhtml"), "OEBPS/nav.xhtml");
+  const navLinks = Array.from(nav.getElementsByTagName("a")).map((anchor) => ({
+    href: anchor.getAttribute("href"),
+    label: anchor.textContent ?? "",
+  }));
+  expect(navLinks).toEqual(
+    expect.arrayContaining(
+      navLabels.map((label, index) => ({
+        href: spineHrefs[index],
+        label,
+      })),
+    ),
+  );
 
   await expectPackagedImageReferencesResolve(archive);
 }

@@ -35,7 +35,7 @@ function NoProjectsElement() {
             </Icon>
           </EmptyState.Indicator>
           <EmptyState.Title textAlign={"center"}>
-            {"There are no projects yet!"}
+            {ProjectsData.projectsPage.emptyStateTitle}
           </EmptyState.Title>
         </EmptyState.Content>
       </EmptyState.Root>

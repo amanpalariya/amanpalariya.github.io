@@ -88,7 +88,7 @@ export class EpubMakerPageObject {
   }
 
   async uploadDraftFiles(files: UploadFilePayload[]) {
-    await this.page.locator('input[type="file"]').first().setInputFiles(files);
+    await this.page.getByLabel("Upload files").first().setInputFiles(files);
   }
 
   async generateDownload(): Promise<Download> {
@@ -108,12 +108,29 @@ export class EpubMakerPageObject {
   }
 
   async selectCoverSizePreset(label: string) {
-    await this.openCoverSettingsButton.click();
-    await expect(this.page.getByRole("dialog", { name: "Cover settings" })).toBeVisible();
+    await this.openCoverSettings();
     await this.coverSizePresetButton.click();
     await this.page.getByRole("menuitem", { name: new RegExp(label) }).click();
     await expect(this.coverSizePresetButton).toContainText(label);
     await this.page.keyboard.press("Escape");
     await expect(this.page.getByRole("dialog", { name: "Cover settings" })).toBeHidden();
+  }
+
+  async openCoverSettings() {
+    await this.openCoverSettingsButton.click();
+    await expect(this.page.getByRole("dialog", { name: "Cover settings" })).toBeVisible();
+  }
+
+  async closeCoverSettings() {
+    await this.page.keyboard.press("Escape");
+    await expect(this.page.getByRole("dialog", { name: "Cover settings" })).toBeHidden();
+  }
+
+  async uploadCoverImage(file: UploadFilePayload) {
+    await this.openCoverSettings();
+    await this.page.getByLabel("Upload cover image").setInputFiles(file);
+    await expect(this.page.getByRole("button", { name: "Select cover background" })).toContainText(
+      "Custom",
+    );
   }
 }

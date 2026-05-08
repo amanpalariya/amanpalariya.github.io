@@ -55,7 +55,7 @@ function Projects() {
               <Icon as={FiTool} boxSize={12} color={"gray.500"} />
             </EmptyState.Indicator>
             <EmptyState.Title textAlign={"center"}>
-              {"There are no projects yet!"}
+              {ProjectsData.projectsPage.emptyStateTitle}
             </EmptyState.Title>
           </EmptyState.Content>
         </EmptyState.Root>
@@ -126,7 +126,7 @@ function WorkExperience() {
               <Icon as={FiBriefcase} boxSize={12} color={"gray.500"} />
             </EmptyState.Indicator>
             <EmptyState.Title textAlign={"center"}>
-              {"There is no work experience yet!"}
+              {WorkData.emptyStateTitle}
             </EmptyState.Title>
           </EmptyState.Content>
         </EmptyState.Root>

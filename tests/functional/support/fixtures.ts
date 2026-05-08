@@ -11,18 +11,18 @@ type FunctionalFixtures = {
 };
 
 export const test = base.extend<FunctionalFixtures>({
-  page: async ({ page }, use) => {
+  page: async ({ page }, fixtureUse) => {
     await resetBrowserStorage(page);
-    await use(page);
+    await fixtureUse(page);
   },
-  calendarDrill: async ({ page }, use) => {
-    await use(new CalendarDrillPageObject(page));
+  calendarDrill: async ({ page }, fixtureUse) => {
+    await fixtureUse(new CalendarDrillPageObject(page));
   },
-  epubMaker: async ({ page }, use) => {
-    await use(new EpubMakerPageObject(page));
+  epubMaker: async ({ page }, fixtureUse) => {
+    await fixtureUse(new EpubMakerPageObject(page));
   },
-  featureFlags: async ({ page }, use) => {
-    await use(new FeatureFlagsPageObject(page));
+  featureFlags: async ({ page }, fixtureUse) => {
+    await fixtureUse(new FeatureFlagsPageObject(page));
   },
 });
 

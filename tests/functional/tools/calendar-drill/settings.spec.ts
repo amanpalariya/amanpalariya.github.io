@@ -1,4 +1,8 @@
 import { expect, test } from "../../support/fixtures";
+import {
+  MAX_ALLOWED_YEAR,
+  MIN_ALLOWED_YEAR,
+} from "../../../../src/features/calendar-drill/components/practice-utils";
 
 test.describe("Calendar Drill settings", () => {
   test("persists year range, date format, month filter, and weekday layout settings across refreshes", async ({
@@ -17,7 +21,7 @@ test.describe("Calendar Drill settings", () => {
     await page.reload();
 
     await expect(page.getByRole("button", { name: /advanced settings/i })).toContainText(
-      "2026-04-30",
+      "1 month",
     );
 
     await expect(page.getByRole("spinbutton", { name: "From Year" })).toHaveValue("2024");
@@ -33,9 +37,9 @@ test.describe("Calendar Drill settings", () => {
 
   test("applies every date display format to the practice prompt", async ({ page, calendarDrill }) => {
     const cases = [
-      { value: "locale" as const, pattern: /^[A-Z][a-z]{2} \d{1,2}, 2024$/ },
-      { value: "month-day-year" as const, pattern: /^[A-Z][a-z]{2} \d{1,2}, 2024$/ },
-      { value: "day-month-year" as const, pattern: /^\d{1,2} [A-Z][a-z]{2} 2024$/ },
+      { value: "locale" as const, pattern: /^[A-Z][a-z]{2,3} \d{1,2}, 2024$/ },
+      { value: "month-day-year" as const, pattern: /^[A-Z][a-z]{2,3} \d{1,2}, 2024$/ },
+      { value: "day-month-year" as const, pattern: /^\d{1,2} [A-Z][a-z]{2,3} 2024$/ },
       { value: "iso" as const, pattern: /^2024-\d{2}-\d{2}$/ },
     ];
 
@@ -71,5 +75,56 @@ test.describe("Calendar Drill settings", () => {
         await calendarDrill.nextButton.click();
       }
     }
+  });
+
+  test("clamps out-of-range year inputs before generating questions", async ({
+    calendarDrill,
+  }) => {
+    await calendarDrill.goto();
+
+    await calendarDrill.page.getByRole("spinbutton", { name: "From Year" }).fill("100");
+    await calendarDrill.page.getByRole("spinbutton", { name: "To Year" }).fill("3000");
+    await expect(calendarDrill.page.getByRole("spinbutton", { name: "From Year" })).toHaveValue(
+      String(MIN_ALLOWED_YEAR),
+    );
+    await expect(calendarDrill.page.getByRole("spinbutton", { name: "To Year" })).toHaveValue(
+      String(MAX_ALLOWED_YEAR),
+    );
+
+    await calendarDrill.openAdvancedSettings();
+    await calendarDrill.setDateFormat("iso");
+    await calendarDrill.start();
+
+    const questionDate = await calendarDrill.questionDate();
+    expect(questionDate.getUTCFullYear()).toBeGreaterThanOrEqual(MIN_ALLOWED_YEAR);
+    expect(questionDate.getUTCFullYear()).toBeLessThanOrEqual(MAX_ALLOWED_YEAR);
+  });
+
+  test("normalizes an inverted year range and falls back to all months when none are selected", async ({
+    calendarDrill,
+  }) => {
+    await calendarDrill.goto();
+
+    await calendarDrill.page.getByRole("spinbutton", { name: "From Year" }).fill("2030");
+    await calendarDrill.page.getByRole("spinbutton", { name: "To Year" }).fill("2020");
+    await expect(calendarDrill.page.getByRole("spinbutton", { name: "From Year" })).toHaveValue(
+      "2020",
+    );
+    await expect(calendarDrill.page.getByRole("spinbutton", { name: "To Year" })).toHaveValue(
+      "2020",
+    );
+
+    await calendarDrill.openAdvancedSettings();
+    await calendarDrill.setDateFormat("iso");
+    await calendarDrill.page.getByRole("button", { name: "All", exact: true }).click();
+    for (let currentMonth = 1; currentMonth <= 12; currentMonth += 1) {
+      await expect(calendarDrill.monthButton(currentMonth)).toHaveAttribute("aria-pressed", "false");
+    }
+
+    await calendarDrill.start();
+    const questionDate = await calendarDrill.questionDate();
+    expect(questionDate.getUTCFullYear()).toBe(2020);
+    expect(questionDate.getUTCMonth()).toBeGreaterThanOrEqual(0);
+    expect(questionDate.getUTCMonth()).toBeLessThanOrEqual(11);
   });
 });

@@ -103,4 +103,33 @@ test.describe("EPUB Maker generated content", () => {
     const withLinksChapter = await withLinks.text("OEBPS/chapters/chapter-1.xhtml");
     expect(withLinksChapter).toContain('href="https://example.com/path"');
   });
+
+  test("can cancel generation while remote image embedding is in progress", async ({
+    page,
+    epubMaker,
+  }) => {
+    await epubMaker.goto();
+
+    const iconUrl = `${new URL(page.url()).origin}/icon.png?slow-functional=true`;
+    await page.route("**/icon.png?slow-functional=true", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 2_000));
+      await route.fulfill({
+        status: 200,
+        contentType: "image/png",
+        body: await fs.readFile("src/app/icon.png"),
+      });
+    });
+
+    await epubMaker.addHtmlPage(
+      `<h1>Cancelable image chapter</h1><img src="${iconUrl}" alt="slow icon" />`,
+    );
+    await epubMaker.setEmbedRemoteImages(true);
+
+    await epubMaker.saveButton.click();
+    await expect(page.getByRole("button", { name: /Cancel \(\d+%\)/ })).toBeVisible();
+    await page.getByRole("button", { name: /Cancel \(\d+%\)/ }).click();
+
+    await expect(page.getByText("Generation cancelled")).toBeVisible();
+    await expect(epubMaker.saveButton).toBeEnabled();
+  });
 });

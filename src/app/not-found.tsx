@@ -6,6 +6,7 @@ import { Heading1, LinkText, SubtitleText } from "@components/core/Texts";
 import WithBackground from "@components/page/wrapper/WithBackground";
 import { PersonalData } from "data";
 import { Providers } from "./providers";
+import { notFoundContent } from "./not-found-content";
 
 export default function Error() {
   return (
@@ -13,14 +14,14 @@ export default function Error() {
       <WithBackground>
         <Center h={"100vh"}>
           <VStack gap={8}>
-            <Heading1 centerAlign>Dear explorer, are you lost?</Heading1>
+            <Heading1 centerAlign>{notFoundContent.title}</Heading1>
             <Text>
-              <LinkText href="/">Go back home</LinkText>
+              <LinkText href="/">{notFoundContent.homeLinkLabel}</LinkText>
             </Text>
             <SubtitleText>
-              Or contact the developer on{" "}
+              {notFoundContent.contactPrefix}{" "}
               <LinkText href={PersonalData.linkedIn.url} isExternal>
-                LinkedIn
+                {notFoundContent.contactLinkLabel}
               </LinkText>
             </SubtitleText>
           </VStack>

@@ -96,4 +96,20 @@ test.describe("Calendar Drill shortcuts", () => {
       await calendarDrill.resetButton.click();
     }
   });
+
+  test("does not trigger global shortcuts while focus is inside settings inputs", async ({
+    page,
+    calendarDrill,
+  }) => {
+    await calendarDrill.goto();
+
+    await page.getByRole("spinbutton", { name: "From Year" }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByText(/Weekday for .+\?/)).toHaveCount(0);
+
+    await calendarDrill.openAdvancedSettings();
+    await page.getByLabel("Select date format").focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByText(/Weekday for .+\?/)).toHaveCount(0);
+  });
 });

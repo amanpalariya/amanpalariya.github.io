@@ -1,4 +1,5 @@
 import { expect, test } from "../../support/fixtures";
+import { expectWellFormedEpubPackage, loadEpubArchive } from "./epub-assertions";
 
 test.describe("EPUB Maker page drafts", () => {
   test("adds multiple pages, renames, removes the middle page, undoes, and redoes", async ({
@@ -76,5 +77,34 @@ test.describe("EPUB Maker page drafts", () => {
     await expect(epubMaker.pageTitleInput(1)).toBeVisible();
     await expect(epubMaker.pageTitleInput(2)).toHaveCount(0);
     await expect(page.getByText("Page already added")).toBeVisible();
+  });
+
+  test("reorders draft pages with drag and persists the order in generated EPUB", async ({
+    page,
+    epubMaker,
+  }) => {
+    await epubMaker.goto();
+
+    await epubMaker.addHtmlPage("<h1>First chapter</h1><p>First body.</p>");
+    await epubMaker.addHtmlPage("<h1>Second chapter</h1><p>Second body.</p>");
+    await epubMaker.addHtmlPage("<h1>Third chapter</h1><p>Third body.</p>");
+
+    await page.getByLabel("Drag page").nth(2).dragTo(page.getByLabel("Drag page").nth(0));
+
+    await expect(epubMaker.pageTitleInput(1)).toHaveValue("Third chapter");
+    await expect(epubMaker.pageTitleInput(2)).toHaveValue("First chapter");
+    await expect(epubMaker.pageTitleInput(3)).toHaveValue("Second chapter");
+
+    const archive = await loadEpubArchive(await epubMaker.generateDownload());
+    await expectWellFormedEpubPackage(archive, {
+      title: "EPUB Maker",
+      spineHrefs: [
+        "chapters/chapter-1.xhtml",
+        "chapters/chapter-2.xhtml",
+        "chapters/chapter-3.xhtml",
+      ],
+      navLabels: ["Third chapter", "First chapter", "Second chapter"],
+      coverIncluded: true,
+    });
   });
 });

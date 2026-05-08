@@ -7,16 +7,21 @@ export default defineConfig({
     timeout: 10_000,
   },
   fullyParallel: true,
-  retries: 0,
+  retries: process.env.CI ? 1 : 0,
   reporter: [["list"]],
   use: {
     baseURL: "http://127.0.0.1:3000",
+    locale: "en-US",
     trace: "on-first-retry",
   },
   projects: [
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "mobile-chromium",
+      use: { ...devices["Pixel 7"] },
     },
   ],
   webServer: {

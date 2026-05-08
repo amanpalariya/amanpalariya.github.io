@@ -1,4 +1,33 @@
 import { expect, test } from "../support/fixtures";
+import { WorkData } from "../../../src/data";
+import { getAllBlogs } from "../../../src/data/blogs/loader";
+import BlogsData from "../../../src/data/blogs";
+import { notFoundContent } from "../../../src/app/not-found-content";
+import ProjectsData from "../../../src/data/projects";
+import { getAllTools } from "../../../src/features/tools/data/tools-registry";
+import { getToolsPageContent } from "../../../src/features/tools/data/content";
+
+const projectTitles = ProjectsData.allProjects.map((project) => project.title);
+const blogs = getAllBlogs();
+const toolNames = getAllTools().map((tool) => tool.name);
+const toolsPageContent = getToolsPageContent();
+
+async function expectBlogsNavigationLinkVisible(page: import("@playwright/test").Page) {
+  const mobileMenuTrigger = page.getByRole("button", { name: "Open mobile navigation menu" });
+  if (await mobileMenuTrigger.isVisible()) {
+    await mobileMenuTrigger.click();
+    await expect(
+      page
+        .getByRole("navigation", { name: "Mobile navigation menu" })
+        .getByRole("link", { name: "Blogs" }),
+    ).toBeVisible();
+    return;
+  }
+
+  const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
+  const primaryBlogsLink = primaryNavigation.getByRole("link", { name: "Blogs" });
+  await expect(primaryBlogsLink).toBeVisible();
+}
 
 test.describe("Feature Flags page", () => {
   test("persists changed feature flag values across refreshes", async ({ page, featureFlags }) => {
@@ -22,36 +51,49 @@ test.describe("Feature Flags page", () => {
     featureFlags,
   }) => {
     await page.goto("/projects");
-    await expect(page.getByText("SAMPAN")).toBeVisible();
-    await expect(page.getByText("There are no projects yet!")).toHaveCount(0);
+    for (const projectTitle of projectTitles) {
+      await expect(page.getByText(projectTitle)).toBeVisible();
+    }
+    await expect(page.getByText(ProjectsData.projectsPage.emptyStateTitle)).toHaveCount(0);
 
     await page.goto("/blogs");
-    await expect(page.getByText("Code Rewrite is Dangerous")).toBeVisible();
-    await expect(page.getByText("There are no blogs yet!")).toHaveCount(0);
+    for (const blog of blogs) {
+      await expect(page.getByText(blog.title)).toBeVisible();
+    }
+    await expect(page.getByText(BlogsData.blogsPage.emptyStateTitle)).toHaveCount(0);
 
     await page.goto("/tools");
-    await expect(page.getByText("Calendar Drill")).toBeVisible();
-    await expect(page.getByText("No tools found")).toHaveCount(0);
+    for (const toolName of toolNames) {
+      await expect(page.getByText(toolName)).toBeVisible();
+    }
+    await expect(page.getByText(toolsPageContent.emptyStateTitle)).toHaveCount(0);
 
     await featureFlags.setFlag("Force empty states", true);
 
     await page.goto("/");
-    await expect(page.getByText("There is no work experience yet!")).toBeVisible();
-    await expect(page.getByText("There are no projects yet!")).toBeVisible();
-    await expect(page.getByText("Console Game Language")).toHaveCount(0);
+    await expect(page.getByText(WorkData.emptyStateTitle)).toBeVisible();
+    await expect(page.getByText(ProjectsData.projectsPage.emptyStateTitle)).toBeVisible();
+    for (const projectTitle of projectTitles) {
+      await expect(page.getByText(projectTitle)).toHaveCount(0);
+    }
 
     await page.goto("/projects");
-    await expect(page.getByText("There are no projects yet!")).toBeVisible();
-    await expect(page.getByText("SAMPAN")).toHaveCount(0);
+    await expect(page.getByText(ProjectsData.projectsPage.emptyStateTitle)).toBeVisible();
+    for (const projectTitle of projectTitles) {
+      await expect(page.getByText(projectTitle)).toHaveCount(0);
+    }
 
     await page.goto("/blogs");
-    await expect(page.getByText("There are no blogs yet!")).toBeVisible();
-    await expect(page.getByText("Code Rewrite is Dangerous")).toHaveCount(0);
+    await expect(page.getByText(BlogsData.blogsPage.emptyStateTitle)).toBeVisible();
+    for (const blog of blogs) {
+      await expect(page.getByText(blog.title)).toHaveCount(0);
+    }
 
     await page.goto("/tools");
-    await expect(page.getByText("No tools found")).toBeVisible();
-    await expect(page.getByText("Calendar Drill")).toHaveCount(0);
-    await expect(page.getByText("EPUB Maker")).toHaveCount(0);
+    await expect(page.getByText(toolsPageContent.emptyStateTitle)).toBeVisible();
+    for (const toolName of toolNames) {
+      await expect(page.getByText(toolName)).toHaveCount(0);
+    }
   });
 
   test("blogs flag controls blog navigation and blog page access", async ({ page, featureFlags }) => {
@@ -62,22 +104,30 @@ test.describe("Feature Flags page", () => {
     await expect(primaryNavigation.getByRole("link", { name: "Blogs" })).toHaveCount(0);
 
     await page.goto("/blogs");
-    await expect(page.getByRole("heading", { name: "Dear explorer, are you lost?" })).toBeVisible();
-    await expect(page.getByText("Code Rewrite is Dangerous")).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: notFoundContent.title })).toBeVisible();
+    for (const blog of blogs) {
+      await expect(page.getByText(blog.title)).toHaveCount(0);
+    }
 
-    await page.goto("/blogs/code-rewrite-is-dangerous");
-    await expect(page.getByText("Code Rewrite is Dangerous")).toHaveCount(0);
+    for (const blog of blogs) {
+      await page.goto(`/blogs/${blog.id}`);
+      await expect(page.getByText(blog.title)).toHaveCount(0);
+    }
 
     await featureFlags.setFlag("Blogs", true);
 
     await page.goto("/");
-    await expect(primaryNavigation.getByRole("link", { name: "Blogs" })).toBeVisible();
+    await expectBlogsNavigationLinkVisible(page);
 
     await page.goto("/blogs");
     await expect(page.getByRole("heading", { name: "My Blogs" })).toBeVisible();
-    await expect(page.getByText("Code Rewrite is Dangerous")).toBeVisible();
+    for (const blog of blogs) {
+      await expect(page.getByText(blog.title)).toBeVisible();
+    }
 
-    await page.goto("/blogs/code-rewrite-is-dangerous");
-    await expect(page.getByText("Code Rewrite is Dangerous")).toBeVisible();
+    for (const blog of blogs) {
+      await page.goto(`/blogs/${blog.id}`);
+      await expect(page.getByRole("heading", { name: blog.title })).toBeVisible();
+    }
   });
 });

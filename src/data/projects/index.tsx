@@ -67,6 +67,7 @@ const ProjectsData = {
     title: "My Works",
     subtitle:
       "Explore some of my exciting projects. Most projects are open source, and I welcome your inquiries for more details or collaboration opportunities.",
+    emptyStateTitle: "There are no projects yet!",
   },
   allProjects,
 };
