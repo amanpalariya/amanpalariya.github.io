@@ -1,5 +1,10 @@
 import { expect, test } from "../../support/fixtures";
-import { imageFiles, loadEpubArchive } from "./epub-assertions";
+import {
+  expectImageManifestMatchesFiles,
+  expectWellFormedEpubPackage,
+  imageFiles,
+  loadEpubArchive,
+} from "./epub-assertions";
 
 test.describe("EPUB Maker cover", () => {
   test("includes generated cover XHTML and cover image in the EPUB", async ({ epubMaker }) => {
@@ -10,14 +15,19 @@ test.describe("EPUB Maker cover", () => {
     await epubMaker.addTextPage("Covered chapter\n\nThe generated cover should be packaged.");
 
     const archive = await loadEpubArchive(await epubMaker.generateDownload());
-    const opf = await archive.text("OEBPS/content.opf");
     const cover = await archive.text("OEBPS/cover.xhtml");
 
-    expect(archive.fileNames).toContain("OEBPS/cover.xhtml");
+    await expectWellFormedEpubPackage(archive, {
+      title: "Generated Cover Book",
+      creator: "Cover Author",
+      spineHrefs: ["chapters/chapter-1.xhtml"],
+      navLabels: ["Covered chapter The generated cover should be packaged...."],
+      coverIncluded: true,
+    });
+    await expectImageManifestMatchesFiles(archive);
     expect(imageFiles(archive).length).toBeGreaterThanOrEqual(1);
-    expect(opf).toContain('id="cover" href="cover.xhtml"');
-    expect(opf).toContain('properties="cover-image"');
     expect(cover).toContain("images/image-");
+    expect(cover).toContain('class="cover-page"');
   });
 
   test("persists cover disabled state and omits the cover from generated EPUB", async ({
@@ -33,11 +43,14 @@ test.describe("EPUB Maker cover", () => {
 
     await epubMaker.addTextPage("No cover chapter\n\nCover is disabled for this EPUB.");
     const archive = await loadEpubArchive(await epubMaker.generateDownload());
-    const opf = await archive.text("OEBPS/content.opf");
 
-    expect(archive.fileNames).not.toContain("OEBPS/cover.xhtml");
+    await expectWellFormedEpubPackage(archive, {
+      title: "EPUB Maker",
+      spineHrefs: ["chapters/chapter-1.xhtml"],
+      navLabels: ["No cover chapter Cover is disabled for this..."],
+      coverIncluded: false,
+    });
+    await expectImageManifestMatchesFiles(archive);
     expect(imageFiles(archive)).toEqual([]);
-    expect(opf).not.toContain('id="cover" href="cover.xhtml"');
-    expect(opf).not.toContain('properties="cover-image"');
   });
 });

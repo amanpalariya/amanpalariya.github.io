@@ -1,5 +1,11 @@
 import { expect, test } from "../../support/fixtures";
-import { imageFiles, loadEpubArchive } from "./epub-assertions";
+import {
+  expectImageManifestMatchesFiles,
+  expectPackagedImageReferencesResolve,
+  expectWellFormedEpubPackage,
+  imageFiles,
+  loadEpubArchive,
+} from "./epub-assertions";
 
 test.describe("EPUB Maker generated content", () => {
   test("embeds localhost remote images when enabled", async ({ page, epubMaker }) => {
@@ -16,6 +22,14 @@ test.describe("EPUB Maker generated content", () => {
     const chapter = await archive.text("OEBPS/chapters/chapter-1.xhtml");
     const opf = await archive.text("OEBPS/content.opf");
 
+    await expectWellFormedEpubPackage(archive, {
+      title: "Embedded Image Book",
+      spineHrefs: ["chapters/chapter-1.xhtml"],
+      navLabels: ["Image chapter"],
+      coverIncluded: true,
+    });
+    await expectImageManifestMatchesFiles(archive);
+    await expectPackagedImageReferencesResolve(archive);
     expect(imageFiles(archive).length).toBeGreaterThanOrEqual(2);
     expect(chapter).toContain("../images/image-");
     expect(chapter).not.toContain(iconUrl);
@@ -38,6 +52,14 @@ test.describe("EPUB Maker generated content", () => {
     const archive = await loadEpubArchive(await epubMaker.generateDownload());
     const chapter = await archive.text("OEBPS/chapters/chapter-1.xhtml");
 
+    await expectWellFormedEpubPackage(archive, {
+      title: "External Image Book",
+      spineHrefs: ["chapters/chapter-1.xhtml"],
+      navLabels: ["External image chapter"],
+      coverIncluded: true,
+    });
+    await expectImageManifestMatchesFiles(archive);
+    await expectPackagedImageReferencesResolve(archive);
     expect(chapter).toContain(iconUrl);
     expect(chapter).not.toContain("../images/image-2");
     expect(imageFiles(archive).length).toBe(1);
