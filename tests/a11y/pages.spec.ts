@@ -1,9 +1,15 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
 import { nonToolPageCases, toolPageCases } from "../functional/support/page-cases";
 
 const pageCases = [...nonToolPageCases, ...toolPageCases];
+
+async function getPreferredColorScheme(page: Page) {
+  return page.evaluate(() =>
+    window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+  );
+}
 
 for (const pageCase of pageCases) {
   test(`page: ${pageCase.name} renders a non-empty document`, async ({ page }) => {
@@ -18,6 +24,9 @@ for (const pageCase of pageCases) {
   test(`axe: ${pageCase.name} has no serious accessibility violations`, async ({ page }) => {
     await page.goto(pageCase.path);
     await page.waitForLoadState("networkidle");
+    const colorScheme = await getPreferredColorScheme(page);
+
+    await expect(page.locator("html")).toHaveClass(new RegExp(`\\b${colorScheme}\\b`));
 
     const results = await new AxeBuilder({ page })
       .exclude('iframe[src*="youtube.com"], iframe[src*="youtube-nocookie.com"]')

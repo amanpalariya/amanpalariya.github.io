@@ -16,12 +16,20 @@ export default defineConfig({
   },
   projects: [
     {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      name: "chromium-light",
+      use: { ...devices["Desktop Chrome"], colorScheme: "light" },
     },
     {
-      name: "mobile-chromium",
-      use: { ...devices["Pixel 7"] },
+      name: "chromium-dark",
+      use: { ...devices["Desktop Chrome"], colorScheme: "dark" },
+    },
+    {
+      name: "mobile-chromium-light",
+      use: { ...devices["Pixel 7"], colorScheme: "light" },
+    },
+    {
+      name: "mobile-chromium-dark",
+      use: { ...devices["Pixel 7"], colorScheme: "dark" },
     },
   ],
   webServer: {
