@@ -198,7 +198,7 @@ export function useProseStyles(): CSSObject {
       color: useColorModeValue("green.600", "green.300"),
     },
     "& pre .hljs-number, & pre .hljs-attr": {
-      color: useColorModeValue("orange.500", "orange.300"),
+      color: useColorModeValue("orange.800", "orange.300"),
     },
     "& pre .hljs-function, & pre .hljs-variable": {
       color: useColorModeValue("blue.600", "blue.300"),

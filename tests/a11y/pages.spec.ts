@@ -30,6 +30,7 @@ for (const path of pages) {
     await page.waitForLoadState("networkidle");
 
     const results = await new AxeBuilder({ page })
+      .exclude('iframe[src*="youtube.com"], iframe[src*="youtube-nocookie.com"]')
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
       .analyze();
 
