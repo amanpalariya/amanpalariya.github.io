@@ -6,6 +6,8 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
+    "test": "vitest",
+    "test:unit": "vitest run",
     "test:a11y": "playwright test -c playwright.a11y.config.ts"
   },
   "dependencies": {
@@ -40,8 +42,10 @@
     "axe-core": "^4.11.1",
     "eslint": "9.17.0",
     "eslint-config-next": "16.1.6",
+    "jsdom": "^27.4.0",
     "prettier": "^3.0.3",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.5"
   },
   "resolutions": {
     "@types/react": "19.2.14",
