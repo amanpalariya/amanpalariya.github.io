@@ -1,10 +1,15 @@
 import { expect, test } from "../../support/fixtures";
+import fs from "node:fs/promises";
 import {
+  expectBytesEqual,
   expectImageManifestMatchesFiles,
   expectPackagedImageReferencesResolve,
+  expectPngImage,
   expectWellFormedEpubPackage,
   imageFiles,
+  imageSrcsFromXhtml,
   loadEpubArchive,
+  resolveImageSrc,
 } from "./epub-assertions";
 
 test.describe("EPUB Maker generated content", () => {
@@ -34,6 +39,20 @@ test.describe("EPUB Maker generated content", () => {
     expect(chapter).toContain("../images/image-");
     expect(chapter).not.toContain(iconUrl);
     expect(opf).toContain('media-type="image/png"');
+
+    const chapterImageSrc = imageSrcsFromXhtml(chapter).find((src) => src.startsWith("../images/"));
+    expect(chapterImageSrc).toBeTruthy();
+    const embeddedIconPath = resolveImageSrc("OEBPS/chapters/chapter-1.xhtml", chapterImageSrc!);
+    const { bytes: embeddedIconBytes, dimensions } = await expectPngImage(
+      archive,
+      embeddedIconPath,
+      {
+        width: 32,
+        height: 32,
+      },
+    );
+    expect(dimensions).toEqual({ width: 32, height: 32 });
+    expectBytesEqual(embeddedIconBytes, await fs.readFile("src/app/icon.png"));
   });
 
   test("keeps remote image references external when image embedding is disabled", async ({

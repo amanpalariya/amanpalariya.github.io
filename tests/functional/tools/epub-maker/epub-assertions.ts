@@ -5,6 +5,7 @@ import JSZip from "jszip";
 export type EpubArchive = {
   zip: JSZip;
   fileNames: string[];
+  bytes: (path: string) => Promise<Uint8Array>;
   text: (path: string) => Promise<string>;
 };
 
@@ -45,6 +46,26 @@ function normalizeRelativePath(baseFile: string, relativePath: string): string {
   }
 
   return parts.join("/");
+}
+
+function bytesToArray(value: Uint8Array | Buffer): number[] {
+  return Array.from(value);
+}
+
+export function pngDimensions(bytes: Uint8Array): { width: number; height: number } {
+  const pngSignature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+  expect(bytesToArray(bytes.slice(0, pngSignature.length))).toEqual(pngSignature);
+  expect(new TextDecoder().decode(bytes.slice(12, 16))).toBe("IHDR");
+
+  const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  return {
+    width: dataView.getUint32(16),
+    height: dataView.getUint32(20),
+  };
+}
+
+export function expectBytesEqual(actual: Uint8Array, expected: Uint8Array | Buffer) {
+  expect(Buffer.compare(Buffer.from(actual), Buffer.from(expected))).toBe(0);
 }
 
 async function packageDocument(archive: EpubArchive): Promise<PackageDocument> {
@@ -93,6 +114,13 @@ export async function loadEpubArchive(download: Download): Promise<EpubArchive> 
   return {
     zip,
     fileNames,
+    bytes: async (path: string) => {
+      const file = zip.file(path);
+      if (!file) {
+        throw new Error(`EPUB file not found: ${path}`);
+      }
+      return file.async("uint8array");
+    },
     text: async (path: string) => {
       const file = zip.file(path);
       if (!file) {
@@ -117,6 +145,27 @@ export function expectEpubCoreFiles(archive: EpubArchive) {
 
 export function imageFiles(archive: EpubArchive) {
   return archive.fileNames.filter((fileName) => /^OEBPS\/images\/image-\d+\./.test(fileName));
+}
+
+export function resolveImageSrc(xhtmlPath: string, src: string) {
+  return normalizeRelativePath(xhtmlPath, src);
+}
+
+export function imageSrcsFromXhtml(xhtml: string) {
+  return Array.from(xhtml.matchAll(/<img\b[^>]*\bsrc="([^"]+)"/g)).map((match) => match[1]);
+}
+
+export async function expectPngImage(
+  archive: EpubArchive,
+  path: string,
+  expectedDimensions?: { width: number; height: number },
+) {
+  const bytes = await archive.bytes(path);
+  const dimensions = pngDimensions(bytes);
+  if (expectedDimensions) {
+    expect(dimensions).toEqual(expectedDimensions);
+  }
+  return { bytes, dimensions };
 }
 
 export async function expectWellFormedEpubPackage(
@@ -198,13 +247,11 @@ export async function expectPackagedImageReferencesResolve(archive: EpubArchive)
 
   for (const xhtmlFile of xhtmlFiles) {
     const xhtml = await archive.text(xhtmlFile);
-    const imageSrcs = Array.from(xhtml.matchAll(/<img\b[^>]*\bsrc="([^"]+)"/g)).map(
-      (match) => match[1],
-    );
+    const imageSrcs = imageSrcsFromXhtml(xhtml);
 
     for (const src of imageSrcs) {
       if (/^[a-z][a-z0-9+.-]*:/i.test(src)) continue;
-      const resolvedPath = normalizeRelativePath(xhtmlFile, src);
+      const resolvedPath = resolveImageSrc(xhtmlFile, src);
       expect(archive.fileNames, `${xhtmlFile} image src should resolve: ${src}`).toContain(
         resolvedPath,
       );

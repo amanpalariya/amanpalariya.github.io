@@ -1,9 +1,12 @@
 import { expect, test } from "../../support/fixtures";
 import {
   expectImageManifestMatchesFiles,
+  expectPngImage,
   expectWellFormedEpubPackage,
   imageFiles,
+  imageSrcsFromXhtml,
   loadEpubArchive,
+  resolveImageSrc,
 } from "./epub-assertions";
 
 test.describe("EPUB Maker cover", () => {
@@ -28,6 +31,13 @@ test.describe("EPUB Maker cover", () => {
     expect(imageFiles(archive).length).toBeGreaterThanOrEqual(1);
     expect(cover).toContain("images/image-");
     expect(cover).toContain('class="cover-page"');
+
+    const coverImageSrc = imageSrcsFromXhtml(cover)[0];
+    expect(coverImageSrc).toBeTruthy();
+    await expectPngImage(archive, resolveImageSrc("OEBPS/cover.xhtml", coverImageSrc), {
+      width: 1600,
+      height: 2560,
+    });
   });
 
   test("persists cover disabled state and omits the cover from generated EPUB", async ({
