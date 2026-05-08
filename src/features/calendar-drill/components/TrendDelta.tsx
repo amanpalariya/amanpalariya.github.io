@@ -1,4 +1,5 @@
-import { HStack, Stat, Text } from "@chakra-ui/react";
+import { HStack, Icon, Text } from "@chakra-ui/react";
+import { LuTrendingDown, LuTrendingUp } from "react-icons/lu";
 import { formatSignedMsDelta, formatSignedPercent, getSignalColorToken } from "./practice-utils";
 
 type TrendDeltaProps = {
@@ -28,8 +29,8 @@ export function TrendDelta({
       lineHeight={"short"}
       align={"center"}
     >
-      {delta > 0 ? <Stat.UpIndicator /> : null}
-      {delta < 0 ? <Stat.DownIndicator /> : null}
+      {delta > 0 ? <Icon as={LuTrendingUp} boxSize={"1em"} /> : null}
+      {delta < 0 ? <Icon as={LuTrendingDown} boxSize={"1em"} /> : null}
       <Text as={"span"} color={"currentColor"}>
         {formattedValue}
       </Text>
