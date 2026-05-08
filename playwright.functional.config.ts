@@ -12,7 +12,8 @@ export default defineConfig({
   use: {
     baseURL: "http://127.0.0.1:3000",
     locale: "en-US",
-    trace: "on-first-retry",
+    trace: "retain-on-failure",
+    video: "retain-on-failure",
   },
   projects: [
     {
