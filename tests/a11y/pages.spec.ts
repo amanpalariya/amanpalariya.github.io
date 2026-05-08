@@ -1,32 +1,22 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-const pages = [
-  "/",
-  "/about",
-  "/cv",
-  "/projects",
-  "/projects/console-game-language",
-  "/blogs",
-  "/blogs/character-encodings-and-unicode",
-  "/tools",
-  "/tools/calendar-drill",
-  "/tools/epub-maker",
-  "/features",
-];
+import { nonToolPageCases, toolPageCases } from "../functional/support/page-cases";
 
-for (const path of pages) {
-  test(`page: ${path} renders a non-empty document`, async ({ page }) => {
-    const response = await page.goto(path);
+const pageCases = [...nonToolPageCases, ...toolPageCases];
 
-    expect(response?.status(), `${path} should not return an HTTP error`).toBeLessThan(400);
+for (const pageCase of pageCases) {
+  test(`page: ${pageCase.name} renders a non-empty document`, async ({ page }) => {
+    const response = await page.goto(pageCase.path);
+
+    expect(response?.status(), `${pageCase.path} should not return an HTTP error`).toBeLessThan(400);
     await expect(page.locator("body")).toContainText(/\S/);
     await expect(page.locator("body")).not.toContainText("404");
     await expect(page).toHaveTitle(/\S/);
   });
 
-  test(`axe: ${path} has no serious accessibility violations`, async ({ page }) => {
-    await page.goto(path);
+  test(`axe: ${pageCase.name} has no serious accessibility violations`, async ({ page }) => {
+    await page.goto(pageCase.path);
     await page.waitForLoadState("networkidle");
 
     const results = await new AxeBuilder({ page })
