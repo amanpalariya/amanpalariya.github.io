@@ -8,6 +8,7 @@
     "lint": "eslint .",
     "test": "vitest",
     "test:unit": "vitest run",
+    "test:functional": "playwright test -c playwright.functional.config.ts",
     "test:a11y": "playwright test -c playwright.a11y.config.ts"
   },
   "dependencies": {

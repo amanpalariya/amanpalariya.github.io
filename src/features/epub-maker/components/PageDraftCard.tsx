@@ -1907,6 +1907,7 @@ export function PageDraftCard({
           >
             <Input
               {...controlInputProps}
+              aria-label={`Page title ${chapterNumber}`}
               size={"sm"}
               rounded={"none"}
               borderLeftWidth={0}
