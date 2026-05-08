@@ -1,6 +1,6 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 
-const WEEKDAYS = [
+export const WEEKDAYS = [
   "Sunday",
   "Monday",
   "Tuesday",
@@ -9,6 +9,8 @@ const WEEKDAYS = [
   "Friday",
   "Saturday",
 ] as const;
+
+type Weekday = (typeof WEEKDAYS)[number];
 
 const MONTH_INDEX_BY_LABEL: Record<string, number> = {
   Jan: 0,
@@ -24,6 +26,22 @@ const MONTH_INDEX_BY_LABEL: Record<string, number> = {
   Nov: 10,
   Dec: 11,
 };
+
+const MONTH_LABEL_BY_NUMBER = [
+  "",
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+] as const;
 
 function parseQuestionDate(dateText: string): Date {
   const isoMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateText);
@@ -47,6 +65,14 @@ function parseQuestionDate(dateText: string): Date {
   throw new Error(`Unsupported Calendar Drill question date: ${dateText}`);
 }
 
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function weekdayButtonName(weekday: Weekday, shortcut: number) {
+  return new RegExp(`^${weekday} ${shortcut}$`);
+}
+
 export class CalendarDrillPageObject {
   readonly page: Page;
 
@@ -68,7 +94,7 @@ export class CalendarDrillPageObject {
 
   get answerButtons(): Locator {
     return this.page.getByRole("button", {
-      name: /^(Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday) [1-7]$/,
+      name: /^(Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday) [0-7]$/,
     });
   }
 
@@ -82,12 +108,51 @@ export class CalendarDrillPageObject {
     await expect(this.page.getByText(/Weekday for .+\?/)).toBeVisible();
   }
 
+  async openAdvancedSettings() {
+    const button = this.page.getByRole("button", { name: /advanced settings/i });
+    await button.click();
+    await expect(this.page.getByLabel("Select date format")).toBeVisible();
+  }
+
   settingSwitch(label: string) {
     return this.page.getByRole("checkbox", { name: label });
   }
 
   async setSettingSwitch(label: string, checked: boolean) {
     await this.settingSwitch(label).setChecked(checked, { force: true });
+    await expect(this.settingSwitch(label)).toBeChecked({ checked });
+  }
+
+  async setYearRange(year: number) {
+    const yearText = String(year);
+    await this.page.getByRole("spinbutton", { name: "From Year" }).fill(yearText);
+    await this.page.getByRole("spinbutton", { name: "To Year" }).fill(yearText);
+    await expect(this.page.getByRole("spinbutton", { name: "From Year" })).toHaveValue(yearText);
+    await expect(this.page.getByRole("spinbutton", { name: "To Year" })).toHaveValue(yearText);
+  }
+
+  async selectOnlyMonth(month: number) {
+    await this.page.getByRole("button", { name: "All", exact: true }).click();
+
+    for (let currentMonth = 1; currentMonth <= 12; currentMonth += 1) {
+      await expect(this.monthButton(currentMonth)).toHaveAttribute("aria-pressed", "false");
+    }
+
+    await this.monthButton(month).click();
+    await expect(this.monthButton(month)).toHaveAttribute("aria-pressed", "true");
+  }
+
+  monthButton(month: number) {
+    const label = MONTH_LABEL_BY_NUMBER[month];
+    if (!label) {
+      throw new Error(`Unsupported month number: ${month}`);
+    }
+    return this.page.locator(`[data-calendar-drill-month="${month}"]`).filter({ hasText: label });
+  }
+
+  async setDateFormat(value: "locale" | "month-day-year" | "day-month-year" | "iso") {
+    await this.page.getByLabel("Select date format").selectOption(value);
+    await expect(this.page.getByLabel("Select date format")).toHaveValue(value);
   }
 
   async questionDateText() {
@@ -101,19 +166,70 @@ export class CalendarDrillPageObject {
     return match[1];
   }
 
+  async questionDate() {
+    return parseQuestionDate(await this.questionDateText());
+  }
+
   async expectedWeekdayForCurrentQuestion() {
-    const date = parseQuestionDate(await this.questionDateText());
+    const date = await this.questionDate();
     return WEEKDAYS[date.getUTCDay()];
   }
 
   async answerCurrentQuestionCorrectly() {
     const expectedWeekday = await this.expectedWeekdayForCurrentQuestion();
-    await this.page.getByRole("button", { name: new RegExp(`^${expectedWeekday} [1-7]$`) }).click();
+    await this.page.getByRole("button", { name: new RegExp(`^${expectedWeekday} [0-7]$`) }).click();
     return expectedWeekday;
+  }
+
+  async chooseVisibleAnswer(weekday: Weekday) {
+    await this.page.getByRole("button", { name: new RegExp(`^${escapeRegExp(weekday)} [0-7]$`) }).click();
+  }
+
+  async chooseIncorrectAnswerForCurrentQuestion() {
+    const correctWeekday = await this.expectedWeekdayForCurrentQuestion();
+    const incorrectWeekday = WEEKDAYS.find((weekday) => weekday !== correctWeekday);
+    if (!incorrectWeekday) {
+      throw new Error("Could not find an incorrect weekday choice");
+    }
+
+    await this.chooseVisibleAnswer(incorrectWeekday);
+    return incorrectWeekday;
+  }
+
+  async pressNumericShortcut(shortcut: number) {
+    await this.page.keyboard.press(String(shortcut));
+  }
+
+  async expectSelectedAnswer(weekday: Weekday) {
+    await expect(this.page.getByRole("button", { name: weekday, exact: true })).toBeDisabled();
+  }
+
+  async expectAnswerButtons(expected: ReadonlyArray<{ weekday: Weekday; shortcut: number }>) {
+    await expect(this.answerButtons).toHaveCount(expected.length);
+
+    for (const [index, answer] of expected.entries()) {
+      await expect(this.answerButtons.nth(index)).toHaveAccessibleName(
+        weekdayButtonName(answer.weekday, answer.shortcut),
+      );
+    }
   }
 
   stat(label: "Accuracy" | "Answered" | "Avg Time" | "Streak") {
     return this.page.getByText(label, { exact: true }).locator("..");
+  }
+
+  async expectStats({
+    accuracy,
+    answered,
+    streak,
+  }: {
+    accuracy: string;
+    answered: string;
+    streak: string;
+  }) {
+    await expect(this.stat("Accuracy")).toContainText(accuracy);
+    await expect(this.stat("Answered")).toContainText(answered);
+    await expect(this.stat("Streak")).toContainText(streak);
   }
 
   async expectIdleStats() {

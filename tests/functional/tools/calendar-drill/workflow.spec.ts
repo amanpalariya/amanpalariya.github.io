@@ -1,7 +1,7 @@
 import { expect, test } from "../../support/fixtures";
 
 test.describe("Calendar Drill workflow", () => {
-  test("starts, answers correctly, updates stats, advances, and resets", async ({
+  test("walks through three questions, updates stats, advances, and resets", async ({
     page,
     calendarDrill,
   }) => {
@@ -17,9 +17,7 @@ test.describe("Calendar Drill workflow", () => {
 
     await expect(page.getByRole("button", { name: expectedWeekday, exact: true })).toBeDisabled();
     await expect(calendarDrill.nextButton).toBeEnabled();
-    await expect(calendarDrill.stat("Accuracy")).toContainText("100%");
-    await expect(calendarDrill.stat("Answered")).toContainText("1");
-    await expect(calendarDrill.stat("Streak")).toContainText("1");
+    await calendarDrill.expectStats({ accuracy: "100%", answered: "1", streak: "1" });
 
     const firstQuestionDate = await calendarDrill.questionDateText();
     await calendarDrill.nextButton.click();
@@ -29,6 +27,17 @@ test.describe("Calendar Drill workflow", () => {
     await expect
       .poll(() => calendarDrill.questionDateText())
       .not.toBe(firstQuestionDate);
+
+    await calendarDrill.chooseIncorrectAnswerForCurrentQuestion();
+    await expect(calendarDrill.nextButton).toBeEnabled();
+    await calendarDrill.expectStats({ accuracy: "50%", answered: "2", streak: "0" });
+
+    await calendarDrill.nextButton.click();
+    await expect(calendarDrill.nextButton).toBeDisabled();
+
+    await calendarDrill.answerCurrentQuestionCorrectly();
+    await expect(calendarDrill.nextButton).toBeEnabled();
+    await calendarDrill.expectStats({ accuracy: "67%", answered: "3", streak: "1" });
 
     await calendarDrill.resetButton.click();
     await expect(calendarDrill.startButton).toBeVisible();
