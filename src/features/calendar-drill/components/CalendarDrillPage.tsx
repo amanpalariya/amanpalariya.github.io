@@ -881,26 +881,25 @@ export function CalendarDrillPage() {
                                             rounded={"lg"}
                                             variant={"ghost"}
                                             colorPalette={"gray"}
-                                            borderWidth={"1px"}
-                                            borderColor={
-                                              isSelected
-                                                ? "app.calendarDrill.button.primary.bg"
-                                                : "transparent"
-                                            }
+                                            borderWidth={0}
                                             bg={
                                               isSelected
-                                                ? "app.calendarDrill.button.primary.bg"
+                                                ? "app.bg.surface"
                                                 : "transparent"
                                             }
                                             color={
                                               isSelected
-                                                ? "app.calendarDrill.button.primary.fg"
+                                                ? "app.fg.default"
                                                 : undefined
                                             }
                                             _hover={{
                                               bg: isSelected
-                                                ? "app.calendarDrill.button.primary.hoverBg"
-                                                : "app.bg.surface",
+                                                ? "app.bg.surface"
+                                                : "transparent",
+                                              outlineWidth: "1px",
+                                              outlineStyle: "solid",
+                                              outlineColor: "app.border.strong",
+                                              outlineOffset: "0",
                                             }}
                                             _focusVisible={{
                                               outlineWidth: "2px",
