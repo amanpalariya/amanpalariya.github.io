@@ -879,22 +879,35 @@ export function CalendarDrillPage() {
                                             data-calendar-drill-month={month}
                                             size={"sm"}
                                             rounded={"lg"}
-                                            variant={
-                                              isSelected ? "subtle" : "ghost"
-                                            }
+                                            variant={"ghost"}
                                             colorPalette={"gray"}
-                                            borderWidth={0}
+                                            borderWidth={"1px"}
+                                            borderColor={
+                                              isSelected
+                                                ? "app.calendarDrill.button.primary.bg"
+                                                : "transparent"
+                                            }
                                             bg={
                                               isSelected
-                                                ? "app.bg.surface"
+                                                ? "app.calendarDrill.button.primary.bg"
                                                 : "transparent"
                                             }
                                             color={
                                               isSelected
-                                                ? "app.fg.default"
+                                                ? "app.calendarDrill.button.primary.fg"
                                                 : undefined
                                             }
-                                            _hover={{ bg: "app.bg.surface" }}
+                                            _hover={{
+                                              bg: isSelected
+                                                ? "app.calendarDrill.button.primary.hoverBg"
+                                                : "app.bg.surface",
+                                            }}
+                                            _focusVisible={{
+                                              outlineWidth: "2px",
+                                              outlineStyle: "solid",
+                                              outlineColor: "app.border.accent",
+                                              outlineOffset: "2px",
+                                            }}
                                             aria-pressed={isSelected}
                                             onPointerDown={(event) =>
                                               beginMonthDrag(

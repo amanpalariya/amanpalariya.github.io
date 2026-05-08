@@ -77,6 +77,31 @@ test.describe("Calendar Drill settings", () => {
     }
   });
 
+  test("uses distinct colors for selected and touch-retained hover month states", async ({
+    calendarDrill,
+  }) => {
+    await calendarDrill.goto();
+    await calendarDrill.openAdvancedSettings();
+
+    const januaryButton = calendarDrill.monthButton(1);
+    const februaryButton = calendarDrill.monthButton(2);
+
+    await januaryButton.hover();
+    await januaryButton.click();
+
+    await expect(januaryButton).toHaveAttribute("aria-pressed", "false");
+    await expect(februaryButton).toHaveAttribute("aria-pressed", "true");
+
+    const januaryBackground = await januaryButton.evaluate(
+      (element) => getComputedStyle(element).backgroundColor,
+    );
+    const februaryBackground = await februaryButton.evaluate(
+      (element) => getComputedStyle(element).backgroundColor,
+    );
+
+    expect(januaryBackground).not.toBe(februaryBackground);
+  });
+
   test("clamps out-of-range year inputs before generating questions", async ({
     calendarDrill,
   }) => {
