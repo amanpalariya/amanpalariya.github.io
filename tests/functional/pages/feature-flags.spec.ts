@@ -12,9 +12,14 @@ const blogs = getAllBlogs();
 const toolNames = getAllTools().map((tool) => tool.name);
 const toolsPageContent = getToolsPageContent();
 
+function isMobileViewport(page: import("@playwright/test").Page) {
+  return (page.viewportSize()?.width ?? 0) < 640;
+}
+
 async function expectBlogsNavigationLinkVisible(page: import("@playwright/test").Page) {
-  const mobileMenuTrigger = page.getByRole("button", { name: "Open mobile navigation menu" });
-  if (await mobileMenuTrigger.isVisible()) {
+  if (isMobileViewport(page)) {
+    const mobileMenuTrigger = page.getByRole("button", { name: "Open mobile navigation menu" });
+    await expect(mobileMenuTrigger).toBeVisible();
     await mobileMenuTrigger.click();
     await expect(
       page
@@ -27,6 +32,23 @@ async function expectBlogsNavigationLinkVisible(page: import("@playwright/test")
   const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
   const primaryBlogsLink = primaryNavigation.getByRole("link", { name: "Blogs" });
   await expect(primaryBlogsLink).toBeVisible();
+}
+
+async function expectBlogsNavigationLinkHidden(page: import("@playwright/test").Page) {
+  if (isMobileViewport(page)) {
+    const mobileMenuTrigger = page.getByRole("button", { name: "Open mobile navigation menu" });
+    await expect(mobileMenuTrigger).toBeVisible();
+    await mobileMenuTrigger.click();
+    await expect(
+      page
+        .getByRole("navigation", { name: "Mobile navigation menu" })
+        .getByRole("link", { name: "Blogs" }),
+    ).toHaveCount(0);
+    return;
+  }
+
+  const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
+  await expect(primaryNavigation.getByRole("link", { name: "Blogs" })).toHaveCount(0);
 }
 
 test.describe("Feature Flags page", () => {
@@ -100,8 +122,7 @@ test.describe("Feature Flags page", () => {
     await featureFlags.setFlag("Blogs", false);
 
     await page.goto("/");
-    const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
-    await expect(primaryNavigation.getByRole("link", { name: "Blogs" })).toHaveCount(0);
+    await expectBlogsNavigationLinkHidden(page);
 
     await page.goto("/blogs");
     await expect(page.getByRole("heading", { name: notFoundContent.title })).toBeVisible();

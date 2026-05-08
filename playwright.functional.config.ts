@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const recordAllArtifacts = process.env.PLAYWRIGHT_RECORD_ALL === "1";
+
 export default defineConfig({
   testDir: "./tests/functional",
   timeout: 45_000,
@@ -12,8 +14,8 @@ export default defineConfig({
   use: {
     baseURL: "http://127.0.0.1:3000",
     locale: "en-US",
-    trace: "retain-on-failure",
-    video: "retain-on-failure",
+    trace: recordAllArtifacts ? "on" : "retain-on-failure",
+    video: recordAllArtifacts ? "on" : "retain-on-failure",
   },
   projects: [
     {
