@@ -40,9 +40,9 @@ export function SessionStatsCard({
         <Grid templateColumns={["repeat(2, minmax(0, 1fr))", "repeat(4, minmax(0, 1fr))"]} gap={3}>
           <Box minW={0}>
             <Text {...statLabelProps}>Accuracy</Text>
-            <HStack align={"center"} gap={1.5} wrap={"nowrap"}>
+            <HStack align={"center"} gap={0.75} wrap={"nowrap"}>
               <Text {...statValueProps}>{showPlaceholderStats ? "-" : `${accuracy}%`}</Text>
-              <Box minW={{ base: "48px", md: "58px" }}>
+              <Box minW={{ base: "38px", md: "44px" }}>
                 <TrendDelta delta={trends.accuracyDelta} isIncreasePositiveSignal type={"percent"} />
               </Box>
             </HStack>
@@ -55,7 +55,7 @@ export function SessionStatsCard({
 
           <Box minW={0}>
             <Text {...statLabelProps}>Avg Time</Text>
-            <HStack align={"center"} gap={1.5} wrap={"nowrap"}>
+            <HStack align={"center"} gap={0.75} wrap={"nowrap"}>
               <Text {...statValueProps}>
                 {showPlaceholderStats
                   ? "-"
@@ -63,7 +63,7 @@ export function SessionStatsCard({
                     ? formatMs(displayedAvgResponseMs)
                     : "-"}
               </Text>
-              <Box minW={{ base: "48px", md: "58px" }}>
+              <Box minW={{ base: "38px", md: "44px" }}>
                 <TrendDelta
                   delta={trends.avgResponseDeltaMs}
                   isIncreasePositiveSignal={false}
