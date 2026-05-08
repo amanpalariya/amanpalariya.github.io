@@ -1,7 +1,4 @@
-import {
-  IconButton,
-  type DialogOpenChangeDetails,
-} from "@chakra-ui/react";
+import { IconButton } from "@chakra-ui/react";
 import {
   DialogBody,
   DialogCloseTrigger,
@@ -14,6 +11,10 @@ import {
 import { Tooltip } from "@components/ui/tooltip";
 import { LuSettings2 } from "react-icons/lu";
 import type { ReactNode } from "react";
+
+type DialogOpenChangeDetails = {
+  open: boolean;
+};
 
 export function CoverSettingsDialog({
   open,

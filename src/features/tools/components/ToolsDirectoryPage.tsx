@@ -113,7 +113,7 @@ export function ToolsDirectoryPage() {
 
   const filteredTools = useMemo(() => filterTools(tools, filters), [tools, filters]);
   const visibleTools = forceEmptyStates ? [] : filteredTools;
-  const showSearch = tools.length > 1;
+  const showSearch = tools.length > 5;
 
   return (
     <VStack align={"stretch"} gap={0}>

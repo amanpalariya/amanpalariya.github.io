@@ -19,6 +19,10 @@ import {
   APP_LIST_DIVIDER_WIDTH,
 } from "@components/core/Dividers";
 
+type SwitchCheckedChangeDetails = {
+  checked: boolean;
+};
+
 function useTileColors() {
   return {
     divider: APP_LIST_DIVIDER_COLOR,
@@ -109,7 +113,7 @@ function LinkOverlayIfUrlPresent({
   );
 }
 
-function LinkHelperIcon({ isExternal }) {
+function LinkHelperIcon({ isExternal }: { isExternal: boolean }) {
   const { linkIcon } = useTileColors();
 
   return (
@@ -424,7 +428,9 @@ export function TitleDescriptionToggleTile({
             </VStack>
             <Switch
               checked={toggleValue}
-              onCheckedChange={(details) => onToggle?.(details.checked)}
+              onCheckedChange={(details: SwitchCheckedChangeDetails) =>
+                onToggle?.(details.checked)
+              }
               inputProps={{ "aria-label": title }}
             />
           </HStack>

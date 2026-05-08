@@ -32,6 +32,10 @@ import {
   DialogTitle,
 } from "@components/ui/dialog";
 
+type DialogOpenChangeDetails = {
+  open: boolean;
+};
+
 export interface CvAccomplishmentVisualItem {
   title: string;
   issuer?: string;
@@ -174,7 +178,9 @@ export default function CvAccomplishmentsSection({
 
       <DialogRoot
         open={!!selectedImage}
-        onOpenChange={(e) => !e.open && setSelectedImage(null)}
+        onOpenChange={(details: DialogOpenChangeDetails) =>
+          !details.open && setSelectedImage(null)
+        }
         size="lg"
         placement="center"
       >

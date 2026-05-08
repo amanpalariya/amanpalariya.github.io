@@ -13,6 +13,10 @@ import { LuCircleHelp, LuSettings2 } from "react-icons/lu";
 import { DEFAULT_BOOK_TITLE } from "../constants";
 import type { EpubMakerState } from "../types";
 
+type SwitchCheckedChangeDetails = {
+  checked: boolean;
+};
+
 export function EpubMetadataForm({
   prefs,
   autoEpubFileName,
@@ -145,7 +149,7 @@ export function EpubMetadataForm({
           <Switch
             {...switchProps}
             checked={prefs.generationOptions.embedRemoteImages}
-            onCheckedChange={(details) =>
+            onCheckedChange={(details: SwitchCheckedChangeDetails) =>
               onEmbedRemoteImagesChange(details.checked)
             }
           >
@@ -173,7 +177,7 @@ export function EpubMetadataForm({
           <Switch
             {...switchProps}
             checked={prefs.generationOptions.allowExternalLinks}
-            onCheckedChange={(details) =>
+            onCheckedChange={(details: SwitchCheckedChangeDetails) =>
               onAllowExternalLinksChange(details.checked)
             }
           >
