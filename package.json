@@ -9,6 +9,8 @@
     "test": "vitest",
     "test:unit": "vitest run",
     "test:functional": "playwright test -c playwright.functional.config.ts",
+    "test:functional:report": "playwright show-report",
+    "test:clean": "rm -rf test-results playwright-report",
     "test:a11y": "playwright test -c playwright.a11y.config.ts"
   },
   "dependencies": {
