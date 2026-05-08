@@ -23,6 +23,51 @@ The main code lives in:
 - `src/data`: Website content (personal info, projects, blogs, etc.)
 - `src/utils`: Utility helpers
 
+## Testing
+
+Run static checks before opening a PR:
+
+```bash
+yarn typecheck
+yarn lint
+```
+
+Run unit tests:
+
+```bash
+yarn test:unit
+```
+
+Run functional Playwright tests:
+
+```bash
+yarn test:functional
+```
+
+Functional test runs always generate an HTML report. Open the latest report with:
+
+```bash
+yarn test:functional:report
+```
+
+Functional tests retain trace and video artifacts for failures by default. To record trace and video for every functional test, including passing tests, run:
+
+```bash
+yarn test:functional:record
+```
+
+Run accessibility tests:
+
+```bash
+yarn test:a11y
+```
+
+Clean Playwright reports and run artifacts:
+
+```bash
+yarn test:clean
+```
+
 ## Deployment
 
 `next.config.ts` is configured for static export (`output: "export"`).
