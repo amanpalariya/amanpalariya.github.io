@@ -3,6 +3,10 @@ import type { CoverSettingsState } from "../types";
 
 const COVER_SETTINGS_HISTORY_LIMIT = 100;
 
+type DialogOpenChangeDetails = {
+  open: boolean;
+};
+
 type CoverSettingsHistoryState = {
   past: CoverSettingsState[];
   present: CoverSettingsState;
@@ -94,7 +98,7 @@ export function useCoverSettingsSession({
   }, [history, buildCurrentSettings, onApplyCoverSettings]);
 
   const handleOpenChange = useCallback(
-    (details: { open: boolean }) => {
+    (details: DialogOpenChangeDetails) => {
       if (details.open) {
         open();
         return;

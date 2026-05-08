@@ -56,6 +56,25 @@ function createPreviewDocument(
   return `<!doctype html><html><head><meta charset="utf-8" /><meta name="color-scheme" content="light" /><style>:root{color-scheme:light}html,body{margin:0;padding:0;overflow:hidden;background:#fff;color:#111;height:100%}${coverStyles}*{scrollbar-width:none}*::-webkit-scrollbar{width:0;height:0}</style></head><body>${body}</body></html>`;
 }
 
+function isAllowedHref(url: string): boolean {
+  if (url.startsWith("#")) return true;
+
+  try {
+    const parsed = new URL(url);
+    return ["http:", "https:", "mailto:"].includes(parsed.protocol);
+  } catch {
+    return false;
+  }
+}
+
+function resolveSafeHref(href: string, baseUrl: string | null): string | null {
+  if (href.startsWith("#")) return href;
+
+  const absoluteHref = resolveAbsoluteUrl(href, baseUrl);
+  if (!absoluteHref || !isAllowedHref(absoluteHref)) return null;
+  return absoluteHref;
+}
+
 function appendSanitizedNode(
   sourceNode: ChildNode,
   targetParent: Element,
@@ -93,9 +112,9 @@ function appendSanitizedNode(
   if (tag === "a") {
     const href = sourceEl.getAttribute("href");
     if (href) {
-      const absoluteHref = resolveAbsoluteUrl(href, baseUrl);
-      if (absoluteHref && policy.allowExternalLinks) {
-        target.setAttribute("href", absoluteHref);
+      const safeHref = resolveSafeHref(href, baseUrl);
+      if (safeHref && policy.allowExternalLinks) {
+        target.setAttribute("href", safeHref);
         stats.rewrittenLinks += 1;
       }
     }

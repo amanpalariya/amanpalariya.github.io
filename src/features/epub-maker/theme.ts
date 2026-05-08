@@ -19,7 +19,7 @@ export const SEMANTIC_TOKENS = {
   fg: {
     default: semanticColor("{colors.gray.800}", "{colors.gray.200}"),
     muted: semanticColor("{colors.gray.600}", "{colors.gray.400}"),
-    subtle: semanticColor("{colors.gray.500}", "{colors.gray.300}"),
+    subtle: semanticColor("{colors.gray.700}", "{colors.gray.300}"),
     accent: semanticColor("#687f96", "#94abc1"),
     danger: semanticColor("{colors.red.600}", "{colors.red.300}"),
     status: {

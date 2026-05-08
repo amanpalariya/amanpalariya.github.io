@@ -21,6 +21,7 @@ import Profile from "@components/page/home/Profile";
 import ProjectsData from "data/projects";
 import { homepageTabs } from "app/route-info";
 import { WorkData } from "data";
+import type { WorkExperience } from "data/Work";
 import TimeBasedOnlineStatusBadge from "@components/page/home/TimeBasedOnlineStatusBadge";
 import { useFeatureFlag } from "utils/features";
 import FeatureFlagsData from "data/features";
@@ -90,7 +91,7 @@ function Projects() {
   );
 }
 
-function getTimeStringFromExp(exp) {
+function getTimeStringFromExp(exp: WorkExperience) {
   function formatDate(date: Date | null) {
     if (date) {
       const year = new Intl.DateTimeFormat("en", {

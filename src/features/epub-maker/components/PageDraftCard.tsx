@@ -108,6 +108,12 @@ type DragPreviewAnchor = {
   offsetY: number;
   width: number;
 };
+type NumberInputValueChangeDetails = {
+  value: string;
+};
+type SwitchCheckedChangeDetails = {
+  checked: boolean;
+};
 
 const COVER_AUTO_DEFAULT_BACKGROUND_ID: BaseCoverBackgroundId =
   DEFAULT_COVER_BASE_BACKGROUND_ID;
@@ -1469,7 +1475,9 @@ export function PageDraftCard({
                             <Switch
                               {...switchProps}
                               checked={isCoverTextEnabled}
-                              onCheckedChange={(details) =>
+                              onCheckedChange={(
+                                details: SwitchCheckedChangeDetails,
+                              ) =>
                                 commitCoverSettingsChange((previous) => ({
                                   ...previous,
                                   hideCoverText: !details.checked,
@@ -1513,7 +1521,9 @@ export function PageDraftCard({
                                   min={70}
                                   max={180}
                                   step={5}
-                                  onValueChange={(details) =>
+                                  onValueChange={(
+                                    details: NumberInputValueChangeDetails,
+                                  ) =>
                                     handleCoverTextScaleChange(details.value)
                                   }
                                   disabled={isCoverTextControlsDisabled}

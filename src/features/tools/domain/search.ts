@@ -7,7 +7,7 @@ import type {
 const SEARCHABLE_SEPARATOR = " ";
 
 function normalize(value: string): string {
-  return value.trim().toLowerCase();
+  return value.replace(/\s+/g, " ").trim().toLowerCase();
 }
 
 export function buildToolSearchText(tool: ToolDefinition): string {

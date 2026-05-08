@@ -1,7 +1,13 @@
 import { doPathnamesMatch, joinPathnames } from "utils/pathname";
 
-function getSubpagePathname(id: string) {
-  return joinPathnames(this.pathname, id);
+type HomepageTab = {
+  pathname: string;
+  name: string;
+  getSubpagePathname?: (id: string) => string;
+};
+
+function createSubpagePathnameGetter(pathname: string) {
+  return (id: string) => joinPathnames(pathname, id);
 }
 
 export const homepageTabs = {
@@ -16,7 +22,7 @@ export const homepageTabs = {
   projects: {
     pathname: "/projects/",
     name: "Projects",
-    getSubpagePathname,
+    getSubpagePathname: createSubpagePathnameGetter("/projects/"),
   },
   cv: {
     pathname: "/cv/",
@@ -25,19 +31,18 @@ export const homepageTabs = {
   blogs: {
     pathname: "/blogs/",
     name: "Blogs",
-    getSubpagePathname,
+    getSubpagePathname: createSubpagePathnameGetter("/blogs/"),
   },
   tools: {
     pathname: "/tools/",
     name: "Tools",
   },
-};
+} satisfies Record<string, HomepageTab>;
 
 export function getHomepageTabByPathname(pathname: string) {
-  for (const tab in homepageTabs) {
-    if (doPathnamesMatch(homepageTabs[tab].pathname, pathname)) {
-      return homepageTabs[tab];
-    }
-  }
-  return null;
+  return (
+    Object.values(homepageTabs).find((tab) =>
+      doPathnamesMatch(tab.pathname, pathname),
+    ) ?? null
+  );
 }

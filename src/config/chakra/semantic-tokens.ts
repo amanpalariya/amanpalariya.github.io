@@ -106,7 +106,7 @@ export const APP_SEMANTIC_COLOR_TOKENS = {
       comment: semanticColor("{colors.gray.500}", "{colors.gray.500}"),
       keyword: semanticColor("{colors.purple.600}", "{colors.purple.400}"),
       string: semanticColor("{colors.green.600}", "{colors.green.400}"),
-      number: semanticColor("{colors.orange.500}", "{colors.orange.500}"),
+      number: semanticColor("{colors.orange.800}", "{colors.orange.300}"),
       function: semanticColor("{colors.blue.600}", "{colors.blue.400}"),
     },
     calendarDrill: {
@@ -117,8 +117,8 @@ export const APP_SEMANTIC_COLOR_TOKENS = {
       },
       button: {
         primary: {
-          bg: semanticColor("{colors.blue.500}", "{colors.blue.400}"),
-          hoverBg: semanticColor("{colors.blue.600}", "{colors.blue.500}"),
+          bg: semanticColor("{colors.blue.700}", "{colors.blue.300}"),
+          hoverBg: semanticColor("{colors.blue.800}", "{colors.blue.400}"),
           fg: semanticColor("{colors.white}", "{colors.gray.900}"),
         },
       },

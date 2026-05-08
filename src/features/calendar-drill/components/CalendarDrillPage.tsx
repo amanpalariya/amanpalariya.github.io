@@ -81,6 +81,12 @@ const DATE_FORMAT_OPTIONS: {
 ];
 
 type MonthDragMode = "select" | "deselect" | null;
+type NumberInputValueChangeDetails = {
+  value: string;
+};
+type SwitchCheckedChangeDetails = {
+  checked: boolean;
+};
 
 function isTextEntryInputElement(input: HTMLInputElement): boolean {
   const inputType = input.type.toLowerCase();
@@ -620,7 +626,9 @@ export function CalendarDrillPage() {
                                   value={String(settingsDraft.minYear)}
                                   min={MIN_ALLOWED_YEAR}
                                   max={MAX_ALLOWED_YEAR}
-                                  onValueChange={(details) => {
+                                  onValueChange={(
+                                    details: NumberInputValueChangeDetails,
+                                  ) => {
                                     const parsed = Number(details.value);
                                     if (!Number.isNaN(parsed)) {
                                       const minYear = clampYear(parsed);
@@ -650,7 +658,9 @@ export function CalendarDrillPage() {
                                   value={String(settingsDraft.maxYear)}
                                   min={MIN_ALLOWED_YEAR}
                                   max={MAX_ALLOWED_YEAR}
-                                  onValueChange={(details) => {
+                                  onValueChange={(
+                                    details: NumberInputValueChangeDetails,
+                                  ) => {
                                     const parsed = Number(details.value);
                                     if (!Number.isNaN(parsed)) {
                                       const maxYear = clampYear(parsed);
@@ -930,7 +940,9 @@ export function CalendarDrillPage() {
                                           settingsDraft.weekStartDay ===
                                           "monday"
                                         }
-                                        onCheckedChange={(details) => {
+                                        onCheckedChange={(
+                                          details: SwitchCheckedChangeDetails,
+                                        ) => {
                                           const weekStartDay = details.checked
                                             ? "monday"
                                             : "sunday";
@@ -947,7 +959,9 @@ export function CalendarDrillPage() {
                                         checked={
                                           settingsDraft.firstDayNumberBase === 0
                                         }
-                                        onCheckedChange={(details) => {
+                                        onCheckedChange={(
+                                          details: SwitchCheckedChangeDetails,
+                                        ) => {
                                           const firstDayNumberBase =
                                             details.checked ? 0 : 1;
                                           setSettingsDraft((current) => ({

@@ -1,4 +1,4 @@
-import { Box, Card, Grid, HStack, Stat, Text } from "@chakra-ui/react";
+import { Box, Card, Grid, HStack, Text } from "@chakra-ui/react";
 import type { PracticeTrends } from "./models";
 import { formatMs } from "./practice-utils";
 import { TrendDelta } from "./TrendDelta";
@@ -22,36 +22,48 @@ export function SessionStatsCard({
   streak,
   trends,
 }: SessionStatsCardProps) {
+  const statLabelProps = {
+    color: "app.fg.subtle",
+    fontSize: "sm",
+    fontWeight: "medium",
+  } as const;
+  const statValueProps = {
+    color: "app.fg.default",
+    fontSize: "2xl",
+    fontWeight: "semibold",
+    lineHeight: "short",
+  } as const;
+
   return (
     <Card.Root variant={"outline"} rounded={"2xl"}>
       <Card.Body>
         <Grid templateColumns={["repeat(2, minmax(0, 1fr))", "repeat(4, minmax(0, 1fr))"]} gap={3}>
-          <Stat.Root minW={0}>
-            <Stat.Label>Accuracy</Stat.Label>
-            <HStack align={"center"} gap={1.5} wrap={"nowrap"}>
-              <Stat.ValueText>{showPlaceholderStats ? "-" : `${accuracy}%`}</Stat.ValueText>
-              <Box minW={{ base: "48px", md: "58px" }}>
+          <Box minW={0}>
+            <Text {...statLabelProps}>Accuracy</Text>
+            <HStack align={"center"} gap={0.75} wrap={"nowrap"}>
+              <Text {...statValueProps}>{showPlaceholderStats ? "-" : `${accuracy}%`}</Text>
+              <Box minW={{ base: "38px", md: "44px" }}>
                 <TrendDelta delta={trends.accuracyDelta} isIncreasePositiveSignal type={"percent"} />
               </Box>
             </HStack>
-          </Stat.Root>
+          </Box>
 
-          <Stat.Root minW={0}>
-            <Stat.Label>Answered</Stat.Label>
-            <Stat.ValueText>{showPlaceholderStats ? "-" : attempts}</Stat.ValueText>
-          </Stat.Root>
+          <Box minW={0}>
+            <Text {...statLabelProps}>Answered</Text>
+            <Text {...statValueProps}>{showPlaceholderStats ? "-" : attempts}</Text>
+          </Box>
 
-          <Stat.Root minW={0}>
-            <Stat.Label>Avg Time</Stat.Label>
-            <HStack align={"center"} gap={1.5} wrap={"nowrap"}>
-              <Stat.ValueText>
+          <Box minW={0}>
+            <Text {...statLabelProps}>Avg Time</Text>
+            <HStack align={"center"} gap={0.75} wrap={"nowrap"}>
+              <Text {...statValueProps}>
                 {showPlaceholderStats
                   ? "-"
                   : avgResponseMs > 0
                     ? formatMs(displayedAvgResponseMs)
                     : "-"}
-              </Stat.ValueText>
-              <Box minW={{ base: "48px", md: "58px" }}>
+              </Text>
+              <Box minW={{ base: "38px", md: "44px" }}>
                 <TrendDelta
                   delta={trends.avgResponseDeltaMs}
                   isIncreasePositiveSignal={false}
@@ -59,19 +71,19 @@ export function SessionStatsCard({
                 />
               </Box>
             </HStack>
-          </Stat.Root>
+          </Box>
 
-          <Stat.Root minW={0}>
-            <Stat.Label>Streak</Stat.Label>
+          <Box minW={0}>
+            <Text {...statLabelProps}>Streak</Text>
             <HStack align={"center"} gap={1.5}>
-              <Stat.ValueText>{showPlaceholderStats ? "-" : streak}</Stat.ValueText>
+              <Text {...statValueProps}>{showPlaceholderStats ? "-" : streak}</Text>
               {!showPlaceholderStats && streak >= 5 ? (
                 <Text as={"span"} fontSize={"lg"} lineHeight={1} role={"img"} aria-label={"fire"}>
                   🔥
                 </Text>
               ) : null}
             </HStack>
-          </Stat.Root>
+          </Box>
         </Grid>
       </Card.Body>
     </Card.Root>

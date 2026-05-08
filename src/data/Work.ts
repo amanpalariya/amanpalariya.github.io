@@ -13,7 +13,7 @@ interface Company {
   logoSrc?: string;
 }
 
-interface WorkExperience {
+export interface WorkExperience {
   role: string;
   company: Company;
   email: string;
