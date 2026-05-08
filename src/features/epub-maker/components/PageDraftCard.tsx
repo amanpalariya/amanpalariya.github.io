@@ -303,6 +303,10 @@ export function PageDraftCard({
   }, [pageFlashKind, pageFlashToken]);
 
   function commitRenameIfChanged() {
+    if (!titleDraft.trim()) {
+      setTitleDraft(page.title);
+      return;
+    }
     if (titleDraft === page.title) return;
     onRename(page.id, titleDraft);
   }
@@ -1531,6 +1535,7 @@ export function PageDraftCard({
                                 >
                                   <NumberInput.Control />
                                   <NumberInput.Input
+                                    aria-label={"Cover text size percent"}
                                     fontFamily={"ui"}
                                     fontSize={"sm"}
                                     rounded={"lg"}
@@ -1689,6 +1694,7 @@ export function PageDraftCard({
                                           <Menu.Item
                                             key={styleOption}
                                             value={styleOption}
+                                            aria-label={`Text position ${styleOption.replace("_", " ")}`}
                                             rounded={"md"}
                                             {...dropdownGridItemInteractionProps}
                                             onClick={() =>
@@ -1907,6 +1913,7 @@ export function PageDraftCard({
           >
             <Input
               {...controlInputProps}
+              aria-label={`Page title ${chapterNumber}`}
               size={"sm"}
               rounded={"none"}
               borderLeftWidth={0}

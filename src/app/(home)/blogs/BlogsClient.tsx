@@ -36,7 +36,7 @@ function NoBlogsElement() {
             </Icon>
           </EmptyState.Indicator>
           <EmptyState.Title textAlign={"center"}>
-            {"There are no blogs yet!"}
+            {BlogsData.blogsPage.emptyStateTitle}
           </EmptyState.Title>
         </EmptyState.Content>
       </EmptyState.Root>

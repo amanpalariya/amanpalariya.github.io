@@ -114,6 +114,7 @@ export function readEpubMakerPrefs(): EpubMakerPrefs {
     const coverTextPositionValue = coverValue.textPosition;
     const coverTextColorModeValue = coverValue.textColorMode;
     const hideCoverTextValue = coverValue.hideText;
+    const coverEnabledValue = coverValue.enabled;
 
     const normalizedCoverBackgroundId = isCoverBackgroundId(coverBackgroundIdValue)
       ? coverBackgroundIdValue
@@ -130,6 +131,10 @@ export function readEpubMakerPrefs(): EpubMakerPrefs {
       title: readToolString(EPUB_MAKER_STORAGE_FIELDS.title, defaultPrefs.title),
       author: readToolString(EPUB_MAKER_STORAGE_FIELDS.author, defaultPrefs.author),
       cover: {
+        enabled:
+          typeof coverEnabledValue === "boolean"
+            ? coverEnabledValue
+            : defaultPrefs.cover.enabled,
         backgroundId: normalizedCoverBackgroundId,
         baseBackgroundId: normalizedCoverBaseBackgroundId,
         sizePresetId: isCoverSizePresetId(coverSizePresetIdValue)
@@ -184,6 +189,7 @@ export function writeEpubMakerPrefs(prefs: EpubMakerPrefs): void {
     window.localStorage.setItem(
       buildToolStorageKey(EPUB_MAKER_TOOL_ID, EPUB_MAKER_STORAGE_FIELDS.cover),
       JSON.stringify({
+        enabled: Boolean(prefs.cover.enabled),
         backgroundId: isCoverBackgroundId(prefs.cover.backgroundId)
           ? prefs.cover.backgroundId
           : defaultPrefs.cover.backgroundId,

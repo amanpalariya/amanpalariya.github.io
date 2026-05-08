@@ -73,12 +73,21 @@ const CALENDAR_DRILL_PRIMARY_ACTION_BUTTON_STYLES = {
 
 const DATE_FORMAT_OPTIONS: {
   value: PracticeSettings["dateFormat"];
-  label: string;
 }[] = [
-  { value: "month-day-year", label: "Apr 30, 2026" },
-  { value: "day-month-year", label: "30 Apr 2026" },
-  { value: "iso", label: "2026-04-30" },
+  { value: "month-day-year" },
+  { value: "day-month-year" },
+  { value: "iso" },
 ];
+
+function getTodayDateParts() {
+  const today = new Date();
+
+  return {
+    year: today.getFullYear(),
+    month: today.getMonth() + 1,
+    day: today.getDate(),
+  };
+}
 
 type MonthDragMode = "select" | "deselect" | null;
 type NumberInputValueChangeDetails = {
@@ -154,8 +163,9 @@ export function CalendarDrillPage() {
     avgResponseMs > 0 ? toDisplayedAvgMs(avgResponseMs) : 0;
   const selectedMonths = normalizeSelectedMonths(settingsDraft.selectedMonths);
   const areAllMonthsSelected = selectedMonths.length === ALL_MONTHS.length;
+  const dateFormatSampleDate = useMemo(() => getTodayDateParts(), []);
   const currentLocaleDateFormatLabel = `Current locale (${formatDateHuman(
-    { year: 2026, month: 4, day: 30 },
+    dateFormatSampleDate,
     "locale",
   )})`;
   const dateFormatOptions = [
@@ -163,7 +173,10 @@ export function CalendarDrillPage() {
       value: "locale" as const,
       label: currentLocaleDateFormatLabel,
     },
-    ...DATE_FORMAT_OPTIONS,
+    ...DATE_FORMAT_OPTIONS.map((option) => ({
+      value: option.value,
+      label: formatDateHuman(dateFormatSampleDate, option.value),
+    })),
   ];
   const selectedDateFormatLabel =
     dateFormatOptions.find(

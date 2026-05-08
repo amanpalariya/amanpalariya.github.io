@@ -13,7 +13,7 @@ export function useProseStyles(): CSSObject {
   const headingColor = useColorModeValue("gray.800", "whiteAlpha.900");
   const textColor = useColorModeValue("gray.700", "gray.200");
   const subtleTextColor = useColorModeValue("gray.600", "gray.400");
-  const linkColor = useColorModeValue("teal.600", "teal.300");
+  const linkColor = useColorModeValue("#007a8a", "teal.300");
   const borderColor = useColorModeValue("gray.200", "gray.700");
   const codeBg = useColorModeValue("gray.100", "gray.900");
   const preBg = useColorModeValue("gray.50", "gray.900");
@@ -118,7 +118,7 @@ export function useProseStyles(): CSSObject {
       transform: "translateY(-0.05em)",
     },
     "& a:hover": {
-      color: useColorModeValue("teal.700", "teal.200"),
+      color: useColorModeValue("#006fd6", "teal.200"),
     },
     "& ul, & ol": {
       paddingLeft: 6,
@@ -195,7 +195,7 @@ export function useProseStyles(): CSSObject {
       fontWeight: "medium",
     },
     "& pre .hljs-string, & pre .hljs-title, & pre .hljs-name": {
-      color: useColorModeValue("green.600", "green.300"),
+      color: useColorModeValue("#00843d", "green.300"),
     },
     "& pre .hljs-number, & pre .hljs-attr": {
       color: useColorModeValue("orange.800", "orange.300"),

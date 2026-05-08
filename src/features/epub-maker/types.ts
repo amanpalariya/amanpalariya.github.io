@@ -150,6 +150,7 @@ export interface EpubMakerPrefs {
   title: string;
   author: string;
   cover: {
+    enabled: boolean;
     backgroundId: CoverBackgroundId;
     baseBackgroundId: BaseCoverBackgroundId;
     sizePresetId: CoverSizePresetId;

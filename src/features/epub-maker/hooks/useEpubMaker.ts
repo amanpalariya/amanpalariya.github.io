@@ -124,7 +124,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     present: {
       pages: [],
       customCoverHtml: null,
-      coverEnabled: true,
+      coverEnabled: initialPrefs.cover.enabled,
       coverBaseBackgroundId: initialPrefs.cover.baseBackgroundId,
       coverSizePresetId: initialPrefs.cover.sizePresetId,
       coverTextScalePercent: initialPrefs.cover.textScalePercent,
@@ -410,6 +410,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
       const nextBackgroundId: CoverBackgroundId =
         customCoverHtml !== null ? "custom" : coverBaseBackgroundId;
       if (
+        prev.cover.enabled === coverEnabled &&
         prev.cover.backgroundId === nextBackgroundId &&
         prev.cover.baseBackgroundId === coverBaseBackgroundId &&
         prev.cover.sizePresetId === coverSizePresetId &&
@@ -424,6 +425,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
       return {
         ...prev,
         cover: {
+          enabled: coverEnabled,
           backgroundId: nextBackgroundId,
           baseBackgroundId: coverBaseBackgroundId,
           sizePresetId: coverSizePresetId,
@@ -442,6 +444,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     coverTextPosition,
     coverTextColorMode,
     hideCoverText,
+    coverEnabled,
   ]);
 
   useEffect(() => {

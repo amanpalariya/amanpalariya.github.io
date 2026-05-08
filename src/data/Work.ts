@@ -28,7 +28,9 @@ export interface WorkExperience {
 const WorkData: {
   current: WorkExperience;
   experience: WorkExperience[];
+  emptyStateTitle: string;
 } = {
+  emptyStateTitle: "There is no work experience yet!",
   current: {
     role: "Software Developer",
     company: {

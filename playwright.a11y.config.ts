@@ -7,16 +7,29 @@ export default defineConfig({
     timeout: 10_000,
   },
   fullyParallel: true,
-  retries: 0,
+  retries: process.env.CI ? 1 : 0,
   reporter: [["list"]],
   use: {
     baseURL: "http://127.0.0.1:3000",
+    locale: "en-US",
     trace: "on-first-retry",
   },
   projects: [
     {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      name: "chromium-light",
+      use: { ...devices["Desktop Chrome"], colorScheme: "light" },
+    },
+    {
+      name: "chromium-dark",
+      use: { ...devices["Desktop Chrome"], colorScheme: "dark" },
+    },
+    {
+      name: "mobile-chromium-light",
+      use: { ...devices["Pixel 7"], colorScheme: "light" },
+    },
+    {
+      name: "mobile-chromium-dark",
+      use: { ...devices["Pixel 7"], colorScheme: "dark" },
     },
   ],
   webServer: {
