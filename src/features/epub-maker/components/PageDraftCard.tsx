@@ -303,6 +303,10 @@ export function PageDraftCard({
   }, [pageFlashKind, pageFlashToken]);
 
   function commitRenameIfChanged() {
+    if (!titleDraft.trim()) {
+      setTitleDraft(page.title);
+      return;
+    }
     if (titleDraft === page.title) return;
     onRename(page.id, titleDraft);
   }

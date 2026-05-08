@@ -28,6 +28,7 @@ export const DEFAULT_COVER_HIDE_TEXT = false;
 
 export function createDefaultCoverPrefs(): EpubMakerPrefs["cover"] {
   return {
+    enabled: true,
     backgroundId: DEFAULT_COVER_BASE_BACKGROUND_ID,
     baseBackgroundId: DEFAULT_COVER_BASE_BACKGROUND_ID,
     sizePresetId: DEFAULT_COVER_SIZE_PRESET_ID,

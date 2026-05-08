@@ -1,4 +1,10 @@
-import { expect, type Locator, type Page } from "@playwright/test";
+import { expect, type Download, type Locator, type Page } from "@playwright/test";
+
+type UploadFilePayload = {
+  name: string;
+  mimeType: string;
+  buffer: Buffer;
+};
 
 export class EpubMakerPageObject {
   readonly page: Page;
@@ -39,6 +45,22 @@ export class EpubMakerPageObject {
     return this.page.getByPlaceholder("my-book.epub");
   }
 
+  get embedRemoteImagesSwitch(): Locator {
+    return this.page.getByRole("checkbox", { name: "Embed remote images" });
+  }
+
+  get keepExternalLinksSwitch(): Locator {
+    return this.page.getByRole("checkbox", { name: "Keep external links" });
+  }
+
+  get disableCoverButton(): Locator {
+    return this.page.getByLabel("Disable cover", { exact: true });
+  }
+
+  get enableCoverButton(): Locator {
+    return this.page.getByLabel("Enable cover", { exact: true });
+  }
+
   pageTitleInput(chapterNumber: number): Locator {
     return this.page.getByRole("textbox", { name: `Page title ${chapterNumber}` });
   }
@@ -51,5 +73,29 @@ export class EpubMakerPageObject {
   async addTextPage(content: string) {
     await this.pastedContentInput.fill(content);
     await this.addPastedContentButton.click();
+  }
+
+  async addHtmlPage(html: string) {
+    await this.addTextPage(html);
+  }
+
+  async uploadDraftFiles(files: UploadFilePayload[]) {
+    await this.page.locator('input[type="file"]').first().setInputFiles(files);
+  }
+
+  async generateDownload(): Promise<Download> {
+    const downloadPromise = this.page.waitForEvent("download");
+    await this.saveButton.click();
+    return downloadPromise;
+  }
+
+  async setEmbedRemoteImages(checked: boolean) {
+    await this.embedRemoteImagesSwitch.setChecked(checked, { force: true });
+    await expect(this.embedRemoteImagesSwitch).toBeChecked({ checked });
+  }
+
+  async setKeepExternalLinks(checked: boolean) {
+    await this.keepExternalLinksSwitch.setChecked(checked, { force: true });
+    await expect(this.keepExternalLinksSwitch).toBeChecked({ checked });
   }
 }
