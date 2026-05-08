@@ -61,6 +61,14 @@ export class EpubMakerPageObject {
     return this.page.getByLabel("Enable cover", { exact: true });
   }
 
+  get openCoverSettingsButton(): Locator {
+    return this.page.getByRole("button", { name: /Open cover settings/ });
+  }
+
+  get coverSizePresetButton(): Locator {
+    return this.page.getByRole("button", { name: "Select cover size preset" });
+  }
+
   pageTitleInput(chapterNumber: number): Locator {
     return this.page.getByRole("textbox", { name: `Page title ${chapterNumber}` });
   }
@@ -97,5 +105,15 @@ export class EpubMakerPageObject {
   async setKeepExternalLinks(checked: boolean) {
     await this.keepExternalLinksSwitch.setChecked(checked, { force: true });
     await expect(this.keepExternalLinksSwitch).toBeChecked({ checked });
+  }
+
+  async selectCoverSizePreset(label: string) {
+    await this.openCoverSettingsButton.click();
+    await expect(this.page.getByRole("dialog", { name: "Cover settings" })).toBeVisible();
+    await this.coverSizePresetButton.click();
+    await this.page.getByRole("menuitem", { name: new RegExp(label) }).click();
+    await expect(this.coverSizePresetButton).toContainText(label);
+    await this.page.keyboard.press("Escape");
+    await expect(this.page.getByRole("dialog", { name: "Cover settings" })).toBeHidden();
   }
 }
