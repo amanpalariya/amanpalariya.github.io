@@ -76,6 +76,7 @@ export class EpubMakerPageObject {
   async goto() {
     await this.page.goto("/tools/epub-maker");
     await expect(this.page.getByRole("heading", { name: "EPUB Maker" })).toBeVisible();
+    await expect(this.addPastedContentButton).toBeVisible();
   }
 
   async addTextPage(content: string) {
