@@ -1,55 +1,11 @@
-"use client";
-
-import { Heading1, SectionText } from "@components/core/Texts";
-import { homepageTabs } from "app/route-info";
-import { Box, Spacer, VStack } from "@chakra-ui/react";
 import AboutData from "data/about";
 import { renderMarkdownToHtml } from "@utils/markdown";
-import { useProseStyles } from "@components/article/proseStyles";
-import { useEffect, useState } from "react";
+import AboutClient from "./Client";
 
-function Main() {
-  const [html, setHtml] = useState("");
+export default async function About() {
+  const html = await renderMarkdownToHtml(AboutData.markdown, {
+    allowDangerousHtml: true,
+  });
 
-  useEffect(() => {
-    renderMarkdownToHtml(AboutData.markdown, {
-      allowDangerousHtml: true,
-    }).then(setHtml);
-  }, []);
-
-  const proseStyles = useProseStyles();
-  return (
-    <Box m={[4, 6]} letterSpacing={"wide"} lineHeight={"tall"}>
-      <VStack align={"stretch"} gap={5}>
-        <SectionText>{homepageTabs.about.name}</SectionText>
-        <Spacer h={4} />
-        <Heading1>
-          It&apos;s me,{" "}
-          <Box
-            as="span"
-            className="handwritten handwritten-squiggle squiggle-pink"
-            fontFamily={"handwritten"}
-            fontSize={"1.25em"}
-            fontWeight={"black"}
-          >
-            Aman
-          </Box>
-          !
-        </Heading1>
-        <Box
-          className="prose-content"
-          css={proseStyles}
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
-      </VStack>
-    </Box>
-  );
-}
-
-export default function About() {
-  return (
-    <VStack align="stretch" gap={8}>
-      <Main />
-    </VStack>
-  );
+  return <AboutClient html={html} />;
 }

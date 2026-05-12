@@ -1,104 +1,66 @@
 import FeatureFlagsData from "data/features";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { buildFeatureFlagStorageKey } from "../storage";
 
-class FeatureFlagsManager {
-  constructor() {}
-
-  private getLocalStorageKeyFromFeatureFlagId(featureFlagId: string) {
-    return buildFeatureFlagStorageKey(featureFlagId);
+function getFeatureById(featureFlagId: string) {
+  const featureFlag = FeatureFlagsData.flags.find(
+    (value) => value.id === featureFlagId,
+  );
+  if (!featureFlag) {
+    throw new Error(`Feature flag with id ${featureFlagId} not found`);
   }
 
-  getFeatureById(featureFlagId: string) {
-    const featureFlag = FeatureFlagsData.flags.find(
-      (value, _, __) => value.id == featureFlagId,
+  return featureFlag;
+}
+
+function parseStoredFeatureFlagValue(
+  value: string | null,
+  defaultValue: boolean,
+): boolean {
+  if (value === null) return defaultValue;
+  if (value.toLowerCase() === "true") return true;
+  if (value.toLowerCase() === "false") return false;
+  return defaultValue;
+}
+
+function readFeatureFlagValue(featureFlagId: string): boolean {
+  const featureFlag = getFeatureById(featureFlagId);
+  const storageKey = buildFeatureFlagStorageKey(featureFlagId);
+
+  try {
+    return parseStoredFeatureFlagValue(
+      window.localStorage.getItem(storageKey),
+      featureFlag.defaultValue,
     );
-    if (featureFlag) {
-      return featureFlag;
-    } else {
-      throw new Error(`Feature flag with id ${featureFlagId} not found`);
-    }
-  }
-
-  getFeatureFlagValue(featureFlagId: string) {
-    const featureFlag = this.getFeatureById(featureFlagId);
-    const ffValueString = localStorage.getItem(
-      this.getLocalStorageKeyFromFeatureFlagId(featureFlagId),
-    );
-    if (ffValueString === null) {
-      return featureFlag.defaultValue;
-    } else if (ffValueString.toLowerCase() === "true") {
-      return true;
-    } else if (ffValueString.toLowerCase() === "false") {
-      return false;
-    } else {
-      return featureFlag.defaultValue;
-    }
-  }
-
-  isFeatureFlagEnabled(featureFlagId: string) {
-    return this.getFeatureFlagValue(featureFlagId) == true;
-  }
-
-  isFeatureFlagDisabled(featureFlagId: string) {
-    return this.getFeatureFlagValue(featureFlagId) == false;
-  }
-
-  resetFeatureFlagValue(featureFlagId: string) {
-    localStorage.removeItem(
-      this.getLocalStorageKeyFromFeatureFlagId(featureFlagId),
-    );
-  }
-
-  setFeatureFlagValue(featureFlagId: string, value: boolean) {
-    localStorage.setItem(
-      this.getLocalStorageKeyFromFeatureFlagId(featureFlagId),
-      value ? "true" : "false",
-    );
-  }
-
-  enableFeatureFlag(featureFlagId: string) {
-    this.setFeatureFlagValue(featureFlagId, true);
-  }
-
-  disableFeatureFlag(featureFlagId: string) {
-    this.setFeatureFlagValue(featureFlagId, false);
+  } catch {
+    return featureFlag.defaultValue;
   }
 }
 
-const featureFlagsManager = new FeatureFlagsManager();
+function writeFeatureFlagValue(featureFlagId: string, value: boolean) {
+  window.localStorage.setItem(
+    buildFeatureFlagStorageKey(featureFlagId),
+    value ? "true" : "false",
+  );
+}
 
 export function useFeatureFlag(
   featureFlagId: string,
-): [boolean, boolean, (newValue: boolean) => void, () => void] {
-  const [isLoading, setIsLoading] = useState(true);
-  const [refresh, setRefresh] = useState<boolean>(false);
+): [boolean, (newValue: boolean) => void] {
+  const defaultValue = getFeatureById(featureFlagId).defaultValue;
+  const [value, setValue] = useState(defaultValue);
 
   useEffect(() => {
-    if (localStorage != undefined) {
-      setIsLoading(false);
-    }
-  }, []);
+    setValue(readFeatureFlagValue(featureFlagId));
+  }, [featureFlagId]);
 
-  if (isLoading) {
-    return [
-      isLoading,
-      featureFlagsManager.getFeatureById(featureFlagId).defaultValue,
-      (_) => {},
-      () => {},
-    ];
-  } else {
-    return [
-      isLoading,
-      featureFlagsManager.getFeatureFlagValue(featureFlagId),
-      (newValue: boolean) => {
-        featureFlagsManager.setFeatureFlagValue(featureFlagId, newValue);
-        setRefresh(!refresh);
-      },
-      () => {
-        featureFlagsManager.resetFeatureFlagValue(featureFlagId);
-        setRefresh(!refresh);
-      },
-    ];
-  }
+  const updateValue = useCallback(
+    (newValue: boolean) => {
+      writeFeatureFlagValue(featureFlagId, newValue);
+      setValue(newValue);
+    },
+    [featureFlagId],
+  );
+
+  return [value, updateValue];
 }

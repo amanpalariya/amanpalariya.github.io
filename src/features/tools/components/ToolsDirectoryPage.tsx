@@ -106,7 +106,7 @@ function Main({
 export function ToolsDirectoryPage() {
   const content = getToolsPageContent();
   const tools = getAllTools();
-  const [, forceEmptyStates] = useFeatureFlag(
+  const [forceEmptyStates] = useFeatureFlag(
     FeatureFlagsData.featuresIds.FORCE_EMPTY_STATES,
   );
   const [filters, setFilters] = useState<ToolFiltersState>(defaultFilters);

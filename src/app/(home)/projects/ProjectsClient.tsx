@@ -83,7 +83,7 @@ function Projects({
   projects: ProjectMeta[];
   projectIdsWithDetails: string[];
 }) {
-  const [, forceEmptyStates] = useFeatureFlag(
+  const [forceEmptyStates] = useFeatureFlag(
     FeatureFlagsData.featuresIds.FORCE_EMPTY_STATES,
   );
 

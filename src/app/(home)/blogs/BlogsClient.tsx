@@ -66,7 +66,7 @@ function BlogsListElement({ blogs }: { blogs: BlogMeta[] }) {
 }
 
 function Blogs({ blogs }: { blogs: BlogMeta[] }) {
-  const [, forceEmptyStates] = useFeatureFlag(
+  const [forceEmptyStates] = useFeatureFlag(
     FeatureFlagsData.featuresIds.FORCE_EMPTY_STATES,
   );
 
@@ -78,13 +78,11 @@ function Blogs({ blogs }: { blogs: BlogMeta[] }) {
 }
 
 export default function BlogsClient({ blogs }: { blogs: BlogMeta[] }) {
-  const [isLoading, isBlogsFeatureEnabled] = useFeatureFlag(
+  const [isBlogsFeatureEnabled] = useFeatureFlag(
     FeatureFlagsData.featuresIds.BLOGS,
   );
 
-  if (isLoading) {
-    return null;
-  } else if (!isBlogsFeatureEnabled) {
+  if (!isBlogsFeatureEnabled) {
     return notFound();
   }
 

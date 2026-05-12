@@ -94,7 +94,7 @@ export default function Header() {
   const currentPathname = usePathname() ?? "";
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const mobileMenuContainerRef = useRef<HTMLDivElement>(null);
-  const [, isBlogsFeatureEnabled, ,] = useFeatureFlag(
+  const [isBlogsFeatureEnabled] = useFeatureFlag(
     FeatureFlagsData.featuresIds.BLOGS,
   );
 
