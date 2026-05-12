@@ -91,10 +91,9 @@ function ExternalLinksBlock({ links }: { links?: ExternalLink[] }) {
 }
 
 export default function Client({ html, blog }: { html: string; blog: Blog }) {
-  const [isLoading, isBlogsFeatureEnabled] = useFeatureFlag(
+  const [isBlogsFeatureEnabled] = useFeatureFlag(
     FeatureFlagsData.featuresIds.BLOGS,
   );
-  if (isLoading) return null;
   if (!isBlogsFeatureEnabled) return null;
   if (!blog) return null;
 

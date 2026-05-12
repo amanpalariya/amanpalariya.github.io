@@ -101,6 +101,7 @@ export class CalendarDrillPageObject {
   async goto() {
     await this.page.goto("/tools/calendar-drill");
     await expect(this.page.getByRole("heading", { name: "Calendar Drill" })).toBeVisible();
+    await expect(this.startButton).toBeVisible();
   }
 
   async start() {

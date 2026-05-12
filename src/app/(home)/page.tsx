@@ -42,7 +42,7 @@ function Main() {
 }
 
 function Projects() {
-  const [, forceEmptyStates] = useFeatureFlag(
+  const [forceEmptyStates] = useFeatureFlag(
     FeatureFlagsData.featuresIds.FORCE_EMPTY_STATES,
   );
 
@@ -113,7 +113,7 @@ function getTimeStringFromExp(exp: WorkExperience) {
 }
 
 function WorkExperience() {
-  const [, forceEmptyStates] = useFeatureFlag(
+  const [forceEmptyStates] = useFeatureFlag(
     FeatureFlagsData.featuresIds.FORCE_EMPTY_STATES,
   );
 

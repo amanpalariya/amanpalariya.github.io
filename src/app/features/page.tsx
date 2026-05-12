@@ -1,6 +1,6 @@
 "use client";
 
-import { EmptyState, VStack, Spacer, Box, Icon, Skeleton } from "@chakra-ui/react";
+import { EmptyState, VStack, Spacer, Box, Icon } from "@chakra-ui/react";
 import { Heading1, SectionText, SubtitleText } from "@components/core/Texts";
 import { TileList, TitleDescriptionToggleTile } from "@components/core/Tiles";
 import HighlightedSection from "@components/page/common/HighlightedSection";
@@ -42,13 +42,9 @@ function NoFeatureFlagsElement() {
 }
 
 function FeatureFlagTile({ featureFlag }: { featureFlag: FeatureFlagEntry }) {
-  const [isLoading, featureFlagValue, setFeatureFlag] = useFeatureFlag(
-    featureFlag.id,
-  );
+  const [featureFlagValue, setFeatureFlag] = useFeatureFlag(featureFlag.id);
 
-  return isLoading ? (
-    <Skeleton w={"full"} h={"24"} rounded={"2xl"} />
-  ) : (
+  return (
     <TitleDescriptionToggleTile
       title={featureFlag.name}
       description={featureFlag.desc}
@@ -71,7 +67,7 @@ function FeatureFlagsListElement() {
 }
 
 function FeatureFlags() {
-  return FeatureFlagsData.flags.length != 0
+  return FeatureFlagsData.flags.length !== 0
     ? FeatureFlagsListElement()
     : NoFeatureFlagsElement();
 }
