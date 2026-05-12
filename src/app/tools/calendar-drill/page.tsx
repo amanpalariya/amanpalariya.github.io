@@ -1,5 +1,6 @@
 "use client";
 
+import { ClientOnly } from "@chakra-ui/react";
 import { CalendarDrillPage } from "features/calendar-drill";
 import { ToolDetailsSection, getToolById } from "features/tools";
 
@@ -9,7 +10,9 @@ export default function CalendarDrillToolPage() {
   return (
     <>
       {tool ? <ToolDetailsSection tool={tool} /> : null}
-      <CalendarDrillPage />
+      <ClientOnly>
+        <CalendarDrillPage />
+      </ClientOnly>
     </>
   );
 }

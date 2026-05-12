@@ -34,7 +34,6 @@ import {
   LuSettings2,
 } from "react-icons/lu";
 import {
-  createDefaultPracticeSettings,
   readCalendarDrillSettings,
   writeCalendarDrillSettings,
 } from "../services/settings-storage";
@@ -133,14 +132,14 @@ function isKeyboardEventFromInteractiveElement(
 }
 
 export function CalendarDrillPage() {
-  const [settingsDraft, setSettingsDraft] = useState<PracticeSettings>(
-    createDefaultPracticeSettings,
-  );
+  const [initialSettings] = useState(() => readCalendarDrillSettings());
+  const [settingsDraft, setSettingsDraft] =
+    useState<PracticeSettings>(initialSettings);
   const [isAdvancedSettingsOpen, setIsAdvancedSettingsOpen] = useState(false);
   const monthDragModeRef = useRef<MonthDragMode>(null);
   const didHandleMonthPointerRef = useRef(false);
 
-  const [settings, setSettings] = useState<PracticeSettings>(settingsDraft);
+  const [settings, setSettings] = useState<PracticeSettings>(initialSettings);
   const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
 
   const [status, setStatus] = useState<SessionStatus>("idle");
@@ -223,9 +222,6 @@ export function CalendarDrillPage() {
   }, [question]);
 
   useEffect(() => {
-    const savedSettings = readCalendarDrillSettings();
-    setSettingsDraft(savedSettings);
-    setSettings(savedSettings);
     setIsSettingsLoaded(true);
   }, []);
 
