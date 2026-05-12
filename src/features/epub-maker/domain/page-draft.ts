@@ -27,9 +27,11 @@ export function createPageDraftFromInput(
   const looksLikeHtml = /<\s*[a-zA-Z!/]/.test(content);
 
   if (looksLikeHtml) {
-    const inferredTitleFromContent = inferTitleFromHtml(content, "").trim();
     const sanitized = sanitizeHtmlContent(content, "", policy);
     const htmlDeclaredTitle = sanitized.title?.trim() || "";
+    const inferredTitleFromContent = options?.htmlUseHeadTitleOnly
+      ? ""
+      : inferTitleFromHtml(content, "").trim();
     const htmlFallbackTitle =
       htmlDeclaredTitle ||
       providedDefaultTitle ||

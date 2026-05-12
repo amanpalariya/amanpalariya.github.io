@@ -56,10 +56,13 @@ import {
   draftHistoryReducer,
   type DraftSnapshot,
 } from "./draft-history";
+import { useEpubNotifications } from "./useEpubNotifications";
+import {
+  type PageFlashEntry,
+  useEpubTransientFeedback,
+} from "./useEpubTransientFeedback";
 
 const AUTO_COVER_RENDERER: AutoCoverRendererId = "raster-png";
-type PageFlashKind = "added" | "duplicate";
-type PageFlashEntry = { kind: PageFlashKind; token: number };
 
 function isBaseCoverBackgroundId(
   value: CoverBackgroundId,
@@ -140,34 +143,19 @@ export function useEpubMaker(): UseEpubMakerReturn {
   const [generationProgress, setGenerationProgress] = useState<number | null>(
     null,
   );
-  const [showDownloadCompleteIcon, setShowDownloadCompleteIcon] =
-    useState(false);
   const [activeGenerationPageId, setActiveGenerationPageId] = useState<
     string | null
   >(null);
   const [generationChapterStatusByPageId, setGenerationChapterStatusByPageId] =
     useState<EpubMakerState["generationChapterStatusByPageId"]>({});
-  const [isGenerationStatusFading, setIsGenerationStatusFading] =
-    useState(false);
   const [showPasteFallback, setShowPasteFallback] = useState(false);
   const [pastedInput, setPastedInput] = useState("");
   const [warnings, setWarnings] = useState<GenerationWarning[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const [summary, setSummary] = useState("");
-  const [notifications, setNotifications] = useState<
-    EpubMakerState["notifications"]
-  >([]);
-  const [pageFlashById, setPageFlashById] = useState<
-    Record<PageId, PageFlashEntry>
-  >({});
   const [prefs, setPrefs] = useState<EpubMakerState["prefs"]>(initialPrefs);
   const [isPrefsLoaded, setIsPrefsLoaded] = useState(false);
   const isFileImportInProgressRef = useRef(false);
-  const generationStatusFadeTimerRef = useRef<number | null>(null);
-  const generationStatusClearTimerRef = useRef<number | null>(null);
-  const downloadCompleteIconTimerRef = useRef<number | null>(null);
-  const pageFlashClearTimerRef = useRef<number | null>(null);
-  const flashSequenceRef = useRef(0);
   const generationAbortControllerRef = useRef<AbortController | null>(null);
   const pages = draftHistory.present.pages;
   const customCoverHtml = draftHistory.present.customCoverHtml;
@@ -175,15 +163,32 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
   const canUndo = draftHistory.past.length > 0;
   const canRedo = draftHistory.future.length > 0;
+  const { notifications, dismissNotification, notify } =
+    useEpubNotifications();
+  const clearGenerationStatusState = useCallback(() => {
+    setGenerationChapterStatusByPageId({});
+    setActiveGenerationPageId(null);
+  }, []);
+  const {
+    pageFlashById,
+    flashPages,
+    showDownloadCompleteIcon,
+    showDownloadCompleteIconTemporarily,
+    hideDownloadCompleteIcon,
+    isGenerationStatusFading,
+    clearGenerationStatus,
+    clearGenerationStatusTimers,
+    scheduleGenerationStatusCleanup,
+  } = useEpubTransientFeedback({
+    onClearGenerationStatus: clearGenerationStatusState,
+  });
 
   const commitDraftChange = useCallback(
     (updater: (previousDraft: DraftSnapshot) => DraftSnapshot) => {
       dispatchDraftHistory({ type: "commit", updater });
-      setGenerationChapterStatusByPageId({});
-      setActiveGenerationPageId(null);
-      setIsGenerationStatusFading(false);
+      clearGenerationStatus();
     },
-    [],
+    [clearGenerationStatus],
   );
 
   const commitPageChange = useCallback(
@@ -204,73 +209,9 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
   useEffect(() => {
     return () => {
-      if (generationStatusFadeTimerRef.current) {
-        window.clearTimeout(generationStatusFadeTimerRef.current);
-      }
-      if (generationStatusClearTimerRef.current) {
-        window.clearTimeout(generationStatusClearTimerRef.current);
-      }
-      if (downloadCompleteIconTimerRef.current) {
-        window.clearTimeout(downloadCompleteIconTimerRef.current);
-      }
-      if (pageFlashClearTimerRef.current) {
-        window.clearTimeout(pageFlashClearTimerRef.current);
-      }
       generationAbortControllerRef.current?.abort();
     };
   }, []);
-
-  function flashPages(ids: PageId[], kind: PageFlashKind, durationMs = 1200) {
-    if (ids.length === 0) return;
-    flashSequenceRef.current += 1;
-    const token = flashSequenceRef.current;
-    setPageFlashById((prev) => {
-      const next = { ...prev };
-      for (const id of ids) {
-        next[id] = { kind, token };
-      }
-      return next;
-    });
-    if (pageFlashClearTimerRef.current) {
-      window.clearTimeout(pageFlashClearTimerRef.current);
-    }
-    pageFlashClearTimerRef.current = window.setTimeout(() => {
-      setPageFlashById({});
-      pageFlashClearTimerRef.current = null;
-    }, durationMs);
-  }
-
-  function showDownloadCompleteIconTemporarily(durationMs = 1100) {
-    if (downloadCompleteIconTimerRef.current) {
-      window.clearTimeout(downloadCompleteIconTimerRef.current);
-    }
-    setShowDownloadCompleteIcon(true);
-    downloadCompleteIconTimerRef.current = window.setTimeout(() => {
-      setShowDownloadCompleteIcon(false);
-      downloadCompleteIconTimerRef.current = null;
-    }, durationMs);
-  }
-
-  function scheduleGenerationStatusCleanup() {
-    if (generationStatusFadeTimerRef.current) {
-      window.clearTimeout(generationStatusFadeTimerRef.current);
-    }
-    if (generationStatusClearTimerRef.current) {
-      window.clearTimeout(generationStatusClearTimerRef.current);
-    }
-
-    setIsGenerationStatusFading(false);
-    generationStatusFadeTimerRef.current = window.setTimeout(() => {
-      setIsGenerationStatusFading(true);
-    }, 700);
-    generationStatusClearTimerRef.current = window.setTimeout(() => {
-      setGenerationChapterStatusByPageId({});
-      setActiveGenerationPageId(null);
-      setIsGenerationStatusFading(false);
-      generationStatusFadeTimerRef.current = null;
-      generationStatusClearTimerRef.current = null;
-    }, 1100);
-  }
 
   const undoPages = useCallback(() => {
     if (isGenerating) return;
@@ -281,27 +222,6 @@ export function useEpubMaker(): UseEpubMakerReturn {
     if (isGenerating) return;
     dispatchDraftHistory({ type: "redo" });
   }, [isGenerating]);
-
-  function dismissNotification(id: string) {
-    setNotifications((prev) =>
-      prev.filter((notification) => notification.id !== id),
-    );
-  }
-
-  function notify(
-    type: "success" | "error" | "warning" | "info",
-    title: string,
-    description?: ReactNode,
-    durationMs = 4500,
-  ) {
-    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    setNotifications((prev) => [...prev, { id, type, title, description }]);
-    if (durationMs > 0) {
-      window.setTimeout(() => {
-        dismissNotification(id);
-      }, durationMs);
-    }
-  }
 
   function addButtonHint(): ReactNode {
     return createElement(
@@ -1034,21 +954,13 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
   async function generateEpub() {
     if (isGenerating) return;
-    if (generationStatusFadeTimerRef.current) {
-      window.clearTimeout(generationStatusFadeTimerRef.current);
-      generationStatusFadeTimerRef.current = null;
-    }
-    if (generationStatusClearTimerRef.current) {
-      window.clearTimeout(generationStatusClearTimerRef.current);
-      generationStatusClearTimerRef.current = null;
-    }
+    clearGenerationStatusTimers();
 
     setIsGenerating(true);
     setIsCancellingGeneration(false);
     setGenerationProgress(0);
-    setShowDownloadCompleteIcon(false);
-    setActiveGenerationPageId(null);
-    setIsGenerationStatusFading(false);
+    hideDownloadCompleteIcon();
+    clearGenerationStatusState();
     setWarnings([]);
     setErrors([]);
     setSummary("");
@@ -1063,8 +975,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
       setIsGenerating(false);
       setIsCancellingGeneration(false);
       setGenerationProgress(null);
-      setGenerationChapterStatusByPageId({});
-      setIsGenerationStatusFading(false);
+      clearGenerationStatus();
       generationAbortControllerRef.current = null;
       return;
     }
@@ -1140,17 +1051,15 @@ export function useEpubMaker(): UseEpubMakerReturn {
           "Generation cancelled",
           "EPUB generation was cancelled.",
         );
-        setShowDownloadCompleteIcon(false);
-        setGenerationChapterStatusByPageId({});
-        setIsGenerationStatusFading(false);
+        hideDownloadCompleteIcon();
+        clearGenerationStatus();
         return;
       }
       const message = `Unexpected error while generating EPUB: ${String(error)}`;
       setErrors([message]);
       notify("error", "EPUB generation failed", message);
-      setShowDownloadCompleteIcon(false);
-      setGenerationChapterStatusByPageId({});
-      setIsGenerationStatusFading(false);
+      hideDownloadCompleteIcon();
+      clearGenerationStatus();
     } finally {
       setIsGenerating(false);
       setIsCancellingGeneration(false);
