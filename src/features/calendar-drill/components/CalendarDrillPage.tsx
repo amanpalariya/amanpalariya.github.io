@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Bleed,
   Box,
   Button,
   Card,
@@ -520,12 +521,15 @@ export function CalendarDrillPage() {
             streak={stats.streak}
             trends={trends}
           />
+        </VStack>
+      </Box>
 
-          <Box mx={{ base: -4, md: -6 }}>
-            <HighlightedSection
-              contentPx={{ base: 3, md: 4 }}
-              contentPy={{ base: 3, md: 4 }}
-            >
+      <Box>
+        <Bleed inline={{ base: 1, md: 2 }}>
+          <HighlightedSection
+            contentPx={{ base: 3, md: 4 }}
+            contentPy={{ base: 3, md: 4 }}
+          >
               <Card.Root
                 borderColor={"app.border.default"}
                 rounded={"2xl"}
@@ -1077,9 +1081,8 @@ export function CalendarDrillPage() {
                   )}
                 </Card.Footer>
               </Card.Root>
-            </HighlightedSection>
-          </Box>
-        </VStack>
+          </HighlightedSection>
+        </Bleed>
       </Box>
     </VStack>
   );

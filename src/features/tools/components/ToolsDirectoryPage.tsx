@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, EmptyState, HStack, Icon, Text, VStack } from "@chakra-ui/react";
+import { Bleed, Box, EmptyState, HStack, Icon, Text, VStack } from "@chakra-ui/react";
 import { CategoryBadge, FeaturedIndicator } from "@components/core/Badges";
 import { Heading1, SubtitleText } from "@components/core/Texts";
 import { TileList } from "@components/core/Tiles";
@@ -127,24 +127,28 @@ export function ToolsDirectoryPage() {
       />
 
       {visibleTools.length === 0 ? (
-        <HighlightedSection>
-          <EmptyState.Root>
-            <EmptyState.Content>
-              <EmptyState.Indicator>
-                <Icon as={FiTool} boxSize={10} color={"app.fg.icon"} />
-              </EmptyState.Indicator>
-              <EmptyState.Title>{content.emptyStateTitle}</EmptyState.Title>
-            </EmptyState.Content>
-          </EmptyState.Root>
-        </HighlightedSection>
+        <Bleed inline={{ base: 1, md: 2 }}>
+          <HighlightedSection>
+            <EmptyState.Root>
+              <EmptyState.Content>
+                <EmptyState.Indicator>
+                  <Icon as={FiTool} boxSize={10} color={"app.fg.icon"} />
+                </EmptyState.Indicator>
+                <EmptyState.Title>{content.emptyStateTitle}</EmptyState.Title>
+              </EmptyState.Content>
+            </EmptyState.Root>
+          </HighlightedSection>
+        </Bleed>
       ) : (
-        <HighlightedSection>
-          <TileList>
-            {visibleTools.map((tool) => (
-              <ToolListTile key={tool.id} tool={tool} />
-            ))}
-          </TileList>
-        </HighlightedSection>
+        <Bleed inline={{ base: 1, md: 2 }}>
+          <HighlightedSection>
+            <TileList>
+              {visibleTools.map((tool) => (
+                <ToolListTile key={tool.id} tool={tool} />
+              ))}
+            </TileList>
+          </HighlightedSection>
+        </Bleed>
       )}
     </VStack>
   );

@@ -1,4 +1,4 @@
-import { Box, VStack, Text } from "@chakra-ui/react";
+import { Bleed, Box, VStack, Text } from "@chakra-ui/react";
 import HighlightedSection from "@components/page/common/HighlightedSection";
 import { HEADER_OFFSET_HEIGHT } from "@components/page/common/Header";
 import type { ReactNode } from "react";
@@ -25,26 +25,28 @@ export default function CvSection({
 }) {
   return (
     <Box id={id} scrollMarginTop={HEADER_OFFSET_HEIGHT}>
-      <HighlightedSection
-        title={title}
-        titleIcon={titleIcon}
-        primaryColorPalette={primaryColorPalette}
-        accentColorPalette={accentColorPalette}
-        separateHeader
-      >
-        <VStack align={"stretch"} gap={3}>
-          {description ? (
-            <Text
-              fontSize={CV_META_TEXT_SIZE}
-              color={"app.fg.subtle"}
-              fontFamily={CV_CMU_FONT_FAMILY}
-            >
-              {description}
-            </Text>
-          ) : null}
-          {children}
-        </VStack>
-      </HighlightedSection>
+      <Bleed inline={{ base: 1, md: 2 }}>
+        <HighlightedSection
+          title={title}
+          titleIcon={titleIcon}
+          primaryColorPalette={primaryColorPalette}
+          accentColorPalette={accentColorPalette}
+          separateHeader
+        >
+          <VStack align={"stretch"} gap={3}>
+            {description ? (
+              <Text
+                fontSize={CV_META_TEXT_SIZE}
+                color={"app.fg.subtle"}
+                fontFamily={CV_CMU_FONT_FAMILY}
+              >
+                {description}
+              </Text>
+            ) : null}
+            {children}
+          </VStack>
+        </HighlightedSection>
+      </Bleed>
     </Box>
   );
 }

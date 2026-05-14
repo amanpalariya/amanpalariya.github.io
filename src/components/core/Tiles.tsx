@@ -36,7 +36,7 @@ function FlatTile({
   compact?: boolean;
 }) {
   return (
-    <Box px={[1, 2]} py={compact ? [2, 2] : [2, 3]}>
+    <Box px={0} py={compact ? [2, 2] : [2, 3]}>
       {children}
     </Box>
   );
@@ -154,7 +154,7 @@ export function TitleDescriptionAvatarTile({
             </HStack>
             {url ? <LinkHelperIcon isExternal={isUrlExternal} /> : null}
           </HStack>
-          <Box mx={compact ? 1 : 2}>{showDescriptionBelow ? descriptionJsx : null}</Box>
+          {showDescriptionBelow ? descriptionJsx : null}
         </VStack>
       </FlatTile>
     </LinkOverlayIfUrlPresent>

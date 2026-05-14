@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Bleed,
   EmptyState,
   VStack,
   HStack,
@@ -48,46 +49,52 @@ function Projects() {
 
   if (forceEmptyStates || ProjectsData.allProjects.length == 0) {
     return (
-      <HighlightedSection title="Projects">
-        <EmptyState.Root>
-          <EmptyState.Content>
-            <EmptyState.Indicator>
-              <Icon as={FiTool} boxSize={12} color={"gray.500"} />
-            </EmptyState.Indicator>
-            <EmptyState.Title textAlign={"center"}>
-              {ProjectsData.projectsPage.emptyStateTitle}
-            </EmptyState.Title>
-          </EmptyState.Content>
-        </EmptyState.Root>
-      </HighlightedSection>
+      <Bleed inline={{ base: 1, md: 2 }}>
+        <HighlightedSection title="Projects">
+          <EmptyState.Root>
+            <EmptyState.Content>
+              <EmptyState.Indicator>
+                <Icon as={FiTool} boxSize={12} color={"gray.500"} />
+              </EmptyState.Indicator>
+              <EmptyState.Title textAlign={"center"}>
+                {ProjectsData.projectsPage.emptyStateTitle}
+              </EmptyState.Title>
+            </EmptyState.Content>
+          </EmptyState.Root>
+        </HighlightedSection>
+      </Bleed>
     );
   }
 
   return (
-    <HighlightedSection
-      title="Projects"
-      titleActionElement={
-        <SectionActionLink
-          icon={FiChevronRight}
-          url={homepageTabs.projects.pathname}
-        >
-          View All
-        </SectionActionLink>
-      }
-      separateHeader
-    >
-      <TileList>
-        {ProjectsData.allProjects.slice(0, 3).map((project) => (
-          <TitleDescriptionTile
-            key={project.id}
-            title={project.title}
-            description={project.description}
-            url={project.url ?? homepageTabs.projects.getSubpagePathname(project.id)}
-            isUrlExternal={project.url ? !project.url.startsWith("/") : false}
-          />
-        ))}
-      </TileList>
-    </HighlightedSection>
+    <Bleed inline={{ base: 1, md: 2 }}>
+      <HighlightedSection
+        title="Projects"
+        titleActionElement={
+          <SectionActionLink
+            icon={FiChevronRight}
+            url={homepageTabs.projects.pathname}
+          >
+            View All
+          </SectionActionLink>
+        }
+        separateHeader
+      >
+        <TileList>
+          {ProjectsData.allProjects.slice(0, 3).map((project) => (
+            <TitleDescriptionTile
+              key={project.id}
+              title={project.title}
+              description={project.description}
+              url={
+                project.url ?? homepageTabs.projects.getSubpagePathname(project.id)
+              }
+              isUrlExternal={project.url ? !project.url.startsWith("/") : false}
+            />
+          ))}
+        </TileList>
+      </HighlightedSection>
+    </Bleed>
   );
 }
 
@@ -119,37 +126,41 @@ function WorkExperience() {
 
   if (forceEmptyStates) {
     return (
-      <HighlightedSection title="Work Experience">
-        <EmptyState.Root>
-          <EmptyState.Content>
-            <EmptyState.Indicator>
-              <Icon as={FiBriefcase} boxSize={12} color={"gray.500"} />
-            </EmptyState.Indicator>
-            <EmptyState.Title textAlign={"center"}>
-              {WorkData.emptyStateTitle}
-            </EmptyState.Title>
-          </EmptyState.Content>
-        </EmptyState.Root>
-      </HighlightedSection>
+      <Bleed inline={{ base: 1, md: 2 }}>
+        <HighlightedSection title="Work Experience">
+          <EmptyState.Root>
+            <EmptyState.Content>
+              <EmptyState.Indicator>
+                <Icon as={FiBriefcase} boxSize={12} color={"gray.500"} />
+              </EmptyState.Indicator>
+              <EmptyState.Title textAlign={"center"}>
+                {WorkData.emptyStateTitle}
+              </EmptyState.Title>
+            </EmptyState.Content>
+          </EmptyState.Root>
+        </HighlightedSection>
+      </Bleed>
     );
   }
 
   return (
-    <HighlightedSection title="Work Experience" separateHeader>
-      <TileList>
-        {WorkData.experience.map((exp, index) => (
-          <TitleDescriptionAvatarTile
-            key={index}
-            title={exp.company.name}
-            description={`${exp.role} · ${getTimeStringFromExp(exp)}`}
-            avatarSrc={exp.company.logoSrc}
-            url={exp.url}
-            compact
-            isUrlExternal
-          />
-        ))}
-      </TileList>
-    </HighlightedSection>
+    <Bleed inline={{ base: 1, md: 2 }}>
+      <HighlightedSection title="Work Experience" separateHeader>
+        <TileList>
+          {WorkData.experience.map((exp, index) => (
+            <TitleDescriptionAvatarTile
+              key={index}
+              title={exp.company.name}
+              description={`${exp.role} · ${getTimeStringFromExp(exp)}`}
+              avatarSrc={exp.company.logoSrc}
+              url={exp.url}
+              compact
+              isUrlExternal
+            />
+          ))}
+        </TileList>
+      </HighlightedSection>
+    </Bleed>
   );
 }
 
