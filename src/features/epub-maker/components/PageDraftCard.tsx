@@ -12,6 +12,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
+import { Field } from "@components/ui/field";
 import { Menu } from "@components/ui/menu";
 import { NumberInput } from "@components/ui/number-input";
 import { Switch } from "@components/ui/switch";
@@ -448,6 +449,11 @@ export function PageDraftCard({
     bg: "app.epub.bg.card",
     color: "app.epub.fg.default",
     borderColor: "app.epub.border.default",
+  } as const;
+  const dialogFieldLabelProps = {
+    fontSize: "sm",
+    color: "app.epub.fg.muted",
+    mb: 1,
   } as const;
   const dialogOutlineButtonProps = {
     size: "md",
@@ -923,14 +929,10 @@ export function PageDraftCard({
                               md: "minmax(0, 1fr)",
                             }}
                           >
-                            <Box>
-                              <Text
-                                fontSize={"sm"}
-                                color={"app.epub.fg.muted"}
-                                mb={1}
-                              >
-                                Background
-                              </Text>
+                            <Field
+                              label={"Background"}
+                              labelProps={dialogFieldLabelProps}
+                            >
                               <Menu.Root
                                 positioning={{
                                   placement: "bottom-start",
@@ -1197,16 +1199,12 @@ export function PageDraftCard({
                                   </Menu.Content>
                                 </Menu.Positioner>
                               </Menu.Root>
-                            </Box>
+                            </Field>
 
-                            <Box>
-                              <Text
-                                fontSize={"sm"}
-                                color={"app.epub.fg.muted"}
-                                mb={1}
-                              >
-                                Size
-                              </Text>
+                            <Field
+                              label={"Size"}
+                              labelProps={dialogFieldLabelProps}
+                            >
                               <Menu.Root
                                 positioning={{
                                   placement: "bottom-start",
@@ -1463,7 +1461,7 @@ export function PageDraftCard({
                                   </Menu.Content>
                                 </Menu.Positioner>
                               </Menu.Root>
-                            </Box>
+                            </Field>
 
                           </Box>
 
@@ -1510,14 +1508,10 @@ export function PageDraftCard({
                                 sm: "repeat(2, minmax(0, 1fr))",
                               }}
                             >
-                              <Box>
-                                <Text
-                                  fontSize={"sm"}
-                                  color={"app.epub.fg.muted"}
-                                  mb={1}
-                                >
-                                  Text size (%)
-                                </Text>
+                              <Field
+                                label={"Text size (%)"}
+                                labelProps={dialogFieldLabelProps}
+                              >
                                 <NumberInput.Root
                                   {...dialogFieldProps}
                                   size={"md"}
@@ -1543,16 +1537,12 @@ export function PageDraftCard({
                                     color={"app.epub.fg.default"}
                                   />
                                 </NumberInput.Root>
-                              </Box>
+                              </Field>
 
-                              <Box>
-                                <Text
-                                  fontSize={"sm"}
-                                  color={"app.epub.fg.muted"}
-                                  mb={1}
-                                >
-                                  Text color
-                                </Text>
+                              <Field
+                                label={"Text color"}
+                                labelProps={dialogFieldLabelProps}
+                              >
                                 <NativeSelect.Root
                                   {...dialogFieldProps}
                                   size={"md"}
@@ -1581,17 +1571,13 @@ export function PageDraftCard({
                                     <option value={"adaptive"}>Adaptive</option>
                                   </NativeSelect.Field>
                                 </NativeSelect.Root>
-                              </Box>
+                              </Field>
                             </Box>
 
-                            <Box>
-                              <Text
-                                fontSize={"sm"}
-                                color={"app.epub.fg.muted"}
-                                mb={1}
-                              >
-                                Text position
-                              </Text>
+                            <Field
+                              label={"Text position"}
+                              labelProps={dialogFieldLabelProps}
+                            >
                               <Menu.Root
                                 positioning={{
                                   placement: "bottom-start",
@@ -1764,7 +1750,7 @@ export function PageDraftCard({
                                   </Menu.Content>
                                 </Menu.Positioner>
                               </Menu.Root>
-                            </Box>
+                            </Field>
                           </VStack>
                         </Box>
                       </VStack>
