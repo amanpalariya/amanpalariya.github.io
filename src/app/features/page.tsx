@@ -1,6 +1,6 @@
 "use client";
 
-import { EmptyState, VStack, Spacer, Box, Icon } from "@chakra-ui/react";
+import { Bleed, EmptyState, VStack, Spacer, Box, Icon } from "@chakra-ui/react";
 import { Heading1, SectionText, SubtitleText } from "@components/core/Texts";
 import { TileList, TitleDescriptionToggleTile } from "@components/core/Tiles";
 import HighlightedSection from "@components/page/common/HighlightedSection";
@@ -26,18 +26,20 @@ function Main() {
 
 function NoFeatureFlagsElement() {
   return (
-    <HighlightedSection>
-      <EmptyState.Root>
-        <EmptyState.Content>
-          <EmptyState.Indicator>
-            <Icon as={FiTool} boxSize={12} color={"gray.500"} />
-          </EmptyState.Indicator>
-          <EmptyState.Title textAlign={"center"}>
-            {"There are no feature flags!"}
-          </EmptyState.Title>
-        </EmptyState.Content>
-      </EmptyState.Root>
-    </HighlightedSection>
+    <Bleed inline={{ base: 1, md: 2 }}>
+      <HighlightedSection>
+        <EmptyState.Root>
+          <EmptyState.Content>
+            <EmptyState.Indicator>
+              <Icon as={FiTool} boxSize={12} color={"gray.500"} />
+            </EmptyState.Indicator>
+            <EmptyState.Title textAlign={"center"}>
+              {"There are no feature flags!"}
+            </EmptyState.Title>
+          </EmptyState.Content>
+        </EmptyState.Root>
+      </HighlightedSection>
+    </Bleed>
   );
 }
 
@@ -56,13 +58,15 @@ function FeatureFlagTile({ featureFlag }: { featureFlag: FeatureFlagEntry }) {
 
 function FeatureFlagsListElement() {
   return (
-    <HighlightedSection>
-      <TileList>
-        {FeatureFlagsData.flags.map((flag) => (
-          <FeatureFlagTile key={flag.id} featureFlag={flag} />
-        ))}
-      </TileList>
-    </HighlightedSection>
+    <Bleed inline={{ base: 1, md: 2 }}>
+      <HighlightedSection>
+        <TileList>
+          {FeatureFlagsData.flags.map((flag) => (
+            <FeatureFlagTile key={flag.id} featureFlag={flag} />
+          ))}
+        </TileList>
+      </HighlightedSection>
+    </Bleed>
   );
 }
 
