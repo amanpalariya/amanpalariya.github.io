@@ -4,13 +4,15 @@ import {
   Icon,
   useBreakpointValue,
   Box,
+  LinkBox,
+  LinkOverlay,
   Text,
   Wrap,
   WrapItem,
   Separator,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
-import { Children, Fragment } from "react";
+import { Children, Fragment, type ReactNode } from "react";
 import { FiChevronRight, FiArrowUpRight } from "react-icons/fi";
 import { CategoryBadge } from "./Badges";
 import { Avatar } from "@components/ui/avatar";
@@ -70,34 +72,35 @@ export function TileList({
   );
 }
 
-function LinkOverlayIfUrlPresent({
+function TileLinkIfUrlPresent({
   children,
   url,
+  label,
   isUrlExternal,
 }: {
-  children: any;
+  children: ReactNode;
   url?: string;
+  label: string;
   isUrlExternal?: boolean;
 }) {
   if (!url) return <>{children}</>;
 
-  if (isUrlExternal) {
-    return (
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{ display: "block" }}
-      >
-        {children}
-      </a>
-    );
-  }
+  const overlay = isUrlExternal ? (
+    <LinkOverlay
+      aria-label={label}
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+    />
+  ) : (
+    <LinkOverlay as={NextLink} aria-label={label} href={url} />
+  );
 
   return (
-    <NextLink href={url} style={{ display: "block" }}>
+    <LinkBox>
       {children}
-    </NextLink>
+      {overlay}
+    </LinkBox>
   );
 }
 
@@ -132,7 +135,11 @@ export function TitleDescriptionAvatarTile({
   const descriptionJsx = <Text color={descriptionColor}>{description}</Text>;
 
   return (
-    <LinkOverlayIfUrlPresent url={url} isUrlExternal={isUrlExternal}>
+    <TileLinkIfUrlPresent
+      url={url}
+      label={title}
+      isUrlExternal={isUrlExternal}
+    >
       <FlatTile compact={compact}>
         <VStack align={"stretch"} gap={compact ? 2 : 2}>
           <HStack justify={"space-between"}>
@@ -157,7 +164,7 @@ export function TitleDescriptionAvatarTile({
           {showDescriptionBelow ? descriptionJsx : null}
         </VStack>
       </FlatTile>
-    </LinkOverlayIfUrlPresent>
+    </TileLinkIfUrlPresent>
   );
 }
 
@@ -223,7 +230,11 @@ export function TitleDescriptionTile({
   const descriptionJsx = <Text color={descriptionColor}>{description}</Text>;
 
   return (
-    <LinkOverlayIfUrlPresent url={url} isUrlExternal={isUrlExternal}>
+    <TileLinkIfUrlPresent
+      url={url}
+      label={title}
+      isUrlExternal={isUrlExternal}
+    >
       <FlatTile>
         <VStack align={"stretch"}>
           <HStack justify={"space-between"} align={"start"}>
@@ -237,7 +248,7 @@ export function TitleDescriptionTile({
           </HStack>
         </VStack>
       </FlatTile>
-    </LinkOverlayIfUrlPresent>
+    </TileLinkIfUrlPresent>
   );
 }
 
@@ -265,7 +276,11 @@ export function TitleDescriptionMetaTile({
   const metadataLabel = formatBlogDateLabel({ published, updated });
 
   return (
-    <LinkOverlayIfUrlPresent url={url} isUrlExternal={isUrlExternal}>
+    <TileLinkIfUrlPresent
+      url={url}
+      label={title}
+      isUrlExternal={isUrlExternal}
+    >
       <FlatTile>
         <VStack align={"stretch"} gap={2}>
           <HStack justify={"space-between"} align={"start"}>
@@ -295,7 +310,7 @@ export function TitleDescriptionMetaTile({
           ) : null}
         </VStack>
       </FlatTile>
-    </LinkOverlayIfUrlPresent>
+    </TileLinkIfUrlPresent>
   );
 }
 
@@ -324,7 +339,11 @@ export function TitleCategoryAvatarTile({
   );
 
   return (
-    <LinkOverlayIfUrlPresent url={url} isUrlExternal={isUrlExternal}>
+    <TileLinkIfUrlPresent
+      url={url}
+      label={title}
+      isUrlExternal={isUrlExternal}
+    >
       <FlatTile>
         <VStack align={"stretch"}>
           <HStack justify={"space-between"}>
@@ -351,7 +370,7 @@ export function TitleCategoryAvatarTile({
           <Box>{showBadgeBelow ? categoryRow : null}</Box>
         </VStack>
       </FlatTile>
-    </LinkOverlayIfUrlPresent>
+    </TileLinkIfUrlPresent>
   );
 }
 
@@ -404,7 +423,11 @@ export function TitleDescriptionToggleTile({
   const descriptionJsx = <Text color={descriptionColor}>{description}</Text>;
 
   return (
-    <LinkOverlayIfUrlPresent url={url} isUrlExternal={isUrlExternal}>
+    <TileLinkIfUrlPresent
+      url={url}
+      label={title}
+      isUrlExternal={isUrlExternal}
+    >
       <FlatTile>
         <VStack align={"stretch"}>
           <HStack justify={"space-between"}>
@@ -424,6 +447,6 @@ export function TitleDescriptionToggleTile({
           </HStack>
         </VStack>
       </FlatTile>
-    </LinkOverlayIfUrlPresent>
+    </TileLinkIfUrlPresent>
   );
 }

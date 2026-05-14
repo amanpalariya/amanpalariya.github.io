@@ -1,4 +1,4 @@
-import { HStack, Icon, Text, VStack } from "@chakra-ui/react";
+import { HStack, Icon, LinkBox, LinkOverlay, Text, VStack } from "@chakra-ui/react";
 import { CategoryBadge, FeaturedIndicator } from "@components/core/Badges";
 import { InnerBgCardWithHeader } from "@components/core/Cards";
 import NextLink from "next/link";
@@ -15,7 +15,7 @@ export function ToolCard({ tool }: { tool: ToolDefinition }) {
 
   return (
     <InnerBgCardWithHeader py={[2, 4]}>
-      <NextLink href={tool.path} style={{ display: "block" }}>
+      <LinkBox>
         <VStack align={"stretch"} gap={3}>
           <HStack justify={"space-between"} align={"start"}>
             <VStack align={"start"} gap={1}>
@@ -45,7 +45,8 @@ export function ToolCard({ tool }: { tool: ToolDefinition }) {
             </HStack>
           </HStack>
         </VStack>
-      </NextLink>
+        <LinkOverlay as={NextLink} href={tool.path} aria-label={tool.name} />
+      </LinkBox>
     </InnerBgCardWithHeader>
   );
 }

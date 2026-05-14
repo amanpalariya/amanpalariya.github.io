@@ -1,6 +1,16 @@
 "use client";
 
-import { Bleed, Box, EmptyState, HStack, Icon, Text, VStack } from "@chakra-ui/react";
+import {
+  Bleed,
+  Box,
+  EmptyState,
+  HStack,
+  Icon,
+  LinkBox,
+  LinkOverlay,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
 import { CategoryBadge, FeaturedIndicator } from "@components/core/Badges";
 import { Heading1, SubtitleText } from "@components/core/Texts";
 import { TileList } from "@components/core/Tiles";
@@ -30,7 +40,7 @@ function ToolListTile({ tool }: { tool: ToolDefinition }) {
   const ToolIcon = getToolIcon(tool.icon);
 
   return (
-    <NextLink href={tool.path} style={{ display: "block" }}>
+    <LinkBox>
       <Box px={[1, 2]} py={[2, 3]}>
         <VStack align={"stretch"} gap={2}>
           <HStack justify={"space-between"} align={"start"}>
@@ -64,7 +74,8 @@ function ToolListTile({ tool }: { tool: ToolDefinition }) {
           </HStack>
         </VStack>
       </Box>
-    </NextLink>
+      <LinkOverlay as={NextLink} href={tool.path} aria-label={tool.name} />
+    </LinkBox>
   );
 }
 
