@@ -1,6 +1,6 @@
 "use client";
 
-import { EmptyState, VStack, Spacer, Box, Icon } from "@chakra-ui/react";
+import { Bleed, EmptyState, VStack, Spacer, Box, Icon } from "@chakra-ui/react";
 import { Heading1, SectionText, SubtitleText } from "@components/core/Texts";
 import { TileList, TitleDescriptionTile } from "@components/core/Tiles";
 import HighlightedSection from "@components/page/common/HighlightedSection";
@@ -26,20 +26,22 @@ function Main() {
 
 function NoProjectsElement() {
   return (
-    <HighlightedSection>
-      <EmptyState.Root>
-        <EmptyState.Content>
-          <EmptyState.Indicator>
-            <Icon boxSize={12} color={"gray.500"}>
-              <FiTool />
-            </Icon>
-          </EmptyState.Indicator>
-          <EmptyState.Title textAlign={"center"}>
-            {ProjectsData.projectsPage.emptyStateTitle}
-          </EmptyState.Title>
-        </EmptyState.Content>
-      </EmptyState.Root>
-    </HighlightedSection>
+    <Bleed inline={{ base: 1, md: 2 }}>
+      <HighlightedSection>
+        <EmptyState.Root>
+          <EmptyState.Content>
+            <EmptyState.Indicator>
+              <Icon boxSize={12} color={"gray.500"}>
+                <FiTool />
+              </Icon>
+            </EmptyState.Indicator>
+            <EmptyState.Title textAlign={"center"}>
+              {ProjectsData.projectsPage.emptyStateTitle}
+            </EmptyState.Title>
+          </EmptyState.Content>
+        </EmptyState.Root>
+      </HighlightedSection>
+    </Bleed>
   );
 }
 
@@ -53,26 +55,28 @@ function ProjectsListElement({
   const projectDetailsIdsSet = new Set(projectIdsWithDetails);
 
   return (
-    <HighlightedSection>
-      <TileList>
-        {projects.map((project) => {
-          const hasDetails = projectDetailsIdsSet.has(project.id);
-          return (
-            <TitleDescriptionTile
-              key={project.id}
-              title={project.title}
-              description={project.description}
-              url={
-                hasDetails
-                  ? homepageTabs.projects.getSubpagePathname(project.id)
-                  : project.url
-              }
-              isUrlExternal={!hasDetails}
-            />
-          );
-        })}
-      </TileList>
-    </HighlightedSection>
+    <Bleed inline={{ base: 1, md: 2 }}>
+      <HighlightedSection>
+        <TileList>
+          {projects.map((project) => {
+            const hasDetails = projectDetailsIdsSet.has(project.id);
+            return (
+              <TitleDescriptionTile
+                key={project.id}
+                title={project.title}
+                description={project.description}
+                url={
+                  hasDetails
+                    ? homepageTabs.projects.getSubpagePathname(project.id)
+                    : project.url
+                }
+                isUrlExternal={!hasDetails}
+              />
+            );
+          })}
+        </TileList>
+      </HighlightedSection>
+    </Bleed>
   );
 }
 

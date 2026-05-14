@@ -2,7 +2,10 @@ import { Box } from "@chakra-ui/react";
 import type { BoxProps } from "@chakra-ui/react";
 import type { ReactNode } from "react";
 
-export function HeaderCard({ children }: { children: ReactNode }) {
+export function HeaderCard({
+  children,
+  ...boxProps
+}: BoxProps & { children: ReactNode }) {
   return (
     <Box
       background={"app.bg.cardHeader"}
@@ -12,6 +15,7 @@ export function HeaderCard({ children }: { children: ReactNode }) {
       borderRadius={"2xl"}
       px={4}
       py={4}
+      {...boxProps}
     >
       {children}
     </Box>
@@ -25,7 +29,7 @@ export function MainCard({ children }: { children: ReactNode }) {
       borderWidth={0}
       borderColor={"app.border.default"}
       borderRadius={"2xl"}
-      px={[2, 4]}
+      px={{ base: 3, md: 6 }}
       py={4}
     >
       {children}

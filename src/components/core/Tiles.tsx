@@ -4,20 +4,19 @@ import {
   Icon,
   useBreakpointValue,
   Box,
+  LinkBox,
+  LinkOverlay,
   Text,
   Wrap,
   WrapItem,
+  Separator,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
-import { Children } from "react";
+import { Children, Fragment, type ReactNode } from "react";
 import { FiChevronRight, FiArrowUpRight } from "react-icons/fi";
 import { CategoryBadge } from "./Badges";
 import { Avatar } from "@components/ui/avatar";
 import { Switch } from "@components/ui/switch";
-import {
-  APP_LIST_DIVIDER_COLOR,
-  APP_LIST_DIVIDER_WIDTH,
-} from "@components/core/Dividers";
 
 type SwitchCheckedChangeDetails = {
   checked: boolean;
@@ -25,7 +24,6 @@ type SwitchCheckedChangeDetails = {
 
 function useTileColors() {
   return {
-    divider: APP_LIST_DIVIDER_COLOR,
     description: "app.fg.subtle",
     avatarBorder: "app.border.default",
     linkIcon: "app.fg.icon",
@@ -40,7 +38,7 @@ function FlatTile({
   compact?: boolean;
 }) {
   return (
-    <Box px={[1, 2]} py={compact ? [2, 2] : [2, 3]}>
+    <Box px={0} py={compact ? [2, 2] : [2, 3]}>
       {children}
     </Box>
   );
@@ -56,60 +54,53 @@ export function TileList({
   showDividerAfterLast?: boolean;
 }) {
   const items = Children.toArray(children).filter(Boolean);
-  const { divider: dividerColor } = useTileColors();
 
   return (
     <VStack
       align={"stretch"}
       gap={0}
-      borderTopWidth={showDividerBeforeFirst ? APP_LIST_DIVIDER_WIDTH : "0px"}
-      borderTopColor={dividerColor}
-      borderBottomWidth={showDividerAfterLast ? APP_LIST_DIVIDER_WIDTH : "0px"}
-      borderBottomColor={dividerColor}
     >
+      {showDividerBeforeFirst ? <Separator size={"md"} /> : null}
       {items.map((child, index) => (
-        <Box
-          key={index}
-          borderBottomWidth={
-            index < items.length - 1 ? APP_LIST_DIVIDER_WIDTH : "0px"
-          }
-          borderBottomColor={dividerColor}
-        >
+        <Fragment key={index}>
           {child}
-        </Box>
+          {index < items.length - 1 ? <Separator size={"md"} /> : null}
+        </Fragment>
       ))}
+      {showDividerAfterLast ? <Separator size={"md"} /> : null}
     </VStack>
   );
 }
 
-function LinkOverlayIfUrlPresent({
+function TileLinkIfUrlPresent({
   children,
   url,
+  label,
   isUrlExternal,
 }: {
-  children: any;
+  children: ReactNode;
   url?: string;
+  label: string;
   isUrlExternal?: boolean;
 }) {
   if (!url) return <>{children}</>;
 
-  if (isUrlExternal) {
-    return (
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{ display: "block" }}
-      >
-        {children}
-      </a>
-    );
-  }
+  const overlay = isUrlExternal ? (
+    <LinkOverlay
+      aria-label={label}
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+    />
+  ) : (
+    <LinkOverlay as={NextLink} aria-label={label} href={url} />
+  );
 
   return (
-    <NextLink href={url} style={{ display: "block" }}>
+    <LinkBox>
       {children}
-    </NextLink>
+      {overlay}
+    </LinkBox>
   );
 }
 
@@ -144,7 +135,11 @@ export function TitleDescriptionAvatarTile({
   const descriptionJsx = <Text color={descriptionColor}>{description}</Text>;
 
   return (
-    <LinkOverlayIfUrlPresent url={url} isUrlExternal={isUrlExternal}>
+    <TileLinkIfUrlPresent
+      url={url}
+      label={title}
+      isUrlExternal={isUrlExternal}
+    >
       <FlatTile compact={compact}>
         <VStack align={"stretch"} gap={compact ? 2 : 2}>
           <HStack justify={"space-between"}>
@@ -166,10 +161,10 @@ export function TitleDescriptionAvatarTile({
             </HStack>
             {url ? <LinkHelperIcon isExternal={isUrlExternal} /> : null}
           </HStack>
-          <Box mx={compact ? 1 : 2}>{showDescriptionBelow ? descriptionJsx : null}</Box>
+          {showDescriptionBelow ? descriptionJsx : null}
         </VStack>
       </FlatTile>
-    </LinkOverlayIfUrlPresent>
+    </TileLinkIfUrlPresent>
   );
 }
 
@@ -235,7 +230,11 @@ export function TitleDescriptionTile({
   const descriptionJsx = <Text color={descriptionColor}>{description}</Text>;
 
   return (
-    <LinkOverlayIfUrlPresent url={url} isUrlExternal={isUrlExternal}>
+    <TileLinkIfUrlPresent
+      url={url}
+      label={title}
+      isUrlExternal={isUrlExternal}
+    >
       <FlatTile>
         <VStack align={"stretch"}>
           <HStack justify={"space-between"} align={"start"}>
@@ -249,7 +248,7 @@ export function TitleDescriptionTile({
           </HStack>
         </VStack>
       </FlatTile>
-    </LinkOverlayIfUrlPresent>
+    </TileLinkIfUrlPresent>
   );
 }
 
@@ -277,7 +276,11 @@ export function TitleDescriptionMetaTile({
   const metadataLabel = formatBlogDateLabel({ published, updated });
 
   return (
-    <LinkOverlayIfUrlPresent url={url} isUrlExternal={isUrlExternal}>
+    <TileLinkIfUrlPresent
+      url={url}
+      label={title}
+      isUrlExternal={isUrlExternal}
+    >
       <FlatTile>
         <VStack align={"stretch"} gap={2}>
           <HStack justify={"space-between"} align={"start"}>
@@ -307,7 +310,7 @@ export function TitleDescriptionMetaTile({
           ) : null}
         </VStack>
       </FlatTile>
-    </LinkOverlayIfUrlPresent>
+    </TileLinkIfUrlPresent>
   );
 }
 
@@ -336,7 +339,11 @@ export function TitleCategoryAvatarTile({
   );
 
   return (
-    <LinkOverlayIfUrlPresent url={url} isUrlExternal={isUrlExternal}>
+    <TileLinkIfUrlPresent
+      url={url}
+      label={title}
+      isUrlExternal={isUrlExternal}
+    >
       <FlatTile>
         <VStack align={"stretch"}>
           <HStack justify={"space-between"}>
@@ -363,7 +370,7 @@ export function TitleCategoryAvatarTile({
           <Box>{showBadgeBelow ? categoryRow : null}</Box>
         </VStack>
       </FlatTile>
-    </LinkOverlayIfUrlPresent>
+    </TileLinkIfUrlPresent>
   );
 }
 
@@ -416,7 +423,11 @@ export function TitleDescriptionToggleTile({
   const descriptionJsx = <Text color={descriptionColor}>{description}</Text>;
 
   return (
-    <LinkOverlayIfUrlPresent url={url} isUrlExternal={isUrlExternal}>
+    <TileLinkIfUrlPresent
+      url={url}
+      label={title}
+      isUrlExternal={isUrlExternal}
+    >
       <FlatTile>
         <VStack align={"stretch"}>
           <HStack justify={"space-between"}>
@@ -436,6 +447,6 @@ export function TitleDescriptionToggleTile({
           </HStack>
         </VStack>
       </FlatTile>
-    </LinkOverlayIfUrlPresent>
+    </TileLinkIfUrlPresent>
   );
 }

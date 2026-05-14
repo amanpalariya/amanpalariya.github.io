@@ -1,13 +1,16 @@
 "use client";
 
 import {
+  Bleed,
   Box,
   Button,
   Card,
+  Collapsible,
   Grid,
   HStack,
   Icon,
   NativeSelect,
+  Separator,
   Text,
   VStack,
 } from "@chakra-ui/react";
@@ -519,12 +522,15 @@ export function CalendarDrillPage() {
             streak={stats.streak}
             trends={trends}
           />
+        </VStack>
+      </Box>
 
-          <Box mx={{ base: -4, md: -6 }}>
-            <HighlightedSection
-              contentPx={{ base: 3, md: 4 }}
-              contentPy={{ base: 3, md: 4 }}
-            >
+      <Box>
+        <Bleed inline={{ base: 1, md: 2 }}>
+          <HighlightedSection
+            contentPx={{ base: 3, md: 4 }}
+            contentPy={{ base: 3, md: 4 }}
+          >
               <Card.Root
                 borderColor={"app.border.default"}
                 rounded={"2xl"}
@@ -709,62 +715,64 @@ export function CalendarDrillPage() {
                               </Button>
                             </Grid>
 
-                            <VStack align={"stretch"} gap={3}>
-                              <Button
-                                w={"full"}
-                                variant={"ghost"}
-                                justifyContent={"space-between"}
-                                rounded={"xl"}
-                                px={3}
-                                h={"auto"}
-                                py={3}
-                                minW={0}
-                                overflow={"hidden"}
-                                onClick={() =>
-                                  setIsAdvancedSettingsOpen(
-                                    (current) => !current,
-                                  )
-                                }
-                                aria-expanded={isAdvancedSettingsOpen}
-                              >
-                                <HStack
-                                  gap={3}
+                            <Collapsible.Root
+                              open={isAdvancedSettingsOpen}
+                              onOpenChange={(details) =>
+                                setIsAdvancedSettingsOpen(details.open)
+                              }
+                            >
+                              <Collapsible.Trigger asChild>
+                                <Button
+                                  w={"full"}
+                                  variant={"ghost"}
+                                  justifyContent={"space-between"}
+                                  rounded={"xl"}
+                                  px={3}
+                                  h={"auto"}
+                                  py={3}
                                   minW={0}
-                                  flex={1}
                                   overflow={"hidden"}
                                 >
-                                  <Icon as={LuSettings2} flexShrink={0} />
-                                  <VStack
-                                    align={"start"}
-                                    gap={0}
+                                  <HStack
+                                    gap={3}
                                     minW={0}
                                     flex={1}
                                     overflow={"hidden"}
                                   >
-                                    <Text>Advanced Settings</Text>
-                                    <Text
-                                      fontSize={"xs"}
-                                      color={"app.fg.subtle"}
-                                      maxW={"full"}
-                                      truncate
+                                    <Icon as={LuSettings2} flexShrink={0} />
+                                    <VStack
+                                      align={"start"}
+                                      gap={0}
+                                      minW={0}
+                                      flex={1}
+                                      overflow={"hidden"}
                                     >
-                                      {advancedSettingsSummary}
-                                    </Text>
-                                  </VStack>
-                                </HStack>
-                                <Icon
-                                  as={LuChevronDown}
-                                  flexShrink={0}
-                                  transform={
-                                    isAdvancedSettingsOpen
-                                      ? "rotate(180deg)"
-                                      : undefined
-                                  }
-                                  transition={"transform 0.15s ease"}
-                                />
-                              </Button>
+                                      <Text>Advanced Settings</Text>
+                                      <Text
+                                        fontSize={"xs"}
+                                        color={"app.fg.subtle"}
+                                        maxW={"full"}
+                                        truncate
+                                      >
+                                        {advancedSettingsSummary}
+                                      </Text>
+                                    </VStack>
+                                  </HStack>
+                                  <Collapsible.Indicator asChild>
+                                    <Icon
+                                      as={LuChevronDown}
+                                      flexShrink={0}
+                                      transition={"transform 0.15s ease"}
+                                      _open={{ transform: "rotate(180deg)" }}
+                                    />
+                                  </Collapsible.Indicator>
+                                </Button>
+                              </Collapsible.Trigger>
 
-                              {isAdvancedSettingsOpen ? (
+                              <Collapsible.Content
+                                pt={3}
+                                _open={{ overflow: "visible" }}
+                              >
                                 <VStack
                                   align={"stretch"}
                                   gap={5}
@@ -819,11 +827,7 @@ export function CalendarDrillPage() {
                                     </Field.Root>
                                   </VStack>
 
-                                  <Box
-                                    h={"1px"}
-                                    bg={"app.border.default"}
-                                    aria-hidden={"true"}
-                                  />
+                                  <Separator />
 
                                   <VStack align={"stretch"} gap={3}>
                                     <HStack
@@ -932,11 +936,7 @@ export function CalendarDrillPage() {
                                     </Grid>
                                   </VStack>
 
-                                  <Box
-                                    h={"1px"}
-                                    bg={"app.border.default"}
-                                    aria-hidden={"true"}
-                                  />
+                                  <Separator />
 
                                   <VStack align={"stretch"} gap={3}>
                                     <HStack gap={2}>
@@ -996,8 +996,8 @@ export function CalendarDrillPage() {
                                     </Grid>
                                   </VStack>
                                 </VStack>
-                              ) : null}
-                            </VStack>
+                              </Collapsible.Content>
+                            </Collapsible.Root>
                           </VStack>
                         </Fieldset.Content>
                       </Fieldset.Root>
@@ -1084,9 +1084,8 @@ export function CalendarDrillPage() {
                   )}
                 </Card.Footer>
               </Card.Root>
-            </HighlightedSection>
-          </Box>
-        </VStack>
+          </HighlightedSection>
+        </Bleed>
       </Box>
     </VStack>
   );

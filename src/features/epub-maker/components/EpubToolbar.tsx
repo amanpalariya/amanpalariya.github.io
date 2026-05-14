@@ -5,15 +5,10 @@ import {
   HStack,
   Icon,
   IconButton,
+  Popover,
   Textarea,
 } from "@chakra-ui/react";
-import {
-  type ChangeEvent,
-  ClipboardEvent,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { type ChangeEvent, ClipboardEvent, useRef, useState } from "react";
 import {
   LuBookDown,
   LuCheck,
@@ -74,8 +69,6 @@ export function EpubToolbar({
   } as const;
 
   const [isManualPasteOpen, setIsManualPasteOpen] = useState(false);
-  const triggerGroupRef = useRef<HTMLDivElement | null>(null);
-  const popoverRef = useRef<HTMLDivElement | null>(null);
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
   const saveProgressPercent = Math.max(
     0,
@@ -89,104 +82,78 @@ export function EpubToolbar({
     event.target.value = "";
   }
 
-  useEffect(() => {
-    if (!isManualPasteOpen) return;
-
-    function handlePointerDown(event: MouseEvent) {
-      const target = event.target as Node | null;
-      if (!target) return;
-
-      if (popoverRef.current?.contains(target)) return;
-      if (triggerGroupRef.current?.contains(target)) return;
-
-      setIsManualPasteOpen(false);
-    }
-
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setIsManualPasteOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handlePointerDown);
-    document.addEventListener("keydown", handleEscape);
-
-    return () => {
-      document.removeEventListener("mousedown", handlePointerDown);
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [isManualPasteOpen]);
-
   return (
     <HStack gap={3} wrap={"wrap"} align={"start"}>
-      <Box position={"relative"}>
-        <HStack ref={triggerGroupRef} gap={0} align={"stretch"}>
-          <Button
-            {...actionButtonProps}
-            onClick={onAddFromClipboard}
-            loading={isAdding}
-            disabled={isGenerating}
-            roundedRight={0}
-            borderRightWidth={"0"}
-            bg={"app.epub.button.primary.bg"}
-            color={"app.epub.button.primary.fg"}
-            _hover={{ bg: "app.epub.button.primary.hoverBg" }}
-          >
-            <Icon>
-              <LuFilePlus />
-            </Icon>
-            Add from clipboard
-          </Button>
+      <Popover.Root
+        open={isManualPasteOpen}
+        onOpenChange={(details) => setIsManualPasteOpen(details.open)}
+        positioning={{ placement: "bottom-start", gutter: 6 }}
+      >
+        <Box>
+          <HStack gap={0} align={"stretch"}>
+            <Button
+              {...actionButtonProps}
+              onClick={onAddFromClipboard}
+              loading={isAdding}
+              disabled={isGenerating}
+              roundedRight={0}
+              borderRightWidth={"0"}
+              bg={"app.epub.button.primary.bg"}
+              color={"app.epub.button.primary.fg"}
+              _hover={{ bg: "app.epub.button.primary.hoverBg" }}
+            >
+              <Icon>
+                <LuFilePlus />
+              </Icon>
+              Add from clipboard
+            </Button>
 
-          <FileUpload.Root maxFiles={50}>
-            <FileUpload.HiddenInput
-              ref={uploadInputRef}
-              aria-label={"Upload files"}
-              onChange={handleUploadInputChange}
-            />
-            <Tooltip content={"Upload files"}>
+            <FileUpload.Root maxFiles={50}>
+              <FileUpload.HiddenInput
+                ref={uploadInputRef}
+                aria-label={"Upload files"}
+                onChange={handleUploadInputChange}
+              />
+              <Tooltip content={"Upload files"}>
+                <IconButton
+                  {...actionButtonProps}
+                  aria-label={"Upload files"}
+                  rounded={0}
+                  borderLeftWidth={"1px"}
+                  borderLeftColor={"app.epub.button.primary.divider"}
+                  bg={"app.epub.button.primary.bg"}
+                  color={"app.epub.button.primary.fg"}
+                  _hover={{ bg: "app.epub.button.primary.hoverBg" }}
+                  disabled={isGenerating}
+                  onClick={() => uploadInputRef.current?.click()}
+                >
+                  <LuUpload />
+                </IconButton>
+              </Tooltip>
+            </FileUpload.Root>
+
+            <Popover.Trigger asChild>
               <IconButton
                 {...actionButtonProps}
-                aria-label={"Upload files"}
-                rounded={0}
+                aria-label={
+                  isManualPasteOpen ? "Hide manual paste" : "Show manual paste"
+                }
+                roundedLeft={0}
                 borderLeftWidth={"1px"}
                 borderLeftColor={"app.epub.button.primary.divider"}
                 bg={"app.epub.button.primary.bg"}
                 color={"app.epub.button.primary.fg"}
                 _hover={{ bg: "app.epub.button.primary.hoverBg" }}
                 disabled={isGenerating}
-                onClick={() => uploadInputRef.current?.click()}
               >
-                <LuUpload />
+                {isManualPasteOpen ? <LuChevronUp /> : <LuChevronDown />}
               </IconButton>
-            </Tooltip>
-          </FileUpload.Root>
+            </Popover.Trigger>
+          </HStack>
+        </Box>
 
-          <IconButton
-            {...actionButtonProps}
-            aria-label={
-              isManualPasteOpen ? "Hide manual paste" : "Show manual paste"
-            }
-            roundedLeft={0}
-            borderLeftWidth={"1px"}
-            borderLeftColor={"app.epub.button.primary.divider"}
-            bg={"app.epub.button.primary.bg"}
-            color={"app.epub.button.primary.fg"}
-            _hover={{ bg: "app.epub.button.primary.hoverBg" }}
-            disabled={isGenerating}
-            onClick={() => setIsManualPasteOpen((prev) => !prev)}
-          >
-            {isManualPasteOpen ? <LuChevronUp /> : <LuChevronDown />}
-          </IconButton>
-        </HStack>
-
-        {isManualPasteOpen ? (
-          <Box
-            ref={popoverRef}
-            position={"absolute"}
-            top={"calc(100% + 6px)"}
-            left={0}
-            zIndex={20}
+        <Popover.Positioner zIndex={20}>
+          <Popover.Content
             p={0}
             borderWidth={"1px"}
             borderColor={"app.epub.border.default"}
@@ -231,9 +198,9 @@ export function EpubToolbar({
             >
               Add pasted content
             </Button>
-          </Box>
-        ) : null}
-      </Box>
+          </Popover.Content>
+        </Popover.Positioner>
+      </Popover.Root>
 
       <Button
         {...actionButtonProps}

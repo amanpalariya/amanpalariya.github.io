@@ -7,10 +7,10 @@ import {
   WrapItem,
   Icon,
   Box,
+  Separator,
 } from "@chakra-ui/react";
 import { Heading4 } from "@components/core/Texts";
 import { CategoryBadge } from "@components/core/Badges";
-import { ListDivider } from "@components/core/Dividers";
 import type { CvSectionBase, CvTimelineItem } from "data/cv";
 import { FiLink } from "react-icons/fi";
 import CvSection from "./CvSection";
@@ -214,7 +214,7 @@ export default function CvTimelineSection({
             />
             {index < section.items.length - 1 ? (
               <Box pl={6}>
-                <ListDivider />
+                <Separator size="md" />
               </Box>
             ) : null}
           </VStack>

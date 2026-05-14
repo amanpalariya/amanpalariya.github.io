@@ -1,6 +1,6 @@
 "use client";
 
-import { EmptyState, VStack, Spacer, Box, Icon } from "@chakra-ui/react";
+import { Bleed, EmptyState, VStack, Spacer, Box, Icon } from "@chakra-ui/react";
 import { Heading1, SectionText, SubtitleText } from "@components/core/Texts";
 import { TileList, TitleDescriptionMetaTile } from "@components/core/Tiles";
 import HighlightedSection from "@components/page/common/HighlightedSection";
@@ -27,41 +27,45 @@ function Main() {
 
 function NoBlogsElement() {
   return (
-    <HighlightedSection>
-      <EmptyState.Root>
-        <EmptyState.Content>
-          <EmptyState.Indicator>
-            <Icon boxSize={12} color={"gray.500"}>
-              <FiBookmark />
-            </Icon>
-          </EmptyState.Indicator>
-          <EmptyState.Title textAlign={"center"}>
-            {BlogsData.blogsPage.emptyStateTitle}
-          </EmptyState.Title>
-        </EmptyState.Content>
-      </EmptyState.Root>
-    </HighlightedSection>
+    <Bleed inline={{ base: 1, md: 2 }}>
+      <HighlightedSection>
+        <EmptyState.Root>
+          <EmptyState.Content>
+            <EmptyState.Indicator>
+              <Icon boxSize={12} color={"gray.500"}>
+                <FiBookmark />
+              </Icon>
+            </EmptyState.Indicator>
+            <EmptyState.Title textAlign={"center"}>
+              {BlogsData.blogsPage.emptyStateTitle}
+            </EmptyState.Title>
+          </EmptyState.Content>
+        </EmptyState.Root>
+      </HighlightedSection>
+    </Bleed>
   );
 }
 
 function BlogsListElement({ blogs }: { blogs: BlogMeta[] }) {
   return (
-    <HighlightedSection>
-      <TileList>
-        {blogs.map((blog) => (
-          <TitleDescriptionMetaTile
-            key={blog.id}
-            title={blog.title}
-            description={blog.description}
-            tags={blog.tags}
-            published={blog.published}
-            updated={blog.updated}
-            url={homepageTabs.blogs.getSubpagePathname(blog.id)}
-            isUrlExternal={false}
-          />
-        ))}
-      </TileList>
-    </HighlightedSection>
+    <Bleed inline={{ base: 1, md: 2 }}>
+      <HighlightedSection>
+        <TileList>
+          {blogs.map((blog) => (
+            <TitleDescriptionMetaTile
+              key={blog.id}
+              title={blog.title}
+              description={blog.description}
+              tags={blog.tags}
+              published={blog.published}
+              updated={blog.updated}
+              url={homepageTabs.blogs.getSubpagePathname(blog.id)}
+              isUrlExternal={false}
+            />
+          ))}
+        </TileList>
+      </HighlightedSection>
+    </Bleed>
   );
 }
 

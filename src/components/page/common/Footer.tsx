@@ -77,9 +77,9 @@ export default function Footer({
 
   return (
     <Box as="footer" p={[1, 4]} pt={[0, 0.5]} role="contentinfo">
-      <HeaderCard>
-        <VStack align="stretch" gap={4}>
-          <Box px={[3, 5]} py={[3, 4]}>
+      <HeaderCard px={0} py={0} overflow={"hidden"}>
+        <VStack align="stretch" gap={0}>
+          <Box px={[7, 9]} py={[7, 8]}>
             <Stack
               direction={["column", "row"]}
               justify="space-between"
@@ -184,11 +184,8 @@ export default function Footer({
               background={"app.bg.cardHeader"}
               borderTopWidth={"2px"}
               borderTopColor={"app.border.default"}
-              mx={-4}
-              mb={-4}
-              px={[4, 6]}
+              px={[7, 9]}
               py={3}
-              borderBottomRadius={"2xl"}
             >
               <Text
                 fontSize={"sm"}

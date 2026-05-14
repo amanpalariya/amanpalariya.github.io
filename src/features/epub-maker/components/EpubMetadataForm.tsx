@@ -7,6 +7,7 @@ import {
   Input,
   Text,
 } from "@chakra-ui/react";
+import { Field } from "@components/ui/field";
 import { Switch } from "@components/ui/switch";
 import { Tooltip } from "@components/ui/tooltip";
 import { LuCircleHelp, LuSettings2 } from "react-icons/lu";
@@ -48,6 +49,12 @@ export function EpubMetadataForm({
     rounded: "xl",
   } as const;
 
+  const fieldLabelProps = {
+    fontSize: "sm",
+    color: "app.epub.fg.muted",
+    mb: 1,
+  } as const;
+
   const switchProps = {
     controlProps: {
       bg: "app.epub.switch.track.off",
@@ -64,10 +71,13 @@ export function EpubMetadataForm({
   return (
     <>
       <HStack gap={3} wrap={"wrap"} align={"stretch"}>
-        <Box minW={["full", "320px"]} flex={1}>
-          <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
-            Title (optional)
-          </Text>
+        <Field
+          label={"Title"}
+          optionalText={"(optional)"}
+          labelProps={fieldLabelProps}
+          minW={["full", "320px"]}
+          flex={1}
+        >
           <Input
             {...controlInputProps}
             placeholder={DEFAULT_BOOK_TITLE}
@@ -78,11 +88,14 @@ export function EpubMetadataForm({
             value={prefs.title}
             onChange={(event) => onTitleChange(event.target.value)}
           />
-        </Box>
-        <Box minW={["full", "260px"]} flex={1}>
-          <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
-            Author (optional)
-          </Text>
+        </Field>
+        <Field
+          label={"Author"}
+          optionalText={"(optional)"}
+          labelProps={fieldLabelProps}
+          minW={["full", "260px"]}
+          flex={1}
+        >
           <Input
             {...controlInputProps}
             placeholder={"Name"}
@@ -93,11 +106,13 @@ export function EpubMetadataForm({
             value={prefs.author}
             onChange={(event) => onAuthorChange(event.target.value)}
           />
-        </Box>
-        <Box minW={["full", "320px"]} flex={1}>
-          <Text fontSize={"sm"} color={"app.epub.fg.muted"} mb={1}>
-            File name
-          </Text>
+        </Field>
+        <Field
+          label={"File name"}
+          labelProps={fieldLabelProps}
+          minW={["full", "320px"]}
+          flex={1}
+        >
           <Group attached w={"full"}>
             <Input
               {...controlInputProps}
@@ -133,7 +148,7 @@ export function EpubMetadataForm({
               {prefs.fileNameMode === "auto" ? "Auto" : "Manual"}
             </Button>
           </Group>
-        </Box>
+        </Field>
       </HStack>
 
       <HStack gap={6} wrap={"wrap"} align={"center"}>
