@@ -1,6 +1,5 @@
-import { Box, HStack, Text, VStack } from "@chakra-ui/react";
+import { Box, HStack, Separator, Text, VStack } from "@chakra-ui/react";
 import { Heading4 } from "@components/core/Texts";
-import { ListDivider } from "@components/core/Dividers";
 import type { CvLanguageItem, CvSectionBase } from "data/cv";
 import type { ElementType } from "react";
 import CvSection from "./CvSection";
@@ -106,9 +105,7 @@ export default function CvLanguagesSection({
               </HStack>
             </VStack>
 
-            {index < section.items.length - 1 ? (
-              <ListDivider />
-            ) : null}
+            {index < section.items.length - 1 ? <Separator size="md" /> : null}
           </VStack>
         ))}
       </VStack>

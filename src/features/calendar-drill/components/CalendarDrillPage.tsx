@@ -8,6 +8,7 @@ import {
   HStack,
   Icon,
   NativeSelect,
+  Separator,
   Text,
   VStack,
 } from "@chakra-ui/react";
@@ -819,11 +820,7 @@ export function CalendarDrillPage() {
                                     </Field.Root>
                                   </VStack>
 
-                                  <Box
-                                    h={"1px"}
-                                    bg={"app.border.default"}
-                                    aria-hidden={"true"}
-                                  />
+                                  <Separator />
 
                                   <VStack align={"stretch"} gap={3}>
                                     <HStack
@@ -932,11 +929,7 @@ export function CalendarDrillPage() {
                                     </Grid>
                                   </VStack>
 
-                                  <Box
-                                    h={"1px"}
-                                    bg={"app.border.default"}
-                                    aria-hidden={"true"}
-                                  />
+                                  <Separator />
 
                                   <VStack align={"stretch"} gap={3}>
                                     <HStack gap={2}>

@@ -7,17 +7,14 @@ import {
   Text,
   Wrap,
   WrapItem,
+  Separator,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
-import { Children } from "react";
+import { Children, Fragment } from "react";
 import { FiChevronRight, FiArrowUpRight } from "react-icons/fi";
 import { CategoryBadge } from "./Badges";
 import { Avatar } from "@components/ui/avatar";
 import { Switch } from "@components/ui/switch";
-import {
-  APP_LIST_DIVIDER_COLOR,
-  APP_LIST_DIVIDER_WIDTH,
-} from "@components/core/Dividers";
 
 type SwitchCheckedChangeDetails = {
   checked: boolean;
@@ -25,7 +22,6 @@ type SwitchCheckedChangeDetails = {
 
 function useTileColors() {
   return {
-    divider: APP_LIST_DIVIDER_COLOR,
     description: "app.fg.subtle",
     avatarBorder: "app.border.default",
     linkIcon: "app.fg.icon",
@@ -56,28 +52,20 @@ export function TileList({
   showDividerAfterLast?: boolean;
 }) {
   const items = Children.toArray(children).filter(Boolean);
-  const { divider: dividerColor } = useTileColors();
 
   return (
     <VStack
       align={"stretch"}
       gap={0}
-      borderTopWidth={showDividerBeforeFirst ? APP_LIST_DIVIDER_WIDTH : "0px"}
-      borderTopColor={dividerColor}
-      borderBottomWidth={showDividerAfterLast ? APP_LIST_DIVIDER_WIDTH : "0px"}
-      borderBottomColor={dividerColor}
     >
+      {showDividerBeforeFirst ? <Separator size={"md"} /> : null}
       {items.map((child, index) => (
-        <Box
-          key={index}
-          borderBottomWidth={
-            index < items.length - 1 ? APP_LIST_DIVIDER_WIDTH : "0px"
-          }
-          borderBottomColor={dividerColor}
-        >
+        <Fragment key={index}>
           {child}
-        </Box>
+          {index < items.length - 1 ? <Separator size={"md"} /> : null}
+        </Fragment>
       ))}
+      {showDividerAfterLast ? <Separator size={"md"} /> : null}
     </VStack>
   );
 }
