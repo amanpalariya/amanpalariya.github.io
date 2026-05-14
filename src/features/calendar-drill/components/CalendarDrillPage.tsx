@@ -5,6 +5,7 @@ import {
   Box,
   Button,
   Card,
+  Collapsible,
   Grid,
   HStack,
   Icon,
@@ -714,62 +715,64 @@ export function CalendarDrillPage() {
                               </Button>
                             </Grid>
 
-                            <VStack align={"stretch"} gap={3}>
-                              <Button
-                                w={"full"}
-                                variant={"ghost"}
-                                justifyContent={"space-between"}
-                                rounded={"xl"}
-                                px={3}
-                                h={"auto"}
-                                py={3}
-                                minW={0}
-                                overflow={"hidden"}
-                                onClick={() =>
-                                  setIsAdvancedSettingsOpen(
-                                    (current) => !current,
-                                  )
-                                }
-                                aria-expanded={isAdvancedSettingsOpen}
-                              >
-                                <HStack
-                                  gap={3}
+                            <Collapsible.Root
+                              open={isAdvancedSettingsOpen}
+                              onOpenChange={(details) =>
+                                setIsAdvancedSettingsOpen(details.open)
+                              }
+                            >
+                              <Collapsible.Trigger asChild>
+                                <Button
+                                  w={"full"}
+                                  variant={"ghost"}
+                                  justifyContent={"space-between"}
+                                  rounded={"xl"}
+                                  px={3}
+                                  h={"auto"}
+                                  py={3}
                                   minW={0}
-                                  flex={1}
                                   overflow={"hidden"}
                                 >
-                                  <Icon as={LuSettings2} flexShrink={0} />
-                                  <VStack
-                                    align={"start"}
-                                    gap={0}
+                                  <HStack
+                                    gap={3}
                                     minW={0}
                                     flex={1}
                                     overflow={"hidden"}
                                   >
-                                    <Text>Advanced Settings</Text>
-                                    <Text
-                                      fontSize={"xs"}
-                                      color={"app.fg.subtle"}
-                                      maxW={"full"}
-                                      truncate
+                                    <Icon as={LuSettings2} flexShrink={0} />
+                                    <VStack
+                                      align={"start"}
+                                      gap={0}
+                                      minW={0}
+                                      flex={1}
+                                      overflow={"hidden"}
                                     >
-                                      {advancedSettingsSummary}
-                                    </Text>
-                                  </VStack>
-                                </HStack>
-                                <Icon
-                                  as={LuChevronDown}
-                                  flexShrink={0}
-                                  transform={
-                                    isAdvancedSettingsOpen
-                                      ? "rotate(180deg)"
-                                      : undefined
-                                  }
-                                  transition={"transform 0.15s ease"}
-                                />
-                              </Button>
+                                      <Text>Advanced Settings</Text>
+                                      <Text
+                                        fontSize={"xs"}
+                                        color={"app.fg.subtle"}
+                                        maxW={"full"}
+                                        truncate
+                                      >
+                                        {advancedSettingsSummary}
+                                      </Text>
+                                    </VStack>
+                                  </HStack>
+                                  <Collapsible.Indicator asChild>
+                                    <Icon
+                                      as={LuChevronDown}
+                                      flexShrink={0}
+                                      transition={"transform 0.15s ease"}
+                                      _open={{ transform: "rotate(180deg)" }}
+                                    />
+                                  </Collapsible.Indicator>
+                                </Button>
+                              </Collapsible.Trigger>
 
-                              {isAdvancedSettingsOpen ? (
+                              <Collapsible.Content
+                                pt={3}
+                                _open={{ overflow: "visible" }}
+                              >
                                 <VStack
                                   align={"stretch"}
                                   gap={5}
@@ -993,8 +996,8 @@ export function CalendarDrillPage() {
                                     </Grid>
                                   </VStack>
                                 </VStack>
-                              ) : null}
-                            </VStack>
+                              </Collapsible.Content>
+                            </Collapsible.Root>
                           </VStack>
                         </Fieldset.Content>
                       </Fieldset.Root>
