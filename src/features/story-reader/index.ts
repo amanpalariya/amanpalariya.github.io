@@ -9,4 +9,5 @@ export {
   DEFAULT_STORY_READER_SETUP,
   isStoryReaderSetupComplete,
 } from "./services/prompt-builder";
+export { cleanupExternalAiOutput, parseJsonWithCleanup } from "./services/json-cleanup";
 export type { StoryReaderSetupFormValues } from "./domain/types";
