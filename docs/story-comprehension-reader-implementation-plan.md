@@ -31,13 +31,13 @@ Status values:
 
 ### Phase 0: Foundation
 
-- [ ] Confirm final JSON schema fields and allowed values from the design doc.
-- [ ] Add implementation constants for levels, lengths, translation styles, directions, segment kinds, and question difficulty.
-- [ ] Add route metadata and registry entry for `story-reader`.
-- [ ] Create the empty `/tools/story-reader/` page.
-- [ ] Create `src/features/story-reader/` with domain, services, hooks, components, examples, and test fixtures.
-- [ ] Add a minimal page shell with toolbar, setup panel, paste panel, and placeholder status.
-- [ ] Validate that the empty tool builds, typechecks, and appears in the tools list.
+- [x] Confirm final JSON schema fields and allowed values from the design doc.
+- [x] Add implementation constants for levels, lengths, translation styles, directions, segment kinds, and question difficulty.
+- [x] Add route metadata and registry entry for `story-reader`.
+- [x] Create the empty `/tools/story-reader/` page.
+- [x] Create `src/features/story-reader/` with domain, services, hooks, components, examples, and test fixtures.
+- [x] Add a minimal page shell with toolbar, setup panel, paste panel, and placeholder status.
+- [x] Validate that the empty tool builds, typechecks, and appears in the tools list.
 
 ### Phase 1: Setup Form And Prompt Generation
 
