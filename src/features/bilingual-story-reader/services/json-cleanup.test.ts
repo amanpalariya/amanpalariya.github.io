@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { cleanupExternalAiOutput, parseJsonWithCleanup } from "./json-cleanup";
 
-describe("story reader JSON cleanup", () => {
+describe("bilingual story reader JSON cleanup", () => {
   it("trims plain JSON without warnings", () => {
     const result = cleanupExternalAiOutput('  { "schemaVersion": "1.0" }  ');
 

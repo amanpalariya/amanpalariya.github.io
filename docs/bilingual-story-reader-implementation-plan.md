@@ -1,10 +1,10 @@
-# Story Reader Implementation Plan
+# Bilingual Story Reader Implementation Plan
 
 This plan turns `docs/story-comprehension-reader-design.md` into a working tool in small, verifiable steps. It is intentionally incremental: each phase should leave the codebase in a usable state, with focused tests and clear module boundaries.
 
 ## Goals
 
-- Build `/tools/story-reader/` as a browser-only language-learning reader.
+- Build `/tools/bilingual-story-reader/` as a browser-only language-learning reader.
 - Keep prompt generation, JSON parsing, validation, normalization, warnings, and UI rendering separated.
 - Make malformed external-AI output recoverable without making the reader components defensive everywhere.
 - Preserve a calm reading experience while supporting progressive help.
@@ -33,9 +33,9 @@ Status values:
 
 - [x] Confirm final JSON schema fields and allowed values from the design doc.
 - [x] Add implementation constants for levels, lengths, translation styles, directions, segment kinds, and question difficulty.
-- [x] Add route metadata and registry entry for `story-reader`.
-- [x] Create the empty `/tools/story-reader/` page.
-- [x] Create `src/features/story-reader/` with domain, services, hooks, components, examples, and test fixtures.
+- [x] Add route metadata and registry entry for `bilingual-story-reader`.
+- [x] Create the empty `/tools/bilingual-story-reader/` page.
+- [x] Create `src/features/bilingual-story-reader/` with domain, services, hooks, components, examples, and test fixtures.
 - [x] Add a minimal page shell with toolbar, setup panel, paste panel, and placeholder status.
 - [x] Validate that the empty tool builds, typechecks, and appears in the tools list.
 
@@ -169,10 +169,10 @@ Status values:
 Keep the feature self-contained and expose only a small page-level entry point.
 
 ```text
-src/features/story-reader/
+src/features/bilingual-story-reader/
   components/
-    StoryReaderPageView.tsx
-    StoryReaderToolbar.tsx
+    BilingualStoryReaderPageView.tsx
+    BilingualStoryReaderToolbar.tsx
     StorySetupForm.tsx
     PromptPreview.tsx
     JsonPastePanel.tsx
@@ -194,9 +194,9 @@ src/features/story-reader/
     warning-types.ts
     count-target-text.ts
   hooks/
-    useStoryReader.ts
-    useStoryReaderKeyboard.ts
-    useStoryReaderFocus.ts
+    useBilingualStoryReader.ts
+    useBilingualStoryReaderKeyboard.ts
+    useBilingualStoryReaderFocus.ts
     useTransientFeedback.ts
   services/
     prompt-template.ts
@@ -217,7 +217,7 @@ src/features/story-reader/
 Route files:
 
 ```text
-src/app/tools/story-reader/
+src/app/tools/bilingual-story-reader/
   layout.tsx
   page.tsx
 ```
@@ -301,7 +301,7 @@ Avoid putting validation rules or prompt string construction inside components.
 Use grouped state rather than many unrelated `useState` calls in the page component.
 
 ```ts
-type StoryReaderState = {
+type BilingualStoryReaderState = {
   setup: SetupState;
   prompt: PromptState;
   jsonInput: JsonInputState;
@@ -336,7 +336,7 @@ raw pasted text
   -> normalizeStory()
   -> computeRequestMismatchWarnings()
   -> computeQualityWarnings()
-  -> StoryReaderViewModel
+  -> BilingualStoryReaderViewModel
 ```
 
 Pipeline rules:
@@ -421,7 +421,7 @@ Use Playwright for user-visible workflows.
 
 ### Setup And Prompt Flow
 
-- Tool page loads from `/tools/story-reader/`.
+- Tool page loads from `/tools/bilingual-story-reader/`.
 - `Copy Prompt` is disabled until required fields are filled.
 - Filling required fields enables `Copy Prompt`.
 - Prompt preview updates as form fields change.

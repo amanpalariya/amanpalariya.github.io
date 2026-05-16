@@ -40,7 +40,7 @@ export const toolPageCases: FunctionalPageCase[] = [
   },
   {
     name: "Bilingual Story Reader",
-    path: "/tools/story-reader",
+    path: "/tools/bilingual-story-reader",
     heading: "Bilingual Story Reader",
   },
   {

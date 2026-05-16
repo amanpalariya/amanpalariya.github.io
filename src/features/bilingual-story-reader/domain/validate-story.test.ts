@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateStoryReaderSchema } from "./validate-story";
+import { validateBilingualStoryReaderSchema } from "./validate-story";
 
 function validStory(overrides: Record<string, unknown> = {}) {
   return {
@@ -31,9 +31,9 @@ function validStory(overrides: Record<string, unknown> = {}) {
   };
 }
 
-describe("validateStoryReaderSchema", () => {
+describe("validateBilingualStoryReaderSchema", () => {
   it("normalizes a valid story into a renderable view model", () => {
-    const result = validateStoryReaderSchema(validStory());
+    const result = validateBilingualStoryReaderSchema(validStory());
 
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error("expected validation success");
@@ -44,7 +44,7 @@ describe("validateStoryReaderSchema", () => {
   });
 
   it("rejects unsupported schema versions", () => {
-    const result = validateStoryReaderSchema(validStory({ schemaVersion: "2.0" }));
+    const result = validateBilingualStoryReaderSchema(validStory({ schemaVersion: "2.0" }));
 
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error("expected validation failure");
@@ -55,7 +55,7 @@ describe("validateStoryReaderSchema", () => {
   });
 
   it("rejects missing required story fields", () => {
-    const result = validateStoryReaderSchema({
+    const result = validateBilingualStoryReaderSchema({
       schemaVersion: "1.0",
       story: {},
       paragraphs: [],
@@ -75,7 +75,7 @@ describe("validateStoryReaderSchema", () => {
   });
 
   it("rejects duplicate paragraph and sentence ids", () => {
-    const result = validateStoryReaderSchema(
+    const result = validateBilingualStoryReaderSchema(
       validStory({
         paragraphs: [
           {
@@ -104,7 +104,7 @@ describe("validateStoryReaderSchema", () => {
   });
 
   it("defaults missing directions to auto with warnings", () => {
-    const result = validateStoryReaderSchema(
+    const result = validateBilingualStoryReaderSchema(
       validStory({
         story: {
           title: "El tren",
@@ -126,7 +126,7 @@ describe("validateStoryReaderSchema", () => {
   });
 
   it("rejects invalid enum values", () => {
-    const result = validateStoryReaderSchema(
+    const result = validateBilingualStoryReaderSchema(
       validStory({
         story: {
           title: "El tren",
@@ -149,7 +149,7 @@ describe("validateStoryReaderSchema", () => {
   });
 
   it("disables segment highlights for text mismatches without blocking rendering", () => {
-    const result = validateStoryReaderSchema(
+    const result = validateBilingualStoryReaderSchema(
       validStory({
         paragraphs: [
           {
@@ -174,7 +174,7 @@ describe("validateStoryReaderSchema", () => {
   });
 
   it("accepts NFC-equivalent segment text", () => {
-    const result = validateStoryReaderSchema(
+    const result = validateBilingualStoryReaderSchema(
       validStory({
         paragraphs: [
           {

@@ -1,17 +1,17 @@
-import { STORY_READER_SCHEMA_VERSION } from "../domain/constants";
+import { BILINGUAL_STORY_READER_SCHEMA_VERSION } from "../domain/constants";
 import {
-  getStoryReaderLevelConstraints,
-  getStoryReaderTranslationStyleRules,
-  STORY_READER_LENGTH_CONSTRAINTS,
+  getBilingualStoryReaderLevelConstraints,
+  getBilingualStoryReaderTranslationStyleRules,
+  BILINGUAL_STORY_READER_LENGTH_CONSTRAINTS,
 } from "../domain/constraints";
 import type {
   NumericRange,
-  StoryReaderLengthConstraints,
-  StoryReaderLevelConstraints,
-  StoryReaderSetupFormValues,
+  BilingualStoryReaderLengthConstraints,
+  BilingualStoryReaderLevelConstraints,
+  BilingualStoryReaderSetupFormValues,
 } from "../domain/types";
 
-export const EMPTY_STORY_READER_CUSTOM_LEVEL = {
+export const EMPTY_BILINGUAL_STORY_READER_CUSTOM_LEVEL = {
   maxSentenceLength: "",
   allowedGrammar: "",
   tenseAspectComfort: "",
@@ -20,7 +20,7 @@ export const EMPTY_STORY_READER_CUSTOM_LEVEL = {
   languageFeatures: "",
 };
 
-export const DEFAULT_STORY_READER_SETUP: StoryReaderSetupFormValues = {
+export const DEFAULT_BILINGUAL_STORY_READER_SETUP: BilingualStoryReaderSetupFormValues = {
   knownLanguage: "",
   targetLanguage: "",
   level: "A1",
@@ -31,7 +31,7 @@ export const DEFAULT_STORY_READER_SETUP: StoryReaderSetupFormValues = {
   tone: "",
   avoidTopics: "",
   extraInstructions: "",
-  customLevel: EMPTY_STORY_READER_CUSTOM_LEVEL,
+  customLevel: EMPTY_BILINGUAL_STORY_READER_CUSTOM_LEVEL,
 };
 
 function cleanText(value: string): string {
@@ -52,11 +52,11 @@ function formatRange(range: NumericRange | null): string {
   return `{ "min": ${range.min}, "max": ${range.max} }`;
 }
 
-function formatLengthConstraints(constraints: StoryReaderLengthConstraints): string {
+function formatLengthConstraints(constraints: BilingualStoryReaderLengthConstraints): string {
   return `${constraints.paragraphCount.min}-${constraints.paragraphCount.max} paragraphs, ${constraints.sentenceCount.min}-${constraints.sentenceCount.max} sentences, ${constraints.targetLanguageWordCount?.min ?? "no"}-${constraints.targetLanguageWordCount?.max ?? "fixed"} target-language words when word count is applicable`;
 }
 
-function formatLevelConstraints(constraints: StoryReaderLevelConstraints): string {
+function formatLevelConstraints(constraints: BilingualStoryReaderLevelConstraints): string {
   const sentenceWords = constraints.sentenceWordCount
     ? `${constraints.sentenceWordCount.min}-${constraints.sentenceWordCount.max} target-language words per sentence when word count is applicable`
     : "sentence length may vary when pedagogically useful";
@@ -69,9 +69,9 @@ function appendOptionalLine(lines: string[], label: string, value: string): void
   if (cleaned) lines.push(`- ${label}: ${cleaned}`);
 }
 
-export function isStoryReaderSetupComplete(
+export function isBilingualStoryReaderSetupComplete(
   setup: Pick<
-    StoryReaderSetupFormValues,
+    BilingualStoryReaderSetupFormValues,
     "knownLanguage" | "targetLanguage" | "theme"
   >,
 ): boolean {
@@ -82,13 +82,13 @@ export function isStoryReaderSetupComplete(
   );
 }
 
-export function buildStoryReaderPrompt(setup: StoryReaderSetupFormValues): string {
+export function buildBilingualStoryReaderPrompt(setup: BilingualStoryReaderSetupFormValues): string {
   const knownLanguage = cleanText(setup.knownLanguage);
   const targetLanguage = cleanText(setup.targetLanguage);
   const theme = cleanMultiline(setup.theme);
-  const lengthConstraints = STORY_READER_LENGTH_CONSTRAINTS[setup.length];
-  const levelConstraints = getStoryReaderLevelConstraints(setup);
-  const translationStyleRules = getStoryReaderTranslationStyleRules(setup.translationStyle);
+  const lengthConstraints = BILINGUAL_STORY_READER_LENGTH_CONSTRAINTS[setup.length];
+  const levelConstraints = getBilingualStoryReaderLevelConstraints(setup);
+  const translationStyleRules = getBilingualStoryReaderTranslationStyleRules(setup.translationStyle);
 
   const requirementLines = [
     "Create a story using these requirements:",
@@ -123,7 +123,7 @@ Use native orthography for the target language. Use NFC-normalized text. Keep al
 Use this exact top-level structure:
 
 {
-  "schemaVersion": "${STORY_READER_SCHEMA_VERSION}",
+  "schemaVersion": "${BILINGUAL_STORY_READER_SCHEMA_VERSION}",
   "generationRequest": {
     "knownLanguage": ${JSON.stringify(knownLanguage)},
     "targetLanguage": ${JSON.stringify(targetLanguage)},
@@ -195,7 +195,7 @@ Allowed values:
 - story.targetLanguage.direction and story.knownLanguage.direction: "ltr", "rtl", or "auto".
 - segments[].kind: "word" or "phrase".
 - comprehensionQuestions[].difficulty: "direct-recall", "inference", or "vocabulary-in-context".
-- schemaVersion must be exactly "${STORY_READER_SCHEMA_VERSION}".
+- schemaVersion must be exactly "${BILINGUAL_STORY_READER_SCHEMA_VERSION}".
 
 Required fields:
 - schemaVersion

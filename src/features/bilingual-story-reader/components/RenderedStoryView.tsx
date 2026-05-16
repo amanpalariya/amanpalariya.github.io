@@ -1,7 +1,7 @@
 "use client";
 
 import { Badge, Box, Card, HStack, Text, VStack } from "@chakra-ui/react";
-import type { RenderableSentence, RenderableStory, StoryReaderWarning } from "../domain/validate-story";
+import type { RenderableSentence, RenderableStory, BilingualStoryReaderWarning } from "../domain/validate-story";
 
 function SentenceText({ sentence }: { sentence: RenderableSentence }) {
   if (!sentence.hasValidSegments) {
@@ -35,7 +35,7 @@ export function RenderedStoryView({
   warnings,
 }: {
   story: RenderableStory;
-  warnings: StoryReaderWarning[];
+  warnings: BilingualStoryReaderWarning[];
 }) {
   const sentenceCount = story.paragraphs.reduce(
     (count, paragraph) => count + paragraph.sentences.length,

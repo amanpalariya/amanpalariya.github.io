@@ -1,15 +1,15 @@
 import type {
-  StoryReaderLength,
-  StoryReaderLengthConstraints,
-  StoryReaderLevel,
-  StoryReaderLevelConstraints,
-  StoryReaderSetupFormValues,
-  StoryReaderTranslationStyle,
+  BilingualStoryReaderLength,
+  BilingualStoryReaderLengthConstraints,
+  BilingualStoryReaderLevel,
+  BilingualStoryReaderLevelConstraints,
+  BilingualStoryReaderSetupFormValues,
+  BilingualStoryReaderTranslationStyle,
 } from "./types";
 
-export const STORY_READER_LENGTH_CONSTRAINTS: Record<
-  StoryReaderLength,
-  StoryReaderLengthConstraints
+export const BILINGUAL_STORY_READER_LENGTH_CONSTRAINTS: Record<
+  BilingualStoryReaderLength,
+  BilingualStoryReaderLengthConstraints
 > = {
   Short: {
     paragraphCount: { min: 2, max: 2 },
@@ -31,7 +31,7 @@ export const STORY_READER_LENGTH_CONSTRAINTS: Record<
   },
 };
 
-const LEVEL_CONSTRAINTS: Record<StoryReaderLevel, StoryReaderLevelConstraints> = {
+const LEVEL_CONSTRAINTS: Record<BilingualStoryReaderLevel, BilingualStoryReaderLevelConstraints> = {
   Beginner: {
     sentenceWordCount: { min: 4, max: 8 },
     sentenceCharacterCount: null,
@@ -89,9 +89,9 @@ const LEVEL_CONSTRAINTS: Record<StoryReaderLevel, StoryReaderLevelConstraints> =
   },
 };
 
-export function getStoryReaderLevelConstraints(
-  setup: Pick<StoryReaderSetupFormValues, "level" | "customLevel">,
-): StoryReaderLevelConstraints {
+export function getBilingualStoryReaderLevelConstraints(
+  setup: Pick<BilingualStoryReaderSetupFormValues, "level" | "customLevel">,
+): BilingualStoryReaderLevelConstraints {
   if (setup.level !== "Custom") return LEVEL_CONSTRAINTS[setup.level];
 
   const customParts = [
@@ -120,8 +120,8 @@ export function getStoryReaderLevelConstraints(
   };
 }
 
-export function getStoryReaderTranslationStyleRules(
-  translationStyle: StoryReaderTranslationStyle,
+export function getBilingualStoryReaderTranslationStyleRules(
+  translationStyle: BilingualStoryReaderTranslationStyle,
 ): string {
   if (translationStyle === "Natural") {
     return "Always include naturalTranslation. Omit literalTranslation unless a literal contrast is pedagogically necessary.";

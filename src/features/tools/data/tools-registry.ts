@@ -20,7 +20,7 @@ const TOOL_SEEDS: ToolSeed[] = [
     updatedAt: "2026-04-05",
   },
   {
-    id: "story-reader",
+    id: "bilingual-story-reader",
     name: "Bilingual Story Reader",
     tagline: "Generate and read bilingual AI story JSON with progressive help",
     description:
@@ -30,7 +30,7 @@ const TOOL_SEEDS: ToolSeed[] = [
       { id: "language", label: "Language" },
       { id: "reading", label: "Reading" },
     ],
-    path: "/tools/story-reader/",
+    path: "/tools/bilingual-story-reader/",
     sortOrder: 9,
     icon: "book",
     updatedAt: "2026-05-16",

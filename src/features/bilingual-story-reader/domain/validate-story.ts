@@ -1,23 +1,23 @@
 import {
-  STORY_READER_DIRECTIONS,
-  STORY_READER_QUESTION_DIFFICULTIES,
-  STORY_READER_SCHEMA_VERSION,
-  STORY_READER_SEGMENT_KINDS,
+  BILINGUAL_STORY_READER_DIRECTIONS,
+  BILINGUAL_STORY_READER_QUESTION_DIFFICULTIES,
+  BILINGUAL_STORY_READER_SCHEMA_VERSION,
+  BILINGUAL_STORY_READER_SEGMENT_KINDS,
 } from "./constants";
 
-export type StoryReaderWarningCategory =
+export type BilingualStoryReaderWarningCategory =
   | "cleanup"
   | "structural"
   | "request-mismatch"
   | "quality";
 
-export interface StoryReaderValidationError {
+export interface BilingualStoryReaderValidationError {
   path: string;
   message: string;
 }
 
-export interface StoryReaderWarning {
-  category: StoryReaderWarningCategory;
+export interface BilingualStoryReaderWarning {
+  category: BilingualStoryReaderWarningCategory;
   code: string;
   path: string;
   message: string;
@@ -68,7 +68,7 @@ export interface RenderableParagraph {
 }
 
 export interface RenderableStory {
-  schemaVersion: typeof STORY_READER_SCHEMA_VERSION;
+  schemaVersion: typeof BILINGUAL_STORY_READER_SCHEMA_VERSION;
   story: {
     id: string | null;
     title: string;
@@ -89,12 +89,12 @@ export type StoryValidationResult =
   | {
       ok: true;
       value: RenderableStory;
-      warnings: StoryReaderWarning[];
+      warnings: BilingualStoryReaderWarning[];
     }
   | {
       ok: false;
-      errors: StoryReaderValidationError[];
-      warnings: StoryReaderWarning[];
+      errors: BilingualStoryReaderValidationError[];
+      warnings: BilingualStoryReaderWarning[];
     };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -120,8 +120,8 @@ function normalizeNfc(value: string): string {
 function validateDirection(
   language: Record<string, unknown>,
   path: string,
-  warnings: StoryReaderWarning[],
-  errors: StoryReaderValidationError[],
+  warnings: BilingualStoryReaderWarning[],
+  errors: BilingualStoryReaderValidationError[],
 ): "ltr" | "rtl" | "auto" {
   const direction = language.direction;
   if (direction === undefined) {
@@ -136,8 +136,8 @@ function validateDirection(
 
   if (
     typeof direction === "string" &&
-    STORY_READER_DIRECTIONS.includes(
-      direction as (typeof STORY_READER_DIRECTIONS)[number],
+    BILINGUAL_STORY_READER_DIRECTIONS.includes(
+      direction as (typeof BILINGUAL_STORY_READER_DIRECTIONS)[number],
     )
   ) {
     return direction as "ltr" | "rtl" | "auto";
@@ -153,8 +153,8 @@ function validateDirection(
 function validateLanguage(
   value: unknown,
   path: string,
-  warnings: StoryReaderWarning[],
-  errors: StoryReaderValidationError[],
+  warnings: BilingualStoryReaderWarning[],
+  errors: BilingualStoryReaderValidationError[],
 ): RenderableLanguage {
   if (!isRecord(value)) {
     errors.push({ path, message: `${path} must be an object.` });
@@ -178,7 +178,7 @@ function validateSegments(
   value: unknown,
   sentenceText: string,
   path: string,
-  warnings: StoryReaderWarning[],
+  warnings: BilingualStoryReaderWarning[],
 ): { segments: RenderableSegment[]; hasValidSegments: boolean } {
   if (value === undefined) return { segments: [], hasValidSegments: false };
   if (!Array.isArray(value)) {
@@ -210,8 +210,8 @@ function validateSegments(
     const kind = segment.kind;
     const normalizedKind =
       typeof kind === "string" &&
-      STORY_READER_SEGMENT_KINDS.includes(
-        kind as (typeof STORY_READER_SEGMENT_KINDS)[number],
+      BILINGUAL_STORY_READER_SEGMENT_KINDS.includes(
+        kind as (typeof BILINGUAL_STORY_READER_SEGMENT_KINDS)[number],
       )
         ? (kind as "word" | "phrase")
         : null;
@@ -257,8 +257,8 @@ function validateSegments(
 
 function validateParagraphs(
   value: unknown,
-  warnings: StoryReaderWarning[],
-  errors: StoryReaderValidationError[],
+  warnings: BilingualStoryReaderWarning[],
+  errors: BilingualStoryReaderValidationError[],
 ): RenderableParagraph[] {
   if (!Array.isArray(value) || value.length === 0) {
     errors.push({
@@ -399,7 +399,7 @@ function validateParagraphs(
 
 function validateComprehensionQuestions(
   value: unknown,
-  errors: StoryReaderValidationError[],
+  errors: BilingualStoryReaderValidationError[],
 ): unknown[] {
   const questions = objectArray(value);
   questions.forEach((question, index) => {
@@ -409,8 +409,8 @@ function validateComprehensionQuestions(
       difficulty !== undefined &&
       (!(
         typeof difficulty === "string" &&
-        STORY_READER_QUESTION_DIFFICULTIES.includes(
-          difficulty as (typeof STORY_READER_QUESTION_DIFFICULTIES)[number],
+        BILINGUAL_STORY_READER_QUESTION_DIFFICULTIES.includes(
+          difficulty as (typeof BILINGUAL_STORY_READER_QUESTION_DIFFICULTIES)[number],
         )
       ))
     ) {
@@ -424,9 +424,9 @@ function validateComprehensionQuestions(
   return questions;
 }
 
-export function validateStoryReaderSchema(value: unknown): StoryValidationResult {
-  const errors: StoryReaderValidationError[] = [];
-  const warnings: StoryReaderWarning[] = [];
+export function validateBilingualStoryReaderSchema(value: unknown): StoryValidationResult {
+  const errors: BilingualStoryReaderValidationError[] = [];
+  const warnings: BilingualStoryReaderWarning[] = [];
 
   if (!isRecord(value)) {
     return {
@@ -436,10 +436,10 @@ export function validateStoryReaderSchema(value: unknown): StoryValidationResult
     };
   }
 
-  if (value.schemaVersion !== STORY_READER_SCHEMA_VERSION) {
+  if (value.schemaVersion !== BILINGUAL_STORY_READER_SCHEMA_VERSION) {
     errors.push({
       path: "schemaVersion",
-      message: `schemaVersion must be exactly ${STORY_READER_SCHEMA_VERSION}.`,
+      message: `schemaVersion must be exactly ${BILINGUAL_STORY_READER_SCHEMA_VERSION}.`,
     });
   }
 
@@ -480,7 +480,7 @@ export function validateStoryReaderSchema(value: unknown): StoryValidationResult
     ok: true,
     warnings,
     value: {
-      schemaVersion: STORY_READER_SCHEMA_VERSION,
+      schemaVersion: BILINGUAL_STORY_READER_SCHEMA_VERSION,
       story: {
         id: stringValue(story.id),
         title: title ?? "",

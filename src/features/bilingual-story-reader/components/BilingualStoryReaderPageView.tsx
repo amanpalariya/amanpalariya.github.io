@@ -18,38 +18,38 @@ import {
 import { Field } from "@components/ui/field";
 import { useMemo, useState } from "react";
 import {
-  STORY_READER_LENGTHS,
-  STORY_READER_LEVELS,
-  STORY_READER_TRANSLATION_STYLES,
+  BILINGUAL_STORY_READER_LENGTHS,
+  BILINGUAL_STORY_READER_LEVELS,
+  BILINGUAL_STORY_READER_TRANSLATION_STYLES,
 } from "../domain/constants";
 import type {
-  StoryReaderLength,
-  StoryReaderLevel,
-  StoryReaderSetupFormValues,
-  StoryReaderTranslationStyle,
+  BilingualStoryReaderLength,
+  BilingualStoryReaderLevel,
+  BilingualStoryReaderSetupFormValues,
+  BilingualStoryReaderTranslationStyle,
 } from "../domain/types";
 import {
-  buildStoryReaderPrompt,
-  DEFAULT_STORY_READER_SETUP,
-  isStoryReaderSetupComplete,
+  buildBilingualStoryReaderPrompt,
+  DEFAULT_BILINGUAL_STORY_READER_SETUP,
+  isBilingualStoryReaderSetupComplete,
 } from "../services/prompt-builder";
 import { writeTextToClipboard } from "../services/clipboard";
 import { parseJsonWithCleanup, type JsonParseResult } from "../services/json-cleanup";
 import {
-  validateStoryReaderSchema,
+  validateBilingualStoryReaderSchema,
   type StoryValidationResult,
 } from "../domain/validate-story";
 import { RenderedStoryView } from "./RenderedStoryView";
 
 type TextFieldName = Exclude<
-  keyof StoryReaderSetupFormValues,
+  keyof BilingualStoryReaderSetupFormValues,
   "level" | "length" | "translationStyle" | "customLevel"
 >;
-type CustomLevelFieldName = keyof StoryReaderSetupFormValues["customLevel"];
+type CustomLevelFieldName = keyof BilingualStoryReaderSetupFormValues["customLevel"];
 
 export function BilingualStoryReaderPageView() {
-  const [setup, setSetup] = useState<StoryReaderSetupFormValues>(
-    DEFAULT_STORY_READER_SETUP,
+  const [setup, setSetup] = useState<BilingualStoryReaderSetupFormValues>(
+    DEFAULT_BILINGUAL_STORY_READER_SETUP,
   );
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">(
     "idle",
@@ -61,8 +61,8 @@ export function BilingualStoryReaderPageView() {
   const [storyValidationResult, setStoryValidationResult] =
     useState<StoryValidationResult | null>(null);
 
-  const prompt = useMemo(() => buildStoryReaderPrompt(setup), [setup]);
-  const isSetupComplete = isStoryReaderSetupComplete(setup);
+  const prompt = useMemo(() => buildBilingualStoryReaderPrompt(setup), [setup]);
+  const isSetupComplete = isBilingualStoryReaderSetupComplete(setup);
 
   function updateTextField(field: TextFieldName, value: string): void {
     setSetup((current) => ({ ...current, [field]: value }));
@@ -98,7 +98,7 @@ export function BilingualStoryReaderPageView() {
     const parseResult = parseJsonWithCleanup(rawJsonText);
     setJsonParseResult(parseResult);
     setStoryValidationResult(
-      parseResult.ok ? validateStoryReaderSchema(parseResult.value) : null,
+      parseResult.ok ? validateBilingualStoryReaderSchema(parseResult.value) : null,
     );
   }
 
@@ -193,11 +193,11 @@ export function BilingualStoryReaderPageView() {
                       onChange={(event) =>
                         setSetup((current) => ({
                           ...current,
-                          level: event.currentTarget.value as StoryReaderLevel,
+                          level: event.currentTarget.value as BilingualStoryReaderLevel,
                         }))
                       }
                     >
-                      {STORY_READER_LEVELS.map((level) => (
+                      {BILINGUAL_STORY_READER_LEVELS.map((level) => (
                         <option key={level} value={level}>
                           {level}
                         </option>
@@ -214,11 +214,11 @@ export function BilingualStoryReaderPageView() {
                       onChange={(event) =>
                         setSetup((current) => ({
                           ...current,
-                          length: event.currentTarget.value as StoryReaderLength,
+                          length: event.currentTarget.value as BilingualStoryReaderLength,
                         }))
                       }
                     >
-                      {STORY_READER_LENGTHS.map((length) => (
+                      {BILINGUAL_STORY_READER_LENGTHS.map((length) => (
                         <option key={length} value={length}>
                           {length}
                         </option>
@@ -248,11 +248,11 @@ export function BilingualStoryReaderPageView() {
                         setSetup((current) => ({
                           ...current,
                           translationStyle: event.currentTarget
-                            .value as StoryReaderTranslationStyle,
+                            .value as BilingualStoryReaderTranslationStyle,
                         }))
                       }
                     >
-                      {STORY_READER_TRANSLATION_STYLES.map((style) => (
+                      {BILINGUAL_STORY_READER_TRANSLATION_STYLES.map((style) => (
                         <option key={style} value={style}>
                           {style}
                         </option>

@@ -2,7 +2,7 @@ import { expect, test } from "../../support/fixtures";
 
 test.describe("Bilingual Story Reader shell", () => {
   test("shows setup, paste, and disabled empty-state actions", async ({ page }) => {
-    const response = await page.goto("/tools/story-reader");
+    const response = await page.goto("/tools/bilingual-story-reader");
 
     expect(response?.status()).toBeLessThan(400);
     await expect(page.getByRole("heading", { name: "Bilingual Story Reader" })).toBeVisible();
@@ -20,7 +20,7 @@ test.describe("Bilingual Story Reader shell", () => {
     page,
   }) => {
     await context.grantPermissions(["clipboard-read", "clipboard-write"]);
-    await page.goto("/tools/story-reader");
+    await page.goto("/tools/bilingual-story-reader");
 
     await expect(page.getByRole("button", { name: "Copy Prompt" }).first()).toBeDisabled();
     await expect(page.getByLabel("Prompt preview")).toContainText("Fill known language");
@@ -45,7 +45,7 @@ test.describe("Bilingual Story Reader shell", () => {
   });
 
   test("parses, formats, and reports JSON paste results", async ({ page }) => {
-    await page.goto("/tools/story-reader");
+    await page.goto("/tools/bilingual-story-reader");
 
     const storyJson = page.getByLabel("Story JSON");
     await storyJson.fill('```json\n{"schemaVersion":"1.0","story":{"title":"Hola"}}\n```');
@@ -62,7 +62,7 @@ test.describe("Bilingual Story Reader shell", () => {
   });
 
   test("shows a plain error for invalid JSON", async ({ page }) => {
-    await page.goto("/tools/story-reader");
+    await page.goto("/tools/bilingual-story-reader");
 
     await page.getByLabel("Story JSON").fill('{"schemaVersion":"1.0"\n  "story": {}}');
     await page.getByRole("button", { name: "Render Story" }).click();
@@ -71,7 +71,7 @@ test.describe("Bilingual Story Reader shell", () => {
   });
 
   test("validates and renders a basic story", async ({ page }) => {
-    await page.goto("/tools/story-reader");
+    await page.goto("/tools/bilingual-story-reader");
 
     await page.getByLabel("Story JSON").fill(
       JSON.stringify({

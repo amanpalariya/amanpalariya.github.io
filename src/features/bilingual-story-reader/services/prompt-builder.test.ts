@@ -1,25 +1,25 @@
 import { describe, expect, it } from "vitest";
 import {
-  buildStoryReaderPrompt,
-  DEFAULT_STORY_READER_SETUP,
-  isStoryReaderSetupComplete,
+  buildBilingualStoryReaderPrompt,
+  DEFAULT_BILINGUAL_STORY_READER_SETUP,
+  isBilingualStoryReaderSetupComplete,
 } from "./prompt-builder";
 
 const completeSetup = {
-  ...DEFAULT_STORY_READER_SETUP,
+  ...DEFAULT_BILINGUAL_STORY_READER_SETUP,
   knownLanguage: "English",
   targetLanguage: "Spanish",
   theme: "lost phone at a train station",
 };
 
-describe("story reader prompt builder", () => {
+describe("bilingual story reader prompt builder", () => {
   it("requires known language, target language, and theme", () => {
-    expect(isStoryReaderSetupComplete(DEFAULT_STORY_READER_SETUP)).toBe(false);
-    expect(isStoryReaderSetupComplete(completeSetup)).toBe(true);
+    expect(isBilingualStoryReaderSetupComplete(DEFAULT_BILINGUAL_STORY_READER_SETUP)).toBe(false);
+    expect(isBilingualStoryReaderSetupComplete(completeSetup)).toBe(true);
   });
 
   it("expands required fields and short A1 constraints", () => {
-    const prompt = buildStoryReaderPrompt(completeSetup);
+    const prompt = buildBilingualStoryReaderPrompt(completeSetup);
 
     expect(prompt).toContain("- Known language: English");
     expect(prompt).toContain("- Target language: Spanish");
@@ -31,7 +31,7 @@ describe("story reader prompt builder", () => {
   });
 
   it("omits blank optional requirement lines but uses JSON null values", () => {
-    const prompt = buildStoryReaderPrompt(completeSetup);
+    const prompt = buildBilingualStoryReaderPrompt(completeSetup);
     const requirementSection = prompt.slice(
       prompt.indexOf("Create a story using these requirements:"),
       prompt.indexOf("Return only valid JSON."),
@@ -48,7 +48,7 @@ describe("story reader prompt builder", () => {
   });
 
   it("includes populated optional requirement lines and JSON string values", () => {
-    const prompt = buildStoryReaderPrompt({
+    const prompt = buildBilingualStoryReaderPrompt({
       ...completeSetup,
       avoidTopics: "violence",
       vocabularyFocus: "train station verbs",
@@ -65,7 +65,7 @@ describe("story reader prompt builder", () => {
   });
 
   it("expands medium, B2, and literal translation rules", () => {
-    const prompt = buildStoryReaderPrompt({
+    const prompt = buildBilingualStoryReaderPrompt({
       ...completeSetup,
       length: "Medium",
       level: "B2",
@@ -80,7 +80,7 @@ describe("story reader prompt builder", () => {
   });
 
   it("is deterministic for the same setup state", () => {
-    expect(buildStoryReaderPrompt(completeSetup)).toBe(buildStoryReaderPrompt(completeSetup));
+    expect(buildBilingualStoryReaderPrompt(completeSetup)).toBe(buildBilingualStoryReaderPrompt(completeSetup));
   });
 });
 

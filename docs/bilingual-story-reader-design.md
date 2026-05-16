@@ -8,9 +8,9 @@ The reader should support any known-language to learning-language pair, such as 
 
 ## Working Name
 
-- Display name: `Story Reader`
-- Route: `/tools/story-reader/`
-- Registry id: `story-reader`
+- Display name: `Bilingual Story Reader`
+- Route: `/tools/bilingual-story-reader/`
+- Registry id: `bilingual-story-reader`
 - Status at launch: `alpha`
 - Tags: `Language`, `Reading`
 
@@ -861,11 +861,11 @@ Mobile:
 
 ## Implementation Plan
 
-1. Add `story-reader` to the tool registry.
-2. Create `/tools/story-reader/` page and layout metadata.
-3. Add setup form state and prompt generation under `src/features/story-reader/`.
+1. Add `bilingual-story-reader` to the tool registry.
+2. Create `/tools/bilingual-story-reader/` page and layout metadata.
+3. Add setup form state and prompt generation under `src/features/bilingual-story-reader/`.
 4. Add prompt preview, prompt-copy service, and prompt template.
-5. Add JSON cleanup, domain types, parser validation, and render warnings under `src/features/story-reader/`.
+5. Add JSON cleanup, domain types, parser validation, and render warnings under `src/features/bilingual-story-reader/`.
 6. Add repair prompt generation.
 7. Build the paste-and-render shell.
 8. Build the reader view with sentence selection, roving focus, remembered reveal levels, and reading progress.
