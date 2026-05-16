@@ -14,6 +14,8 @@ import {
   type KeyboardEvent,
   type MouseEvent,
   type ReactNode,
+  useEffect,
+  useRef,
   useState,
 } from "react";
 import type {
@@ -28,6 +30,8 @@ type HelpSelection =
   | { type: "sentence"; id: string }
   | { type: "paragraph"; id: string }
   | { type: "segment"; sentenceId: string; index: number };
+
+const CLICK_DELAY_MS = 180;
 
 function textFromUnknown(value: unknown, key: string): string | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
@@ -316,14 +320,45 @@ function SegmentText({
   setHelpSelection: (selection: HelpSelection | null) => void;
 }) {
   const selection = { type: "segment", sentenceId: sentence.id, index } as const;
+  const sentenceSelection = { type: "sentence", id: sentence.id } as const;
   const isOpen = isSameHelpSelection(helpSelection, selection);
+  const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (clickTimerRef.current) window.clearTimeout(clickTimerRef.current);
+    };
+  }, []);
 
   if (!segment.kind) return <span>{segment.text}</span>;
 
-  function openSegmentHelp(
-    event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>,
-  ): void {
+  function clearClickTimer(): void {
+    if (!clickTimerRef.current) return;
+    window.clearTimeout(clickTimerRef.current);
+    clickTimerRef.current = null;
+  }
+
+  function openSegmentHelp(event: MouseEvent<HTMLElement>): void {
     event.stopPropagation();
+    clearClickTimer();
+    clickTimerRef.current = setTimeout(() => {
+      setHelpSelection(selection);
+      clickTimerRef.current = null;
+    }, CLICK_DELAY_MS);
+  }
+
+  function openSentenceHelp(event: MouseEvent<HTMLElement>): void {
+    event.preventDefault();
+    event.stopPropagation();
+    clearClickTimer();
+    setHelpSelection(sentenceSelection);
+  }
+
+  function openKeyboardSegmentHelp(event: KeyboardEvent<HTMLElement>): void {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    event.stopPropagation();
+    clearClickTimer();
     setHelpSelection(selection);
   }
 
@@ -335,24 +370,22 @@ function SegmentText({
       positioning={{ placement: "top", gutter: 8 }}
       unmountOnExit
     >
-      <Popover.Trigger asChild>
+      <Popover.Anchor asChild>
         <Box
           aria-label={`${segment.text} help`}
           as="span"
           borderBottom="1px dotted"
           borderColor={isOpen ? "blue.500" : "app.fg.subtle"}
           cursor="help"
-          fontWeight={isOpen ? "semibold" : "inherit"}
           onClick={openSegmentHelp}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" || event.key === " ") openSegmentHelp(event);
-          }}
+          onDoubleClick={openSentenceHelp}
+          onKeyDown={openKeyboardSegmentHelp}
           role="button"
           tabIndex={0}
         >
           {segment.text}
         </Box>
-      </Popover.Trigger>
+      </Popover.Anchor>
       <PopoverShell
         closeLabel="Close word help"
         onClose={() => setHelpSelection(null)}
@@ -402,6 +435,32 @@ function StorySentence({
 }) {
   const selection = { type: "sentence", id: sentence.id } as const;
   const isOpen = isSameHelpSelection(helpSelection, selection);
+  const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (clickTimerRef.current) window.clearTimeout(clickTimerRef.current);
+    };
+  }, []);
+
+  function clearClickTimer(): void {
+    if (!clickTimerRef.current) return;
+    window.clearTimeout(clickTimerRef.current);
+    clickTimerRef.current = null;
+  }
+
+  function openSentenceHelp(): void {
+    clearClickTimer();
+    setHelpSelection(selection);
+  }
+
+  function handleSentenceClick(): void {
+    clearClickTimer();
+    clickTimerRef.current = setTimeout(() => {
+      setHelpSelection(selection);
+      clickTimerRef.current = null;
+    }, CLICK_DELAY_MS);
+  }
 
   return (
     <Popover.Root
@@ -411,30 +470,28 @@ function StorySentence({
       positioning={{ placement: "bottom-start", gutter: 8 }}
       unmountOnExit
     >
-      <Popover.Trigger asChild>
+      <Popover.Anchor asChild>
         <Box
           aria-label={`${sentence.text} sentence help`}
           aria-pressed={isOpen}
           as="span"
           bg={isOpen ? "bg.subtle" : "transparent"}
-          borderBottomWidth={isOpen ? "1px" : "0"}
-          borderColor="blue.500"
+          boxShadow={isOpen ? "inset 0 -2px 0 var(--chakra-colors-blue-500)" : "none"}
           color="inherit"
           cursor="help"
           display="inline"
           mr={2}
-          onClick={() => setHelpSelection(selection)}
+          onClick={handleSentenceClick}
           onDoubleClick={(event) => {
             event.preventDefault();
-            setHelpSelection(selection);
+            openSentenceHelp();
           }}
           onKeyDown={(event) => {
             if (event.key === "Enter" || event.key === " ") {
               event.preventDefault();
-              setHelpSelection(selection);
+              openSentenceHelp();
             }
           }}
-          px={isOpen ? 1 : 0}
           role="button"
           tabIndex={0}
           textAlign="start"
@@ -445,7 +502,7 @@ function StorySentence({
             setHelpSelection={setHelpSelection}
           />
         </Box>
-      </Popover.Trigger>
+      </Popover.Anchor>
       <PopoverShell
         closeLabel="Close sentence help"
         onClose={() => setHelpSelection(null)}

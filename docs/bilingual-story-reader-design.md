@@ -16,6 +16,7 @@
 - If the user accidentally pastes the copied prompt back into the response area, do not parse or render the prompt’s embedded schema example. Show a warning asking for the AI assistant’s response instead.
 - Once a valid story is loaded, hide setup, copy, and paste controls so the reading experience is immersive. The reader toolbar should show `Adjust Prompt` and `New Story`.
 - Help must not be persistent or layout-shifting. The story gets full reading width; sentence, word/phrase, and paragraph help appears only in closeable popovers on hover/click/double-click/tap/focus.
+- Text highlighting must be paint-only. Do not change font weight, padding, border width, or other metrics when help opens.
 
 ## Goal
 
@@ -217,6 +218,7 @@ Click, double-click, or Enter:
 
 - Opens a sentence help popover.
 - When highlighted word/phrase help is present, single-click can open word help and double-click can open sentence help.
+- Click and double-click handling should be explicit: a single word/phrase click is delayed briefly so a double-click can cancel it and open sentence help instead.
 - Shows the available clue, meaning, translation, and `Why it works` details without requiring staged reveals.
 - Closing the popover returns the reader to the full-width story without shifting paragraph layout.
 

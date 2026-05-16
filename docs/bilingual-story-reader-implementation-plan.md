@@ -18,6 +18,7 @@ This plan turns `docs/bilingual-story-reader-design.md` into a working tool in s
 - Detect and reject the generated prompt when it is pasted into the response path; otherwise the embedded schema example can look like a real story and confuse users.
 - Hide setup and paste panels after a valid story loads so reading is immersive.
 - Do not use persistent or layout-shifting help. Keep the story full width and show sentence, word/phrase, and paragraph help only as closeable popovers on hover/click/double-click/tap/focus.
+- Text highlights must be paint-only; do not change text metrics with padding, font weight, border width, or similar active styles.
 
 ## Goals
 
@@ -450,6 +451,7 @@ Use Playwright for user-visible workflows.
 
 - Rendered story shows title, language pair, level, progress, and paragraphs.
 - Clicking or double-clicking a sentence opens sentence help in a popover; highlighted word/phrase clicks open word help.
+- Word/phrase single-clicks are delayed briefly so double-click can cancel word help and open sentence help.
 - Sentence help shows available clue, meaning, translation, and explanation without staged reveal controls.
 - Vocabulary segment opens word/phrase help in a popover.
 - Paragraph check shows question, key point, summary, and answer in a popover.

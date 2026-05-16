@@ -188,7 +188,13 @@ test.describe("Bilingual Story Reader shell", () => {
     await expect(page.getByRole("heading", { name: "El tren" })).toBeVisible();
     await expect(page.getByText("Sentence Help")).toHaveCount(0);
 
-    await page.getByRole("button", { name: "Lina entra. sentence help" }).dblclick();
+    const sentenceButton = page.getByRole("button", {
+      name: "Lina entra. sentence help",
+    });
+    const beforeHelpBox = await sentenceButton.boundingBox();
+    expect(beforeHelpBox).not.toBeNull();
+
+    await sentenceButton.dblclick();
     await expect(page.getByText("A person goes in.")).toBeVisible();
     await expect(page.getByText("Lina enters a place.")).toBeVisible();
     await expect(page.getByText("Lina enters.", { exact: true })).toBeVisible();
@@ -196,6 +202,11 @@ test.describe("Bilingual Story Reader shell", () => {
     await expect(page.getByText("Entra is a present-tense verb.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Reveal next" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Reset Reveals" })).toHaveCount(0);
+
+    const afterHelpBox = await sentenceButton.boundingBox();
+    expect(afterHelpBox).not.toBeNull();
+    expect(afterHelpBox?.width ?? 0).toBeCloseTo(beforeHelpBox?.width ?? 0, 1);
+    expect(afterHelpBox?.height ?? 0).toBeCloseTo(beforeHelpBox?.height ?? 0, 1);
 
     await page.getByRole("button", { name: "Close sentence help" }).click();
     await expect(page.getByText("Sentence Help")).toHaveCount(0);
@@ -205,6 +216,10 @@ test.describe("Bilingual Story Reader shell", () => {
     await expect(page.getByText("verb")).toBeVisible();
     await page.getByRole("button", { name: "Close word help" }).click();
     await expect(page.getByText("entrar")).toHaveCount(0);
+
+    await page.getByRole("button", { name: "entra help" }).dblclick();
+    await expect(page.getByText("Sentence Help")).toBeVisible();
+    await expect(page.getByText("A person goes in.")).toBeVisible();
   });
 
   test("shows paragraph checks in a popover", async ({ page }) => {
