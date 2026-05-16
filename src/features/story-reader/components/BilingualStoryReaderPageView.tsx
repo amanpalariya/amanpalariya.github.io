@@ -16,13 +16,72 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { Field } from "@components/ui/field";
+import { useMemo, useState } from "react";
 import {
   STORY_READER_LENGTHS,
   STORY_READER_LEVELS,
   STORY_READER_TRANSLATION_STYLES,
 } from "../domain/constants";
+import type {
+  StoryReaderLength,
+  StoryReaderLevel,
+  StoryReaderSetupFormValues,
+  StoryReaderTranslationStyle,
+} from "../domain/types";
+import {
+  buildStoryReaderPrompt,
+  DEFAULT_STORY_READER_SETUP,
+  isStoryReaderSetupComplete,
+} from "../services/prompt-builder";
+import { writeTextToClipboard } from "../services/clipboard";
+
+type TextFieldName = Exclude<
+  keyof StoryReaderSetupFormValues,
+  "level" | "length" | "translationStyle" | "customLevel"
+>;
+type CustomLevelFieldName = keyof StoryReaderSetupFormValues["customLevel"];
 
 export function BilingualStoryReaderPageView() {
+  const [setup, setSetup] = useState<StoryReaderSetupFormValues>(
+    DEFAULT_STORY_READER_SETUP,
+  );
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">(
+    "idle",
+  );
+
+  const prompt = useMemo(() => buildStoryReaderPrompt(setup), [setup]);
+  const isSetupComplete = isStoryReaderSetupComplete(setup);
+
+  function updateTextField(field: TextFieldName, value: string): void {
+    setSetup((current) => ({ ...current, [field]: value }));
+  }
+
+  function updateCustomLevelField(
+    field: CustomLevelFieldName,
+    value: string,
+  ): void {
+    setSetup((current) => ({
+      ...current,
+      customLevel: {
+        ...current.customLevel,
+        [field]: value,
+      },
+    }));
+  }
+
+  async function copyPrompt(): Promise<void> {
+    if (!isSetupComplete) return;
+
+    try {
+      await writeTextToClipboard(prompt);
+      setCopyStatus("copied");
+    } catch {
+      setCopyStatus("failed");
+    }
+
+    window.setTimeout(() => setCopyStatus("idle"), 1800);
+  }
+
   return (
     <VStack align="stretch" gap={5} px={[4, 6]} pb={6}>
       <Flex
@@ -33,7 +92,7 @@ export function BilingualStoryReaderPageView() {
         wrap="wrap"
       >
         <HStack gap={2} wrap="wrap">
-          <Button colorPalette="blue" disabled>
+          <Button colorPalette="blue" disabled={!isSetupComplete} onClick={copyPrompt}>
             Copy Prompt
           </Button>
           <Button variant="outline" disabled>
@@ -47,6 +106,16 @@ export function BilingualStoryReaderPageView() {
           No story loaded
         </Badge>
       </Flex>
+      {copyStatus === "copied" ? (
+        <Text color="green.600" fontSize="sm" role="status">
+          Prompt copied.
+        </Text>
+      ) : null}
+      {copyStatus === "failed" ? (
+        <Text color="red.600" fontSize="sm" role="alert">
+          Could not access the clipboard.
+        </Text>
+      ) : null}
 
       <Grid templateColumns={["1fr", null, "minmax(0, 1fr) minmax(0, 1fr)"]} gap={4}>
         <Card.Root>
@@ -60,17 +129,40 @@ export function BilingualStoryReaderPageView() {
             <VStack align="stretch" gap={4}>
               <Grid templateColumns={["1fr", "1fr 1fr"]} gap={3}>
                 <Field label="Known language">
-                  <Input placeholder="English" />
+                  <Input
+                    aria-label="Known language"
+                    placeholder="English"
+                    value={setup.knownLanguage}
+                    onChange={(event) =>
+                      updateTextField("knownLanguage", event.currentTarget.value)
+                    }
+                  />
                 </Field>
                 <Field label="Target language">
-                  <Input placeholder="Spanish" />
+                  <Input
+                    aria-label="Target language"
+                    placeholder="Spanish"
+                    value={setup.targetLanguage}
+                    onChange={(event) =>
+                      updateTextField("targetLanguage", event.currentTarget.value)
+                    }
+                  />
                 </Field>
               </Grid>
 
               <Grid templateColumns={["1fr", "1fr 1fr"]} gap={3}>
                 <Field label="Level">
                   <NativeSelect.Root>
-                    <NativeSelect.Field aria-label="Level" defaultValue="A1">
+                    <NativeSelect.Field
+                      aria-label="Level"
+                      value={setup.level}
+                      onChange={(event) =>
+                        setSetup((current) => ({
+                          ...current,
+                          level: event.currentTarget.value as StoryReaderLevel,
+                        }))
+                      }
+                    >
                       {STORY_READER_LEVELS.map((level) => (
                         <option key={level} value={level}>
                           {level}
@@ -82,7 +174,16 @@ export function BilingualStoryReaderPageView() {
                 </Field>
                 <Field label="Length">
                   <NativeSelect.Root>
-                    <NativeSelect.Field aria-label="Length" defaultValue="Short">
+                    <NativeSelect.Field
+                      aria-label="Length"
+                      value={setup.length}
+                      onChange={(event) =>
+                        setSetup((current) => ({
+                          ...current,
+                          length: event.currentTarget.value as StoryReaderLength,
+                        }))
+                      }
+                    >
                       {STORY_READER_LENGTHS.map((length) => (
                         <option key={length} value={length}>
                           {length}
@@ -95,13 +196,28 @@ export function BilingualStoryReaderPageView() {
               </Grid>
 
               <Field label="Theme">
-                <Input placeholder="lost phone at a train station" />
+                <Input
+                  aria-label="Theme"
+                  placeholder="lost phone at a train station"
+                  value={setup.theme}
+                  onChange={(event) => updateTextField("theme", event.currentTarget.value)}
+                />
               </Field>
 
               <Grid templateColumns={["1fr", "1fr 1fr"]} gap={3}>
                 <Field label="Translation style">
                   <NativeSelect.Root>
-                    <NativeSelect.Field aria-label="Translation style" defaultValue="Both">
+                    <NativeSelect.Field
+                      aria-label="Translation style"
+                      value={setup.translationStyle}
+                      onChange={(event) =>
+                        setSetup((current) => ({
+                          ...current,
+                          translationStyle: event.currentTarget
+                            .value as StoryReaderTranslationStyle,
+                        }))
+                      }
+                    >
                       {STORY_READER_TRANSLATION_STYLES.map((style) => (
                         <option key={style} value={style}>
                           {style}
@@ -112,21 +228,150 @@ export function BilingualStoryReaderPageView() {
                   </NativeSelect.Root>
                 </Field>
                 <Field label="Vocabulary focus">
-                  <Input placeholder="common travel verbs" />
+                  <Input
+                    aria-label="Vocabulary focus"
+                    placeholder="common travel verbs"
+                    value={setup.vocabularyFocus}
+                    onChange={(event) =>
+                      updateTextField("vocabularyFocus", event.currentTarget.value)
+                    }
+                  />
                 </Field>
               </Grid>
 
+              <Grid templateColumns={["1fr", "1fr 1fr"]} gap={3}>
+                <Field label="Tone">
+                  <Input
+                    aria-label="Tone"
+                    placeholder="light mystery"
+                    value={setup.tone}
+                    onChange={(event) => updateTextField("tone", event.currentTarget.value)}
+                  />
+                </Field>
+                <Field label="Avoid topics">
+                  <Input
+                    aria-label="Avoid topics"
+                    placeholder="violence"
+                    value={setup.avoidTopics}
+                    onChange={(event) =>
+                      updateTextField("avoidTopics", event.currentTarget.value)
+                    }
+                  />
+                </Field>
+              </Grid>
+
+              {setup.level === "Custom" ? (
+                <VStack align="stretch" gap={3}>
+                  <Text fontWeight="medium">Custom Level</Text>
+                  <Grid templateColumns={["1fr", "1fr 1fr"]} gap={3}>
+                    <Field label="Max sentence length">
+                      <Input
+                        aria-label="Max sentence length"
+                        inputMode="numeric"
+                        placeholder="12"
+                        value={setup.customLevel.maxSentenceLength}
+                        onChange={(event) =>
+                          updateCustomLevelField(
+                            "maxSentenceLength",
+                            event.currentTarget.value,
+                          )
+                        }
+                      />
+                    </Field>
+                    <Field label="CEFR-like target">
+                      <Input
+                        aria-label="CEFR-like target"
+                        placeholder="A2 with familiar topics"
+                        value={setup.customLevel.cefrTarget}
+                        onChange={(event) =>
+                          updateCustomLevelField("cefrTarget", event.currentTarget.value)
+                        }
+                      />
+                    </Field>
+                  </Grid>
+                  <Field label="Allowed grammar">
+                    <Textarea
+                      aria-label="Allowed grammar"
+                      value={setup.customLevel.allowedGrammar}
+                      onChange={(event) =>
+                        updateCustomLevelField("allowedGrammar", event.currentTarget.value)
+                      }
+                    />
+                  </Field>
+                  <Field label="Tense/aspect comfort">
+                    <Textarea
+                      aria-label="Tense/aspect comfort"
+                      value={setup.customLevel.tenseAspectComfort}
+                      onChange={(event) =>
+                        updateCustomLevelField(
+                          "tenseAspectComfort",
+                          event.currentTarget.value,
+                        )
+                      }
+                    />
+                  </Field>
+                  <Field label="Vocabulary comfort">
+                    <Textarea
+                      aria-label="Vocabulary comfort"
+                      value={setup.customLevel.vocabularyComfort}
+                      onChange={(event) =>
+                        updateCustomLevelField(
+                          "vocabularyComfort",
+                          event.currentTarget.value,
+                        )
+                      }
+                    />
+                  </Field>
+                  <Field label="Language features">
+                    <Textarea
+                      aria-label="Language features"
+                      value={setup.customLevel.languageFeatures}
+                      onChange={(event) =>
+                        updateCustomLevelField(
+                          "languageFeatures",
+                          event.currentTarget.value,
+                        )
+                      }
+                    />
+                  </Field>
+                </VStack>
+              ) : null}
+
               <Field label="Extra instructions">
-                <Textarea placeholder="Use simple dialogue and include romanization if helpful." />
+                <Textarea
+                  aria-label="Extra instructions"
+                  placeholder="Use simple dialogue and include romanization if helpful."
+                  value={setup.extraInstructions}
+                  onChange={(event) =>
+                    updateTextField("extraInstructions", event.currentTarget.value)
+                  }
+                />
               </Field>
 
               <Separator />
 
               <Box>
                 <Text fontWeight="medium">Prompt preview</Text>
-                <Text color="app.fg.muted" fontSize="sm" mt={1}>
-                  Fill the required fields to generate a copyable prompt.
-                </Text>
+                <Textarea
+                  aria-label="Prompt preview"
+                  fontFamily="mono"
+                  minH="2xs"
+                  mt={2}
+                  readOnly
+                  value={
+                    isSetupComplete
+                      ? prompt
+                      : "Fill known language, target language, and theme to generate a copyable prompt."
+                  }
+                />
+                <Button
+                  colorPalette="blue"
+                  disabled={!isSetupComplete}
+                  mt={3}
+                  onClick={copyPrompt}
+                >
+                  Copy Prompt
+                </Button>
               </Box>
             </VStack>
           </Card.Body>
