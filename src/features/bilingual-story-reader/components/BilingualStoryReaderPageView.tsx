@@ -10,15 +10,18 @@ import {
   Flex,
   Grid,
   HStack,
+  IconButton,
   Input,
   NativeSelect,
+  Popover,
   Separator,
   Text,
   Textarea,
   VStack,
 } from "@chakra-ui/react";
 import { Field } from "@components/ui/field";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ClipboardEvent as ReactClipboardEvent } from "react";
+import { LuChevronDown, LuChevronUp } from "react-icons/lu";
 import {
   BILINGUAL_STORY_READER_LANGUAGE_OPTIONS,
   BILINGUAL_STORY_READER_LENGTHS,
@@ -32,6 +35,7 @@ import type {
 import {
   buildBilingualStoryReaderPrompt,
   DEFAULT_BILINGUAL_STORY_READER_SETUP,
+  isBilingualStoryReaderPromptText,
   isBilingualStoryReaderSetupComplete,
 } from "../services/prompt-builder";
 import { readTextFromClipboard, writeTextToClipboard } from "../services/clipboard";
@@ -125,6 +129,17 @@ export function BilingualStoryReaderPageView() {
   }
 
   function validateResponseText(responseText: string): void {
+    if (isBilingualStoryReaderPromptText(responseText)) {
+      setJsonParseResult(null);
+      setStoryValidationResult(null);
+      notify(
+        "warning",
+        "That is the prompt",
+        "Paste the AI assistant’s response, not the prompt you copied from this tool.",
+      );
+      return;
+    }
+
     const parseResult = parseJsonWithCleanup(responseText);
     setJsonParseResult(parseResult);
 
@@ -162,10 +177,27 @@ export function BilingualStoryReaderPageView() {
     validateResponseText(rawResponseText);
   }
 
+  function handleManualPaste(event: ReactClipboardEvent<HTMLTextAreaElement>): void {
+    const text = event.clipboardData.getData("text/plain");
+    if (!text.trim()) return;
+
+    event.preventDefault();
+    setRawResponseText(text);
+    validateResponseText(text);
+  }
+
+  function adjustPrompt(): void {
+    setStoryValidationResult(null);
+    setJsonParseResult(null);
+    setRawResponseText("");
+  }
+
   function resetLoadedStory(): void {
+    setSetup(DEFAULT_BILINGUAL_STORY_READER_SETUP);
     setRawResponseText("");
     setJsonParseResult(null);
     setStoryValidationResult(null);
+    setIsManualPasteOpen(false);
   }
 
   return (
@@ -214,25 +246,93 @@ export function BilingualStoryReaderPageView() {
         wrap="wrap"
       >
         <HStack gap={2} wrap="wrap">
-          <Button colorPalette="blue" disabled={!isSetupComplete} onClick={copyPrompt}>
-            Copy Prompt
-          </Button>
-          <Button variant="outline" onClick={pasteResponseFromClipboard}>
-            Paste Response
-          </Button>
-          {!hasLoadedStory ? (
-            <Button
-              variant="ghost"
-              onClick={() => setIsManualPasteOpen((current) => !current)}
-            >
-              {isManualPasteOpen ? "Hide Manual Paste" : "Manual Paste"}
-            </Button>
-          ) : null}
           {hasLoadedStory ? (
-            <Button variant="ghost" onClick={resetLoadedStory}>
-              New Story
-            </Button>
-          ) : null}
+            <>
+              <Button colorPalette="blue" onClick={adjustPrompt}>
+                Adjust Prompt
+              </Button>
+              <Button variant="ghost" onClick={resetLoadedStory}>
+                New Story
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button colorPalette="blue" disabled={!isSetupComplete} onClick={copyPrompt}>
+                Copy Prompt
+              </Button>
+              <Popover.Root
+                open={isManualPasteOpen}
+                onOpenChange={(details) => setIsManualPasteOpen(details.open)}
+                positioning={{ placement: "bottom-start", gutter: 6 }}
+              >
+                <Box>
+                  <HStack align="stretch" gap={0}>
+                    <Button
+                      borderRightWidth={0}
+                      onClick={pasteResponseFromClipboard}
+                      roundedRight={0}
+                      variant="outline"
+                    >
+                      Paste Response
+                    </Button>
+                    <Popover.Trigger asChild>
+                      <IconButton
+                        aria-label={
+                          isManualPasteOpen ? "Hide manual paste" : "Show manual paste"
+                        }
+                        borderLeftWidth="1px"
+                        roundedLeft={0}
+                        variant="outline"
+                      >
+                        {isManualPasteOpen ? <LuChevronUp /> : <LuChevronDown />}
+                      </IconButton>
+                    </Popover.Trigger>
+                  </HStack>
+                </Box>
+
+                <Popover.Positioner zIndex={20}>
+                  <Popover.Content
+                    bg="bg.panel"
+                    borderColor="border.subtle"
+                    borderWidth="1px"
+                    minW={{ base: "280px", sm: "420px" }}
+                    overflow="hidden"
+                    p={0}
+                    rounded="lg"
+                    shadow="lg"
+                    w={{ base: "calc(100vw - 2rem)", sm: "420px" }}
+                  >
+                    <Textarea
+                      aria-describedby="ai-response-validation"
+                      aria-label="AI response"
+                      borderWidth={0}
+                      minH="140px"
+                      onChange={(event) => {
+                        setRawResponseText(event.currentTarget.value);
+                        setJsonParseResult(null);
+                        setStoryValidationResult(null);
+                      }}
+                      onPaste={handleManualPaste}
+                      placeholder="Paste the AI response here. It will be read automatically."
+                      rounded="none"
+                      value={rawResponseText}
+                    />
+                    <Button
+                      disabled={!rawResponseText.trim()}
+                      mt="-1px"
+                      onClick={readStory}
+                      rounded="none"
+                      size="sm"
+                      variant="subtle"
+                      w="full"
+                    >
+                      Read pasted response
+                    </Button>
+                  </Popover.Content>
+                </Popover.Positioner>
+              </Popover.Root>
+            </>
+          )}
         </HStack>
         <Badge colorPalette="gray" alignSelf={["flex-start", "center"]}>
           {hasLoadedStory ? "Story loaded" : jsonParseResult?.ok ? "Response parsed" : "Ready"}
@@ -241,48 +341,6 @@ export function BilingualStoryReaderPageView() {
 
       {!hasLoadedStory ? (
         <VStack align="stretch" gap={4}>
-          {isManualPasteOpen ? (
-            <Card.Root>
-              <Card.Header>
-                <Card.Title>Manual Paste</Card.Title>
-                <Card.Description>
-                  Use this only when clipboard import is blocked or you want to review the
-                  response before reading.
-                </Card.Description>
-              </Card.Header>
-              <Card.Body>
-                <VStack align="stretch" gap={3}>
-                  <Field label="AI response">
-                    <Textarea
-                      aria-describedby="ai-response-validation"
-                      aria-label="AI response"
-                      minH="140px"
-                      placeholder="Paste the response here"
-                      value={rawResponseText}
-                      onChange={(event) => {
-                        setRawResponseText(event.currentTarget.value);
-                        setJsonParseResult(null);
-                        setStoryValidationResult(null);
-                      }}
-                    />
-                  </Field>
-                  <HStack gap={2} wrap="wrap">
-                    <Button
-                      colorPalette="blue"
-                      disabled={!rawResponseText.trim()}
-                      onClick={readStory}
-                    >
-                      Read Story
-                    </Button>
-                    <Button variant="ghost" onClick={() => setIsManualPasteOpen(false)}>
-                      Hide
-                    </Button>
-                  </HStack>
-                </VStack>
-              </Card.Body>
-            </Card.Root>
-          ) : null}
-
           <Grid templateColumns={["1fr", null, "minmax(0, 1fr)"]} gap={4}>
           <Card.Root>
             <Card.Header>
@@ -299,14 +357,15 @@ export function BilingualStoryReaderPageView() {
                       <NativeSelect.Field
                         aria-label="Known language"
                         value={languageSelectValue(setup.knownLanguage)}
-                        onChange={(event) =>
+                        onChange={(event) => {
+                          const nextLanguage = event.currentTarget.value;
                           updateTextField(
                             "knownLanguage",
-                            event.currentTarget.value === CUSTOM_LANGUAGE_VALUE
+                            nextLanguage === CUSTOM_LANGUAGE_VALUE
                               ? ""
-                              : event.currentTarget.value,
-                          )
-                        }
+                              : nextLanguage,
+                          );
+                        }}
                       >
                         {BILINGUAL_STORY_READER_LANGUAGE_OPTIONS.map((language) => (
                           <option key={language.name} value={language.name}>
@@ -334,14 +393,15 @@ export function BilingualStoryReaderPageView() {
                       <NativeSelect.Field
                         aria-label="Target language"
                         value={languageSelectValue(setup.targetLanguage)}
-                        onChange={(event) =>
+                        onChange={(event) => {
+                          const nextLanguage = event.currentTarget.value;
                           updateTextField(
                             "targetLanguage",
-                            event.currentTarget.value === CUSTOM_LANGUAGE_VALUE
+                            nextLanguage === CUSTOM_LANGUAGE_VALUE
                               ? ""
-                              : event.currentTarget.value,
-                          )
-                        }
+                              : nextLanguage,
+                          );
+                        }}
                       >
                         {BILINGUAL_STORY_READER_LANGUAGE_OPTIONS.map((language) => (
                           <option key={language.name} value={language.name}>
@@ -371,12 +431,14 @@ export function BilingualStoryReaderPageView() {
                       <NativeSelect.Field
                         aria-label="Level"
                         value={setup.level}
-                        onChange={(event) =>
+                        onChange={(event) => {
+                          const nextLevel = event.currentTarget
+                            .value as BilingualStoryReaderLevel;
                           setSetup((current) => ({
                             ...current,
-                            level: event.currentTarget.value as BilingualStoryReaderLevel,
-                          }))
-                        }
+                            level: nextLevel,
+                          }));
+                        }}
                       >
                         {BILINGUAL_STORY_READER_LEVELS.map((level) => (
                           <option key={level} value={level}>
@@ -393,12 +455,14 @@ export function BilingualStoryReaderPageView() {
                       <NativeSelect.Field
                         aria-label="Length"
                         value={setup.length}
-                        onChange={(event) =>
+                        onChange={(event) => {
+                          const nextLength = event.currentTarget
+                            .value as BilingualStoryReaderLength;
                           setSetup((current) => ({
                             ...current,
-                            length: event.currentTarget.value as BilingualStoryReaderLength,
-                          }))
-                        }
+                            length: nextLength,
+                          }));
+                        }}
                       >
                         {BILINGUAL_STORY_READER_LENGTHS.map((length) => (
                           <option key={length} value={length}>

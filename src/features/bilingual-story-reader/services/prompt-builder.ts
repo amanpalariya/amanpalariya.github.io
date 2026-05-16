@@ -204,3 +204,11 @@ Segment rules:
 
 Return the JSON object only.`;
 }
+
+export function isBilingualStoryReaderPromptText(text: string): boolean {
+  return (
+    text.includes("You are helping me create a language-learning reading story.") &&
+    text.includes("Use this exact top-level structure:") &&
+    text.includes("Return the JSON object only.")
+  );
+}

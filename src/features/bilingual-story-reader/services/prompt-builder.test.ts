@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildBilingualStoryReaderPrompt,
   DEFAULT_BILINGUAL_STORY_READER_SETUP,
+  isBilingualStoryReaderPromptText,
   isBilingualStoryReaderSetupComplete,
 } from "./prompt-builder";
 
@@ -84,5 +85,12 @@ describe("bilingual story reader prompt builder", () => {
 
   it("is deterministic for the same setup state", () => {
     expect(buildBilingualStoryReaderPrompt(completeSetup)).toBe(buildBilingualStoryReaderPrompt(completeSetup));
+  });
+
+  it("detects generated prompt text so it is not accepted as a story response", () => {
+    const prompt = buildBilingualStoryReaderPrompt(completeSetup);
+
+    expect(isBilingualStoryReaderPromptText(prompt)).toBe(true);
+    expect(isBilingualStoryReaderPromptText('{"schemaVersion":"1.0"}')).toBe(false);
   });
 });

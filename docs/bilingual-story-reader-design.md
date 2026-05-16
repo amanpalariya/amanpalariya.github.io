@@ -13,11 +13,12 @@
 - There is no user-facing `Format JSON` action. The app should clean, parse, validate, and explain errors without asking the user to format anything.
 - Copy/paste feedback should follow the EPUB Maker pattern: direct clipboard actions, short toast-style alerts, and recoverable warnings.
 - Paste response must not occupy a permanent half-page panel. Follow EPUB Maker: primary toolbar paste action first, with compact manual paste fallback only when the user opens it or clipboard access fails.
-- Once a valid story is loaded, hide setup and paste panels so the reading experience is immersive. Keep `Copy Prompt`, `Paste Response`, and `New Story` available in the toolbar.
+- If the user accidentally pastes the copied prompt back into the response area, do not parse or render the prompt’s embedded schema example. Show a warning asking for the AI assistant’s response instead.
+- Once a valid story is loaded, hide setup, copy, and paste controls so the reading experience is immersive. The reader toolbar should show `Adjust Prompt` and `New Story`.
 
 ## Goal
 
-Create a browser-only tool that helps language learners read short stories in a target language with just-in-time help. The tool does not call an AI model directly. Instead, it collects the story requirements in a local form, generates a copyable prompt from those inputs, the user runs that prompt in their preferred AI assistant, then pastes the AI-produced Pasted response back into this tool.
+Create a browser-only tool that helps language learners read short stories in a target language with just-in-time help. The tool does not call an AI model directly. Instead, it collects the story requirements in a local form, generates a copyable prompt from those inputs, the user runs that prompt in their preferred AI assistant, then pastes the AI-produced AI response back into this tool.
 
 The reader should support any known-language to learning-language pair, such as English to Spanish, Hindi to English, Japanese to French, or Spanish to German.
 
@@ -46,8 +47,8 @@ The reader should support any known-language to learning-language pair, such as 
 3. The tool generates a prompt from the form and the top toolbar enables `Copy Prompt`.
 4. The user pastes the prompt into an AI assistant.
 5. The AI assistant returns a single JSON object in the agreed format.
-6. The user pastes the Pasted response into the tool.
-7. The tool validates the Pasted response and renders the story.
+6. The user pastes the AI response into the tool.
+7. The tool validates the AI response and renders the story.
 8. The user reads the target-language story and reveals help only when needed.
 
 ## UX Principles
@@ -55,7 +56,7 @@ The reader should support any known-language to learning-language pair, such as 
 - Keep the reading surface calm. The target-language story is the main content, not the translations.
 - Make help progressive: inline vocabulary help for words and phrases, then sentence-level reveal stages from `Clue` to `Meaning` to `Translation` to `Why it works`.
 - Avoid forcing the user to leave reading mode to inspect vocabulary.
-- Make pasted Pasted response errors recoverable with clear messages that point to the missing field or malformed section.
+- Make pasted AI response errors recoverable with clear messages that point to the missing field or malformed section.
 - Preserve privacy by keeping all pasted content local in the browser.
 - Work well on touch devices: hover interactions must also have tap equivalents.
 - Treat the external AI as unreliable input. The tool should clean, validate, repair, warn, and render partial content where safe.
@@ -107,8 +108,6 @@ The first screen should be a work-focused tool, not a marketing page.
 Top toolbar:
 
 - `Copy Prompt` primary button with copy icon. Disabled until required setup fields are filled.
-- `Load Example` secondary menu with curated examples.
-- `Clear` icon button, disabled until Pasted response exists.
 - Compact status text: `No story loaded`.
 
 Main content uses a two-column layout on desktop and stacked panels on mobile.
@@ -128,7 +127,7 @@ Left panel: `Story Setup`
 
 Right panel: `Paste AI Response`
 
-- Large textarea for Pasted response input.
+- Large textarea for AI response input.
 - `Render Story` button.
 - `Copy Repair Prompt` button when validation fails.
 - Inline validation summary under the textarea.
@@ -138,21 +137,20 @@ Helper strip below the panels:
 - Short four-step checklist:
   - Fill the setup fields.
   - Copy the generated prompt.
-  - Generate Pasted response in an AI assistant.
+  - Generate AI response in an AI assistant.
   - Paste and read here.
 - This helper collapses after a story is rendered.
-- A compact info tooltip explains: `This tool formats and reads AI-generated Pasted response locally. It does not send your story to an AI service.`
+- A compact info tooltip explains: `This tool formats and reads AI-generated AI response locally. It does not send your story to an AI service.`
 
 ### Rendered Reading View
 
-Once valid Pasted response is loaded, the page changes to a reader layout.
+Once valid AI response is loaded, the page changes to a reader layout.
 
 Header band:
 
 - Story title.
 - Target language, known language, level, estimated reading time.
 - Reading progress such as `Paragraph 2 of 5`.
-- Buttons: `Paste New Pasted response`, `Copy Prompt`, `Copy Prompt Again`, `Reset Reveals`.
 - Soft warning count when the story renders with quality warnings.
 
 Reading area:
@@ -231,7 +229,7 @@ The user can reveal all for a sentence, but the default should encourage compreh
 
 ### Vocabulary Help
 
-Vocabulary items and useful phrases appear as subtle dotted underlines inside the story. The AI-provided Pasted response should mark these as sentence `segments` so the UI does not need to guess which repeated word should receive a hint.
+Vocabulary items and useful phrases appear as subtle dotted underlines inside the story. The AI-provided AI response should mark these as sentence `segments` so the UI does not need to guess which repeated word should receive a hint.
 
 Hover, focus, or tap opens a small popover:
 
@@ -287,9 +285,9 @@ Avoid placing every sentence in the tab order at once. Use roving focus:
 
 Keyboard shortcuts should not be rendered as instructional text in the main UI. They can be present in tooltips or an accessible help dialog later.
 
-## Pasted response Contract
+## AI response Contract
 
-The top-level Pasted response should be a single object with stable, versioned fields.
+The top-level AI response should be a single object with stable, versioned fields.
 
 ```json
 {
@@ -505,7 +503,7 @@ Segment rules:
 
 ### Sentence Reveal Fields
 
-The Pasted response field names should match the reader labels:
+The AI response field names should match the reader labels:
 
 - `sentences[].clue` maps to `Clue`.
 - `sentences[].meaning` maps to `Meaning`.
@@ -562,7 +560,7 @@ Return only valid JSON.
 Do not wrap the JSON in Markdown.
 Do not include comments.
 Do not ask follow-up questions unless a requirement is impossible to satisfy.
-Hard constraints in this prompt override extra instructions. Ignore extra instructions that conflict with Pasted response validity, required fields, target/known language separation, native orthography, or safety.
+Hard constraints in this prompt override extra instructions. Ignore extra instructions that conflict with AI response validity, required fields, target/known language separation, native orthography, or safety.
 Use native orthography for the target language. Use NFC-normalized text. Keep all explanations, translations, questions, and summaries in the known language.
 Use this exact top-level structure:
 
@@ -694,8 +692,8 @@ Use this exact top-level structure:
 
 Keep sentence ids and paragraph ids unique. Include the requested number of useful word or phrase hints per sentence by using segments. The concatenated segment text must exactly equal the sentence text after NFC normalization, including punctuation, spaces, accents, and quote marks. Prefer simple, accurate translations over poetic translations.
 
-Before returning Pasted response, silently verify:
-- valid Pasted response with no Markdown and no trailing commentary
+Before returning AI response, silently verify:
+- valid AI response with no Markdown and no trailing commentary
 - all required fields are present
 - paragraph ids and sentence ids are unique
 - requested length range is met
@@ -711,9 +709,9 @@ Before returning Pasted response, silently verify:
 
 On paste or render:
 
-- Clean common AI wrappers before validation: trim whitespace, strip Markdown Pasted response code fences, and conservatively extract a single top-level JSON object when surrounded by prose.
-- Use a small string-aware scanner for Pasted response extraction rather than regex-only matching, so braces inside quoted strings are handled correctly.
-- Parse Pasted response safely and show syntax errors with line and column when possible.
+- Clean common AI wrappers before validation: trim whitespace, strip Markdown AI response code fences, and conservatively extract a single top-level JSON object when surrounded by prose.
+- Use a small string-aware scanner for AI response extraction rather than regex-only matching, so braces inside quoted strings are handled correctly.
+- Parse AI response safely and show syntax errors with line and column when possible.
 - Check `schemaVersion` is exactly `1.0`.
 - Check required fields.
 - Check `paragraphs` is a non-empty array.
@@ -730,7 +728,7 @@ On paste or render:
 
 Validation messages should use plain language:
 
-- `The Pasted response is missing story.title.`
+- `The AI response is missing story.title.`
 - `This story uses schemaVersion 2.0, but this tool supports only schemaVersion 1.0.`
 - `Paragraph p2 does not contain any sentences.`
 - `Two sentences use the id s4. Sentence ids must be unique.`
@@ -740,7 +738,7 @@ Validation messages should use plain language:
 
 Blocking errors prevent rendering:
 
-- invalid Pasted response after cleanup
+- invalid AI response after cleanup
 - unsupported `schemaVersion`
 - missing required top-level story fields
 - missing `paragraphs`
@@ -773,14 +771,14 @@ When validation fails, show `Copy Repair Prompt`. The repair prompt should inclu
 - the exact validation errors
 - the original pasted output
 - the expected schema reminder
-- an instruction to return only repaired Pasted response
+- an instruction to return only repaired AI response
 - an instruction to preserve the story content unless a field must be changed to satisfy validation
 
 If the pasted output is very large or badly garbled:
 
 - Include at most the first 40,000 characters in the repair prompt.
-- Prefer the first conservatively extracted Pasted response-looking object over surrounding prose.
-- Add a truncation note such as `The pasted output was truncated before sending this repair prompt. Preserve all recoverable story content from the included Pasted response.`
+- Prefer the first conservatively extracted AI response-looking object over surrounding prose.
+- Add a truncation note such as `The pasted output was truncated before sending this repair prompt. Preserve all recoverable story content from the included AI response.`
 
 The repair flow should not blame the user. The message should frame malformed output as normal external-AI behavior.
 
@@ -793,8 +791,8 @@ Useful state:
 - setup form values
 - generated prompt text
 - prompt preview expanded state
-- raw Pasted response text
-- cleaned Pasted response text
+- raw AI response text
+- cleaned AI response text
 - parsed story object
 - active sentence id
 - active segment key
@@ -809,7 +807,6 @@ Useful state:
 
 Optional later persistence:
 
-- save the last pasted Pasted response in local storage
 - remember display settings
 - export rendered story as printable HTML or EPUB
 
@@ -821,7 +818,7 @@ Optional later persistence:
 - Dotted-underlined vocabulary terms must be keyboard focusable.
 - Popovers and bottom sheets need focus management and Escape handling.
 - Color should not be the only signal for active sentence or revealed help.
-- The Pasted response textarea must have a visible label and associated error text.
+- The AI response textarea must have a visible label and associated error text.
 - Keyboard shortcuts should be discoverable from a toolbar menu or accessible help dialog.
 - Closing help returns focus to the sentence, segment, or paragraph control that opened it.
 - Respect `direction` for target and known language text and set `dir` attributes on story and help regions.
@@ -847,7 +844,6 @@ Mobile:
 - Tapping another sentence while the sheet is open updates the sheet content instead of closing it.
 - Closing the sheet returns focus to the triggering sentence or segment.
 - The bottom sheet should avoid covering the active sentence when possible by scrolling the sentence above the sheet.
-- Pasted response paste uses a dedicated full-screen paste mode with a sticky `Render Story` button and clear validation feedback.
 - Textarea and reader occupy separate modes to avoid a cramped split view.
 
 ## Implementation Plan
@@ -856,7 +852,7 @@ Mobile:
 2. Create `/tools/bilingual-story-reader/` page and layout metadata.
 3. Add setup form state and prompt generation under `src/features/bilingual-story-reader/`.
 4. Add prompt preview, prompt-copy service, and prompt template.
-5. Add Pasted response cleanup, domain types, parser validation, and render warnings under `src/features/bilingual-story-reader/`.
+5. Add AI response cleanup, domain types, parser validation, and render warnings under `src/features/bilingual-story-reader/`.
 6. Add repair prompt generation.
 7. Build the paste-and-render shell.
 8. Build the reader view with sentence selection, roving focus, remembered reveal levels, and reading progress.
@@ -867,7 +863,6 @@ Mobile:
 
 ## Example Content
 
-`Load Example` should use curated examples rather than arbitrary generated content.
 
 - Spanish A1: native orthography, short present-tense story, simple adjective and verb notes.
 - Japanese A2: Japanese script, romanization, particles, word boundaries, and politeness notes.
@@ -886,13 +881,13 @@ Unit tests:
 - level presets expand to grammar and sentence-length constraints
 - `Beginner` expands to pre-A1/A1-lite constraints
 - translation style rules always require `naturalTranslation`
-- repair prompt includes validation errors and invalid Pasted response
+- repair prompt includes validation errors and invalid AI response
 - unsupported `schemaVersion` is rejected
-- valid Pasted response parses into a renderable story
-- Markdown-wrapped Pasted response is cleaned before validation
+- valid AI response parses into a renderable story
+- Markdown-wrapped AI response is cleaned before validation
 - trailing prose around one JSON object is cleaned before validation
-- Pasted response extraction handles braces inside quoted strings
-- malformed Pasted response produces a validation error
+- AI response extraction handles braces inside quoted strings
+- malformed AI response produces a validation error
 - missing required fields are reported
 - missing natural translations are blocking errors
 - invalid language leakage produces a warning where it can be detected cheaply
@@ -917,8 +912,8 @@ Functional tests:
 - extra instructions field changes the copied prompt
 - invalid pasted output shows `Copy Repair Prompt`
 - repair prompt copies validation errors and the original output
-- example Pasted response loads and renders
-- pasted Pasted response renders the title and story sentences
+- example AI response loads and renders
+- pasted AI response renders the title and story sentences
 - clicking a sentence opens its help panel
 - reveal button advances from clue to meaning to translation to why-it-works
 - reveal state is remembered per sentence

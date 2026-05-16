@@ -1,5 +1,4 @@
 export const BILINGUAL_STORY_READER_TOOL_ID = "bilingual-story-reader";
-export const BILINGUAL_STORY_READER_ROUTE = "/tools/bilingual-story-reader/";
 export const BILINGUAL_STORY_READER_SCHEMA_VERSION = "1.0";
 
 export const BILINGUAL_STORY_READER_LEVELS = [

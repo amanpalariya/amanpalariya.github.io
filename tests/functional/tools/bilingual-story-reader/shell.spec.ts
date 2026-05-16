@@ -1,5 +1,19 @@
 import { expect, test } from "../../support/fixtures";
 
+async function dispatchPasteOnFocusedElement(page: import("@playwright/test").Page, text: string) {
+  await page.evaluate((pastedText) => {
+    const clipboardData = new DataTransfer();
+    clipboardData.setData("text/plain", pastedText);
+    document.activeElement?.dispatchEvent(
+      new ClipboardEvent("paste", {
+        bubbles: true,
+        cancelable: true,
+        clipboardData,
+      }),
+    );
+  }, text);
+}
+
 test.describe("Bilingual Story Reader shell", () => {
   test("shows setup, paste, and disabled empty-state actions", async ({ page }) => {
     const response = await page.goto("/tools/bilingual-story-reader");
@@ -10,7 +24,7 @@ test.describe("Bilingual Story Reader shell", () => {
     await expect(page.getByRole("heading", { name: "Manual Paste" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Copy Prompt" })).toBeEnabled();
     await expect(page.getByRole("button", { name: "Paste Response" })).toBeEnabled();
-    await expect(page.getByRole("button", { name: "Manual Paste" })).toBeEnabled();
+    await expect(page.getByRole("button", { name: "Show manual paste" })).toBeEnabled();
     await expect(page.getByText("Ready", { exact: true })).toBeVisible();
     await expect(page.getByLabel("Known language")).toHaveValue("English");
     await expect(page.getByLabel("Target language")).toHaveValue("Spanish");
@@ -35,13 +49,25 @@ test.describe("Bilingual Story Reader shell", () => {
       .toContain("language-learning reading story");
   });
 
+  test("updates level without crashing and reflects beginner constraints", async ({ page }) => {
+    await page.goto("/tools/bilingual-story-reader");
+
+    await page.getByLabel("Level").selectOption("Beginner");
+
+    await expect(page.getByLabel("Level")).toHaveValue("Beginner");
+    await expect(page.getByLabel("Prompt preview")).toContainText("- Learner level: Beginner");
+    await expect(page.getByLabel("Prompt preview")).toContainText(
+      '"level": "Beginner"',
+    );
+  });
+
   test("parses and reports pasted AI responses", async ({ page }) => {
     await page.goto("/tools/bilingual-story-reader");
 
-    await page.getByRole("button", { name: "Manual Paste" }).click();
+    await page.getByRole("button", { name: "Show manual paste" }).click();
     const responseInput = page.getByLabel("AI response");
     await responseInput.fill('```json\n{"schemaVersion":"1.0","story":{"title":"Hola"}}\n```');
-    await page.getByRole("button", { name: "Read Story" }).click();
+    await page.getByRole("button", { name: "Read pasted response" }).click();
 
     await expect(page.getByText("Removed Markdown code fence around the JSON.")).toBeVisible();
     await expect(page.getByText("Response parsed.")).toBeVisible();
@@ -53,9 +79,9 @@ test.describe("Bilingual Story Reader shell", () => {
   test("shows a plain error for invalid JSON", async ({ page }) => {
     await page.goto("/tools/bilingual-story-reader");
 
-    await page.getByRole("button", { name: "Manual Paste" }).click();
+    await page.getByRole("button", { name: "Show manual paste" }).click();
     await page.getByLabel("AI response").fill('{"schemaVersion":"1.0"\n  "story": {}}');
-    await page.getByRole("button", { name: "Read Story" }).click();
+    await page.getByRole("button", { name: "Read pasted response" }).click();
 
     await expect(page.getByText("Line 2, column 3")).toBeVisible();
   });
@@ -63,7 +89,7 @@ test.describe("Bilingual Story Reader shell", () => {
   test("validates and renders a basic story", async ({ page }) => {
     await page.goto("/tools/bilingual-story-reader");
 
-    await page.getByRole("button", { name: "Manual Paste" }).click();
+    await page.getByRole("button", { name: "Show manual paste" }).click();
     await page.getByLabel("AI response").fill(
       JSON.stringify({
         schemaVersion: "1.0",
@@ -93,14 +119,56 @@ test.describe("Bilingual Story Reader shell", () => {
         ],
       }),
     );
-    await page.getByRole("button", { name: "Read Story" }).click();
+    await page.getByRole("button", { name: "Read pasted response" }).click();
 
     await expect(page.getByText("Story loaded", { exact: true }).first()).toBeVisible();
     await expect(page.getByRole("heading", { name: "Story Setup" })).toHaveCount(0);
-    await expect(page.getByRole("heading", { name: "Manual Paste" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Copy Prompt" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Paste Response" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Adjust Prompt" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "El tren" })).toBeVisible();
     await expect(page.getByText("Spanish from English · A1")).toBeVisible();
     await expect(page.getByText("Paragraph 1 of 1")).toBeVisible();
     await expect(page.locator("article").getByText("Lina entra.", { exact: true })).toBeVisible();
+  });
+
+  test("auto-reads pasted manual responses and rejects pasted prompts", async ({ page }) => {
+    await page.goto("/tools/bilingual-story-reader");
+
+    const prompt = await page.getByLabel("Prompt preview").inputValue();
+    await page.getByRole("button", { name: "Show manual paste" }).click();
+    await page.getByLabel("AI response").focus();
+    await dispatchPasteOnFocusedElement(page, prompt);
+
+    await expect(page.getByText("That is the prompt")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Story title in the target language" })).toHaveCount(0);
+
+    await page.getByLabel("AI response").focus();
+    await dispatchPasteOnFocusedElement(
+      page,
+      JSON.stringify({
+        schemaVersion: "1.0",
+        story: {
+          title: "El mercado",
+          targetLanguage: { name: "Spanish", direction: "ltr" },
+          knownLanguage: { name: "English", direction: "ltr" },
+          level: "A1",
+        },
+        paragraphs: [
+          {
+            id: "p1",
+            sentences: [
+              {
+                id: "s1",
+                text: "Ana mira pan.",
+                naturalTranslation: "Ana looks at bread.",
+              },
+            ],
+          },
+        ],
+      }),
+    );
+
+    await expect(page.getByRole("heading", { name: "El mercado" })).toBeVisible();
   });
 });
