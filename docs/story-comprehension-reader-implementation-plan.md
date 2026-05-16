@@ -44,12 +44,12 @@ Status values:
 - [ ] Implement setup form state with required fields: known language, target language, level, theme, length, translation style.
 - [ ] Implement optional fields: vocabulary focus, tone, avoid topics, extra instructions.
 - [ ] Implement `Custom` level fields, but keep them hidden until `Custom` is selected.
-- [ ] Implement prompt constraint expansion for length presets.
-- [ ] Implement prompt constraint expansion for level presets.
-- [ ] Implement prompt constraint expansion for translation style.
-- [ ] Generate the prompt from a pure service function.
-- [ ] Omit blank optional requirement lines from the human-readable prompt section.
-- [ ] Represent blank optional `generationRequest` values as JSON `null`.
+- [x] Implement prompt constraint expansion for length presets.
+- [x] Implement prompt constraint expansion for level presets.
+- [x] Implement prompt constraint expansion for translation style.
+- [x] Generate the prompt from a pure service function.
+- [x] Omit blank optional requirement lines from the human-readable prompt section.
+- [x] Represent blank optional `generationRequest` values as JSON `null`.
 - [ ] Add prompt preview.
 - [ ] Add copy prompt behavior with transient feedback.
 - [ ] Validate that `Copy Prompt` is disabled until required fields are present.
