@@ -97,14 +97,14 @@ Status values:
 
 ### Phase 5: Reader Shell
 
-- [ ] Render story title, languages, level, estimated reading time, and warning count.
-- [ ] Render paragraphs and sentences from the normalized view model.
-- [ ] Render sentence text from `segments[].text` only when segments are valid.
-- [ ] Render sentence text from `sentence.text` when segments are missing or invalid.
+- [x] Render story title, languages, level, estimated reading time, and warning count.
+- [x] Render paragraphs and sentences from the normalized view model.
+- [x] Render sentence text from `segments[].text` only when segments are valid.
+- [x] Render sentence text from `sentence.text` when segments are missing or invalid.
 - [ ] Add active sentence state.
 - [ ] Add remembered reveal level per sentence.
 - [ ] Add `Reset Reveals`.
-- [ ] Add reading progress such as `Paragraph 2 of 5`.
+- [x] Add reading progress such as `Paragraph 2 of 5`.
 - [ ] Add paste/read mode switching.
 - [ ] Preserve active sentence and scroll target when switching modes.
 

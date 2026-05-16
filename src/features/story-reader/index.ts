@@ -1,4 +1,5 @@
 export { BilingualStoryReaderPageView } from "./components/BilingualStoryReaderPageView";
+export { RenderedStoryView } from "./components/RenderedStoryView";
 export {
   STORY_READER_ROUTE,
   STORY_READER_SCHEMA_VERSION,

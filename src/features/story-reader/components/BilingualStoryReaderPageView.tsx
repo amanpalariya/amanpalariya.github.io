@@ -35,6 +35,11 @@ import {
 } from "../services/prompt-builder";
 import { writeTextToClipboard } from "../services/clipboard";
 import { parseJsonWithCleanup, type JsonParseResult } from "../services/json-cleanup";
+import {
+  validateStoryReaderSchema,
+  type StoryValidationResult,
+} from "../domain/validate-story";
+import { RenderedStoryView } from "./RenderedStoryView";
 
 type TextFieldName = Exclude<
   keyof StoryReaderSetupFormValues,
@@ -53,6 +58,8 @@ export function BilingualStoryReaderPageView() {
   const [jsonParseResult, setJsonParseResult] = useState<JsonParseResult | null>(
     null,
   );
+  const [storyValidationResult, setStoryValidationResult] =
+    useState<StoryValidationResult | null>(null);
 
   const prompt = useMemo(() => buildStoryReaderPrompt(setup), [setup]);
   const isSetupComplete = isStoryReaderSetupComplete(setup);
@@ -88,12 +95,17 @@ export function BilingualStoryReaderPageView() {
   }
 
   function renderJson(): void {
-    setJsonParseResult(parseJsonWithCleanup(rawJsonText));
+    const parseResult = parseJsonWithCleanup(rawJsonText);
+    setJsonParseResult(parseResult);
+    setStoryValidationResult(
+      parseResult.ok ? validateStoryReaderSchema(parseResult.value) : null,
+    );
   }
 
   function formatJson(): void {
     const result = parseJsonWithCleanup(rawJsonText);
     setJsonParseResult(result);
+    setStoryValidationResult(null);
 
     if (result.ok) {
       setRawJsonText(`${JSON.stringify(result.value, null, 2)}\n`);
@@ -121,7 +133,11 @@ export function BilingualStoryReaderPageView() {
           </Button>
         </HStack>
         <Badge colorPalette="gray" alignSelf={["flex-start", "center"]}>
-          {jsonParseResult?.ok ? "JSON parsed" : "No story loaded"}
+          {storyValidationResult?.ok
+            ? "Story loaded"
+            : jsonParseResult?.ok
+              ? "JSON parsed"
+              : "No story loaded"}
         </Badge>
       </Flex>
       {copyStatus === "copied" ? (
@@ -414,6 +430,7 @@ export function BilingualStoryReaderPageView() {
                   onChange={(event) => {
                     setRawJsonText(event.currentTarget.value);
                     setJsonParseResult(null);
+                    setStoryValidationResult(null);
                   }}
                 />
               </Field>
@@ -450,7 +467,13 @@ export function BilingualStoryReaderPageView() {
 
                 {jsonParseResult?.ok ? (
                   <Text color="green.600" fontSize="sm" role="status">
-                    JSON parsed. Schema validation comes next.
+                    JSON parsed.
+                  </Text>
+                ) : null}
+
+                {storyValidationResult?.ok ? (
+                  <Text color="green.600" fontSize="sm" role="status">
+                    Story rendered.
                   </Text>
                 ) : null}
 
@@ -463,11 +486,26 @@ export function BilingualStoryReaderPageView() {
                       </Text>
                     ))
                   : null}
+
+                {storyValidationResult && !storyValidationResult.ok
+                  ? storyValidationResult.errors.map((error) => (
+                      <Text color="red.600" fontSize="sm" key={error.path} role="alert">
+                        {error.path}: {error.message}
+                      </Text>
+                    ))
+                  : null}
               </VStack>
             </VStack>
           </Card.Body>
         </Card.Root>
       </Grid>
+
+      {storyValidationResult?.ok ? (
+        <RenderedStoryView
+          story={storyValidationResult.value}
+          warnings={storyValidationResult.warnings}
+        />
+      ) : null}
 
       <Card.Root>
         <Card.Body>

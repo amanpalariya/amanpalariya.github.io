@@ -52,7 +52,7 @@ test.describe("Bilingual Story Reader shell", () => {
     await page.getByRole("button", { name: "Render Story" }).click();
 
     await expect(page.getByText("Removed Markdown code fence around the JSON.")).toBeVisible();
-    await expect(page.getByText("JSON parsed. Schema validation comes next.")).toBeVisible();
+    await expect(page.getByText("JSON parsed.")).toBeVisible();
     await expect(page.getByText("JSON parsed").first()).toBeVisible();
 
     await page.getByRole("button", { name: "Format JSON" }).click();
@@ -68,5 +68,46 @@ test.describe("Bilingual Story Reader shell", () => {
     await page.getByRole("button", { name: "Render Story" }).click();
 
     await expect(page.getByText("Line 2, column 3")).toBeVisible();
+  });
+
+  test("validates and renders a basic story", async ({ page }) => {
+    await page.goto("/tools/story-reader");
+
+    await page.getByLabel("Story JSON").fill(
+      JSON.stringify({
+        schemaVersion: "1.0",
+        story: {
+          title: "El tren",
+          targetLanguage: { name: "Spanish", direction: "ltr" },
+          knownLanguage: { name: "English", direction: "ltr" },
+          level: "A1",
+          summary: "A short train-station story.",
+        },
+        paragraphs: [
+          {
+            id: "p1",
+            sentences: [
+              {
+                id: "s1",
+                text: "Lina entra.",
+                naturalTranslation: "Lina enters.",
+                segments: [
+                  { text: "Lina " },
+                  { text: "entra", kind: "word", meaning: "enters" },
+                  { text: "." },
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    );
+    await page.getByRole("button", { name: "Render Story" }).click();
+
+    await expect(page.getByText("Story loaded")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "El tren" })).toBeVisible();
+    await expect(page.getByText("Spanish from English · A1")).toBeVisible();
+    await expect(page.getByText("Paragraph 1 of 1")).toBeVisible();
+    await expect(page.locator("article").getByText("Lina entra.", { exact: true })).toBeVisible();
   });
 });
