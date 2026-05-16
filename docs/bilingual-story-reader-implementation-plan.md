@@ -116,19 +116,19 @@ Status values:
 - [x] Render paragraphs and sentences from the normalized view model.
 - [x] Render sentence text from `segments[].text` only when segments are valid.
 - [x] Render sentence text from `sentence.text` when segments are missing or invalid.
-- [ ] Add active sentence state.
-- [ ] Add remembered reveal level per sentence.
-- [ ] Add `Reset Reveals`.
+- [x] Add active sentence state.
+- [x] Add remembered reveal level per sentence.
+- [x] Add `Reset Reveals`.
 - [x] Add reading progress such as `Paragraph 2 of 5`.
 - [ ] Add paste/read mode switching.
 - [ ] Preserve active sentence and scroll target when switching modes.
 
 ### Phase 6: Sentence Help
 
-- [ ] Implement side panel on desktop and simple bottom help panel on mobile.
-- [ ] Add reveal sequence: `Clue`, `Meaning`, `Translation`, `Why it works`.
-- [ ] Render natural and literal translation according to display order.
-- [ ] Render grammar notes, usage notes, common mistakes, word-by-word rows, and segment morphology under `Why it works`.
+- [x] Implement side panel on desktop and simple bottom help panel on mobile.
+- [x] Add reveal sequence: `Clue`, `Meaning`, `Translation`, `Why it works`.
+- [x] Render natural translation with literal translation when present.
+- [~] Render grammar notes, usage notes, common mistakes, word-by-word rows, and segment morphology under `Why it works`.
 - [ ] Hide missing optional reveal sections instead of showing empty placeholders.
 - [ ] Make `R` reveal the next available help stage when the textarea is not focused.
 - [ ] Return focus to the triggering sentence when help closes.

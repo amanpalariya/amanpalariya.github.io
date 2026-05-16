@@ -132,6 +132,67 @@ test.describe("Bilingual Story Reader shell", () => {
     await expect(page.locator("article").getByText("Lina entra.", { exact: true })).toBeVisible();
   });
 
+  test("reveals sentence help progressively", async ({ page }) => {
+    await page.goto("/tools/bilingual-story-reader");
+
+    await page.getByRole("button", { name: "Show manual paste" }).click();
+    await page.getByLabel("AI response").fill(
+      JSON.stringify({
+        schemaVersion: "1.0",
+        story: {
+          title: "El tren",
+          targetLanguage: { name: "Spanish", direction: "ltr" },
+          knownLanguage: { name: "English", direction: "ltr" },
+          level: "A1",
+        },
+        paragraphs: [
+          {
+            id: "p1",
+            sentences: [
+              {
+                id: "s1",
+                text: "Lina entra.",
+                clue: "A person goes in.",
+                meaning: "Lina enters a place.",
+                naturalTranslation: "Lina enters.",
+                literalTranslation: "Lina enters.",
+                grammarNotes: [
+                  {
+                    topic: "Verb",
+                    explanation: "Entra is a present-tense verb.",
+                  },
+                ],
+                wordByWord: [
+                  { text: "Lina", meaning: "Lina" },
+                  { text: "entra", meaning: "enters" },
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    );
+    await page.getByRole("button", { name: "Read pasted response" }).click();
+
+    await expect(page.getByRole("heading", { name: "El tren" })).toBeVisible();
+    await expect(page.getByText("A person goes in.")).toBeVisible();
+    await expect(page.getByText("Lina enters a place.")).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Reveal next" }).click();
+    await expect(page.getByText("Lina enters a place.")).toBeVisible();
+    await expect(page.getByText("Lina enters.", { exact: true })).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Reveal next" }).click();
+    await expect(page.getByText("Lina enters.", { exact: true })).toBeVisible();
+
+    await page.getByRole("button", { name: "Reveal next" }).click();
+    await expect(page.getByText("Why it works")).toBeVisible();
+    await expect(page.getByText("Entra is a present-tense verb.")).toBeVisible();
+
+    await page.getByRole("button", { name: "Reset Reveals" }).click();
+    await expect(page.getByText("Lina enters a place.")).toHaveCount(0);
+  });
+
   test("auto-reads pasted manual responses and rejects pasted prompts", async ({ page }) => {
     await page.goto("/tools/bilingual-story-reader");
 
