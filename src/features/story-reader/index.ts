@@ -10,4 +10,5 @@ export {
   isStoryReaderSetupComplete,
 } from "./services/prompt-builder";
 export { cleanupExternalAiOutput, parseJsonWithCleanup } from "./services/json-cleanup";
+export { validateStoryReaderSchema } from "./domain/validate-story";
 export type { StoryReaderSetupFormValues } from "./domain/types";

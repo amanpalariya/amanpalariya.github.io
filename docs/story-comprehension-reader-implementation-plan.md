@@ -68,20 +68,20 @@ Status values:
 
 ### Phase 3: Schema Validation And Normalization
 
-- [ ] Validate `schemaVersion` exactly equals `1.0`.
-- [ ] Validate required story fields.
-- [ ] Validate `paragraphs` is a non-empty array.
-- [ ] Validate every paragraph has an id and at least one sentence.
-- [ ] Validate paragraph ids are unique.
-- [ ] Validate every sentence has `id`, `text`, and `naturalTranslation`.
-- [ ] Validate sentence ids are unique.
-- [ ] Validate enum fields only accept allowed values.
-- [ ] Validate segment concatenation after NFC normalization.
-- [ ] Disable vocabulary highlights for invalid segment sets without blocking the story.
-- [ ] Normalize missing optional arrays to empty arrays in the renderable view model.
-- [ ] Normalize missing directions to `auto` with a warning.
+- [x] Validate `schemaVersion` exactly equals `1.0`.
+- [x] Validate required story fields.
+- [x] Validate `paragraphs` is a non-empty array.
+- [x] Validate every paragraph has an id and at least one sentence.
+- [x] Validate paragraph ids are unique.
+- [x] Validate every sentence has `id`, `text`, and `naturalTranslation`.
+- [x] Validate sentence ids are unique.
+- [x] Validate enum fields only accept allowed values.
+- [x] Validate segment concatenation after NFC normalization.
+- [x] Disable vocabulary highlights for invalid segment sets without blocking the story.
+- [x] Normalize missing optional arrays to empty arrays in the renderable view model.
+- [x] Normalize missing directions to `auto` with a warning.
 - [ ] Normalize translation display order from the requested translation style.
-- [ ] Produce one renderable story view model consumed by UI components.
+- [x] Produce one renderable story view model consumed by UI components.
 
 ### Phase 4: Render Warnings And Repair Prompt
 
