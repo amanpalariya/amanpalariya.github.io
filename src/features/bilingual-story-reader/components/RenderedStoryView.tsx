@@ -1,39 +1,33 @@
 "use client";
 
-import { Badge, Box, Button, Card, Grid, HStack, Text, VStack } from "@chakra-ui/react";
-import { useMemo, useState } from "react";
-import type { RenderableSentence, RenderableStory, BilingualStoryReaderWarning } from "../domain/validate-story";
+import {
+  Badge,
+  Box,
+  Card,
+  CloseButton,
+  HStack,
+  Popover,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
+import {
+  type KeyboardEvent,
+  type MouseEvent,
+  type ReactNode,
+  useState,
+} from "react";
+import type {
+  RenderableParagraph,
+  RenderableSegment,
+  RenderableSentence,
+  RenderableStory,
+  BilingualStoryReaderWarning,
+} from "../domain/validate-story";
 
-type RevealLevel = 0 | 1 | 2 | 3;
-
-const MAX_REVEAL_LEVEL: RevealLevel = 3;
-
-function SentenceText({ sentence }: { sentence: RenderableSentence }) {
-  if (!sentence.hasValidSegments) {
-    return <>{sentence.text}</>;
-  }
-
-  return (
-    <>
-      {sentence.segments.map((segment, index) => {
-        const key = `${sentence.id}-${index}-${segment.text}`;
-        if (!segment.kind) return <span key={key}>{segment.text}</span>;
-
-        return (
-          <Box
-            as="span"
-            borderBottom="1px dotted"
-            borderColor="app.fg.subtle"
-            key={key}
-            title={segment.meaning ?? segment.hint ?? undefined}
-          >
-            {segment.text}
-          </Box>
-        );
-      })}
-    </>
-  );
-}
+type HelpSelection =
+  | { type: "sentence"; id: string }
+  | { type: "paragraph"; id: string }
+  | { type: "segment"; sentenceId: string; index: number };
 
 function textFromUnknown(value: unknown, key: string): string | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
@@ -51,130 +45,464 @@ function hasWhyItWorks(sentence: RenderableSentence): boolean {
   );
 }
 
-function SentenceHelpPanel({
-  sentence,
-  revealLevel,
-  onRevealNext,
-  onResetReveals,
+function hasParagraphHelp(paragraph: RenderableParagraph): boolean {
+  return Boolean(
+    paragraph.question ||
+      paragraph.keyPoint ||
+      paragraph.summary ||
+      paragraph.answer,
+  );
+}
+
+function isSameHelpSelection(
+  current: HelpSelection | null,
+  next: HelpSelection,
+): boolean {
+  if (!current || current.type !== next.type) return false;
+  if (current.type === "segment" && next.type === "segment") {
+    return current.sentenceId === next.sentenceId && current.index === next.index;
+  }
+  if (current.type !== "segment" && next.type !== "segment") {
+    return current.id === next.id;
+  }
+  return false;
+}
+
+function segmentSummary(segment: RenderableSegment): string {
+  return (
+    segment.meaning ??
+    segment.hint ??
+    segment.lemma ??
+    segment.partOfSpeech ??
+    "Help is available for this part."
+  );
+}
+
+function PopoverShell({
+  title,
+  closeLabel,
+  onClose,
+  children,
 }: {
-  sentence: RenderableSentence;
-  revealLevel: RevealLevel;
-  onRevealNext: () => void;
-  onResetReveals: () => void;
+  title: string;
+  closeLabel: string;
+  onClose: () => void;
+  children: ReactNode;
 }) {
   return (
-    <Card.Root>
-      <Card.Header>
-        <VStack align="stretch" gap={2}>
-          <Card.Title>Sentence Help</Card.Title>
-          <Text color="app.fg.muted" fontSize="sm">
-            {sentence.text}
-          </Text>
-          <HStack gap={2} wrap="wrap">
-            <Button
-              colorPalette="blue"
-              disabled={revealLevel >= MAX_REVEAL_LEVEL}
-              onClick={onRevealNext}
-              size="sm"
-            >
-              Reveal next
-            </Button>
-            <Button onClick={onResetReveals} size="sm" variant="ghost">
-              Reset Reveals
-            </Button>
+    <Popover.Positioner zIndex={30}>
+      <Popover.Content
+        bg="bg.panel"
+        borderColor="border"
+        borderWidth="1px"
+        maxW="min(360px, calc(100vw - 32px))"
+        p={0}
+        rounded="md"
+        shadow="lg"
+      >
+        <VStack align="stretch" gap={3} p={4}>
+          <HStack align="start" justify="space-between">
+            <Text fontWeight="semibold">{title}</Text>
+            <CloseButton aria-label={closeLabel} size="sm" onClick={onClose} />
           </HStack>
+          {children}
         </VStack>
-      </Card.Header>
-      <Card.Body>
-        <VStack align="stretch" gap={4}>
-          {revealLevel >= 0 && sentence.clue ? (
-            <Box>
-              <Text fontWeight="medium">Clue</Text>
-              <Text color="app.fg.muted" fontSize="sm">
-                {sentence.clue}
-              </Text>
-            </Box>
-          ) : null}
+      </Popover.Content>
+    </Popover.Positioner>
+  );
+}
 
-          {revealLevel >= 1 && sentence.meaning ? (
-            <Box>
-              <Text fontWeight="medium">Meaning</Text>
-              <Text color="app.fg.muted" fontSize="sm">
-                {sentence.meaning}
-              </Text>
-            </Box>
-          ) : null}
+function SentenceHelpContent({ sentence }: { sentence: RenderableSentence }) {
+  return (
+    <>
+      <Text color="app.fg.muted" fontSize="sm">
+        {sentence.text}
+      </Text>
+      <VStack align="stretch" gap={3}>
+        {sentence.clue ? (
+          <Box>
+            <Text fontWeight="medium">Clue</Text>
+            <Text color="app.fg.muted" fontSize="sm">
+              {sentence.clue}
+            </Text>
+          </Box>
+        ) : null}
 
-          {revealLevel >= 2 ? (
-            <Box>
-              <Text fontWeight="medium">Translation</Text>
-              <Text color="app.fg.muted" fontSize="sm">
-                {sentence.naturalTranslation}
-              </Text>
-              {sentence.literalTranslation ? (
-                <Text color="app.fg.subtle" fontSize="sm" mt={1}>
-                  Literal: {sentence.literalTranslation}
+        {sentence.meaning ? (
+          <Box>
+            <Text fontWeight="medium">Meaning</Text>
+            <Text color="app.fg.muted" fontSize="sm">
+              {sentence.meaning}
+            </Text>
+          </Box>
+        ) : null}
+
+        <Box>
+          <Text fontWeight="medium">Translation</Text>
+          <Text color="app.fg.muted" fontSize="sm">
+            {sentence.naturalTranslation}
+          </Text>
+          {sentence.literalTranslation ? (
+            <Text color="app.fg.subtle" fontSize="sm" mt={1}>
+              Literal: {sentence.literalTranslation}
+            </Text>
+          ) : null}
+        </Box>
+
+        {hasWhyItWorks(sentence) ? (
+          <VStack align="stretch" gap={3}>
+            <Text fontWeight="medium">Why it works</Text>
+            {sentence.grammarNotes.map((note, index) => (
+              <Box key={`grammar-${index}`}>
+                <Text fontSize="sm" fontWeight="medium">
+                  {textFromUnknown(note, "topic") ?? "Grammar"}
                 </Text>
-              ) : null}
-            </Box>
-          ) : null}
+                <Text color="app.fg.muted" fontSize="sm">
+                  {textFromUnknown(note, "explanation") ??
+                    textFromUnknown(note, "whyUsedHere") ??
+                    "Grammar note provided."}
+                </Text>
+              </Box>
+            ))}
+            {sentence.usageNotes.map((note, index) => (
+              <Box key={`usage-${index}`}>
+                <Text fontSize="sm" fontWeight="medium">
+                  {textFromUnknown(note, "topic") ?? "Usage"}
+                </Text>
+                <Text color="app.fg.muted" fontSize="sm">
+                  {textFromUnknown(note, "explanation") ?? "Usage note provided."}
+                </Text>
+              </Box>
+            ))}
+            {sentence.commonMistakes.map((mistake, index) => (
+              <Box key={`mistake-${index}`}>
+                <Text fontSize="sm" fontWeight="medium">
+                  Common mistake
+                </Text>
+                <Text color="app.fg.muted" fontSize="sm">
+                  {textFromUnknown(mistake, "mistake") ?? "Mistake"} →{" "}
+                  {textFromUnknown(mistake, "correction") ?? "Correction"}
+                </Text>
+              </Box>
+            ))}
+            {sentence.wordByWord.length > 0 ? (
+              <Box>
+                <Text fontSize="sm" fontWeight="medium">
+                  Word by word
+                </Text>
+                <VStack align="stretch" gap={1} mt={1}>
+                  {sentence.wordByWord.map((part, index) => (
+                    <Text color="app.fg.muted" fontSize="sm" key={`word-${index}`}>
+                      {textFromUnknown(part, "text") ?? "?"}:{" "}
+                      {textFromUnknown(part, "meaning") ?? "?"}
+                    </Text>
+                  ))}
+                </VStack>
+              </Box>
+            ) : null}
+          </VStack>
+        ) : null}
+      </VStack>
+    </>
+  );
+}
 
-          {revealLevel >= 3 && hasWhyItWorks(sentence) ? (
-            <VStack align="stretch" gap={3}>
-              <Text fontWeight="medium">Why it works</Text>
-              {sentence.grammarNotes.map((note, index) => (
-                <Box key={`grammar-${index}`}>
-                  <Text fontSize="sm" fontWeight="medium">
-                    {textFromUnknown(note, "topic") ?? "Grammar"}
-                  </Text>
-                  <Text color="app.fg.muted" fontSize="sm">
-                    {textFromUnknown(note, "explanation") ??
-                      textFromUnknown(note, "whyUsedHere") ??
-                      "Grammar note provided."}
-                  </Text>
-                </Box>
-              ))}
-              {sentence.usageNotes.map((note, index) => (
-                <Box key={`usage-${index}`}>
-                  <Text fontSize="sm" fontWeight="medium">
-                    {textFromUnknown(note, "topic") ?? "Usage"}
-                  </Text>
-                  <Text color="app.fg.muted" fontSize="sm">
-                    {textFromUnknown(note, "explanation") ?? "Usage note provided."}
-                  </Text>
-                </Box>
-              ))}
-              {sentence.commonMistakes.map((mistake, index) => (
-                <Box key={`mistake-${index}`}>
-                  <Text fontSize="sm" fontWeight="medium">
-                    Common mistake
-                  </Text>
-                  <Text color="app.fg.muted" fontSize="sm">
-                    {textFromUnknown(mistake, "mistake") ?? "Mistake"} →{" "}
-                    {textFromUnknown(mistake, "correction") ?? "Correction"}
-                  </Text>
-                </Box>
-              ))}
-              {sentence.wordByWord.length > 0 ? (
-                <Box>
-                  <Text fontSize="sm" fontWeight="medium">
-                    Word by word
-                  </Text>
-                  <VStack align="stretch" gap={1} mt={1}>
-                    {sentence.wordByWord.map((part, index) => (
-                      <Text color="app.fg.muted" fontSize="sm" key={`word-${index}`}>
-                        {textFromUnknown(part, "text") ?? "?"}:{" "}
-                        {textFromUnknown(part, "meaning") ?? "?"}
-                      </Text>
-                    ))}
-                  </VStack>
-                </Box>
-              ) : null}
-            </VStack>
+function SegmentHelpContent({ segment }: { segment: RenderableSegment }) {
+  return (
+    <VStack align="stretch" gap={3}>
+      <Text color="app.fg.muted" fontSize="sm">
+        {segmentSummary(segment)}
+      </Text>
+      {segment.lemma ? (
+        <Box>
+          <Text fontWeight="medium">Lemma</Text>
+          <Text color="app.fg.muted" fontSize="sm">
+            {segment.lemma}
+          </Text>
+        </Box>
+      ) : null}
+      {segment.partOfSpeech ? (
+        <Box>
+          <Text fontWeight="medium">Part of speech</Text>
+          <Text color="app.fg.muted" fontSize="sm">
+            {segment.partOfSpeech}
+          </Text>
+        </Box>
+      ) : null}
+      {segment.romanization || segment.pronunciation ? (
+        <Box>
+          <Text fontWeight="medium">Sound</Text>
+          {segment.romanization ? (
+            <Text color="app.fg.muted" fontSize="sm">
+              Romanization: {segment.romanization}
+            </Text>
           ) : null}
-        </VStack>
-      </Card.Body>
-    </Card.Root>
+          {segment.pronunciation ? (
+            <Text color="app.fg.muted" fontSize="sm">
+              Pronunciation: {segment.pronunciation}
+            </Text>
+          ) : null}
+        </Box>
+      ) : null}
+      {segment.wordBreakdown || segment.scriptNote ? (
+        <Box>
+          <Text fontWeight="medium">Note</Text>
+          {segment.wordBreakdown ? (
+            <Text color="app.fg.muted" fontSize="sm">
+              {segment.wordBreakdown}
+            </Text>
+          ) : null}
+          {segment.scriptNote ? (
+            <Text color="app.fg.muted" fontSize="sm">
+              {segment.scriptNote}
+            </Text>
+          ) : null}
+        </Box>
+      ) : null}
+    </VStack>
+  );
+}
+
+function ParagraphHelpContent({ paragraph }: { paragraph: RenderableParagraph }) {
+  return (
+    <VStack align="stretch" gap={3}>
+      {paragraph.question ? (
+        <Box>
+          <Text fontWeight="medium">Question</Text>
+          <Text color="app.fg.muted" fontSize="sm">
+            {paragraph.question}
+          </Text>
+        </Box>
+      ) : null}
+      {paragraph.keyPoint ? (
+        <Box>
+          <Text fontWeight="medium">Key point</Text>
+          <Text color="app.fg.muted" fontSize="sm">
+            {paragraph.keyPoint}
+          </Text>
+        </Box>
+      ) : null}
+      {paragraph.summary ? (
+        <Box>
+          <Text fontWeight="medium">Summary</Text>
+          <Text color="app.fg.muted" fontSize="sm">
+            {paragraph.summary}
+          </Text>
+        </Box>
+      ) : null}
+      {paragraph.answer ? (
+        <Box>
+          <Text fontWeight="medium">Answer</Text>
+          <Text color="app.fg.muted" fontSize="sm">
+            {paragraph.answer}
+          </Text>
+        </Box>
+      ) : null}
+    </VStack>
+  );
+}
+
+function SegmentText({
+  sentence,
+  segment,
+  index,
+  helpSelection,
+  setHelpSelection,
+}: {
+  sentence: RenderableSentence;
+  segment: RenderableSegment;
+  index: number;
+  helpSelection: HelpSelection | null;
+  setHelpSelection: (selection: HelpSelection | null) => void;
+}) {
+  const selection = { type: "segment", sentenceId: sentence.id, index } as const;
+  const isOpen = isSameHelpSelection(helpSelection, selection);
+
+  if (!segment.kind) return <span>{segment.text}</span>;
+
+  function openSegmentHelp(
+    event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>,
+  ): void {
+    event.stopPropagation();
+    setHelpSelection(selection);
+  }
+
+  return (
+    <Popover.Root
+      lazyMount
+      open={isOpen}
+      onOpenChange={(details) => setHelpSelection(details.open ? selection : null)}
+      positioning={{ placement: "top", gutter: 8 }}
+      unmountOnExit
+    >
+      <Popover.Trigger asChild>
+        <Box
+          aria-label={`${segment.text} help`}
+          as="span"
+          borderBottom="1px dotted"
+          borderColor={isOpen ? "blue.500" : "app.fg.subtle"}
+          cursor="help"
+          fontWeight={isOpen ? "semibold" : "inherit"}
+          onClick={openSegmentHelp}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") openSegmentHelp(event);
+          }}
+          role="button"
+          tabIndex={0}
+        >
+          {segment.text}
+        </Box>
+      </Popover.Trigger>
+      <PopoverShell
+        closeLabel="Close word help"
+        onClose={() => setHelpSelection(null)}
+        title={segment.text}
+      >
+        <SegmentHelpContent segment={segment} />
+      </PopoverShell>
+    </Popover.Root>
+  );
+}
+
+function SentenceText({
+  sentence,
+  helpSelection,
+  setHelpSelection,
+}: {
+  sentence: RenderableSentence;
+  helpSelection: HelpSelection | null;
+  setHelpSelection: (selection: HelpSelection | null) => void;
+}) {
+  if (!sentence.hasValidSegments) return <>{sentence.text}</>;
+
+  return (
+    <>
+      {sentence.segments.map((segment, index) => (
+        <SegmentText
+          helpSelection={helpSelection}
+          index={index}
+          key={`${sentence.id}-${index}-${segment.text}`}
+          segment={segment}
+          sentence={sentence}
+          setHelpSelection={setHelpSelection}
+        />
+      ))}
+    </>
+  );
+}
+
+function StorySentence({
+  sentence,
+  helpSelection,
+  setHelpSelection,
+}: {
+  sentence: RenderableSentence;
+  helpSelection: HelpSelection | null;
+  setHelpSelection: (selection: HelpSelection | null) => void;
+}) {
+  const selection = { type: "sentence", id: sentence.id } as const;
+  const isOpen = isSameHelpSelection(helpSelection, selection);
+
+  return (
+    <Popover.Root
+      lazyMount
+      open={isOpen}
+      onOpenChange={(details) => setHelpSelection(details.open ? selection : null)}
+      positioning={{ placement: "bottom-start", gutter: 8 }}
+      unmountOnExit
+    >
+      <Popover.Trigger asChild>
+        <Box
+          aria-label={`${sentence.text} sentence help`}
+          aria-pressed={isOpen}
+          as="span"
+          bg={isOpen ? "bg.subtle" : "transparent"}
+          borderBottomWidth={isOpen ? "1px" : "0"}
+          borderColor="blue.500"
+          color="inherit"
+          cursor="help"
+          display="inline"
+          mr={2}
+          onClick={() => setHelpSelection(selection)}
+          onDoubleClick={(event) => {
+            event.preventDefault();
+            setHelpSelection(selection);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              setHelpSelection(selection);
+            }
+          }}
+          px={isOpen ? 1 : 0}
+          role="button"
+          tabIndex={0}
+          textAlign="start"
+        >
+          <SentenceText
+            helpSelection={helpSelection}
+            sentence={sentence}
+            setHelpSelection={setHelpSelection}
+          />
+        </Box>
+      </Popover.Trigger>
+      <PopoverShell
+        closeLabel="Close sentence help"
+        onClose={() => setHelpSelection(null)}
+        title="Sentence Help"
+      >
+        <SentenceHelpContent sentence={sentence} />
+      </PopoverShell>
+    </Popover.Root>
+  );
+}
+
+function ParagraphHelp({
+  paragraph,
+  helpSelection,
+  setHelpSelection,
+}: {
+  paragraph: RenderableParagraph;
+  helpSelection: HelpSelection | null;
+  setHelpSelection: (selection: HelpSelection | null) => void;
+}) {
+  const selection = { type: "paragraph", id: paragraph.id } as const;
+  const isOpen = isSameHelpSelection(helpSelection, selection);
+
+  return (
+    <Popover.Root
+      lazyMount
+      open={isOpen}
+      onOpenChange={(details) => setHelpSelection(details.open ? selection : null)}
+      positioning={{ placement: "bottom-start", gutter: 8 }}
+      unmountOnExit
+    >
+      <Popover.Trigger asChild>
+        <Box
+          aria-label="Check paragraph"
+          as="button"
+          bg={isOpen ? "bg.subtle" : "transparent"}
+          borderColor="border"
+          borderWidth="1px"
+          color="inherit"
+          cursor="help"
+          fontSize="sm"
+          mt={3}
+          px={3}
+          py={1.5}
+          rounded="md"
+        >
+          Check paragraph
+        </Box>
+      </Popover.Trigger>
+      <PopoverShell
+        closeLabel="Close paragraph check"
+        onClose={() => setHelpSelection(null)}
+        title="Paragraph Check"
+      >
+        <ParagraphHelpContent paragraph={paragraph} />
+      </PopoverShell>
+    </Popover.Root>
   );
 }
 
@@ -189,34 +517,7 @@ export function RenderedStoryView({
     (count, paragraph) => count + paragraph.sentences.length,
     0,
   );
-  const sentences = useMemo(
-    () => story.paragraphs.flatMap((paragraph) => paragraph.sentences),
-    [story.paragraphs],
-  );
-  const [activeSentenceId, setActiveSentenceId] = useState(
-    () => sentences[0]?.id ?? "",
-  );
-  const [revealLevels, setRevealLevels] = useState<Record<string, RevealLevel>>({});
-  const activeSentence =
-    sentences.find((sentence) => sentence.id === activeSentenceId) ?? sentences[0];
-  const activeRevealLevel = activeSentence
-    ? revealLevels[activeSentence.id] ?? 0
-    : 0;
-
-  function revealNext(): void {
-    if (!activeSentence) return;
-    setRevealLevels((current) => ({
-      ...current,
-      [activeSentence.id]: Math.min(
-        MAX_REVEAL_LEVEL,
-        (current[activeSentence.id] ?? 0) + 1,
-      ) as RevealLevel,
-    }));
-  }
-
-  function resetReveals(): void {
-    setRevealLevels({});
-  }
+  const [helpSelection, setHelpSelection] = useState<HelpSelection | null>(null);
 
   return (
     <Card.Root>
@@ -256,55 +557,37 @@ export function RenderedStoryView({
         </VStack>
       </Card.Header>
       <Card.Body>
-        <Grid templateColumns={["1fr", null, "minmax(0, 1fr) 320px"]} gap={5}>
-          <VStack
-            align="stretch"
-            as="article"
-            dir={story.story.targetLanguage.direction}
-            gap={5}
-          >
-            {story.paragraphs.map((paragraph, paragraphIndex) => (
-              <Box key={paragraph.id}>
-                <Text color="app.fg.muted" fontSize="xs" mb={2}>
-                  Paragraph {paragraphIndex + 1} of {story.paragraphs.length}
-                </Text>
-                <Text fontSize="lg" lineHeight="1.9">
-                  {paragraph.sentences.map((sentence) => {
-                    const isActive = sentence.id === activeSentence?.id;
-                    return (
-                      <Box
-                        aria-pressed={isActive}
-                        as="button"
-                        bg={isActive ? "bg.subtle" : "transparent"}
-                        borderLeftWidth={isActive ? "3px" : "0"}
-                        borderColor="blue.500"
-                        color="inherit"
-                        cursor="pointer"
-                        display="inline"
-                        key={sentence.id}
-                        mr={2}
-                        onClick={() => setActiveSentenceId(sentence.id)}
-                        px={isActive ? 1 : 0}
-                        textAlign="start"
-                      >
-                        <SentenceText sentence={sentence} />
-                      </Box>
-                    );
-                  })}
-                </Text>
-              </Box>
-            ))}
-          </VStack>
-
-          {activeSentence ? (
-            <SentenceHelpPanel
-              onResetReveals={resetReveals}
-              onRevealNext={revealNext}
-              revealLevel={activeRevealLevel}
-              sentence={activeSentence}
-            />
-          ) : null}
-        </Grid>
+        <VStack
+          align="stretch"
+          as="article"
+          dir={story.story.targetLanguage.direction}
+          gap={5}
+        >
+          {story.paragraphs.map((paragraph, paragraphIndex) => (
+            <Box key={paragraph.id}>
+              <Text color="app.fg.muted" fontSize="xs" mb={2}>
+                Paragraph {paragraphIndex + 1} of {story.paragraphs.length}
+              </Text>
+              <Text fontSize="lg" lineHeight="1.9">
+                {paragraph.sentences.map((sentence) => (
+                  <StorySentence
+                    helpSelection={helpSelection}
+                    key={sentence.id}
+                    sentence={sentence}
+                    setHelpSelection={setHelpSelection}
+                  />
+                ))}
+              </Text>
+              {hasParagraphHelp(paragraph) ? (
+                <ParagraphHelp
+                  helpSelection={helpSelection}
+                  paragraph={paragraph}
+                  setHelpSelection={setHelpSelection}
+                />
+              ) : null}
+            </Box>
+          ))}
+        </VStack>
       </Card.Body>
     </Card.Root>
   );

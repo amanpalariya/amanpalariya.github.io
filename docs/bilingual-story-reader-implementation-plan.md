@@ -17,13 +17,14 @@ This plan turns `docs/bilingual-story-reader-design.md` into a working tool in s
 - Paste response should not consume a full column. Use a toolbar clipboard action first and a compact manual paste fallback, following EPUB Maker’s Add-from-clipboard/manual-paste pattern.
 - Detect and reject the generated prompt when it is pasted into the response path; otherwise the embedded schema example can look like a real story and confuse users.
 - Hide setup and paste panels after a valid story loads so reading is immersive.
+- Do not use persistent or layout-shifting help. Keep the story full width and show sentence, word/phrase, and paragraph help only as closeable popovers on hover/click/double-click/tap/focus.
 
 ## Goals
 
 - Build `/tools/bilingual-story-reader/` as a browser-only language-learning reader.
 - Keep prompt generation, AI response parsing, validation, normalization, warnings, and UI rendering separated.
 - Make malformed external-AI output recoverable without making the reader components defensive everywhere.
-- Preserve a calm reading experience while supporting progressive help.
+- Preserve a calm reading experience with just-in-time popover help.
 - Add enough unit, functional, and accessibility coverage to make future schema changes safe.
 
 ## Non-Goals For The First Pass
@@ -116,33 +117,30 @@ Status values:
 - [x] Render paragraphs and sentences from the normalized view model.
 - [x] Render sentence text from `segments[].text` only when segments are valid.
 - [x] Render sentence text from `sentence.text` when segments are missing or invalid.
-- [x] Add active sentence state.
-- [x] Add remembered reveal level per sentence.
-- [x] Add `Reset Reveals`.
+- [x] Add selected help state.
+- [x] Remove staged reveal state and `Reset Reveals`; help popovers show the available help immediately.
 - [x] Add reading progress such as `Paragraph 2 of 5`.
 - [ ] Add paste/read mode switching.
 - [ ] Preserve active sentence and scroll target when switching modes.
 
 ### Phase 6: Sentence Help
 
-- [x] Implement side panel on desktop and simple bottom help panel on mobile.
-- [x] Add reveal sequence: `Clue`, `Meaning`, `Translation`, `Why it works`.
+- [x] Replace side panel/bottom panel with closeable popovers.
+- [x] Show `Clue`, `Meaning`, `Translation`, and `Why it works` when available without `Reveal next`.
 - [x] Render natural translation with literal translation when present.
 - [~] Render grammar notes, usage notes, common mistakes, word-by-word rows, and segment morphology under `Why it works`.
 - [ ] Hide missing optional reveal sections instead of showing empty placeholders.
-- [ ] Make `R` reveal the next available help stage when the textarea is not focused.
 - [ ] Return focus to the triggering sentence when help closes.
 
 ### Phase 7: Vocabulary And Paragraph Help
 
-- [ ] Render hintable segments with dotted underline and keyboard focus.
-- [ ] Avoid nested button markup inside sentence controls.
-- [ ] Open vocabulary popover on desktop.
+- [x] Render hintable segments with dotted underline and keyboard focus.
+- [x] Avoid nested native button markup inside sentence controls.
+- [x] Open vocabulary popover.
 - [ ] Open vocabulary help in the bottom panel on mobile.
-- [ ] Render lemma, part of speech, meaning, hint, pronunciation/romanization, and story fragment when available.
-- [ ] Add paragraph `Check paragraph` controls only when paragraph help exists.
-- [ ] Render paragraph question first, then reveal key point, summary, and answer.
-- [ ] Remember paragraph reveal state by paragraph id.
+- [x] Render lemma, part of speech, meaning, hint, pronunciation/romanization, and notes when available.
+- [x] Add paragraph `Check paragraph` controls only when paragraph help exists.
+- [x] Render paragraph question, key point, summary, and answer in a popover.
 
 ### Phase 8: Mobile And Accessibility Hardening
 
@@ -451,12 +449,10 @@ Use Playwright for user-visible workflows.
 ### Reader Flow
 
 - Rendered story shows title, language pair, level, progress, and paragraphs.
-- Clicking a sentence opens sentence help.
-- Reveal action advances from `Clue` to `Meaning` to `Translation` to `Why it works`.
-- Returning to a sentence preserves reveal level.
-- `Reset Reveals` resets sentence reveal state.
-- Vocabulary segment opens help on desktop.
-- Paragraph check shows question first and reveals clue, summary, and answer.
+- Clicking or double-clicking a sentence opens sentence help in a popover; highlighted word/phrase clicks open word help.
+- Sentence help shows available clue, meaning, translation, and explanation without staged reveal controls.
+- Vocabulary segment opens word/phrase help in a popover.
+- Paragraph check shows question, key point, summary, and answer in a popover.
 - Warning count opens or reveals warning details.
 
 ### Keyboard Flow

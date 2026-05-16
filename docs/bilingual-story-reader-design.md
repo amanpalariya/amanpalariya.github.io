@@ -15,6 +15,7 @@
 - Paste response must not occupy a permanent half-page panel. Follow EPUB Maker: primary toolbar paste action first, with compact manual paste fallback only when the user opens it or clipboard access fails.
 - If the user accidentally pastes the copied prompt back into the response area, do not parse or render the prompt’s embedded schema example. Show a warning asking for the AI assistant’s response instead.
 - Once a valid story is loaded, hide setup, copy, and paste controls so the reading experience is immersive. The reader toolbar should show `Adjust Prompt` and `New Story`.
+- Help must not be persistent or layout-shifting. The story gets full reading width; sentence, word/phrase, and paragraph help appears only in closeable popovers on hover/click/double-click/tap/focus.
 
 ## Goal
 
@@ -190,15 +191,14 @@ Word or phrase help:
 Sentence help:
 
 - Used when the user needs to understand the whole sentence.
-- Opens in the sticky right panel on desktop.
-- Opens in the bottom help sheet on mobile.
-- Starts with a clue and meaning instead of immediately showing the full translation.
+- Opens in a compact popover anchored to the selected sentence.
+- Shows available clue, meaning, translation, and explanation together; no progressive `Reveal next` workflow.
 
 Paragraph help:
 
 - Used after the user has read a paragraph and wants to verify comprehension.
 - Appears as a small `Check paragraph` button after the paragraph.
-- Opens the same side panel or bottom sheet with summary, key events, and optional paragraph-level question.
+- Opens a compact popover with summary, key events, and optional paragraph-level question.
 
 ### Sentence Help
 
@@ -213,25 +213,18 @@ Hover or focus:
 - The cursor indicates the sentence can be selected.
 - A small inline icon button appears at the sentence end when there is enough room.
 
-Click or Enter:
+Click, double-click, or Enter:
 
-- Opens the sentence help panel.
-- Shows the shortest useful clue first.
-
-Reveal sequence in the sentence panel:
-
-1. `Clue`: one short clue about the meaning.
-2. `Meaning`: what the sentence is saying without a full translation.
-3. `Translation`: natural translation, and literal translation when requested.
-4. `Why it works`: grammar, usage, morphology, or word-order explanation when available.
-
-The user can reveal all for a sentence, but the default should encourage comprehension before full translation. Reveal level is remembered per sentence, so returning to a sentence preserves what the user already opened.
+- Opens a sentence help popover.
+- When highlighted word/phrase help is present, single-click can open word help and double-click can open sentence help.
+- Shows the available clue, meaning, translation, and `Why it works` details without requiring staged reveals.
+- Closing the popover returns the reader to the full-width story without shifting paragraph layout.
 
 ### Vocabulary Help
 
 Vocabulary items and useful phrases appear as subtle dotted underlines inside the story. The AI-provided AI response should mark these as sentence `segments` so the UI does not need to guess which repeated word should receive a hint.
 
-Hover, focus, or tap opens a small popover:
+Hover, focus, click, or tap opens a small popover:
 
 - lemma or dictionary form
 - part of speech
@@ -239,7 +232,7 @@ Hover, focus, or tap opens a small popover:
 - pronunciation or transliteration when available
 - example phrase from the story
 
-The popover must not cover the current sentence on mobile. On narrow screens, use the bottom help panel instead of a floating popover.
+The popover should stay compact and must not permanently reduce the story reading area.
 
 ### Paragraph Check
 
@@ -250,12 +243,7 @@ Each paragraph may include optional paragraph-level help:
 - `question`: a comprehension check for that paragraph.
 - `answer`: the expected answer.
 
-The paragraph help should not be shown automatically. After the paragraph, render a compact `Check paragraph` button. When clicked, show:
-
-1. the question first, if present
-2. a `Show clue` action for the key point
-3. a `Show summary` action
-4. a `Show answer` action
+The paragraph help should not be shown automatically. After the paragraph, render a compact `Check paragraph` button. When clicked, show the available question, key point, summary, and answer in a popover. Do not add staged reveal controls for paragraph help.
 
 This keeps paragraph-level help from interrupting normal reading.
 

@@ -132,7 +132,7 @@ test.describe("Bilingual Story Reader shell", () => {
     await expect(page.locator("article").getByText("Lina entra.", { exact: true })).toBeVisible();
   });
 
-  test("reveals sentence help progressively", async ({ page }) => {
+  test("shows sentence and word help in popovers", async ({ page }) => {
     await page.goto("/tools/bilingual-story-reader");
 
     await page.getByRole("button", { name: "Show manual paste" }).click();
@@ -166,6 +166,17 @@ test.describe("Bilingual Story Reader shell", () => {
                   { text: "Lina", meaning: "Lina" },
                   { text: "entra", meaning: "enters" },
                 ],
+                segments: [
+                  { text: "Lina ", kind: "word", meaning: "Lina" },
+                  {
+                    text: "entra",
+                    kind: "word",
+                    lemma: "entrar",
+                    partOfSpeech: "verb",
+                    meaning: "enters",
+                  },
+                  { text: "." },
+                ],
               },
             ],
           },
@@ -175,22 +186,69 @@ test.describe("Bilingual Story Reader shell", () => {
     await page.getByRole("button", { name: "Read pasted response" }).click();
 
     await expect(page.getByRole("heading", { name: "El tren" })).toBeVisible();
+    await expect(page.getByText("Sentence Help")).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Lina entra. sentence help" }).dblclick();
     await expect(page.getByText("A person goes in.")).toBeVisible();
-    await expect(page.getByText("Lina enters a place.")).toHaveCount(0);
-
-    await page.getByRole("button", { name: "Reveal next" }).click();
     await expect(page.getByText("Lina enters a place.")).toBeVisible();
-    await expect(page.getByText("Lina enters.", { exact: true })).toHaveCount(0);
-
-    await page.getByRole("button", { name: "Reveal next" }).click();
     await expect(page.getByText("Lina enters.", { exact: true })).toBeVisible();
-
-    await page.getByRole("button", { name: "Reveal next" }).click();
     await expect(page.getByText("Why it works")).toBeVisible();
     await expect(page.getByText("Entra is a present-tense verb.")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Reveal next" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Reset Reveals" })).toHaveCount(0);
 
-    await page.getByRole("button", { name: "Reset Reveals" }).click();
-    await expect(page.getByText("Lina enters a place.")).toHaveCount(0);
+    await page.getByRole("button", { name: "Close sentence help" }).click();
+    await expect(page.getByText("Sentence Help")).toHaveCount(0);
+
+    await page.getByRole("button", { name: "entra help" }).click();
+    await expect(page.getByText("entrar")).toBeVisible();
+    await expect(page.getByText("verb")).toBeVisible();
+    await page.getByRole("button", { name: "Close word help" }).click();
+    await expect(page.getByText("entrar")).toHaveCount(0);
+  });
+
+  test("shows paragraph checks in a popover", async ({ page }) => {
+    await page.goto("/tools/bilingual-story-reader");
+
+    await page.getByRole("button", { name: "Show manual paste" }).click();
+    await page.getByLabel("AI response").fill(
+      JSON.stringify({
+        schemaVersion: "1.0",
+        story: {
+          title: "El parque",
+          targetLanguage: { name: "Spanish", direction: "ltr" },
+          knownLanguage: { name: "English", direction: "ltr" },
+          level: "A1",
+        },
+        paragraphs: [
+          {
+            id: "p1",
+            summary: "Ana finds a quiet place in the park.",
+            keyPoint: "Ana is in the park and sees a bench.",
+            question: "Where is Ana?",
+            answer: "Ana is in the park.",
+            sentences: [
+              {
+                id: "s1",
+                text: "Ana está en el parque.",
+                naturalTranslation: "Ana is in the park.",
+              },
+            ],
+          },
+        ],
+      }),
+    );
+    await page.getByRole("button", { name: "Read pasted response" }).click();
+
+    await page.getByRole("button", { name: "Check paragraph" }).click();
+    await expect(page.getByText("Where is Ana?")).toBeVisible();
+    await expect(page.getByText("Ana is in the park and sees a bench.")).toBeVisible();
+    await expect(page.getByText("Ana finds a quiet place in the park.")).toBeVisible();
+    await expect(page.getByText("Ana is in the park.", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Reveal next" })).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Close paragraph check" }).click();
+    await expect(page.getByText("Where is Ana?")).toHaveCount(0);
   });
 
   test("auto-reads pasted manual responses and rejects pasted prompts", async ({ page }) => {
