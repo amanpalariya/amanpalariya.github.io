@@ -43,4 +43,30 @@ test.describe("Bilingual Story Reader shell", () => {
       .poll(() => page.evaluate(() => navigator.clipboard.readText()))
       .toContain("language-learning reading story");
   });
+
+  test("parses, formats, and reports JSON paste results", async ({ page }) => {
+    await page.goto("/tools/story-reader");
+
+    const storyJson = page.getByLabel("Story JSON");
+    await storyJson.fill('```json\n{"schemaVersion":"1.0","story":{"title":"Hola"}}\n```');
+    await page.getByRole("button", { name: "Render Story" }).click();
+
+    await expect(page.getByText("Removed Markdown code fence around the JSON.")).toBeVisible();
+    await expect(page.getByText("JSON parsed. Schema validation comes next.")).toBeVisible();
+    await expect(page.getByText("JSON parsed").first()).toBeVisible();
+
+    await page.getByRole("button", { name: "Format JSON" }).click();
+    await expect(storyJson).toHaveValue(
+      '{\n  "schemaVersion": "1.0",\n  "story": {\n    "title": "Hola"\n  }\n}\n',
+    );
+  });
+
+  test("shows a plain error for invalid JSON", async ({ page }) => {
+    await page.goto("/tools/story-reader");
+
+    await page.getByLabel("Story JSON").fill('{"schemaVersion":"1.0"\n  "story": {}}');
+    await page.getByRole("button", { name: "Render Story" }).click();
+
+    await expect(page.getByText("Line 2, column 3")).toBeVisible();
+  });
 });

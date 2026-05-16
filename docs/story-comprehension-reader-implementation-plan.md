@@ -56,15 +56,15 @@ Status values:
 
 ### Phase 2: JSON Input, Cleanup, And Parsing
 
-- [ ] Implement raw JSON textarea state.
-- [ ] Implement `Format JSON` for valid parsed content.
+- [x] Implement raw JSON textarea state.
+- [x] Implement `Format JSON` for valid parsed content.
 - [x] Implement common AI-wrapper cleanup.
 - [x] Strip Markdown JSON fences.
 - [x] Trim surrounding prose using a conservative string-aware JSON object scanner.
-- [ ] Preserve raw pasted text separately from cleaned JSON text.
+- [x] Preserve raw pasted text separately from cleaned JSON text.
 - [x] Parse JSON safely and return line/column syntax errors when possible.
 - [x] Add invalid JSON validation output in plain language.
-- [ ] Validate that cleanup warnings render without blocking valid cleaned JSON.
+- [x] Validate that cleanup warnings render without blocking valid cleaned JSON.
 
 ### Phase 3: Schema Validation And Normalization
 

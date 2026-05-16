@@ -34,6 +34,7 @@ import {
   isStoryReaderSetupComplete,
 } from "../services/prompt-builder";
 import { writeTextToClipboard } from "../services/clipboard";
+import { parseJsonWithCleanup, type JsonParseResult } from "../services/json-cleanup";
 
 type TextFieldName = Exclude<
   keyof StoryReaderSetupFormValues,
@@ -47,6 +48,10 @@ export function BilingualStoryReaderPageView() {
   );
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">(
     "idle",
+  );
+  const [rawJsonText, setRawJsonText] = useState("");
+  const [jsonParseResult, setJsonParseResult] = useState<JsonParseResult | null>(
+    null,
   );
 
   const prompt = useMemo(() => buildStoryReaderPrompt(setup), [setup]);
@@ -82,6 +87,19 @@ export function BilingualStoryReaderPageView() {
     window.setTimeout(() => setCopyStatus("idle"), 1800);
   }
 
+  function renderJson(): void {
+    setJsonParseResult(parseJsonWithCleanup(rawJsonText));
+  }
+
+  function formatJson(): void {
+    const result = parseJsonWithCleanup(rawJsonText);
+    setJsonParseResult(result);
+
+    if (result.ok) {
+      setRawJsonText(`${JSON.stringify(result.value, null, 2)}\n`);
+    }
+  }
+
   return (
     <VStack align="stretch" gap={5} px={[4, 6]} pb={6}>
       <Flex
@@ -103,7 +121,7 @@ export function BilingualStoryReaderPageView() {
           </Button>
         </HStack>
         <Badge colorPalette="gray" alignSelf={["flex-start", "center"]}>
-          No story loaded
+          {jsonParseResult?.ok ? "JSON parsed" : "No story loaded"}
         </Badge>
       </Flex>
       {copyStatus === "copied" ? (
@@ -387,21 +405,65 @@ export function BilingualStoryReaderPageView() {
           <Card.Body>
             <VStack align="stretch" gap={4}>
               <Field label="Story JSON">
-                <Textarea minH="xs" placeholder='{"schemaVersion":"1.0", ...}' />
+                <Textarea
+                  aria-describedby="story-json-validation"
+                  aria-label="Story JSON"
+                  minH="xs"
+                  placeholder='{"schemaVersion":"1.0", ...}'
+                  value={rawJsonText}
+                  onChange={(event) => {
+                    setRawJsonText(event.currentTarget.value);
+                    setJsonParseResult(null);
+                  }}
+                />
               </Field>
 
               <HStack gap={2} wrap="wrap">
-                <Button colorPalette="blue" disabled>
+                <Button
+                  colorPalette="blue"
+                  disabled={!rawJsonText.trim()}
+                  onClick={renderJson}
+                >
                   Render Story
                 </Button>
-                <Button variant="outline" disabled>
+                <Button
+                  variant="outline"
+                  disabled={!rawJsonText.trim()}
+                  onClick={formatJson}
+                >
                   Format JSON
                 </Button>
               </HStack>
 
-              <Text color="app.fg.muted" fontSize="sm">
-                Validation results will appear here after JSON parsing is implemented.
-              </Text>
+              <VStack align="stretch" gap={2} id="story-json-validation">
+                {!jsonParseResult ? (
+                  <Text color="app.fg.muted" fontSize="sm">
+                    JSON parsing results will appear here.
+                  </Text>
+                ) : null}
+
+                {jsonParseResult?.warnings.map((warning) => (
+                  <Text color="orange.600" fontSize="sm" key={warning.code} role="status">
+                    {warning.message}
+                  </Text>
+                ))}
+
+                {jsonParseResult?.ok ? (
+                  <Text color="green.600" fontSize="sm" role="status">
+                    JSON parsed. Schema validation comes next.
+                  </Text>
+                ) : null}
+
+                {jsonParseResult && !jsonParseResult.ok
+                  ? jsonParseResult.errors.map((error) => (
+                      <Text color="red.600" fontSize="sm" key={error.message} role="alert">
+                        {error.line && error.column
+                          ? `${error.message} Line ${error.line}, column ${error.column}.`
+                          : error.message}
+                      </Text>
+                    ))
+                  : null}
+              </VStack>
             </VStack>
           </Card.Body>
         </Card.Root>
