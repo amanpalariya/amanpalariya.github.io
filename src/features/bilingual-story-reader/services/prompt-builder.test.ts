@@ -13,8 +13,14 @@ const completeSetup = {
 };
 
 describe("bilingual story reader prompt builder", () => {
-  it("requires known language, target language, and theme", () => {
-    expect(isBilingualStoryReaderSetupComplete(DEFAULT_BILINGUAL_STORY_READER_SETUP)).toBe(false);
+  it("requires only known language and target language", () => {
+    expect(isBilingualStoryReaderSetupComplete(DEFAULT_BILINGUAL_STORY_READER_SETUP)).toBe(true);
+    expect(
+      isBilingualStoryReaderSetupComplete({
+        ...DEFAULT_BILINGUAL_STORY_READER_SETUP,
+        targetLanguage: "",
+      }),
+    ).toBe(false);
     expect(isBilingualStoryReaderSetupComplete(completeSetup)).toBe(true);
   });
 
@@ -30,57 +36,53 @@ describe("bilingual story reader prompt builder", () => {
     expect(prompt).toContain('"schemaVersion": "1.0"');
   });
 
-  it("omits blank optional requirement lines but uses JSON null values", () => {
+  it("omits blank extra instructions but keeps theme automatic", () => {
     const prompt = buildBilingualStoryReaderPrompt(completeSetup);
     const requirementSection = prompt.slice(
       prompt.indexOf("Create a story using these requirements:"),
       prompt.indexOf("Return only valid JSON."),
     );
 
-    expect(requirementSection).not.toContain("- Avoid topics:");
-    expect(requirementSection).not.toContain("- Vocabulary focus:");
-    expect(requirementSection).not.toContain("- Tone:");
     expect(requirementSection).not.toContain("- Extra instructions:");
-    expect(prompt).toContain('"avoidTopics": null');
-    expect(prompt).toContain('"vocabularyFocus": null');
-    expect(prompt).toContain('"tone": null');
     expect(prompt).toContain('"extraInstructions": null');
   });
 
-  it("includes populated optional requirement lines and JSON string values", () => {
+  it("uses an automatic random theme when theme is blank", () => {
+    const prompt = buildBilingualStoryReaderPrompt({
+      ...DEFAULT_BILINGUAL_STORY_READER_SETUP,
+      theme: "",
+    });
+
+    expect(prompt).toContain(
+      "- Theme: Automatic: choose a random concrete, learner-appropriate theme.",
+    );
+    expect(prompt).toContain('"theme": null');
+  });
+
+  it("includes populated extra instructions", () => {
     const prompt = buildBilingualStoryReaderPrompt({
       ...completeSetup,
-      avoidTopics: "violence",
-      vocabularyFocus: "train station verbs",
-      tone: "light mystery",
       extraInstructions: "Use simple dialogue.",
     });
 
-    expect(prompt).toContain("- Avoid topics: violence");
-    expect(prompt).toContain("- Vocabulary focus: train station verbs");
-    expect(prompt).toContain("- Tone: light mystery");
     expect(prompt).toContain("- Extra instructions: Use simple dialogue.");
-    expect(prompt).toContain('"avoidTopics": "violence"');
-    expect(prompt).toContain('"vocabularyFocus": "train station verbs"');
+    expect(prompt).toContain('"extraInstructions": "Use simple dialogue."');
   });
 
-  it("expands medium, B2, and literal translation rules", () => {
+  it("expands medium and B2 constraints", () => {
     const prompt = buildBilingualStoryReaderPrompt({
       ...completeSetup,
       length: "Medium",
       level: "B2",
-      translationStyle: "Literal",
     });
 
     expect(prompt).toContain("- Length constraints: 3-4 paragraphs, 8-12 sentences");
     expect(prompt).toContain('"targetLanguageWordCount": { "min": 180, "max": 260 }');
     expect(prompt).toContain('"sentenceWordCount": { "min": 12, "max": 24 }');
-    expect(prompt).toContain("The UI will show literal translation first.");
-    expect(prompt).toContain('"translationStyle": "literal"');
+    expect(prompt).toContain("include naturalTranslation for every sentence");
   });
 
   it("is deterministic for the same setup state", () => {
     expect(buildBilingualStoryReaderPrompt(completeSetup)).toBe(buildBilingualStoryReaderPrompt(completeSetup));
   });
 });
-

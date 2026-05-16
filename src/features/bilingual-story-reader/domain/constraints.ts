@@ -4,7 +4,6 @@ import type {
   BilingualStoryReaderLevel,
   BilingualStoryReaderLevelConstraints,
   BilingualStoryReaderSetupFormValues,
-  BilingualStoryReaderTranslationStyle,
 } from "./types";
 
 export const BILINGUAL_STORY_READER_LENGTH_CONSTRAINTS: Record<
@@ -119,18 +118,3 @@ export function getBilingualStoryReaderLevelConstraints(
     highlightDensity: LEVEL_CONSTRAINTS.Custom.highlightDensity,
   };
 }
-
-export function getBilingualStoryReaderTranslationStyleRules(
-  translationStyle: BilingualStoryReaderTranslationStyle,
-): string {
-  if (translationStyle === "Natural") {
-    return "Always include naturalTranslation. Omit literalTranslation unless a literal contrast is pedagogically necessary.";
-  }
-
-  if (translationStyle === "Literal") {
-    return "Include both naturalTranslation and literalTranslation. The UI will show literal translation first.";
-  }
-
-  return "Include both naturalTranslation and literalTranslation. The UI will show natural translation first.";
-}
-

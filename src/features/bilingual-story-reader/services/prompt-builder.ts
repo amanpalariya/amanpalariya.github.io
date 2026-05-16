@@ -1,7 +1,6 @@
 import { BILINGUAL_STORY_READER_SCHEMA_VERSION } from "../domain/constants";
 import {
   getBilingualStoryReaderLevelConstraints,
-  getBilingualStoryReaderTranslationStyleRules,
   BILINGUAL_STORY_READER_LENGTH_CONSTRAINTS,
 } from "../domain/constraints";
 import type {
@@ -21,15 +20,11 @@ export const EMPTY_BILINGUAL_STORY_READER_CUSTOM_LEVEL = {
 };
 
 export const DEFAULT_BILINGUAL_STORY_READER_SETUP: BilingualStoryReaderSetupFormValues = {
-  knownLanguage: "",
-  targetLanguage: "",
+  knownLanguage: "English",
+  targetLanguage: "Spanish",
   level: "A1",
   theme: "",
   length: "Short",
-  translationStyle: "Both",
-  vocabularyFocus: "",
-  tone: "",
-  avoidTopics: "",
   extraInstructions: "",
   customLevel: EMPTY_BILINGUAL_STORY_READER_CUSTOM_LEVEL,
 };
@@ -52,6 +47,16 @@ function formatRange(range: NumericRange | null): string {
   return `{ "min": ${range.min}, "max": ${range.max} }`;
 }
 
+function themeRequirement(theme: string): string {
+  const cleaned = cleanMultiline(theme);
+  return cleaned || "Automatic: choose a random concrete, learner-appropriate theme.";
+}
+
+function themeJsonValue(theme: string): string {
+  const cleaned = cleanMultiline(theme);
+  return cleaned ? JSON.stringify(cleaned) : "null";
+}
+
 function formatLengthConstraints(constraints: BilingualStoryReaderLengthConstraints): string {
   return `${constraints.paragraphCount.min}-${constraints.paragraphCount.max} paragraphs, ${constraints.sentenceCount.min}-${constraints.sentenceCount.max} sentences, ${constraints.targetLanguageWordCount?.min ?? "no"}-${constraints.targetLanguageWordCount?.max ?? "fixed"} target-language words when word count is applicable`;
 }
@@ -64,31 +69,21 @@ function formatLevelConstraints(constraints: BilingualStoryReaderLevelConstraint
   return `${constraints.grammar}; ${sentenceWords}; ${constraints.highlightDensity.min}-${constraints.highlightDensity.max} highlighted words or phrases per sentence`;
 }
 
-function appendOptionalLine(lines: string[], label: string, value: string): void {
-  const cleaned = cleanMultiline(value);
-  if (cleaned) lines.push(`- ${label}: ${cleaned}`);
-}
-
 export function isBilingualStoryReaderSetupComplete(
   setup: Pick<
     BilingualStoryReaderSetupFormValues,
-    "knownLanguage" | "targetLanguage" | "theme"
+    "knownLanguage" | "targetLanguage"
   >,
 ): boolean {
-  return Boolean(
-    cleanText(setup.knownLanguage) &&
-      cleanText(setup.targetLanguage) &&
-      cleanText(setup.theme),
-  );
+  return Boolean(cleanText(setup.knownLanguage) && cleanText(setup.targetLanguage));
 }
 
 export function buildBilingualStoryReaderPrompt(setup: BilingualStoryReaderSetupFormValues): string {
   const knownLanguage = cleanText(setup.knownLanguage);
   const targetLanguage = cleanText(setup.targetLanguage);
-  const theme = cleanMultiline(setup.theme);
+  const theme = themeRequirement(setup.theme);
   const lengthConstraints = BILINGUAL_STORY_READER_LENGTH_CONSTRAINTS[setup.length];
   const levelConstraints = getBilingualStoryReaderLevelConstraints(setup);
-  const translationStyleRules = getBilingualStoryReaderTranslationStyleRules(setup.translationStyle);
 
   const requirementLines = [
     "Create a story using these requirements:",
@@ -97,18 +92,13 @@ export function buildBilingualStoryReaderPrompt(setup: BilingualStoryReaderSetup
     `- Learner level: ${setup.level}`,
     `- Level constraints: ${formatLevelConstraints(levelConstraints)}`,
     `- Theme: ${theme}`,
-  ];
-
-  appendOptionalLine(requirementLines, "Avoid topics", setup.avoidTopics);
-  requirementLines.push(
     `- Length: ${setup.length}`,
     `- Length constraints: ${formatLengthConstraints(lengthConstraints)}`,
-    `- Translation style: ${setup.translationStyle}`,
-    `- Translation style rules: ${translationStyleRules}`,
-  );
-  appendOptionalLine(requirementLines, "Vocabulary focus", setup.vocabularyFocus);
-  appendOptionalLine(requirementLines, "Tone", setup.tone);
-  appendOptionalLine(requirementLines, "Extra instructions", setup.extraInstructions);
+    "- Translation help: include naturalTranslation for every sentence and include literalTranslation when it is pedagogically useful.",
+  ];
+
+  const extraInstructions = cleanMultiline(setup.extraInstructions);
+  if (extraInstructions) requirementLines.push(`- Extra instructions: ${extraInstructions}`);
 
   return `You are helping me create a language-learning reading story.
 
@@ -128,8 +118,7 @@ Use this exact top-level structure:
     "knownLanguage": ${JSON.stringify(knownLanguage)},
     "targetLanguage": ${JSON.stringify(targetLanguage)},
     "level": ${JSON.stringify(setup.level)},
-    "theme": ${JSON.stringify(theme)},
-    "avoidTopics": ${jsonStringOrNull(setup.avoidTopics)},
+    "theme": ${themeJsonValue(setup.theme)},
     "length": ${JSON.stringify(setup.length)},
     "lengthConstraints": {
       "paragraphCount": ${formatRange(lengthConstraints.paragraphCount)},
@@ -143,9 +132,6 @@ Use this exact top-level structure:
       "grammar": ${JSON.stringify(levelConstraints.grammar)},
       "highlightDensity": ${formatRange(levelConstraints.highlightDensity)}
     },
-    "translationStyle": ${JSON.stringify(setup.translationStyle.toLowerCase())},
-    "vocabularyFocus": ${jsonStringOrNull(setup.vocabularyFocus)},
-    "tone": ${jsonStringOrNull(setup.tone)},
     "extraInstructions": ${jsonStringOrNull(setup.extraInstructions)}
   },
   "story": {
@@ -154,7 +140,7 @@ Use this exact top-level structure:
     "targetLanguage": { "code": "optional ISO code", "name": ${JSON.stringify(targetLanguage)}, "direction": "ltr" },
     "knownLanguage": { "code": "optional ISO code", "name": ${JSON.stringify(knownLanguage)}, "direction": "ltr" },
     "level": ${JSON.stringify(setup.level)},
-    "theme": ${JSON.stringify(theme)},
+    "theme": ${themeJsonValue(setup.theme)},
     "summary": "One-sentence summary in the known language",
     "estimatedMinutes": 5
   },
@@ -218,4 +204,3 @@ Segment rules:
 
 Return the JSON object only.`;
 }
-

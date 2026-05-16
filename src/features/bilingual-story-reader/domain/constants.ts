@@ -15,10 +15,20 @@ export const BILINGUAL_STORY_READER_LEVELS = [
 
 export const BILINGUAL_STORY_READER_LENGTHS = ["Short", "Medium", "Long"] as const;
 
-export const BILINGUAL_STORY_READER_TRANSLATION_STYLES = [
-  "Natural",
-  "Literal",
-  "Both",
+export const BILINGUAL_STORY_READER_LANGUAGE_OPTIONS = [
+  { name: "English", label: "🇺🇸 English" },
+  { name: "Spanish", label: "🇪🇸 Spanish" },
+  { name: "French", label: "🇫🇷 French" },
+  { name: "German", label: "🇩🇪 German" },
+  { name: "Hindi", label: "🇮🇳 Hindi" },
+  { name: "Japanese", label: "🇯🇵 Japanese" },
+  { name: "Korean", label: "🇰🇷 Korean" },
+  { name: "Mandarin Chinese", label: "🇨🇳 Mandarin Chinese" },
+  { name: "Arabic", label: "🇸🇦 Arabic" },
+  { name: "Portuguese", label: "🇧🇷 Portuguese" },
+  { name: "Italian", label: "🇮🇹 Italian" },
+  { name: "Russian", label: "🇷🇺 Russian" },
+  { name: "Custom", label: "🌐 Custom" },
 ] as const;
 
 export const BILINGUAL_STORY_READER_DIRECTIONS = ["ltr", "rtl", "auto"] as const;
@@ -30,4 +40,3 @@ export const BILINGUAL_STORY_READER_QUESTION_DIFFICULTIES = [
   "inference",
   "vocabulary-in-context",
 ] as const;
-

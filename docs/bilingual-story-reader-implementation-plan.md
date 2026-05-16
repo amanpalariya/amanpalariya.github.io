@@ -1,11 +1,26 @@
 # Bilingual Story Reader Implementation Plan
 
-This plan turns `docs/story-comprehension-reader-design.md` into a working tool in small, verifiable steps. It is intentionally incremental: each phase should leave the codebase in a usable state, with focused tests and clear module boundaries.
+This plan turns `docs/bilingual-story-reader-design.md` into a working tool in small, verifiable steps. It is intentionally incremental: each phase should leave the codebase in a usable state, with focused tests and clear module boundaries.
+
+## Current Product Decisions
+
+- Use `Bilingual Story Reader` consistently for code paths, route paths, registry id, tests, and docs.
+- Canonical route: `/tools/bilingual-story-reader/`.
+- No backward compatibility is required while iterating. Delete obsolete fields and UI rather than keeping compatibility layers.
+- Setup should be mostly prefilled: known language `English`, target language `Spanish`, level `A1`, length `Short`, and blank theme meaning automatic random theme.
+- Language inputs should be dropdowns with recognizable labels/flags plus a custom-language fallback.
+- Theme is optional; blank theme instructs the AI to choose a random concrete learner-appropriate theme.
+- Removed setup fields: `translationStyle`, `vocabularyFocus`, `tone`, and `avoidTopics`.
+- Users should not care about JSON. UI labels should use `AI response`/`response`; JSON should remain an internal/prompt contract detail only.
+- Remove user-facing `Format JSON`.
+- Copy/paste and error feedback should follow EPUB Maker: direct clipboard actions with toast-style alerts and recoverable inline errors.
+- Paste response should not consume a full column. Use a toolbar clipboard action first and a compact manual paste fallback, following EPUB Maker’s Add-from-clipboard/manual-paste pattern.
+- Hide setup and paste panels after a valid story loads so reading is immersive.
 
 ## Goals
 
 - Build `/tools/bilingual-story-reader/` as a browser-only language-learning reader.
-- Keep prompt generation, JSON parsing, validation, normalization, warnings, and UI rendering separated.
+- Keep prompt generation, Pasted response parsing, validation, normalization, warnings, and UI rendering separated.
 - Make malformed external-AI output recoverable without making the reader components defensive everywhere.
 - Preserve a calm reading experience while supporting progressive help.
 - Add enough unit, functional, and accessibility coverage to make future schema changes safe.
@@ -31,7 +46,7 @@ Status values:
 
 ### Phase 0: Foundation
 
-- [x] Confirm final JSON schema fields and allowed values from the design doc.
+- [x] Confirm final Pasted response schema fields and allowed values from the design doc.
 - [x] Add implementation constants for levels, lengths, translation styles, directions, segment kinds, and question difficulty.
 - [x] Add route metadata and registry entry for `bilingual-story-reader`.
 - [x] Create the empty `/tools/bilingual-story-reader/` page.
@@ -49,22 +64,21 @@ Status values:
 - [x] Implement prompt constraint expansion for translation style.
 - [x] Generate the prompt from a pure service function.
 - [x] Omit blank optional requirement lines from the human-readable prompt section.
-- [x] Represent blank optional `generationRequest` values as JSON `null`.
+- [x] Represent blank optional `generationRequest` values as Pasted response `null`.
 - [x] Add prompt preview.
 - [x] Add copy prompt behavior with transient feedback.
 - [x] Validate that `Copy Prompt` is disabled until required fields are present.
 
-### Phase 2: JSON Input, Cleanup, And Parsing
+### Phase 2: Pasted response Input, Cleanup, And Parsing
 
-- [x] Implement raw JSON textarea state.
-- [x] Implement `Format JSON` for valid parsed content.
+- [x] Implement raw Pasted response textarea state.
 - [x] Implement common AI-wrapper cleanup.
-- [x] Strip Markdown JSON fences.
+- [x] Strip Markdown Pasted response fences.
 - [x] Trim surrounding prose using a conservative string-aware JSON object scanner.
-- [x] Preserve raw pasted text separately from cleaned JSON text.
-- [x] Parse JSON safely and return line/column syntax errors when possible.
-- [x] Add invalid JSON validation output in plain language.
-- [x] Validate that cleanup warnings render without blocking valid cleaned JSON.
+- [x] Preserve raw pasted text separately from cleaned Pasted response text.
+- [x] Parse Pasted response safely and return line/column syntax errors when possible.
+- [x] Add invalid Pasted response validation output in plain language.
+- [x] Validate that cleanup warnings render without blocking valid cleaned Pasted response.
 
 ### Phase 3: Schema Validation And Normalization
 
@@ -91,7 +105,7 @@ Status values:
 - [ ] Keep heuristic warnings visually quieter than structural warnings.
 - [ ] Implement repair prompt generation from validation errors and raw pasted output.
 - [ ] Include at most 40,000 characters of invalid output in the repair prompt.
-- [ ] Prefer the extracted JSON-looking object when raw output contains surrounding prose.
+- [ ] Prefer the extracted Pasted response-looking object when raw output contains surrounding prose.
 - [ ] Add a truncation note when repair prompt input is clipped.
 - [ ] Add `Copy Repair Prompt` only when validation fails.
 
@@ -139,7 +153,7 @@ Status values:
 - [ ] Make vocabulary terms in the active sentence keyboard reachable.
 - [ ] Add `J` / `K` sentence navigation when text inputs are not focused.
 - [ ] Add `Esc` close behavior for popovers and help panels.
-- [ ] Add visible labels and associated error text for the JSON textarea.
+- [ ] Add visible labels and associated error text for the Pasted response textarea.
 - [ ] Set `dir` attributes on story and help regions.
 - [ ] Add accessible shortcut help in a toolbar menu or dialog.
 
@@ -259,7 +273,7 @@ Responsibilities:
 
 - Prompt generation.
 - Prompt repair text.
-- JSON cleanup.
+- Pasted response cleanup.
 - Clipboard abstraction.
 - Example loading helpers.
 
@@ -272,7 +286,7 @@ Hooks coordinate browser and UI state.
 Responsibilities:
 
 - Setup form state.
-- Raw and cleaned JSON text.
+- Raw and cleaned Pasted response text.
 - Active sentence and paragraph state.
 - Reveal state.
 - Keyboard handling.
@@ -356,20 +370,19 @@ Unit tests should cover pure behavior first. Most tests belong beside the domain
 
 - Required fields generate requirement lines.
 - Blank optional fields are omitted from the requirement list.
-- Blank optional `generationRequest` values become JSON `null`.
+- Blank optional `generationRequest` values become Pasted response `null`.
 - `Short`, `Medium`, and `Long` expand to the correct constraints.
 - `Beginner`, `A1`, `A2`, `B1`, `B2`, `C1`, `C2`, and `Custom` expand correctly.
-- Translation style rules always require `naturalTranslation`.
 - Prompt contains the schema version and allowed values.
 - Prompt is deterministic for the same setup state.
 
-### JSON Cleanup Tests
+### Pasted response Cleanup Tests
 
-- Plain JSON is unchanged except trimming.
-- Markdown fenced JSON is extracted.
-- JSON surrounded by prose is extracted.
+- Plain Pasted response is unchanged except trimming.
+- Markdown fenced Pasted response is extracted.
+- Pasted response surrounded by prose is extracted.
 - Braces inside quoted strings do not break extraction.
-- Multiple top-level JSON-looking objects are treated conservatively.
+- Multiple top-level Pasted response-looking objects are treated conservatively.
 - Empty input returns a useful validation error.
 
 ### Validation Tests
@@ -412,7 +425,7 @@ Unit tests should cover pure behavior first. Most tests belong beside the domain
 - Raw invalid output is included.
 - Large output is truncated at the configured limit.
 - Truncation note is included when clipped.
-- Repair prompt asks for JSON only.
+- Repair prompt asks for Pasted response only.
 - Repair prompt preserves story content unless schema repair requires changes.
 
 ## Functional Testing Strategy
@@ -428,13 +441,12 @@ Use Playwright for user-visible workflows.
 - Optional blank fields do not appear in the human-readable prompt requirement list.
 - Copy prompt writes expected text to the clipboard.
 
-### JSON Paste Flow
+### Pasted response Paste Flow
 
-- Pasting valid example JSON renders the reader.
-- Pasting Markdown-wrapped JSON renders with a cleanup warning.
-- Pasting invalid JSON shows validation errors.
-- Invalid JSON shows `Copy Repair Prompt`.
-- `Format JSON` formats valid JSON and leaves invalid JSON recoverable.
+- Pasting valid example Pasted response renders the reader.
+- Pasting Markdown-wrapped Pasted response renders with a cleanup warning.
+- Pasting invalid Pasted response shows validation errors.
+- Invalid Pasted response shows `Copy Repair Prompt`.
 
 ### Reader Flow
 
@@ -469,7 +481,7 @@ Run the existing a11y test suite after the page is registered.
 
 Manual accessibility checks:
 
-- JSON textarea has a visible label and associated error text.
+- Pasted response textarea has a visible label and associated error text.
 - Active sentence control has a useful accessible name.
 - Vocabulary terms are keyboard reachable without nested interactive markup.
 - Help panel traps or manages focus appropriately.
@@ -497,7 +509,7 @@ Each phase should pass the listed gate before moving on.
 
 ### Gate C: Parser And Validator
 
-- JSON cleanup tests pass.
+- Pasted response cleanup tests pass.
 - Validation tests pass.
 - Segment tests pass.
 - Valid examples parse into normalized view models.
@@ -536,7 +548,7 @@ Each phase should pass the listed gate before moving on.
 - Normalize optional fields once after validation.
 - Prefer small, composable validators over one large validator function.
 - Prefer discriminated unions for parse results, warning categories, help selections, and reveal stages.
-- Do not let UI components inspect raw pasted JSON.
+- Do not let UI components inspect raw pasted Pasted response.
 - Do not let UI components know about cleanup or parsing details.
 - Do not let domain logic import browser APIs.
 - Do not encode language-specific hacks in components.
@@ -549,7 +561,7 @@ If scope needs to be reduced, ship this first:
 - Setup form.
 - Prompt generation and copy.
 - Prompt preview.
-- JSON paste, cleanup, parsing, validation.
+- Pasted response paste, cleanup, parsing, validation.
 - Repair prompt.
 - Basic rendered reader.
 - Sentence reveal stages.
@@ -572,8 +584,8 @@ Defer:
 
 - Should invalid `segments[].kind` block rendering, or only disable that segment/sentence highlight?
 - Should paragraph id uniqueness block all rendering, or can ids be regenerated during normalization?
-- Should examples live as TypeScript fixtures, JSON files under `public`, or both?
-- Should `estimatedMinutes` be trusted from JSON or recomputed locally from text length?
+- Should examples live as TypeScript fixtures, Pasted response files under `public`, or both?
+- Should `estimatedMinutes` be trusted from Pasted response or recomputed locally from text length?
 - Should `Copy Prompt Again` be merged with `Copy Prompt`, or renamed to `Regenerate Story Prompt`?
 - Which existing UI primitive should power desktop popovers and mobile bottom help?
 - How much custom language counting should be implemented before deferring to warnings?
@@ -581,7 +593,7 @@ Defer:
 ## Definition Of Done
 
 - The tool can generate a strict prompt from setup inputs.
-- The tool can parse and render a valid external-AI JSON story.
+- The tool can parse and render a valid external-AI Pasted response story.
 - The tool gives clear recovery steps for malformed pasted output.
 - The reader supports progressive sentence help and vocabulary help.
 - Invalid optional enhancements do not block reading.

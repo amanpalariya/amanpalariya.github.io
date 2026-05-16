@@ -431,7 +431,7 @@ export function validateBilingualStoryReaderSchema(value: unknown): StoryValidat
   if (!isRecord(value)) {
     return {
       ok: false,
-      errors: [{ path: "$", message: "Story JSON must be an object." }],
+      errors: [{ path: "$", message: "Story response must be an object." }],
       warnings,
     };
   }

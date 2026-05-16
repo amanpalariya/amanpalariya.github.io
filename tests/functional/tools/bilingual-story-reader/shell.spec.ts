@@ -7,65 +7,55 @@ test.describe("Bilingual Story Reader shell", () => {
     expect(response?.status()).toBeLessThan(400);
     await expect(page.getByRole("heading", { name: "Bilingual Story Reader" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Story Setup" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Paste JSON" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Copy Prompt" })).toHaveCount(2);
-    await expect(page.getByRole("button", { name: "Copy Prompt" }).first()).toBeDisabled();
-    await expect(page.getByRole("button", { name: "Copy Prompt" }).nth(1)).toBeDisabled();
-    await expect(page.getByRole("button", { name: "Render Story" })).toBeDisabled();
-    await expect(page.getByText("No story loaded")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Manual Paste" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Copy Prompt" })).toBeEnabled();
+    await expect(page.getByRole("button", { name: "Paste Response" })).toBeEnabled();
+    await expect(page.getByRole("button", { name: "Manual Paste" })).toBeEnabled();
+    await expect(page.getByText("Ready", { exact: true })).toBeVisible();
+    await expect(page.getByLabel("Known language")).toHaveValue("English");
+    await expect(page.getByLabel("Target language")).toHaveValue("Spanish");
   });
 
-  test("generates and copies a prompt after required setup fields are filled", async ({
+  test("generates and copies a prompt from defaults with automatic theme", async ({
     context,
     page,
   }) => {
     await context.grantPermissions(["clipboard-read", "clipboard-write"]);
     await page.goto("/tools/bilingual-story-reader");
 
-    await expect(page.getByRole("button", { name: "Copy Prompt" }).first()).toBeDisabled();
-    await expect(page.getByLabel("Prompt preview")).toContainText("Fill known language");
-
-    await page.getByLabel("Known language").fill("English");
-    await page.getByLabel("Target language").fill("Spanish");
-    await page.getByLabel("Theme").fill("lost phone at a train station");
-    await page.getByLabel("Vocabulary focus").fill("travel verbs");
-
-    await expect(page.getByRole("button", { name: "Copy Prompt" }).first()).toBeEnabled();
+    await expect(page.getByRole("button", { name: "Copy Prompt" })).toBeEnabled();
     await expect(page.getByLabel("Prompt preview")).toContainText("- Known language: English");
     await expect(page.getByLabel("Prompt preview")).toContainText("- Target language: Spanish");
-    await expect(page.getByLabel("Prompt preview")).toContainText("- Theme: lost phone");
-    await expect(page.getByLabel("Prompt preview")).toContainText("- Vocabulary focus: travel verbs");
-    await expect(page.getByLabel("Prompt preview")).toContainText('"avoidTopics": null');
+    await expect(page.getByLabel("Prompt preview")).toContainText("- Theme: Automatic");
 
-    await page.getByRole("button", { name: "Copy Prompt" }).first().click();
-    await expect(page.getByRole("status")).toContainText("Prompt copied.");
+    await page.getByRole("button", { name: "Copy Prompt" }).click();
+    await expect(page.getByText("Prompt copied")).toBeVisible();
     await expect
       .poll(() => page.evaluate(() => navigator.clipboard.readText()))
       .toContain("language-learning reading story");
   });
 
-  test("parses, formats, and reports JSON paste results", async ({ page }) => {
+  test("parses and reports pasted AI responses", async ({ page }) => {
     await page.goto("/tools/bilingual-story-reader");
 
-    const storyJson = page.getByLabel("Story JSON");
-    await storyJson.fill('```json\n{"schemaVersion":"1.0","story":{"title":"Hola"}}\n```');
-    await page.getByRole("button", { name: "Render Story" }).click();
+    await page.getByRole("button", { name: "Manual Paste" }).click();
+    const responseInput = page.getByLabel("AI response");
+    await responseInput.fill('```json\n{"schemaVersion":"1.0","story":{"title":"Hola"}}\n```');
+    await page.getByRole("button", { name: "Read Story" }).click();
 
     await expect(page.getByText("Removed Markdown code fence around the JSON.")).toBeVisible();
-    await expect(page.getByText("JSON parsed.")).toBeVisible();
-    await expect(page.getByText("JSON parsed").first()).toBeVisible();
-
-    await page.getByRole("button", { name: "Format JSON" }).click();
-    await expect(storyJson).toHaveValue(
-      '{\n  "schemaVersion": "1.0",\n  "story": {\n    "title": "Hola"\n  }\n}\n',
+    await expect(page.getByText("Response parsed.")).toBeVisible();
+    await expect(responseInput).toHaveValue(
+      '```json\n{"schemaVersion":"1.0","story":{"title":"Hola"}}\n```',
     );
   });
 
   test("shows a plain error for invalid JSON", async ({ page }) => {
     await page.goto("/tools/bilingual-story-reader");
 
-    await page.getByLabel("Story JSON").fill('{"schemaVersion":"1.0"\n  "story": {}}');
-    await page.getByRole("button", { name: "Render Story" }).click();
+    await page.getByRole("button", { name: "Manual Paste" }).click();
+    await page.getByLabel("AI response").fill('{"schemaVersion":"1.0"\n  "story": {}}');
+    await page.getByRole("button", { name: "Read Story" }).click();
 
     await expect(page.getByText("Line 2, column 3")).toBeVisible();
   });
@@ -73,7 +63,8 @@ test.describe("Bilingual Story Reader shell", () => {
   test("validates and renders a basic story", async ({ page }) => {
     await page.goto("/tools/bilingual-story-reader");
 
-    await page.getByLabel("Story JSON").fill(
+    await page.getByRole("button", { name: "Manual Paste" }).click();
+    await page.getByLabel("AI response").fill(
       JSON.stringify({
         schemaVersion: "1.0",
         story: {
@@ -102,9 +93,11 @@ test.describe("Bilingual Story Reader shell", () => {
         ],
       }),
     );
-    await page.getByRole("button", { name: "Render Story" }).click();
+    await page.getByRole("button", { name: "Read Story" }).click();
 
-    await expect(page.getByText("Story loaded")).toBeVisible();
+    await expect(page.getByText("Story loaded", { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Story Setup" })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Manual Paste" })).toHaveCount(0);
     await expect(page.getByRole("heading", { name: "El tren" })).toBeVisible();
     await expect(page.getByText("Spanish from English · A1")).toBeVisible();
     await expect(page.getByText("Paragraph 1 of 1")).toBeVisible();

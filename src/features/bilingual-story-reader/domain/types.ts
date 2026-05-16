@@ -1,13 +1,13 @@
 import type {
+  BILINGUAL_STORY_READER_LANGUAGE_OPTIONS,
   BILINGUAL_STORY_READER_LENGTHS,
   BILINGUAL_STORY_READER_LEVELS,
-  BILINGUAL_STORY_READER_TRANSLATION_STYLES,
 } from "./constants";
 
 export type BilingualStoryReaderLevel = (typeof BILINGUAL_STORY_READER_LEVELS)[number];
 export type BilingualStoryReaderLength = (typeof BILINGUAL_STORY_READER_LENGTHS)[number];
-export type BilingualStoryReaderTranslationStyle =
-  (typeof BILINGUAL_STORY_READER_TRANSLATION_STYLES)[number];
+export type BilingualStoryReaderLanguageOption =
+  (typeof BILINGUAL_STORY_READER_LANGUAGE_OPTIONS)[number]["name"];
 
 export interface BilingualStoryReaderCustomLevelFields {
   maxSentenceLength: string;
@@ -24,10 +24,6 @@ export interface BilingualStoryReaderSetupFormValues {
   level: BilingualStoryReaderLevel;
   theme: string;
   length: BilingualStoryReaderLength;
-  translationStyle: BilingualStoryReaderTranslationStyle;
-  vocabularyFocus: string;
-  tone: string;
-  avoidTopics: string;
   extraInstructions: string;
   customLevel: BilingualStoryReaderCustomLevelFields;
 }
@@ -50,4 +46,3 @@ export interface BilingualStoryReaderLevelConstraints {
   grammar: string;
   highlightDensity: NumericRange;
 }
-
