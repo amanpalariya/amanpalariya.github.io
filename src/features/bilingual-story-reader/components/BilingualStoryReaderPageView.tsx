@@ -426,7 +426,7 @@ export function BilingualStoryReaderPageView() {
                         <Icon>
                           <LuClipboardPaste />
                         </Icon>
-                        Paste Response
+                        Load Story from Clipboard
                       </Button>
                       <Popover.Trigger asChild>
                         <IconButton
