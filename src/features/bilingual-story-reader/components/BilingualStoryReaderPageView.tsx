@@ -16,6 +16,7 @@ import {
   Input,
   NativeSelect,
   Popover,
+  SegmentGroup,
   Text,
   Textarea,
   VStack,
@@ -119,6 +120,61 @@ const SUBTLE_BUTTON_PROPS = {
     bg: "app.bilingualStoryReader.button.subtle.hoverBg",
   },
 } as const;
+
+function StorySegmentedControl<T extends string>({
+  ariaLabel,
+  itemMinW = "3rem",
+  onValueChange,
+  options,
+  value,
+}: {
+  ariaLabel: string;
+  itemMinW?: string;
+  onValueChange: (value: T) => void;
+  options: readonly T[];
+  value: T;
+}) {
+  return (
+    <SegmentGroup.Root
+      aria-label={ariaLabel}
+      bg="app.bilingualStoryReader.bg.control"
+      borderColor="app.bilingualStoryReader.border.default"
+      borderWidth="1px"
+      color="app.bilingualStoryReader.fg.default"
+      fontFamily="ui"
+      overflowX="auto"
+      p={1}
+      rounded="xl"
+      size="sm"
+      value={value}
+      w="full"
+      onValueChange={(details) => {
+        const nextValue = details.value;
+        if (options.some((option) => option === nextValue)) {
+          onValueChange(nextValue as T);
+        }
+      }}
+    >
+      <SegmentGroup.Indicator />
+      {options.map((option) => (
+        <SegmentGroup.Item
+          flex={1}
+          key={option}
+          minW={itemMinW}
+          px={3}
+          value={option}
+          _checked={{
+            color: "app.bilingualStoryReader.fg.accent",
+            fontWeight: "semibold",
+          }}
+        >
+          <SegmentGroup.ItemText>{option}</SegmentGroup.ItemText>
+          <SegmentGroup.ItemHiddenInput />
+        </SegmentGroup.Item>
+      ))}
+    </SegmentGroup.Root>
+  );
+}
 
 function languageSelectValue(language: string): string {
   return BILINGUAL_STORY_READER_LANGUAGE_OPTIONS.some((option) => option.name === language)
@@ -608,53 +664,26 @@ export function BilingualStoryReaderPageView() {
 
                     <Grid templateColumns={["1fr", "1fr 1fr"]} gap={3}>
                       <Field label="Level">
-                        <NativeSelect.Root w="full">
-                          <NativeSelect.Field
-                            {...CONTROL_INPUT_PROPS}
-                            aria-label="Level"
-                            value={setup.level}
-                            onChange={(event) => {
-                              const nextLevel = event.currentTarget
-                                .value as BilingualStoryReaderLevel;
-                              setSetup((current) => ({
-                                ...current,
-                                level: nextLevel,
-                              }));
-                            }}
-                          >
-                            {BILINGUAL_STORY_READER_LEVELS.map((level) => (
-                              <option key={level} value={level}>
-                                {level}
-                              </option>
-                            ))}
-                          </NativeSelect.Field>
-                          <NativeSelect.Indicator />
-                        </NativeSelect.Root>
+                        <StorySegmentedControl<BilingualStoryReaderLevel>
+                          ariaLabel="Level"
+                          itemMinW="2.75rem"
+                          options={BILINGUAL_STORY_READER_LEVELS}
+                          value={setup.level}
+                          onValueChange={(level) =>
+                            setSetup((current) => ({ ...current, level }))
+                          }
+                        />
                       </Field>
 
                       <Field label="Length">
-                        <NativeSelect.Root w="full">
-                          <NativeSelect.Field
-                            {...CONTROL_INPUT_PROPS}
-                            aria-label="Length"
-                            value={setup.length}
-                            onChange={(event) => {
-                              const nextLength = event.currentTarget
-                                .value as BilingualStoryReaderLength;
-                              setSetup((current) => ({
-                                ...current,
-                                length: nextLength,
-                              }));
-                            }}
-                          >
-                            {BILINGUAL_STORY_READER_LENGTHS.map((length) => (
-                              <option key={length} value={length}>
-                                {length}
-                              </option>
-                            ))}
-                          </NativeSelect.Field>
-                          <NativeSelect.Indicator />
-                        </NativeSelect.Root>
+                        <StorySegmentedControl<BilingualStoryReaderLength>
+                          ariaLabel="Length"
+                          options={BILINGUAL_STORY_READER_LENGTHS}
+                          value={setup.length}
+                          onValueChange={(length) =>
+                            setSetup((current) => ({ ...current, length }))
+                          }
+                        />
                       </Field>
                     </Grid>
 
