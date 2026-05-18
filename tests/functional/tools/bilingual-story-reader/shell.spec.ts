@@ -151,7 +151,11 @@ test.describe("Bilingual Story Reader shell", () => {
     await expect(page.getByRole("button", { name: "Paste Response" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Edit Prompt" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "El tren" })).toBeVisible();
-    await expect(page.getByText("Spanish from English · A1")).toBeVisible();
+    await expect(page.getByText("Spanish from English")).toBeVisible();
+    await expect(page.getByText("A1", { exact: true })).toBeVisible();
+    await expect(page.getByText("1 paragraph")).toBeVisible();
+    await expect(page.getByText("2 sentences")).toBeVisible();
+    await expect(page.getByText("3 min")).toBeVisible();
     await expect(page.getByText("Paragraph 1 of 1")).toHaveCount(0);
     await expect(page.locator("article").getByText("Lina entra.", { exact: true })).toBeVisible();
   });

@@ -1,21 +1,58 @@
 "use client";
 
 import {
-  Badge,
   Box,
   Card,
   CloseButton,
   HStack,
+  Icon,
   Popover,
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { useState, type KeyboardEvent } from "react";
+import { useState, type ElementType, type KeyboardEvent } from "react";
+import {
+  LuBookOpen,
+  LuClock,
+  LuGauge,
+  LuLanguages,
+  LuListTree,
+  LuTriangleAlert,
+} from "react-icons/lu";
 import type {
   RenderableSentence,
   RenderableStory,
   BilingualStoryReaderWarning,
 } from "../domain/validate-story";
+
+function StoryMetadataItem({
+  icon,
+  tone = "default",
+  value,
+}: {
+  icon: ElementType;
+  tone?: "default" | "warning";
+  value: string;
+}) {
+  return (
+    <HStack
+      as="span"
+      borderColor={tone === "warning" ? "orange.300" : "app.border.default"}
+      borderWidth="1px"
+      color={tone === "warning" ? "orange.600" : "app.fg.muted"}
+      gap={1.5}
+      minH={8}
+      px={2.5}
+      rounded="full"
+      whiteSpace="nowrap"
+    >
+      <Icon as={icon} boxSize={3.5} />
+      <Text as="span" fontSize="sm" fontWeight="medium">
+        {value}
+      </Text>
+    </HStack>
+  );
+}
 
 function SentenceHelpContent({ sentence }: { sentence: RenderableSentence }) {
   return (
@@ -132,31 +169,36 @@ export function RenderedStoryView({
     <Card.Root borderColor="app.border.default" overflow="hidden" rounded="2xl">
       <Card.Header>
         <VStack align="stretch" gap={3}>
-          <HStack justify="space-between" gap={3} wrap="wrap">
-            <Box>
-              <Card.Title>{story.story.title}</Card.Title>
-              <Card.Description>
-                {story.story.targetLanguage} from {story.story.knownLanguage} ·{" "}
-                {story.story.level}
-              </Card.Description>
-            </Box>
-            <HStack gap={2} wrap="wrap">
-              <Badge colorPalette="blue">
-                {story.paragraphs.length} paragraph
-                {story.paragraphs.length === 1 ? "" : "s"}
-              </Badge>
-              <Badge colorPalette="gray">
-                {sentenceCount} sentence{sentenceCount === 1 ? "" : "s"}
-              </Badge>
-              {story.story.estimatedMinutes ? (
-                <Badge colorPalette="gray">{story.story.estimatedMinutes} min</Badge>
-              ) : null}
-              {warnings.length > 0 ? (
-                <Badge colorPalette="orange">
-                  {warnings.length} warning{warnings.length === 1 ? "" : "s"}
-                </Badge>
-              ) : null}
-            </HStack>
+          <Card.Title>{story.story.title}</Card.Title>
+          <HStack gap={2} wrap="wrap">
+            <StoryMetadataItem
+              icon={LuLanguages}
+              value={`${story.story.targetLanguage} from ${story.story.knownLanguage}`}
+            />
+            <StoryMetadataItem icon={LuGauge} value={story.story.level} />
+            <StoryMetadataItem
+              icon={LuBookOpen}
+              value={`${story.paragraphs.length} paragraph${
+                story.paragraphs.length === 1 ? "" : "s"
+              }`}
+            />
+            <StoryMetadataItem
+              icon={LuListTree}
+              value={`${sentenceCount} sentence${sentenceCount === 1 ? "" : "s"}`}
+            />
+            {story.story.estimatedMinutes ? (
+              <StoryMetadataItem
+                icon={LuClock}
+                value={`${story.story.estimatedMinutes} min`}
+              />
+            ) : null}
+            {warnings.length > 0 ? (
+              <StoryMetadataItem
+                icon={LuTriangleAlert}
+                tone="warning"
+                value={`${warnings.length} warning${warnings.length === 1 ? "" : "s"}`}
+              />
+            ) : null}
           </HStack>
         </VStack>
       </Card.Header>
