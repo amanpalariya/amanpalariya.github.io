@@ -665,15 +665,28 @@ export function BilingualStoryReaderPageView() {
 
                     <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={3}>
                       <Field label="Level">
-                        <StorySegmentedControl<BilingualStoryReaderLevel>
-                          ariaLabel="Level"
-                          itemMinW="2.75rem"
-                          options={BILINGUAL_STORY_READER_LEVELS}
-                          value={setup.level}
-                          onValueChange={(level) =>
-                            setSetup((current) => ({ ...current, level }))
-                          }
-                        />
+                        <NativeSelect.Root w="full">
+                          <NativeSelect.Field
+                            {...CONTROL_INPUT_PROPS}
+                            aria-label="Level"
+                            value={setup.level}
+                            onChange={(event) => {
+                              const nextLevel = event.currentTarget
+                                .value as BilingualStoryReaderLevel;
+                              setSetup((current) => ({
+                                ...current,
+                                level: nextLevel,
+                              }));
+                            }}
+                          >
+                            {BILINGUAL_STORY_READER_LEVELS.map((level) => (
+                              <option key={level} value={level}>
+                                {level}
+                              </option>
+                            ))}
+                          </NativeSelect.Field>
+                          <NativeSelect.Indicator />
+                        </NativeSelect.Root>
                       </Field>
 
                       <Field label="Length">
