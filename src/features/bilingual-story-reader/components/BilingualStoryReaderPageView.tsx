@@ -3,6 +3,7 @@
 import {
   Alert,
   Badge,
+  Bleed,
   Box,
   Button,
   Card,
@@ -19,6 +20,7 @@ import {
   Textarea,
   VStack,
 } from "@chakra-ui/react";
+import HighlightedSection from "@components/page/common/HighlightedSection";
 import { Field } from "@components/ui/field";
 import { useMemo, useState, type ClipboardEvent as ReactClipboardEvent } from "react";
 import { LuChevronDown, LuChevronUp } from "react-icons/lu";
@@ -187,7 +189,7 @@ export function BilingualStoryReaderPageView() {
   }
 
   return (
-    <VStack align="stretch" gap={5} px={[4, 6]} pb={6}>
+    <VStack align="stretch" gap={4} pt={4} pb={0}>
       {notices.length > 0 ? (
         <Box
           pointerEvents="none"
@@ -224,350 +226,377 @@ export function BilingualStoryReaderPageView() {
         </Box>
       ) : null}
 
-      <Flex
-        align={["stretch", "center"]}
-        direction={["column", "row"]}
-        gap={3}
-        justify="space-between"
-        wrap="wrap"
-      >
-        <HStack gap={2} wrap="wrap">
-          {hasLoadedStory ? (
-            <>
-              <Button colorPalette="blue" onClick={adjustPrompt}>
-                Edit Prompt
-              </Button>
-              <Button variant="ghost" onClick={resetLoadedStory}>
-                New Story
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button colorPalette="blue" disabled={!isSetupComplete} onClick={copyPrompt}>
-                Copy Prompt
-              </Button>
-              <Popover.Root
-                open={isManualPasteOpen}
-                onOpenChange={(details) => setIsManualPasteOpen(details.open)}
-                positioning={{ placement: "bottom-start", gutter: 6 }}
-              >
-                <Box>
-                  <HStack align="stretch" gap={0}>
-                    <Button
-                      borderRightWidth={0}
-                      onClick={pasteResponseFromClipboard}
-                      roundedRight={0}
-                      variant="outline"
-                    >
-                      Paste Response
-                    </Button>
-                    <Popover.Trigger asChild>
-                      <IconButton
-                        aria-label={
-                          isManualPasteOpen ? "Hide manual paste" : "Show manual paste"
-                        }
-                        borderLeftWidth="1px"
-                        roundedLeft={0}
+      <Box w="full" px={[4, 6]}>
+        <Flex
+          align={["stretch", "center"]}
+          direction={["column", "row"]}
+          gap={3}
+          justify="space-between"
+          wrap="wrap"
+        >
+          <HStack gap={2} wrap="wrap">
+            {hasLoadedStory ? (
+              <>
+                <Button colorPalette="blue" onClick={adjustPrompt}>
+                  Edit Prompt
+                </Button>
+                <Button variant="ghost" onClick={resetLoadedStory}>
+                  New Story
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  colorPalette="blue"
+                  disabled={!isSetupComplete}
+                  onClick={copyPrompt}
+                >
+                  Copy Prompt
+                </Button>
+                <Popover.Root
+                  open={isManualPasteOpen}
+                  onOpenChange={(details) => setIsManualPasteOpen(details.open)}
+                  positioning={{ placement: "bottom-start", gutter: 6 }}
+                >
+                  <Box>
+                    <HStack align="stretch" gap={0}>
+                      <Button
+                        borderRightWidth={0}
+                        onClick={pasteResponseFromClipboard}
+                        roundedRight={0}
                         variant="outline"
                       >
-                        {isManualPasteOpen ? <LuChevronUp /> : <LuChevronDown />}
-                      </IconButton>
-                    </Popover.Trigger>
-                  </HStack>
-                </Box>
+                        Paste Response
+                      </Button>
+                      <Popover.Trigger asChild>
+                        <IconButton
+                          aria-label={
+                            isManualPasteOpen
+                              ? "Hide manual paste"
+                              : "Show manual paste"
+                          }
+                          borderLeftWidth="1px"
+                          roundedLeft={0}
+                          variant="outline"
+                        >
+                          {isManualPasteOpen ? <LuChevronUp /> : <LuChevronDown />}
+                        </IconButton>
+                      </Popover.Trigger>
+                    </HStack>
+                  </Box>
 
-                <Popover.Positioner zIndex={20}>
-                  <Popover.Content
-                    bg="bg.panel"
-                    borderColor="border.subtle"
-                    borderWidth="1px"
-                    minW={{ base: "280px", sm: "420px" }}
-                    overflow="hidden"
-                    p={0}
-                    rounded="lg"
-                    shadow="lg"
-                    w={{ base: "calc(100vw - 2rem)", sm: "420px" }}
-                  >
-                    <Textarea
-                      aria-describedby="ai-response-validation"
-                      aria-label="AI response"
-                      borderWidth={0}
-                      minH="140px"
-                      onChange={(event) => {
-                        setRawResponseText(event.currentTarget.value);
-                        setJsonParseResult(null);
-                        setStoryValidationResult(null);
-                      }}
-                      onPaste={handleManualPaste}
-                      placeholder="Paste the AI response here, then load the story."
-                      rounded="none"
-                      value={rawResponseText}
-                    />
-                    <Button
-                      disabled={!rawResponseText.trim()}
-                      mt="-1px"
-                      onClick={readStory}
-                      rounded="none"
-                      size="sm"
-                      variant="subtle"
-                      w="full"
+                  <Popover.Positioner zIndex={20}>
+                    <Popover.Content
+                      bg="bg.panel"
+                      borderColor="border.subtle"
+                      borderWidth="1px"
+                      minW={{ base: "280px", sm: "420px" }}
+                      overflow="hidden"
+                      p={0}
+                      rounded="lg"
+                      shadow="lg"
+                      w={{ base: "calc(100vw - 2rem)", sm: "420px" }}
                     >
-                      Load Story
-                    </Button>
-                  </Popover.Content>
-                </Popover.Positioner>
-              </Popover.Root>
-            </>
-          )}
-        </HStack>
-        <Badge colorPalette="gray" alignSelf={["flex-start", "center"]}>
-          {hasLoadedStory ? "Story loaded" : jsonParseResult?.ok ? "Response parsed" : "Ready"}
-        </Badge>
-      </Flex>
+                      <Textarea
+                        aria-describedby="ai-response-validation"
+                        aria-label="AI response"
+                        borderWidth={0}
+                        minH="140px"
+                        onChange={(event) => {
+                          setRawResponseText(event.currentTarget.value);
+                          setJsonParseResult(null);
+                          setStoryValidationResult(null);
+                        }}
+                        onPaste={handleManualPaste}
+                        placeholder="Paste the AI response here, then load the story."
+                        rounded="none"
+                        value={rawResponseText}
+                      />
+                      <Button
+                        disabled={!rawResponseText.trim()}
+                        mt="-1px"
+                        onClick={readStory}
+                        rounded="none"
+                        size="sm"
+                        variant="subtle"
+                        w="full"
+                      >
+                        Load Story
+                      </Button>
+                    </Popover.Content>
+                  </Popover.Positioner>
+                </Popover.Root>
+              </>
+            )}
+          </HStack>
+          <Badge colorPalette="gray" alignSelf={["flex-start", "center"]}>
+            {hasLoadedStory
+              ? "Story loaded"
+              : jsonParseResult?.ok
+                ? "Response parsed"
+                : "Ready"}
+          </Badge>
+        </Flex>
+      </Box>
 
       {!hasLoadedStory ? (
-        <VStack align="stretch" gap={4}>
-          <Grid templateColumns={["1fr", null, "minmax(0, 1fr)"]} gap={4}>
-          <Card.Root>
-            <Card.Header>
-              <Card.Title>Story Setup</Card.Title>
-              <Card.Description>
-                Defaults are ready. Change only what matters, then copy the prompt.
-              </Card.Description>
-            </Card.Header>
-            <Card.Body>
-              <VStack align="stretch" gap={4}>
-                <Grid templateColumns={["1fr", "1fr 1fr"]} gap={3}>
-                  <Field label="Known language">
-                    <NativeSelect.Root>
-                      <NativeSelect.Field
-                        aria-label="Known language"
-                        value={languageSelectValue(setup.knownLanguage)}
-                        onChange={(event) => {
-                          const nextLanguage = event.currentTarget.value;
-                          updateTextField(
-                            "knownLanguage",
-                            nextLanguage === CUSTOM_LANGUAGE_VALUE
-                              ? ""
-                              : nextLanguage,
-                          );
-                        }}
-                      >
-                        {BILINGUAL_STORY_READER_LANGUAGE_OPTIONS.map((language) => (
-                          <option key={language.name} value={language.name}>
-                            {language.label}
-                          </option>
-                        ))}
-                      </NativeSelect.Field>
-                      <NativeSelect.Indicator />
-                    </NativeSelect.Root>
-                    {languageSelectValue(setup.knownLanguage) === CUSTOM_LANGUAGE_VALUE ? (
+        <Bleed inline={{ base: 1, md: 2 }}>
+          <HighlightedSection
+            contentPx={{ base: 3, md: 4 }}
+            contentPy={{ base: 3, md: 4 }}
+          >
+            <VStack align="stretch" gap={4} minW={0}>
+              <Card.Root borderColor="app.border.default" rounded="2xl">
+                <Card.Header>
+                  <Card.Title>Story Setup</Card.Title>
+                  <Card.Description>
+                    Defaults are ready. Change only what matters, then copy the prompt.
+                  </Card.Description>
+                </Card.Header>
+                <Card.Body>
+                  <VStack align="stretch" gap={4}>
+                    <Grid templateColumns={["1fr", "1fr 1fr"]} gap={3}>
+                      <Field label="Known language">
+                        <NativeSelect.Root>
+                          <NativeSelect.Field
+                            aria-label="Known language"
+                            value={languageSelectValue(setup.knownLanguage)}
+                            onChange={(event) => {
+                              const nextLanguage = event.currentTarget.value;
+                              updateTextField(
+                                "knownLanguage",
+                                nextLanguage === CUSTOM_LANGUAGE_VALUE
+                                  ? ""
+                                  : nextLanguage,
+                              );
+                            }}
+                          >
+                            {BILINGUAL_STORY_READER_LANGUAGE_OPTIONS.map((language) => (
+                              <option key={language.name} value={language.name}>
+                                {language.label}
+                              </option>
+                            ))}
+                          </NativeSelect.Field>
+                          <NativeSelect.Indicator />
+                        </NativeSelect.Root>
+                        {languageSelectValue(setup.knownLanguage) ===
+                        CUSTOM_LANGUAGE_VALUE ? (
+                          <Input
+                            aria-label="Custom known language"
+                            mt={2}
+                            placeholder="Type a language"
+                            value={setup.knownLanguage}
+                            onChange={(event) =>
+                              updateTextField("knownLanguage", event.currentTarget.value)
+                            }
+                          />
+                        ) : null}
+                      </Field>
+
+                      <Field label="Target language">
+                        <NativeSelect.Root>
+                          <NativeSelect.Field
+                            aria-label="Target language"
+                            value={languageSelectValue(setup.targetLanguage)}
+                            onChange={(event) => {
+                              const nextLanguage = event.currentTarget.value;
+                              updateTextField(
+                                "targetLanguage",
+                                nextLanguage === CUSTOM_LANGUAGE_VALUE
+                                  ? ""
+                                  : nextLanguage,
+                              );
+                            }}
+                          >
+                            {BILINGUAL_STORY_READER_LANGUAGE_OPTIONS.map((language) => (
+                              <option key={language.name} value={language.name}>
+                                {language.label}
+                              </option>
+                            ))}
+                          </NativeSelect.Field>
+                          <NativeSelect.Indicator />
+                        </NativeSelect.Root>
+                        {languageSelectValue(setup.targetLanguage) ===
+                        CUSTOM_LANGUAGE_VALUE ? (
+                          <Input
+                            aria-label="Custom target language"
+                            mt={2}
+                            placeholder="Type a language"
+                            value={setup.targetLanguage}
+                            onChange={(event) =>
+                              updateTextField("targetLanguage", event.currentTarget.value)
+                            }
+                          />
+                        ) : null}
+                      </Field>
+                    </Grid>
+
+                    <Grid templateColumns={["1fr", "1fr 1fr"]} gap={3}>
+                      <Field label="Level">
+                        <NativeSelect.Root>
+                          <NativeSelect.Field
+                            aria-label="Level"
+                            value={setup.level}
+                            onChange={(event) => {
+                              const nextLevel = event.currentTarget
+                                .value as BilingualStoryReaderLevel;
+                              setSetup((current) => ({
+                                ...current,
+                                level: nextLevel,
+                              }));
+                            }}
+                          >
+                            {BILINGUAL_STORY_READER_LEVELS.map((level) => (
+                              <option key={level} value={level}>
+                                {level}
+                              </option>
+                            ))}
+                          </NativeSelect.Field>
+                          <NativeSelect.Indicator />
+                        </NativeSelect.Root>
+                      </Field>
+
+                      <Field label="Length">
+                        <NativeSelect.Root>
+                          <NativeSelect.Field
+                            aria-label="Length"
+                            value={setup.length}
+                            onChange={(event) => {
+                              const nextLength = event.currentTarget
+                                .value as BilingualStoryReaderLength;
+                              setSetup((current) => ({
+                                ...current,
+                                length: nextLength,
+                              }));
+                            }}
+                          >
+                            {BILINGUAL_STORY_READER_LENGTHS.map((length) => (
+                              <option key={length} value={length}>
+                                {length}
+                              </option>
+                            ))}
+                          </NativeSelect.Field>
+                          <NativeSelect.Indicator />
+                        </NativeSelect.Root>
+                      </Field>
+                    </Grid>
+
+                    <Field label="Theme" optionalText="Automatic">
                       <Input
-                        aria-label="Custom known language"
-                        mt={2}
-                        placeholder="Type a language"
-                        value={setup.knownLanguage}
+                        aria-label="Theme"
+                        placeholder="Automatic random theme"
+                        value={setup.theme}
                         onChange={(event) =>
-                          updateTextField("knownLanguage", event.currentTarget.value)
+                          updateTextField("theme", event.currentTarget.value)
                         }
                       />
-                    ) : null}
-                  </Field>
+                    </Field>
 
-                  <Field label="Target language">
-                    <NativeSelect.Root>
-                      <NativeSelect.Field
-                        aria-label="Target language"
-                        value={languageSelectValue(setup.targetLanguage)}
-                        onChange={(event) => {
-                          const nextLanguage = event.currentTarget.value;
-                          updateTextField(
-                            "targetLanguage",
-                            nextLanguage === CUSTOM_LANGUAGE_VALUE
-                              ? ""
-                              : nextLanguage,
-                          );
-                        }}
-                      >
-                        {BILINGUAL_STORY_READER_LANGUAGE_OPTIONS.map((language) => (
-                          <option key={language.name} value={language.name}>
-                            {language.label}
-                          </option>
-                        ))}
-                      </NativeSelect.Field>
-                      <NativeSelect.Indicator />
-                    </NativeSelect.Root>
-                    {languageSelectValue(setup.targetLanguage) === CUSTOM_LANGUAGE_VALUE ? (
-                      <Input
-                        aria-label="Custom target language"
-                        mt={2}
-                        placeholder="Type a language"
-                        value={setup.targetLanguage}
+                    <Field label="Extra instructions" optionalText="Optional">
+                      <Textarea
+                        aria-label="Extra instructions"
+                        placeholder="Use simple dialogue or include romanization."
+                        value={setup.extraInstructions}
                         onChange={(event) =>
-                          updateTextField("targetLanguage", event.currentTarget.value)
+                          updateTextField("extraInstructions", event.currentTarget.value)
                         }
                       />
-                    ) : null}
-                  </Field>
-                </Grid>
+                    </Field>
 
-                <Grid templateColumns={["1fr", "1fr 1fr"]} gap={3}>
-                  <Field label="Level">
-                    <NativeSelect.Root>
-                      <NativeSelect.Field
-                        aria-label="Level"
-                        value={setup.level}
-                        onChange={(event) => {
-                          const nextLevel = event.currentTarget
-                            .value as BilingualStoryReaderLevel;
-                          setSetup((current) => ({
-                            ...current,
-                            level: nextLevel,
-                          }));
-                        }}
-                      >
-                        {BILINGUAL_STORY_READER_LEVELS.map((level) => (
-                          <option key={level} value={level}>
-                            {level}
-                          </option>
-                        ))}
-                      </NativeSelect.Field>
-                      <NativeSelect.Indicator />
-                    </NativeSelect.Root>
-                  </Field>
+                    <Separator />
 
-                  <Field label="Length">
-                    <NativeSelect.Root>
-                      <NativeSelect.Field
-                        aria-label="Length"
-                        value={setup.length}
-                        onChange={(event) => {
-                          const nextLength = event.currentTarget
-                            .value as BilingualStoryReaderLength;
-                          setSetup((current) => ({
-                            ...current,
-                            length: nextLength,
-                          }));
-                        }}
-                      >
-                        {BILINGUAL_STORY_READER_LENGTHS.map((length) => (
-                          <option key={length} value={length}>
-                            {length}
-                          </option>
-                        ))}
-                      </NativeSelect.Field>
-                      <NativeSelect.Indicator />
-                    </NativeSelect.Root>
-                  </Field>
-                </Grid>
+                    <Box>
+                      <Text fontWeight="medium">Generated prompt</Text>
+                      <Textarea
+                        aria-label="Generated prompt"
+                        fontFamily="mono"
+                        minH="2xs"
+                        mt={2}
+                        readOnly
+                        value={
+                          isSetupComplete
+                            ? prompt
+                            : "Choose the known and target languages to generate a copyable prompt."
+                        }
+                      />
+                    </Box>
+                  </VStack>
+                </Card.Body>
+              </Card.Root>
 
-                <Field label="Theme" optionalText="Automatic">
-                  <Input
-                    aria-label="Theme"
-                    placeholder="Automatic random theme"
-                    value={setup.theme}
-                    onChange={(event) => updateTextField("theme", event.currentTarget.value)}
-                  />
-                </Field>
+              <VStack align="stretch" gap={2} id="ai-response-validation">
+                {!jsonParseResult ? (
+                  <Text color="app.fg.muted" fontSize="sm">
+                    Clipboard responses are checked locally in your browser.
+                  </Text>
+                ) : null}
 
-                <Field label="Extra instructions" optionalText="Optional">
-                  <Textarea
-                    aria-label="Extra instructions"
-                    placeholder="Use simple dialogue or include romanization."
-                    value={setup.extraInstructions}
-                    onChange={(event) =>
-                      updateTextField("extraInstructions", event.currentTarget.value)
-                    }
-                  />
-                </Field>
+                {jsonParseResult?.warnings.map((warning) => (
+                  <Text color="orange.600" fontSize="sm" key={warning.code} role="status">
+                    {warning.message}
+                  </Text>
+                ))}
 
-                <Separator />
+                {jsonParseResult?.ok ? (
+                  <Text color="green.600" fontSize="sm" role="status">
+                    Response parsed.
+                  </Text>
+                ) : null}
 
-                <Box>
-                  <Text fontWeight="medium">Generated prompt</Text>
-                  <Textarea
-                    aria-label="Generated prompt"
-                    fontFamily="mono"
-                    minH="2xs"
-                    mt={2}
-                    readOnly
-                    value={
-                      isSetupComplete
-                        ? prompt
-                        : "Choose the known and target languages to generate a copyable prompt."
-                    }
-                  />
-                </Box>
+                {storyValidationResult?.ok ? (
+                  <Text color="green.600" fontSize="sm" role="status">
+                    Story rendered.
+                  </Text>
+                ) : null}
+
+                {jsonParseResult && !jsonParseResult.ok
+                  ? jsonParseResult.errors.map((error) => (
+                      <Text color="red.600" fontSize="sm" key={error.message} role="alert">
+                        {error.line && error.column
+                          ? `${error.message} Line ${error.line}, column ${error.column}.`
+                          : error.message}
+                      </Text>
+                    ))
+                  : null}
+
+                {storyValidationResult && !storyValidationResult.ok
+                  ? storyValidationResult.errors.map((error) => (
+                      <Text color="red.600" fontSize="sm" key={error.path} role="alert">
+                        {error.path}: {error.message}
+                      </Text>
+                    ))
+                  : null}
               </VStack>
-            </Card.Body>
-          </Card.Root>
-          </Grid>
 
-          <VStack align="stretch" gap={2} id="ai-response-validation">
-            {!jsonParseResult ? (
-              <Text color="app.fg.muted" fontSize="sm">
-                Clipboard responses are checked locally in your browser.
-              </Text>
-            ) : null}
-
-            {jsonParseResult?.warnings.map((warning) => (
-              <Text color="orange.600" fontSize="sm" key={warning.code} role="status">
-                {warning.message}
-              </Text>
-            ))}
-
-            {jsonParseResult?.ok ? (
-              <Text color="green.600" fontSize="sm" role="status">
-                Response parsed.
-              </Text>
-            ) : null}
-
-            {storyValidationResult?.ok ? (
-              <Text color="green.600" fontSize="sm" role="status">
-                Story rendered.
-              </Text>
-            ) : null}
-
-            {jsonParseResult && !jsonParseResult.ok
-              ? jsonParseResult.errors.map((error) => (
-                  <Text color="red.600" fontSize="sm" key={error.message} role="alert">
-                    {error.line && error.column
-                      ? `${error.message} Line ${error.line}, column ${error.column}.`
-                      : error.message}
-                  </Text>
-                ))
-              : null}
-
-            {storyValidationResult && !storyValidationResult.ok
-              ? storyValidationResult.errors.map((error) => (
-                  <Text color="red.600" fontSize="sm" key={error.path} role="alert">
-                    {error.path}: {error.message}
-                  </Text>
-                ))
-              : null}
-          </VStack>
-        </VStack>
+              <Card.Root borderColor="app.border.default" rounded="2xl">
+                <Card.Body>
+                  <HStack gap={3} wrap="wrap" color="app.fg.muted" fontSize="sm">
+                    <Text>Copy the prompt.</Text>
+                    <Text>Generate in your AI assistant.</Text>
+                    <Text>Paste the response.</Text>
+                    <Text>Read here.</Text>
+                  </HStack>
+                </Card.Body>
+              </Card.Root>
+            </VStack>
+          </HighlightedSection>
+        </Bleed>
       ) : null}
 
       {storyValidationResult?.ok ? (
-        <RenderedStoryView
-          story={storyValidationResult.value}
-          warnings={storyValidationResult.warnings}
-        />
+        <Bleed inline={{ base: 1, md: 2 }}>
+          <HighlightedSection
+            contentPx={{ base: 3, md: 4 }}
+            contentPy={{ base: 3, md: 4 }}
+          >
+            <RenderedStoryView
+              story={storyValidationResult.value}
+              warnings={storyValidationResult.warnings}
+            />
+          </HighlightedSection>
+        </Bleed>
       ) : null}
 
-      {!hasLoadedStory ? (
-        <Card.Root>
-          <Card.Body>
-            <HStack gap={3} wrap="wrap" color="app.fg.muted" fontSize="sm">
-              <Text>Copy the prompt.</Text>
-              <Text>Generate in your AI assistant.</Text>
-              <Text>Paste the response.</Text>
-              <Text>Read here.</Text>
-            </HStack>
-          </Card.Body>
-        </Card.Root>
-      ) : null}
     </VStack>
   );
 }
