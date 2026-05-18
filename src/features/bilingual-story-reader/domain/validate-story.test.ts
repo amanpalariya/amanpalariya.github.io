@@ -3,26 +3,20 @@ import { validateBilingualStoryReaderSchema } from "./validate-story";
 
 function validStory(overrides: Record<string, unknown> = {}) {
   return {
-    schemaVersion: "1.0",
     story: {
       title: "El tren",
-      targetLanguage: { name: "Spanish", direction: "ltr" },
-      knownLanguage: { name: "English", direction: "ltr" },
+      targetLanguage: "Spanish",
+      knownLanguage: "English",
       level: "A1",
+      estimatedMinutes: 3,
     },
     paragraphs: [
       {
-        id: "p1",
         sentences: [
           {
-            id: "s1",
             text: "Lina entra.",
-            naturalTranslation: "Lina enters.",
-            segments: [
-              { text: "Lina " },
-              { text: "entra", kind: "word", meaning: "enters" },
-              { text: "." },
-            ],
+            translation: "Lina enters.",
+            note: "Entra is present tense.",
           },
         ],
       },
@@ -38,25 +32,19 @@ describe("validateBilingualStoryReaderSchema", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error("expected validation success");
     expect(result.value.story.title).toBe("El tren");
-    expect(result.value.paragraphs[0]?.sentences[0]?.hasValidSegments).toBe(true);
-    expect(result.value.vocabularyReview).toEqual([]);
-    expect(result.value.comprehensionQuestions).toEqual([]);
-  });
-
-  it("rejects unsupported schema versions", () => {
-    const result = validateBilingualStoryReaderSchema(validStory({ schemaVersion: "2.0" }));
-
-    expect(result.ok).toBe(false);
-    if (result.ok) throw new Error("expected validation failure");
-    expect(result.errors).toContainEqual({
-      path: "schemaVersion",
-      message: "schemaVersion must be exactly 1.0.",
+    expect(result.value.story.targetLanguage).toBe("Spanish");
+    expect(result.value.story.knownLanguage).toBe("English");
+    expect(result.value.paragraphs[0]?.id).toBe("p1");
+    expect(result.value.paragraphs[0]?.sentences[0]).toMatchObject({
+      id: "p1-s1",
+      text: "Lina entra.",
+      translation: "Lina enters.",
+      note: "Entra is present tense.",
     });
   });
 
   it("rejects missing required story fields", () => {
     const result = validateBilingualStoryReaderSchema({
-      schemaVersion: "1.0",
       story: {},
       paragraphs: [],
     });
@@ -67,74 +55,36 @@ describe("validateBilingualStoryReaderSchema", () => {
       expect.arrayContaining([
         "story.title",
         "story.level",
-        "story.targetLanguage.name",
-        "story.knownLanguage.name",
+        "story.targetLanguage",
+        "story.knownLanguage",
         "paragraphs",
       ]),
     );
   });
 
-  it("rejects duplicate paragraph and sentence ids", () => {
+  it("rejects paragraph objects without sentences", () => {
     const result = validateBilingualStoryReaderSchema(
       validStory({
-        paragraphs: [
-          {
-            id: "p1",
-            sentences: [
-              { id: "s1", text: "Uno.", naturalTranslation: "One." },
-              { id: "s1", text: "Dos.", naturalTranslation: "Two." },
-            ],
-          },
-          {
-            id: "p1",
-            sentences: [{ id: "s3", text: "Tres.", naturalTranslation: "Three." }],
-          },
-        ],
+        paragraphs: [{}],
       }),
     );
 
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error("expected validation failure");
-    expect(result.errors.map((error) => error.message)).toEqual(
-      expect.arrayContaining([
-        'Duplicate sentence id "s1".',
-        'Duplicate paragraph id "p1".',
-      ]),
-    );
+    expect(result.errors).toContainEqual({
+      path: "paragraphs[0].sentences",
+      message: "paragraphs[0].sentences must be a non-empty array.",
+    });
   });
 
-  it("defaults missing directions to auto with warnings", () => {
+  it("rejects missing sentence text and translation", () => {
     const result = validateBilingualStoryReaderSchema(
       validStory({
-        story: {
-          title: "El tren",
-          targetLanguage: { name: "Spanish" },
-          knownLanguage: { name: "English" },
-          level: "A1",
-        },
-      }),
-    );
-
-    expect(result.ok).toBe(true);
-    if (!result.ok) throw new Error("expected validation success");
-    expect(result.value.story.targetLanguage.direction).toBe("auto");
-    expect(result.value.story.knownLanguage.direction).toBe("auto");
-    expect(result.warnings.map((warning) => warning.code)).toEqual([
-      "missing-direction",
-      "missing-direction",
-    ]);
-  });
-
-  it("rejects invalid enum values", () => {
-    const result = validateBilingualStoryReaderSchema(
-      validStory({
-        story: {
-          title: "El tren",
-          targetLanguage: { name: "Spanish", direction: "sideways" },
-          knownLanguage: { name: "English", direction: "ltr" },
-          level: "A1",
-        },
-        comprehensionQuestions: [{ difficulty: "unknown" }],
+        paragraphs: [
+          {
+            sentences: [{ text: "" }, "not an object"],
+          },
+        ],
       }),
     );
 
@@ -142,24 +92,22 @@ describe("validateBilingualStoryReaderSchema", () => {
     if (result.ok) throw new Error("expected validation failure");
     expect(result.errors.map((error) => error.path)).toEqual(
       expect.arrayContaining([
-        "story.targetLanguage.direction",
-        "comprehensionQuestions[0].difficulty",
+        "paragraphs[0].sentences[0].text",
+        "paragraphs[0].sentences[0].translation",
+        "paragraphs[0].sentences[1]",
       ]),
     );
   });
 
-  it("disables segment highlights for text mismatches without blocking rendering", () => {
+  it("allows notes to be omitted", () => {
     const result = validateBilingualStoryReaderSchema(
       validStory({
         paragraphs: [
           {
-            id: "p1",
             sentences: [
               {
-                id: "s1",
-                text: "Lina entra.",
-                naturalTranslation: "Lina enters.",
-                segments: [{ text: "Lina entra!" }],
+                text: "Lina mira.",
+                translation: "Lina looks.",
               },
             ],
           },
@@ -169,22 +117,21 @@ describe("validateBilingualStoryReaderSchema", () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error("expected validation success");
-    expect(result.value.paragraphs[0]?.sentences[0]?.hasValidSegments).toBe(false);
-    expect(result.warnings[0]?.code).toBe("segment-text-mismatch");
+    expect(result.value.paragraphs[0]?.sentences[0]?.note).toBeNull();
   });
 
-  it("accepts NFC-equivalent segment text", () => {
+  it("ignores unknown extra fields", () => {
     const result = validateBilingualStoryReaderSchema(
       validStory({
+        extraTopLevel: "ignored",
         paragraphs: [
           {
-            id: "p1",
+            extraParagraph: "ignored",
             sentences: [
               {
-                id: "s1",
-                text: "café",
-                naturalTranslation: "cafe",
-                segments: [{ text: "cafe\u0301" }],
+                text: "Lina entra.",
+                translation: "Lina enters.",
+                extraSentence: "ignored",
               },
             ],
           },
@@ -194,7 +141,13 @@ describe("validateBilingualStoryReaderSchema", () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error("expected validation success");
-    expect(result.value.paragraphs[0]?.sentences[0]?.hasValidSegments).toBe(true);
+    expect(result.value.paragraphs[0]?.id).toBe("p1");
+    expect(result.value.paragraphs[0]?.sentences[0]).toMatchObject({
+      id: "p1-s1",
+      translation: "Lina enters.",
+    });
+    expect("extraTopLevel" in result.value).toBe(false);
+    expect("extraParagraph" in result.value.paragraphs[0]!).toBe(false);
+    expect("extraSentence" in result.value.paragraphs[0]!.sentences[0]!).toBe(false);
   });
 });
-

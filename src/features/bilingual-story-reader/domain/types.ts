@@ -6,15 +6,6 @@ import type {
 export type BilingualStoryReaderLevel = (typeof BILINGUAL_STORY_READER_LEVELS)[number];
 export type BilingualStoryReaderLength = (typeof BILINGUAL_STORY_READER_LENGTHS)[number];
 
-export interface BilingualStoryReaderCustomLevelFields {
-  maxSentenceLength: string;
-  allowedGrammar: string;
-  tenseAspectComfort: string;
-  vocabularyComfort: string;
-  cefrTarget: string;
-  languageFeatures: string;
-}
-
 export interface BilingualStoryReaderSetupFormValues {
   knownLanguage: string;
   targetLanguage: string;
@@ -22,7 +13,6 @@ export interface BilingualStoryReaderSetupFormValues {
   theme: string;
   length: BilingualStoryReaderLength;
   extraInstructions: string;
-  customLevel: BilingualStoryReaderCustomLevelFields;
 }
 
 export interface NumericRange {
@@ -41,5 +31,4 @@ export interface BilingualStoryReaderLevelConstraints {
   sentenceWordCount: NumericRange | null;
   sentenceCharacterCount: NumericRange | null;
   grammar: string;
-  highlightDensity: NumericRange;
 }

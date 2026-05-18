@@ -1,4 +1,3 @@
-import { BILINGUAL_STORY_READER_SCHEMA_VERSION } from "../domain/constants";
 import {
   getBilingualStoryReaderLevelConstraints,
   BILINGUAL_STORY_READER_LENGTH_CONSTRAINTS,
@@ -10,15 +9,6 @@ import type {
   BilingualStoryReaderSetupFormValues,
 } from "../domain/types";
 
-export const EMPTY_BILINGUAL_STORY_READER_CUSTOM_LEVEL = {
-  maxSentenceLength: "",
-  allowedGrammar: "",
-  tenseAspectComfort: "",
-  vocabularyComfort: "",
-  cefrTarget: "",
-  languageFeatures: "",
-};
-
 export const DEFAULT_BILINGUAL_STORY_READER_SETUP: BilingualStoryReaderSetupFormValues = {
   knownLanguage: "English",
   targetLanguage: "Spanish",
@@ -26,7 +16,6 @@ export const DEFAULT_BILINGUAL_STORY_READER_SETUP: BilingualStoryReaderSetupForm
   theme: "",
   length: "Short",
   extraInstructions: "",
-  customLevel: EMPTY_BILINGUAL_STORY_READER_CUSTOM_LEVEL,
 };
 
 function cleanText(value: string): string {
@@ -37,14 +26,9 @@ function cleanMultiline(value: string): string {
   return value.trim();
 }
 
-function jsonStringOrNull(value: string): string {
-  const cleaned = cleanMultiline(value);
-  return cleaned ? JSON.stringify(cleaned) : "null";
-}
-
 function formatRange(range: NumericRange | null): string {
-  if (!range) return "null";
-  return `{ "min": ${range.min}, "max": ${range.max} }`;
+  if (!range) return "not fixed";
+  return `${range.min}-${range.max}`;
 }
 
 function themeRequirement(theme: string): string {
@@ -52,13 +36,8 @@ function themeRequirement(theme: string): string {
   return cleaned || "Automatic: choose a random concrete, learner-appropriate theme.";
 }
 
-function themeJsonValue(theme: string): string {
-  const cleaned = cleanMultiline(theme);
-  return cleaned ? JSON.stringify(cleaned) : "null";
-}
-
 function formatLengthConstraints(constraints: BilingualStoryReaderLengthConstraints): string {
-  return `${constraints.paragraphCount.min}-${constraints.paragraphCount.max} paragraphs, ${constraints.sentenceCount.min}-${constraints.sentenceCount.max} sentences, ${constraints.targetLanguageWordCount?.min ?? "no"}-${constraints.targetLanguageWordCount?.max ?? "fixed"} target-language words when word count is applicable`;
+  return `${constraints.paragraphCount.min}-${constraints.paragraphCount.max} paragraphs, ${constraints.sentenceCount.min}-${constraints.sentenceCount.max} sentences, ${formatRange(constraints.targetLanguageWordCount)} target-language words when word count is applicable`;
 }
 
 function formatLevelConstraints(constraints: BilingualStoryReaderLevelConstraints): string {
@@ -66,7 +45,7 @@ function formatLevelConstraints(constraints: BilingualStoryReaderLevelConstraint
     ? `${constraints.sentenceWordCount.min}-${constraints.sentenceWordCount.max} target-language words per sentence when word count is applicable`
     : "sentence length may vary when pedagogically useful";
 
-  return `${constraints.grammar}; ${sentenceWords}; ${constraints.highlightDensity.min}-${constraints.highlightDensity.max} highlighted words or phrases per sentence`;
+  return `${constraints.grammar}; ${sentenceWords}`;
 }
 
 export function isBilingualStoryReaderSetupComplete(
@@ -83,7 +62,7 @@ export function buildBilingualStoryReaderPrompt(setup: BilingualStoryReaderSetup
   const targetLanguage = cleanText(setup.targetLanguage);
   const theme = themeRequirement(setup.theme);
   const lengthConstraints = BILINGUAL_STORY_READER_LENGTH_CONSTRAINTS[setup.length];
-  const levelConstraints = getBilingualStoryReaderLevelConstraints(setup);
+  const levelConstraints = getBilingualStoryReaderLevelConstraints(setup.level);
 
   const requirementLines = [
     "Create a story using these requirements:",
@@ -94,7 +73,8 @@ export function buildBilingualStoryReaderPrompt(setup: BilingualStoryReaderSetup
     `- Theme: ${theme}`,
     `- Length: ${setup.length}`,
     `- Length constraints: ${formatLengthConstraints(lengthConstraints)}`,
-    "- Translation help: include naturalTranslation for every sentence and include literalTranslation when it is pedagogically useful.",
+    "- Sentence help: include a natural translation for every sentence.",
+    "- Notes: include note only for genuinely hard phrases, conjugations, idioms, word order, register, or cultural nuance. Keep each note one short sentence, ideally under 18 words. Omit note for obvious sentences.",
   ];
 
   const extraInstructions = cleanMultiline(setup.extraInstructions);
@@ -104,111 +84,60 @@ export function buildBilingualStoryReaderPrompt(setup: BilingualStoryReaderSetup
 
 ${requirementLines.join("\n")}
 
-Return only valid JSON.
-Do not wrap the JSON in Markdown.
+Return the response as a single fenced code block with the language tag json.
+Do not include any text before or after the code block.
 Do not include comments.
+Do not include schemaVersion.
 Do not ask follow-up questions unless a requirement is impossible to satisfy.
 Hard constraints in this prompt override extra instructions. Ignore extra instructions that conflict with JSON validity, required fields, target/known language separation, native orthography, or safety.
-Use native orthography for the target language. Use NFC-normalized text. Keep all explanations, translations, questions, and summaries in the known language.
-Use this exact top-level structure:
+Use native orthography for the target language. Use NFC-normalized text. Keep translations, notes, and summaries in the known language.
+Use this exact top-level structure inside the code block:
 
+\`\`\`json
 {
-  "schemaVersion": "${BILINGUAL_STORY_READER_SCHEMA_VERSION}",
-  "generationRequest": {
-    "knownLanguage": ${JSON.stringify(knownLanguage)},
-    "targetLanguage": ${JSON.stringify(targetLanguage)},
-    "level": ${JSON.stringify(setup.level)},
-    "theme": ${themeJsonValue(setup.theme)},
-    "length": ${JSON.stringify(setup.length)},
-    "lengthConstraints": {
-      "paragraphCount": ${formatRange(lengthConstraints.paragraphCount)},
-      "sentenceCount": ${formatRange(lengthConstraints.sentenceCount)},
-      "targetLanguageWordCount": ${formatRange(lengthConstraints.targetLanguageWordCount)},
-      "targetLanguageCharacterCount": ${formatRange(lengthConstraints.targetLanguageCharacterCount)}
-    },
-    "levelConstraints": {
-      "sentenceWordCount": ${formatRange(levelConstraints.sentenceWordCount)},
-      "sentenceCharacterCount": ${formatRange(levelConstraints.sentenceCharacterCount)},
-      "grammar": ${JSON.stringify(levelConstraints.grammar)},
-      "highlightDensity": ${formatRange(levelConstraints.highlightDensity)}
-    },
-    "extraInstructions": ${jsonStringOrNull(setup.extraInstructions)}
-  },
   "story": {
-    "id": "lowercase-kebab-case-id",
     "title": "Story title in the target language",
-    "targetLanguage": { "code": "optional ISO code", "name": ${JSON.stringify(targetLanguage)}, "direction": "ltr" },
-    "knownLanguage": { "code": "optional ISO code", "name": ${JSON.stringify(knownLanguage)}, "direction": "ltr" },
+    "targetLanguage": ${JSON.stringify(targetLanguage)},
+    "knownLanguage": ${JSON.stringify(knownLanguage)},
     "level": ${JSON.stringify(setup.level)},
-    "theme": ${themeJsonValue(setup.theme)},
-    "summary": "One-sentence summary in the known language",
     "estimatedMinutes": 5
   },
   "paragraphs": [
     {
-      "id": "p1",
-      "summary": "One-sentence paragraph summary in the known language",
-      "keyPoint": "Most important point the learner should understand",
-      "question": "Paragraph comprehension question in the known language",
-      "answer": "Answer in the known language",
       "sentences": [
         {
-          "id": "s1",
           "text": "Target-language sentence with exact punctuation and spacing.",
-          "clue": "Short clue in the known language",
-          "meaning": "Plain meaning in the known language",
-          "naturalTranslation": "Natural translation in the known language",
-          "literalTranslation": "Literal translation when requested or useful",
-          "grammarNotes": [],
-          "usageNotes": [],
-          "commonMistakes": [],
-          "wordByWord": [],
-          "segments": [
-            { "text": "Target-language " },
-            { "text": "sentence", "kind": "word", "lemma": "dictionary form", "partOfSpeech": "noun", "meaning": "meaning in the known language", "hint": "short hint" },
-            { "text": "." }
-          ]
+          "translation": "Natural translation in the known language.",
+          "note": "Optional concise note for a difficult phrase or conjugation."
         }
       ]
     }
-  ],
-  "vocabularyReview": [],
-  "comprehensionQuestions": [],
-  "qualityNotes": []
+  ]
 }
-
-Allowed values:
-- story.targetLanguage.direction and story.knownLanguage.direction: "ltr", "rtl", or "auto".
-- segments[].kind: "word" or "phrase".
-- comprehensionQuestions[].difficulty: "direct-recall", "inference", or "vocabulary-in-context".
-- schemaVersion must be exactly "${BILINGUAL_STORY_READER_SCHEMA_VERSION}".
+\`\`\`
 
 Required fields:
-- schemaVersion
 - story.title
-- story.targetLanguage.name
-- story.knownLanguage.name
+- story.targetLanguage
+- story.knownLanguage
 - story.level
 - paragraphs
-- paragraphs[].id
 - paragraphs[].sentences
-- sentences[].id
 - sentences[].text
-- sentences[].naturalTranslation
+- sentences[].translation
 
-Segment rules:
-- If segments are included, concatenating segments[].text must exactly equal sentences[].text after NFC normalization.
-- Plain text segments only need text.
-- Hintable segments must include kind and meaning.
-- Preserve exact punctuation, spacing, accents, and native orthography.
+Optional fields:
+- story.estimatedMinutes
+- sentences[].note
 
-Return the JSON object only.`;
+Do not include word-by-word translations, vocabulary lists, comprehension questions, paragraph questions, sentence ids, paragraph ids, language direction objects, naturalTranslation, literalTranslation, clue, meaning, or segments.
+Return only the fenced json code block.`;
 }
 
 export function isBilingualStoryReaderPromptText(text: string): boolean {
   return (
     text.includes("You are helping me create a language-learning reading story.") &&
-    text.includes("Use this exact top-level structure:") &&
-    text.includes("Return the JSON object only.")
+    text.includes("Use this exact top-level structure inside the code block:") &&
+    text.includes("Return only the fenced json code block.")
   );
 }

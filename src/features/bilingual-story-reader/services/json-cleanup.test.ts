@@ -3,16 +3,18 @@ import { cleanupExternalAiOutput, parseJsonWithCleanup } from "./json-cleanup";
 
 describe("bilingual story reader JSON cleanup", () => {
   it("trims plain JSON without warnings", () => {
-    const result = cleanupExternalAiOutput('  { "schemaVersion": "1.0" }  ');
+    const result = cleanupExternalAiOutput('  { "story": { "title": "Hola" } }  ');
 
-    expect(result.cleanedText).toBe('{ "schemaVersion": "1.0" }');
+    expect(result.cleanedText).toBe('{ "story": { "title": "Hola" } }');
     expect(result.warnings).toEqual([]);
   });
 
   it("extracts JSON from Markdown fences", () => {
-    const result = cleanupExternalAiOutput('```json\n{ "schemaVersion": "1.0" }\n```');
+    const result = cleanupExternalAiOutput(
+      '```json\n{ "story": { "title": "Hola" } }\n```',
+    );
 
-    expect(result.cleanedText).toBe('{ "schemaVersion": "1.0" }');
+    expect(result.cleanedText).toBe('{ "story": { "title": "Hola" } }');
     expect(result.warnings).toEqual([
       {
         code: "markdown-fence-removed",
@@ -41,11 +43,13 @@ describe("bilingual story reader JSON cleanup", () => {
   });
 
   it("parses cleaned JSON and returns cleanup warnings", () => {
-    const result = parseJsonWithCleanup('```json\n{ "schemaVersion": "1.0" }\n```');
+    const result = parseJsonWithCleanup(
+      '```json\n{ "story": { "title": "Hola" } }\n```',
+    );
 
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error("expected successful parse");
-    expect(result.value).toEqual({ schemaVersion: "1.0" });
+    expect(result.value).toEqual({ story: { title: "Hola" } });
     expect(result.warnings[0]?.code).toBe("markdown-fence-removed");
   });
 
@@ -62,7 +66,7 @@ describe("bilingual story reader JSON cleanup", () => {
   });
 
   it("returns line and column details when the runtime exposes a JSON position", () => {
-    const result = parseJsonWithCleanup('{\n  "schemaVersion": "1.0"\n  "story": {}\n}');
+    const result = parseJsonWithCleanup('{\n  "story": {}\n  "paragraphs": []\n}');
 
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error("expected parse failure");

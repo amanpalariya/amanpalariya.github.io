@@ -1,5 +1,4 @@
 export const BILINGUAL_STORY_READER_TOOL_ID = "bilingual-story-reader";
-export const BILINGUAL_STORY_READER_SCHEMA_VERSION = "1.0";
 
 export const BILINGUAL_STORY_READER_LEVELS = [
   "Beginner",
@@ -9,7 +8,6 @@ export const BILINGUAL_STORY_READER_LEVELS = [
   "B2",
   "C1",
   "C2",
-  "Custom",
 ] as const;
 
 export const BILINGUAL_STORY_READER_LENGTHS = ["Short", "Medium", "Long"] as const;
@@ -28,14 +26,4 @@ export const BILINGUAL_STORY_READER_LANGUAGE_OPTIONS = [
   { name: "Italian", label: "🇮🇹 Italian" },
   { name: "Russian", label: "🇷🇺 Russian" },
   { name: "Custom", label: "🌐 Custom" },
-] as const;
-
-export const BILINGUAL_STORY_READER_DIRECTIONS = ["ltr", "rtl", "auto"] as const;
-
-export const BILINGUAL_STORY_READER_SEGMENT_KINDS = ["word", "phrase"] as const;
-
-export const BILINGUAL_STORY_READER_QUESTION_DIFFICULTIES = [
-  "direct-recall",
-  "inference",
-  "vocabulary-in-context",
 ] as const;

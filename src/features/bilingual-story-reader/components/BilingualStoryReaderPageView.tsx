@@ -48,9 +48,8 @@ import { RenderedStoryView } from "./RenderedStoryView";
 
 type TextFieldName = Exclude<
   keyof BilingualStoryReaderSetupFormValues,
-  "level" | "length" | "customLevel"
+  "level" | "length"
 >;
-type CustomLevelFieldName = keyof BilingualStoryReaderSetupFormValues["customLevel"];
 
 type Notice = {
   id: number;
@@ -102,19 +101,6 @@ export function BilingualStoryReaderPageView() {
 
   function updateTextField(field: TextFieldName, value: string): void {
     setSetup((current) => ({ ...current, [field]: value }));
-  }
-
-  function updateCustomLevelField(
-    field: CustomLevelFieldName,
-    value: string,
-  ): void {
-    setSetup((current) => ({
-      ...current,
-      customLevel: {
-        ...current.customLevel,
-        [field]: value,
-      },
-    }));
   }
 
   async function copyPrompt(): Promise<void> {
@@ -249,7 +235,7 @@ export function BilingualStoryReaderPageView() {
           {hasLoadedStory ? (
             <>
               <Button colorPalette="blue" onClick={adjustPrompt}>
-                Adjust Prompt
+                Edit Prompt
               </Button>
               <Button variant="ghost" onClick={resetLoadedStory}>
                 New Story
@@ -313,7 +299,7 @@ export function BilingualStoryReaderPageView() {
                         setStoryValidationResult(null);
                       }}
                       onPaste={handleManualPaste}
-                      placeholder="Paste the AI response here. It will be read automatically."
+                      placeholder="Paste the AI response here, then load the story."
                       rounded="none"
                       value={rawResponseText}
                     />
@@ -326,7 +312,7 @@ export function BilingualStoryReaderPageView() {
                       variant="subtle"
                       w="full"
                     >
-                      Read pasted response
+                      Load Story
                     </Button>
                   </Popover.Content>
                 </Popover.Positioner>
@@ -484,83 +470,6 @@ export function BilingualStoryReaderPageView() {
                   />
                 </Field>
 
-                {setup.level === "Custom" ? (
-                  <VStack align="stretch" gap={3}>
-                    <Text fontWeight="medium">Custom Level</Text>
-                    <Grid templateColumns={["1fr", "1fr 1fr"]} gap={3}>
-                      <Field label="Max sentence length">
-                        <Input
-                          aria-label="Max sentence length"
-                          inputMode="numeric"
-                          placeholder="12"
-                          value={setup.customLevel.maxSentenceLength}
-                          onChange={(event) =>
-                            updateCustomLevelField(
-                              "maxSentenceLength",
-                              event.currentTarget.value,
-                            )
-                          }
-                        />
-                      </Field>
-                      <Field label="CEFR-like target">
-                        <Input
-                          aria-label="CEFR-like target"
-                          placeholder="A2 with familiar topics"
-                          value={setup.customLevel.cefrTarget}
-                          onChange={(event) =>
-                            updateCustomLevelField("cefrTarget", event.currentTarget.value)
-                          }
-                        />
-                      </Field>
-                    </Grid>
-                    <Field label="Allowed grammar">
-                      <Textarea
-                        aria-label="Allowed grammar"
-                        value={setup.customLevel.allowedGrammar}
-                        onChange={(event) =>
-                          updateCustomLevelField("allowedGrammar", event.currentTarget.value)
-                        }
-                      />
-                    </Field>
-                    <Field label="Tense/aspect comfort">
-                      <Textarea
-                        aria-label="Tense/aspect comfort"
-                        value={setup.customLevel.tenseAspectComfort}
-                        onChange={(event) =>
-                          updateCustomLevelField(
-                            "tenseAspectComfort",
-                            event.currentTarget.value,
-                          )
-                        }
-                      />
-                    </Field>
-                    <Field label="Vocabulary comfort">
-                      <Textarea
-                        aria-label="Vocabulary comfort"
-                        value={setup.customLevel.vocabularyComfort}
-                        onChange={(event) =>
-                          updateCustomLevelField(
-                            "vocabularyComfort",
-                            event.currentTarget.value,
-                          )
-                        }
-                      />
-                    </Field>
-                    <Field label="Language features">
-                      <Textarea
-                        aria-label="Language features"
-                        value={setup.customLevel.languageFeatures}
-                        onChange={(event) =>
-                          updateCustomLevelField(
-                            "languageFeatures",
-                            event.currentTarget.value,
-                          )
-                        }
-                      />
-                    </Field>
-                  </VStack>
-                ) : null}
-
                 <Field label="Extra instructions" optionalText="Optional">
                   <Textarea
                     aria-label="Extra instructions"
@@ -575,9 +484,9 @@ export function BilingualStoryReaderPageView() {
                 <Separator />
 
                 <Box>
-                  <Text fontWeight="medium">Prompt preview</Text>
+                  <Text fontWeight="medium">Generated prompt</Text>
                   <Textarea
-                    aria-label="Prompt preview"
+                    aria-label="Generated prompt"
                     fontFamily="mono"
                     minH="2xs"
                     mt={2}
