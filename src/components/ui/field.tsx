@@ -39,7 +39,12 @@ const FieldRoot = React.forwardRef<HTMLDivElement, FieldProps>(
         {label ? (
           <ChakraField.Label {...labelProps}>
             {label}
-            <ChakraField.RequiredIndicator fallback={optionalText} />
+            <ChakraField.RequiredIndicator
+              color="app.fg.muted"
+              fallback={optionalText}
+              fontWeight="normal"
+              ms={1}
+            />
           </ChakraField.Label>
         ) : null}
         {children}
