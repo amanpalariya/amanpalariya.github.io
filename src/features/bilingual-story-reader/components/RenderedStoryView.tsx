@@ -66,16 +66,25 @@ function StoryMetadataItem({
 
 function SentenceHelpContent({ sentence }: { sentence: RenderableSentence }) {
   return (
-    <VStack align="stretch" gap={3}>
-      <HStack align="start" gap={2.5}>
-        <Icon
-          as={LuLanguages}
-          boxSize={4}
+    <VStack align="stretch" gap={2.5}>
+      <HStack align="start" gap={3} pe={7}>
+        <Box
+          bg="app.bilingualStoryReader.bg.activeSentence"
           color="app.bilingualStoryReader.fg.accent"
+          display="grid"
           flexShrink={0}
-          mt={0.5}
-        />
-        <Text color="app.bilingualStoryReader.fg.default" fontSize="sm">
+          h={7}
+          placeItems="center"
+          rounded="full"
+          w={7}
+        >
+          <Icon as={LuLanguages} boxSize={4} />
+        </Box>
+        <Text
+          color="app.bilingualStoryReader.fg.default"
+          fontSize="md"
+          lineHeight="1.65"
+        >
           {sentence.translation}
         </Text>
       </HStack>
@@ -83,18 +92,24 @@ function SentenceHelpContent({ sentence }: { sentence: RenderableSentence }) {
         <HStack
           align="start"
           bg="app.bilingualStoryReader.bg.subtle"
-          gap={2.5}
-          p={3}
-          rounded="lg"
+          borderColor="app.bilingualStoryReader.border.muted"
+          borderWidth="1px"
+          gap={2}
+          p={2.5}
+          rounded="md"
         >
           <Icon
             as={LuInfo}
-            boxSize={4}
-            color="app.bilingualStoryReader.fg.accent"
+            boxSize={3.5}
+            color="app.bilingualStoryReader.fg.muted"
             flexShrink={0}
             mt={0.5}
           />
-          <Text color="app.bilingualStoryReader.fg.muted" fontSize="sm">
+          <Text
+            color="app.bilingualStoryReader.fg.muted"
+            fontSize="md"
+            lineHeight="1.55"
+          >
             {sentence.note}
           </Text>
         </HStack>
@@ -162,21 +177,23 @@ function StorySentence({
           bg="app.bilingualStoryReader.bg.popover"
           borderColor="app.bilingualStoryReader.border.default"
           borderWidth="1px"
-          maxW="min(360px, calc(100vw - 32px))"
+          maxW="min(400px, calc(100vw - 32px))"
           p={0}
-          rounded="md"
+          position="relative"
+          rounded="xl"
           shadow="lg"
         >
-          <VStack align="stretch" gap={3} p={4}>
-            <HStack justify="end">
-              <CloseButton
-                aria-label="Close sentence help"
-                size="sm"
-                onClick={onClose}
-              />
-            </HStack>
+          <CloseButton
+            aria-label="Close sentence help"
+            onClick={onClose}
+            position="absolute"
+            right={2}
+            size="sm"
+            top={2}
+          />
+          <Box p={4}>
             <SentenceHelpContent sentence={sentence} />
-          </VStack>
+          </Box>
         </Popover.Content>
       </Popover.Positioner>
     </Popover.Root>
