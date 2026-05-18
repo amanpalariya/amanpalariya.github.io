@@ -415,8 +415,7 @@ export function BilingualStoryReaderPageView() {
                     <HStack align="stretch" gap={0}>
                       <Button
                         {...ACTION_BUTTON_PROPS}
-                        borderRightWidth={0}
-                        borderColor="app.bilingualStoryReader.border.default"
+                        borderWidth={0}
                         bg="app.bilingualStoryReader.button.subtle.bg"
                         color="app.bilingualStoryReader.button.subtle.fg"
                         _hover={{ bg: "app.bilingualStoryReader.button.subtle.hoverBg" }}
@@ -437,9 +436,8 @@ export function BilingualStoryReaderPageView() {
                               ? "Hide manual paste"
                               : "Show manual paste"
                           }
-                          bg="app.bilingualStoryReader.bg.control"
-                          borderLeftWidth="1px"
-                          borderLeftColor="app.bilingualStoryReader.border.default"
+                          bg="app.bilingualStoryReader.button.subtle.bg"
+                          borderWidth={0}
                           color="app.bilingualStoryReader.button.subtle.fg"
                           _hover={{ bg: "app.bilingualStoryReader.button.subtle.hoverBg" }}
                           roundedLeft={0}
