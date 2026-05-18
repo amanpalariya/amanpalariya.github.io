@@ -356,15 +356,9 @@ export function BilingualStoryReaderPageView() {
                       </DialogHeader>
                       <DialogBody>
                         <VStack align="stretch" gap={3}>
-                          <Box minH={5}>
-                            <Text
-                              color="app.bilingualStoryReader.fg.muted"
-                              fontSize="sm"
-                              opacity={isPromptEditing ? 1 : 0}
-                            >
-                              Edits are temporary and are not saved to the setup.
-                            </Text>
-                          </Box>
+                          <Text color="app.bilingualStoryReader.fg.muted" fontSize="sm">
+                            Edits are temporary and are not saved to the setup.
+                          </Text>
                           <Textarea
                             {...CONTROL_INPUT_PROPS}
                             aria-label="Generated prompt"
