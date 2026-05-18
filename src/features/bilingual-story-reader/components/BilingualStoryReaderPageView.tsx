@@ -10,20 +10,47 @@ import {
   CloseButton,
   Flex,
   Grid,
+  Group,
   HStack,
+  Icon,
   IconButton,
   Input,
   NativeSelect,
   Popover,
-  Separator,
   Text,
   Textarea,
   VStack,
 } from "@chakra-ui/react";
 import HighlightedSection from "@components/page/common/HighlightedSection";
+import {
+  DialogBody,
+  DialogCloseTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogRoot,
+  DialogTitle,
+  DialogTrigger,
+} from "@components/ui/dialog";
+import { Clipboard } from "@components/ui/clipboard";
 import { Field } from "@components/ui/field";
-import { useMemo, useState, type ClipboardEvent as ReactClipboardEvent } from "react";
-import { LuChevronDown, LuChevronUp } from "react-icons/lu";
+import { Tooltip } from "@components/ui/tooltip";
+import {
+  useMemo,
+  useState,
+  type ClipboardEvent as ReactClipboardEvent,
+} from "react";
+import {
+  LuBookOpen,
+  LuCheck,
+  LuChevronDown,
+  LuChevronUp,
+  LuCircleHelp,
+  LuClipboardCopy,
+  LuClipboardPaste,
+  LuEye,
+  LuFilePlus,
+  LuPencil,
+} from "react-icons/lu";
 import {
   BILINGUAL_STORY_READER_LANGUAGE_OPTIONS,
   BILINGUAL_STORY_READER_LENGTHS,
@@ -40,7 +67,7 @@ import {
   isBilingualStoryReaderPromptText,
   isBilingualStoryReaderSetupComplete,
 } from "../services/prompt-builder";
-import { readTextFromClipboard, writeTextToClipboard } from "../services/clipboard";
+import { readTextFromClipboard } from "../services/clipboard";
 import { parseJsonWithCleanup, type JsonParseResult } from "../services/json-cleanup";
 import {
   validateBilingualStoryReaderSchema,
@@ -61,6 +88,22 @@ type Notice = {
 };
 
 const CUSTOM_LANGUAGE_VALUE = "Custom";
+
+const CONTROL_INPUT_PROPS = {
+  bg: "app.bg.default",
+  borderColor: "app.border.default",
+  color: "app.fg.default",
+  fontFamily: "ui",
+  fontSize: "sm",
+  rounded: "xl",
+  _placeholder: { color: "app.fg.subtle" },
+} as const;
+
+const ACTION_BUTTON_PROPS = {
+  fontFamily: "ui",
+  fontSize: "sm",
+  rounded: "xl",
+} as const;
 
 function languageSelectValue(language: string): string {
   return BILINGUAL_STORY_READER_LANGUAGE_OPTIONS.some((option) => option.name === language)
@@ -103,17 +146,6 @@ export function BilingualStoryReaderPageView() {
 
   function updateTextField(field: TextFieldName, value: string): void {
     setSetup((current) => ({ ...current, [field]: value }));
-  }
-
-  async function copyPrompt(): Promise<void> {
-    if (!isSetupComplete) return;
-
-    try {
-      await writeTextToClipboard(prompt);
-      notify("success", "Prompt copied", "Paste it into your AI assistant.");
-    } catch {
-      notify("warning", "Can’t access clipboard", "Select and copy the prompt manually.");
-    }
   }
 
   function validateResponseText(responseText: string): void {
@@ -237,22 +269,82 @@ export function BilingualStoryReaderPageView() {
           <HStack gap={2} wrap="wrap">
             {hasLoadedStory ? (
               <>
-                <Button colorPalette="blue" onClick={adjustPrompt}>
+                <Button {...ACTION_BUTTON_PROPS} colorPalette="blue" onClick={adjustPrompt}>
+                  <Icon>
+                    <LuPencil />
+                  </Icon>
                   Edit Prompt
                 </Button>
-                <Button variant="ghost" onClick={resetLoadedStory}>
+                <Button {...ACTION_BUTTON_PROPS} variant="ghost" onClick={resetLoadedStory}>
+                  <Icon>
+                    <LuFilePlus />
+                  </Icon>
                   New Story
                 </Button>
               </>
             ) : (
               <>
-                <Button
-                  colorPalette="blue"
-                  disabled={!isSetupComplete}
-                  onClick={copyPrompt}
-                >
-                  Copy Prompt
-                </Button>
+                <Group attached>
+                  <Clipboard.Root value={prompt} timeout={1000}>
+                    <Clipboard.Trigger asChild>
+                      <Button
+                        {...ACTION_BUTTON_PROPS}
+                        aria-label="Copy Prompt"
+                        borderRightWidth={0}
+                        colorPalette="blue"
+                        disabled={!isSetupComplete}
+                        roundedRight={0}
+                      >
+                        <Clipboard.Indicator copied={<Icon as={LuCheck} />}>
+                          <Icon as={LuClipboardCopy} />
+                        </Clipboard.Indicator>
+                        <Clipboard.Indicator copied="Copied">
+                          Copy Prompt
+                        </Clipboard.Indicator>
+                      </Button>
+                    </Clipboard.Trigger>
+                  </Clipboard.Root>
+                  <DialogRoot>
+                    <Tooltip content="View generated prompt">
+                      <DialogTrigger asChild>
+                        <IconButton
+                          {...ACTION_BUTTON_PROPS}
+                          aria-label="View generated prompt"
+                          borderLeftWidth="1px"
+                          colorPalette="blue"
+                          disabled={!isSetupComplete}
+                          roundedLeft={0}
+                        >
+                          <LuEye />
+                        </IconButton>
+                      </DialogTrigger>
+                    </Tooltip>
+
+                    <DialogContent
+                      bg="app.bg.card"
+                      borderColor="app.border.default"
+                      borderWidth="1px"
+                      color="app.fg.default"
+                      maxW="720px"
+                      rounded="2xl"
+                    >
+                      <DialogHeader>
+                        <DialogTitle fontFamily="ui">Generated prompt</DialogTitle>
+                      </DialogHeader>
+                      <DialogBody>
+                        <Textarea
+                          {...CONTROL_INPUT_PROPS}
+                          aria-label="Generated prompt"
+                          fontFamily="mono"
+                          minH={{ base: "xs", md: "md" }}
+                          readOnly
+                          value={prompt}
+                        />
+                      </DialogBody>
+                      <DialogCloseTrigger />
+                    </DialogContent>
+                  </DialogRoot>
+                </Group>
                 <Popover.Root
                   open={isManualPasteOpen}
                   onOpenChange={(details) => setIsManualPasteOpen(details.open)}
@@ -261,21 +353,34 @@ export function BilingualStoryReaderPageView() {
                   <Box>
                     <HStack align="stretch" gap={0}>
                       <Button
+                        {...ACTION_BUTTON_PROPS}
                         borderRightWidth={0}
+                        borderColor="app.border.default"
+                        bg="app.bg.default"
+                        color="app.fg.default"
+                        _hover={{ bg: "app.bg.subtle" }}
                         onClick={pasteResponseFromClipboard}
                         roundedRight={0}
                         variant="outline"
                       >
+                        <Icon>
+                          <LuClipboardPaste />
+                        </Icon>
                         Paste Response
                       </Button>
                       <Popover.Trigger asChild>
                         <IconButton
+                          {...ACTION_BUTTON_PROPS}
                           aria-label={
                             isManualPasteOpen
                               ? "Hide manual paste"
                               : "Show manual paste"
                           }
+                          bg="app.bg.default"
                           borderLeftWidth="1px"
+                          borderLeftColor="app.border.default"
+                          color="app.fg.default"
+                          _hover={{ bg: "app.bg.subtle" }}
                           roundedLeft={0}
                           variant="outline"
                         >
@@ -313,6 +418,7 @@ export function BilingualStoryReaderPageView() {
                         value={rawResponseText}
                       />
                       <Button
+                        {...ACTION_BUTTON_PROPS}
                         disabled={!rawResponseText.trim()}
                         mt="-1px"
                         onClick={readStory}
@@ -321,6 +427,9 @@ export function BilingualStoryReaderPageView() {
                         variant="subtle"
                         w="full"
                       >
+                        <Icon>
+                          <LuBookOpen />
+                        </Icon>
                         Load Story
                       </Button>
                     </Popover.Content>
@@ -329,13 +438,84 @@ export function BilingualStoryReaderPageView() {
               </>
             )}
           </HStack>
-          <Badge colorPalette="gray" alignSelf={["flex-start", "center"]}>
-            {hasLoadedStory
-              ? "Story loaded"
-              : jsonParseResult?.ok
-                ? "Response parsed"
-                : "Ready"}
-          </Badge>
+          <HStack gap={2} alignSelf={["flex-start", "center"]}>
+            <Badge colorPalette="gray">
+              {hasLoadedStory
+                ? "Story loaded"
+                : jsonParseResult?.ok
+                  ? "Response parsed"
+                  : "Ready"}
+            </Badge>
+            {!hasLoadedStory ? (
+              <DialogRoot>
+                <Tooltip content="Help">
+                  <DialogTrigger asChild>
+                    <IconButton
+                      {...ACTION_BUTTON_PROPS}
+                      aria-label="Open story reader help"
+                      color="app.fg.muted"
+                      variant="ghost"
+                    >
+                      <LuCircleHelp />
+                    </IconButton>
+                  </DialogTrigger>
+                </Tooltip>
+
+                <DialogContent
+                  bg="app.bg.card"
+                  borderColor="app.border.default"
+                  borderWidth="1px"
+                  color="app.fg.default"
+                  maxW="520px"
+                  rounded="2xl"
+                >
+                  <DialogHeader>
+                    <DialogTitle fontFamily="ui">Story reader help</DialogTitle>
+                  </DialogHeader>
+                  <DialogBody>
+                    <VStack align="stretch" gap={4} fontFamily="ui" fontSize="sm">
+                      <Box>
+                        <Text fontWeight="semibold" mb={2}>
+                          How to use
+                        </Text>
+                        <VStack
+                          as="ol"
+                          align="stretch"
+                          gap={1}
+                          ps={5}
+                          listStylePosition="outside"
+                          listStyleType="decimal"
+                        >
+                          <Text as="li" display="list-item">
+                            Copy the prompt.
+                          </Text>
+                          <Text as="li" display="list-item">
+                            Generate the story in your AI assistant.
+                          </Text>
+                          <Text as="li" display="list-item">
+                            Paste the response.
+                          </Text>
+                          <Text as="li" display="list-item">
+                            Read the story here.
+                          </Text>
+                        </VStack>
+                      </Box>
+
+                      <Box>
+                        <Text fontWeight="semibold" mb={1}>
+                          Privacy
+                        </Text>
+                        <Text color="app.fg.muted">
+                          Clipboard responses are checked locally in your browser.
+                        </Text>
+                      </Box>
+                    </VStack>
+                  </DialogBody>
+                  <DialogCloseTrigger />
+                </DialogContent>
+              </DialogRoot>
+            ) : null}
+          </HStack>
         </Flex>
       </Box>
 
@@ -349,16 +529,14 @@ export function BilingualStoryReaderPageView() {
               <Card.Root borderColor="app.border.default" rounded="2xl">
                 <Card.Header>
                   <Card.Title>Story Setup</Card.Title>
-                  <Card.Description>
-                    Defaults are ready. Change only what matters, then copy the prompt.
-                  </Card.Description>
                 </Card.Header>
                 <Card.Body>
                   <VStack align="stretch" gap={4}>
                     <Grid templateColumns={["1fr", "1fr 1fr"]} gap={3}>
                       <Field label="Known language">
-                        <NativeSelect.Root>
+                        <NativeSelect.Root w="full">
                           <NativeSelect.Field
+                            {...CONTROL_INPUT_PROPS}
                             aria-label="Known language"
                             value={languageSelectValue(setup.knownLanguage)}
                             onChange={(event) => {
@@ -382,6 +560,7 @@ export function BilingualStoryReaderPageView() {
                         {languageSelectValue(setup.knownLanguage) ===
                         CUSTOM_LANGUAGE_VALUE ? (
                           <Input
+                            {...CONTROL_INPUT_PROPS}
                             aria-label="Custom known language"
                             mt={2}
                             placeholder="Type a language"
@@ -394,8 +573,9 @@ export function BilingualStoryReaderPageView() {
                       </Field>
 
                       <Field label="Target language">
-                        <NativeSelect.Root>
+                        <NativeSelect.Root w="full">
                           <NativeSelect.Field
+                            {...CONTROL_INPUT_PROPS}
                             aria-label="Target language"
                             value={languageSelectValue(setup.targetLanguage)}
                             onChange={(event) => {
@@ -419,6 +599,7 @@ export function BilingualStoryReaderPageView() {
                         {languageSelectValue(setup.targetLanguage) ===
                         CUSTOM_LANGUAGE_VALUE ? (
                           <Input
+                            {...CONTROL_INPUT_PROPS}
                             aria-label="Custom target language"
                             mt={2}
                             placeholder="Type a language"
@@ -433,8 +614,9 @@ export function BilingualStoryReaderPageView() {
 
                     <Grid templateColumns={["1fr", "1fr 1fr"]} gap={3}>
                       <Field label="Level">
-                        <NativeSelect.Root>
+                        <NativeSelect.Root w="full">
                           <NativeSelect.Field
+                            {...CONTROL_INPUT_PROPS}
                             aria-label="Level"
                             value={setup.level}
                             onChange={(event) => {
@@ -457,8 +639,9 @@ export function BilingualStoryReaderPageView() {
                       </Field>
 
                       <Field label="Length">
-                        <NativeSelect.Root>
+                        <NativeSelect.Root w="full">
                           <NativeSelect.Field
+                            {...CONTROL_INPUT_PROPS}
                             aria-label="Length"
                             value={setup.length}
                             onChange={(event) => {
@@ -483,6 +666,7 @@ export function BilingualStoryReaderPageView() {
 
                     <Field label="Theme" optionalText="Automatic">
                       <Input
+                        {...CONTROL_INPUT_PROPS}
                         aria-label="Theme"
                         placeholder="Automatic random theme"
                         value={setup.theme}
@@ -494,6 +678,7 @@ export function BilingualStoryReaderPageView() {
 
                     <Field label="Extra instructions" optionalText="Optional">
                       <Textarea
+                        {...CONTROL_INPUT_PROPS}
                         aria-label="Extra instructions"
                         placeholder="Use simple dialogue or include romanization."
                         value={setup.extraInstructions}
@@ -502,35 +687,12 @@ export function BilingualStoryReaderPageView() {
                         }
                       />
                     </Field>
-
-                    <Separator />
-
-                    <Box>
-                      <Text fontWeight="medium">Generated prompt</Text>
-                      <Textarea
-                        aria-label="Generated prompt"
-                        fontFamily="mono"
-                        minH="2xs"
-                        mt={2}
-                        readOnly
-                        value={
-                          isSetupComplete
-                            ? prompt
-                            : "Choose the known and target languages to generate a copyable prompt."
-                        }
-                      />
-                    </Box>
                   </VStack>
                 </Card.Body>
               </Card.Root>
 
-              <VStack align="stretch" gap={2} id="ai-response-validation">
-                {!jsonParseResult ? (
-                  <Text color="app.fg.muted" fontSize="sm">
-                    Clipboard responses are checked locally in your browser.
-                  </Text>
-                ) : null}
-
+              {jsonParseResult || storyValidationResult ? (
+                <VStack align="stretch" gap={2} id="ai-response-validation">
                 {jsonParseResult?.warnings.map((warning) => (
                   <Text color="orange.600" fontSize="sm" key={warning.code} role="status">
                     {warning.message}
@@ -566,18 +728,8 @@ export function BilingualStoryReaderPageView() {
                       </Text>
                     ))
                   : null}
-              </VStack>
-
-              <Card.Root borderColor="app.border.default" rounded="2xl">
-                <Card.Body>
-                  <HStack gap={3} wrap="wrap" color="app.fg.muted" fontSize="sm">
-                    <Text>Copy the prompt.</Text>
-                    <Text>Generate in your AI assistant.</Text>
-                    <Text>Paste the response.</Text>
-                    <Text>Read here.</Text>
-                  </HStack>
-                </Card.Body>
-              </Card.Root>
+                </VStack>
+              ) : null}
             </VStack>
           </HighlightedSection>
         </Bleed>

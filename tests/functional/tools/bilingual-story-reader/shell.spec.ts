@@ -50,12 +50,17 @@ test.describe("Bilingual Story Reader shell", () => {
     await expect(page.getByRole("heading", { name: "Story Setup" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Manual Paste" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Copy Prompt" })).toBeEnabled();
+    await expect(page.getByRole("button", { name: "View generated prompt" })).toBeEnabled();
+    await expect(page.getByRole("button", { name: "Open story reader help" })).toBeEnabled();
     await expect(page.getByRole("button", { name: "Paste Response" })).toBeEnabled();
     await expect(page.getByRole("button", { name: "Show manual paste" })).toBeEnabled();
     await expect(page.getByText("Ready", { exact: true })).toBeVisible();
     await expect(page.getByLabel("Known language")).toHaveValue("English");
     await expect(page.getByLabel("Target language")).toHaveValue("Spanish");
     await expect(page.getByLabel("Level")).not.toHaveValue("Custom");
+    await expect(page.getByRole("textbox", { name: "Generated prompt" })).toBeHidden();
+    await expect(page.getByText("Clipboard responses are checked locally in your browser.")).toBeHidden();
+    await expect(page.getByText("Copy the prompt.", { exact: true })).toBeHidden();
   });
 
   test("generates and copies a simplified prompt from defaults", async ({
@@ -66,20 +71,23 @@ test.describe("Bilingual Story Reader shell", () => {
     await page.goto("/tools/bilingual-story-reader");
 
     await expect(page.getByRole("button", { name: "Copy Prompt" })).toBeEnabled();
-    await expect(page.getByLabel("Generated prompt")).toContainText("- Known language: English");
-    await expect(page.getByLabel("Generated prompt")).toContainText("- Target language: Spanish");
-    await expect(page.getByLabel("Generated prompt")).toContainText("- Theme: Automatic");
-    await expect(page.getByLabel("Generated prompt")).toContainText(
+    await page.getByRole("button", { name: "View generated prompt" }).click();
+    const promptTextbox = page.getByRole("textbox", { name: "Generated prompt" });
+    await expect(promptTextbox).toContainText("- Known language: English");
+    await expect(promptTextbox).toContainText("- Target language: Spanish");
+    await expect(promptTextbox).toContainText("- Theme: Automatic");
+    await expect(promptTextbox).toContainText(
       "Keep each note one short sentence",
     );
-    await expect(page.getByLabel("Generated prompt")).toContainText("```json");
-    await expect(page.getByLabel("Generated prompt")).toContainText('"translation"');
-    await expect(page.getByLabel("Generated prompt")).not.toContainText('"summary"');
-    await expect(page.getByLabel("Generated prompt")).not.toContainText('"schemaVersion"');
-    await expect(page.getByLabel("Generated prompt")).not.toContainText('"naturalTranslation"');
+    await expect(promptTextbox).toContainText("```json");
+    await expect(promptTextbox).toContainText('"translation"');
+    await expect(promptTextbox).not.toContainText('"summary"');
+    await expect(promptTextbox).not.toContainText('"schemaVersion"');
+    await expect(promptTextbox).not.toContainText('"naturalTranslation"');
+    await page.keyboard.press("Escape");
 
     await page.getByRole("button", { name: "Copy Prompt" }).click();
-    await expect(page.getByText("Prompt copied")).toBeVisible();
+    await expect(page.getByText("Copied", { exact: true })).toBeVisible();
     await expect
       .poll(() => page.evaluate(() => navigator.clipboard.readText()))
       .toContain("language-learning reading story");
@@ -91,8 +99,10 @@ test.describe("Bilingual Story Reader shell", () => {
     await page.getByLabel("Level").selectOption("Beginner");
 
     await expect(page.getByLabel("Level")).toHaveValue("Beginner");
-    await expect(page.getByLabel("Generated prompt")).toContainText("- Learner level: Beginner");
-    await expect(page.getByLabel("Generated prompt")).toContainText('"level": "Beginner"');
+    await page.getByRole("button", { name: "View generated prompt" }).click();
+    const promptTextbox = page.getByRole("textbox", { name: "Generated prompt" });
+    await expect(promptTextbox).toContainText("- Learner level: Beginner");
+    await expect(promptTextbox).toContainText('"level": "Beginner"');
   });
 
   test("parses and reports pasted AI responses", async ({ page }) => {
@@ -128,6 +138,8 @@ test.describe("Bilingual Story Reader shell", () => {
     await expect(page.getByText("Story loaded", { exact: true }).first()).toBeVisible();
     await expect(page.getByRole("heading", { name: "Story Setup" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Copy Prompt" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "View generated prompt" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Open story reader help" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Paste Response" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Edit Prompt" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "El tren" })).toBeVisible();
@@ -177,7 +189,9 @@ test.describe("Bilingual Story Reader shell", () => {
   test("auto-reads pasted manual responses and rejects pasted prompts", async ({ page }) => {
     await page.goto("/tools/bilingual-story-reader");
 
-    const prompt = await page.getByLabel("Generated prompt").inputValue();
+    await page.getByRole("button", { name: "View generated prompt" }).click();
+    const prompt = await page.getByRole("textbox", { name: "Generated prompt" }).inputValue();
+    await page.keyboard.press("Escape");
     await page.getByRole("button", { name: "Show manual paste" }).click();
     await page.getByLabel("AI response").focus();
     await dispatchPasteOnFocusedElement(page, prompt);
