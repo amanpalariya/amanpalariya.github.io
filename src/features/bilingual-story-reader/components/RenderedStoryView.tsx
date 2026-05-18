@@ -129,7 +129,7 @@ export function RenderedStoryView({
   const [openSentenceId, setOpenSentenceId] = useState<string | null>(null);
 
   return (
-    <Card.Root>
+    <Card.Root borderColor="app.border.default" overflow="hidden" rounded="2xl">
       <Card.Header>
         <VStack align="stretch" gap={3}>
           <HStack justify="space-between" gap={3} wrap="wrap">
