@@ -177,9 +177,9 @@ test.describe("Bilingual Story Reader shell", () => {
     expect(beforeHelpBox).not.toBeNull();
 
     await sentenceButton.click();
-    await expect(page.getByText("Translation", { exact: true })).toBeVisible();
+    await expect(page.getByText("Translation", { exact: true })).toHaveCount(0);
     await expect(page.getByText("Lina enters.", { exact: true })).toBeVisible();
-    await expect(page.getByText("Note")).toBeVisible();
+    await expect(page.getByText("Note")).toHaveCount(0);
     await expect(page.getByText("Entra is present tense.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Reveal next" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Check paragraph" })).toHaveCount(0);

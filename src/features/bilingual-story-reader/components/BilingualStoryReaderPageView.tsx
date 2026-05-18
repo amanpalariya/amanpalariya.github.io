@@ -313,7 +313,7 @@ export function BilingualStoryReaderPageView() {
                         roundedRight={0}
                       >
                         <Clipboard.Indicator copied={<Icon as={LuCheck} />}>
-                          <Icon as={LuClipboardCopy} />
+                          <Icon as={LuCopy} />
                         </Clipboard.Indicator>
                         <Clipboard.Indicator copied="Copied">
                           Copy Prompt
@@ -375,13 +375,15 @@ export function BilingualStoryReaderPageView() {
                           <HStack gap={2} justify="end" wrap="wrap">
                             <Button
                               {...ACTION_BUTTON_PROPS}
-                              onClick={() => setIsPromptEditing(true)}
+                              onClick={() =>
+                                setIsPromptEditing((current) => !current)
+                              }
                               variant="outline"
                             >
                               <Icon>
-                                <LuPencil />
+                                {isPromptEditing ? <LuEye /> : <LuPencil />}
                               </Icon>
-                              Edit
+                              {isPromptEditing ? "View" : "Edit"}
                             </Button>
                             <Clipboard.Root value={promptDraft} timeout={1000}>
                               <Clipboard.Trigger asChild>

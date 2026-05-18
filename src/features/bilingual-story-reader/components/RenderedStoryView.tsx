@@ -15,6 +15,7 @@ import {
   LuBookOpen,
   LuClock,
   LuGauge,
+  LuInfo,
   LuLanguages,
   LuListTree,
   LuTriangleAlert,
@@ -66,19 +67,37 @@ function StoryMetadataItem({
 function SentenceHelpContent({ sentence }: { sentence: RenderableSentence }) {
   return (
     <VStack align="stretch" gap={3}>
-      <Box>
-        <Text fontWeight="medium">Translation</Text>
-        <Text color="app.bilingualStoryReader.fg.muted" fontSize="sm">
+      <HStack align="start" gap={2.5}>
+        <Icon
+          as={LuLanguages}
+          boxSize={4}
+          color="app.bilingualStoryReader.fg.accent"
+          flexShrink={0}
+          mt={0.5}
+        />
+        <Text color="app.bilingualStoryReader.fg.default" fontSize="sm">
           {sentence.translation}
         </Text>
-      </Box>
+      </HStack>
       {sentence.note ? (
-        <Box>
-          <Text fontWeight="medium">Note</Text>
+        <HStack
+          align="start"
+          bg="app.bilingualStoryReader.bg.subtle"
+          gap={2.5}
+          p={3}
+          rounded="lg"
+        >
+          <Icon
+            as={LuInfo}
+            boxSize={4}
+            color="app.bilingualStoryReader.fg.accent"
+            flexShrink={0}
+            mt={0.5}
+          />
           <Text color="app.bilingualStoryReader.fg.muted" fontSize="sm">
             {sentence.note}
           </Text>
-        </Box>
+        </HStack>
       ) : null}
     </VStack>
   );
@@ -149,8 +168,7 @@ function StorySentence({
           shadow="lg"
         >
           <VStack align="stretch" gap={3} p={4}>
-            <HStack align="start" justify="space-between">
-              <Text fontWeight="semibold">Sentence Translation</Text>
+            <HStack justify="end">
               <CloseButton
                 aria-label="Close sentence help"
                 size="sm"
