@@ -37,9 +37,18 @@ function StoryMetadataItem({
   return (
     <HStack
       as="span"
-      borderColor={tone === "warning" ? "orange.300" : "app.border.default"}
+      bg="app.bilingualStoryReader.metadata.bg"
+      borderColor={
+        tone === "warning"
+          ? "app.bilingualStoryReader.metadata.warningBorder"
+          : "app.bilingualStoryReader.metadata.border"
+      }
       borderWidth="1px"
-      color={tone === "warning" ? "orange.600" : "app.fg.muted"}
+      color={
+        tone === "warning"
+          ? "app.bilingualStoryReader.metadata.warningFg"
+          : "app.bilingualStoryReader.metadata.fg"
+      }
       gap={1.5}
       minH={8}
       px={2.5}
@@ -59,14 +68,14 @@ function SentenceHelpContent({ sentence }: { sentence: RenderableSentence }) {
     <VStack align="stretch" gap={3}>
       <Box>
         <Text fontWeight="medium">Translation</Text>
-        <Text color="app.fg.muted" fontSize="sm">
+        <Text color="app.bilingualStoryReader.fg.muted" fontSize="sm">
           {sentence.translation}
         </Text>
       </Box>
       {sentence.note ? (
         <Box>
           <Text fontWeight="medium">Note</Text>
-          <Text color="app.fg.muted" fontSize="sm">
+          <Text color="app.bilingualStoryReader.fg.muted" fontSize="sm">
             {sentence.note}
           </Text>
         </Box>
@@ -110,8 +119,12 @@ function StorySentence({
           aria-label={`Open translation for sentence ${sentenceNumber}`}
           aria-pressed={isOpen}
           as="span"
-          bg={isOpen ? "bg.subtle" : "transparent"}
-          boxShadow={isOpen ? "inset 0 -2px 0 var(--chakra-colors-blue-500)" : "none"}
+          bg={isOpen ? "app.bilingualStoryReader.bg.activeSentence" : "transparent"}
+          boxShadow={
+            isOpen
+              ? "inset 0 -2px 0 var(--chakra-colors-app-bilingual-story-reader-border-active-sentence)"
+              : "none"
+          }
           color="inherit"
           cursor="help"
           display="inline"
@@ -127,8 +140,8 @@ function StorySentence({
       </Popover.Anchor>
       <Popover.Positioner zIndex={30}>
         <Popover.Content
-          bg="bg.panel"
-          borderColor="border"
+          bg="app.bilingualStoryReader.bg.popover"
+          borderColor="app.bilingualStoryReader.border.default"
           borderWidth="1px"
           maxW="min(360px, calc(100vw - 32px))"
           p={0}
@@ -166,7 +179,12 @@ export function RenderedStoryView({
   const [openSentenceId, setOpenSentenceId] = useState<string | null>(null);
 
   return (
-    <Card.Root borderColor="app.border.default" overflow="hidden" rounded="2xl">
+    <Card.Root
+      bg="app.bilingualStoryReader.bg.card"
+      borderColor="app.bilingualStoryReader.border.default"
+      overflow="hidden"
+      rounded="2xl"
+    >
       <Card.Header>
         <VStack align="stretch" gap={3}>
           <Card.Title>{story.story.title}</Card.Title>

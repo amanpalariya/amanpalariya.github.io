@@ -19,13 +19,13 @@ export function BilingualStoryReaderHelpButton() {
           <IconButton
             aria-label="Open story reader help"
             bg="transparent"
-            color="app.fg.muted"
+            color="app.bilingualStoryReader.fg.muted"
             rounded="full"
             size="md"
             variant="ghost"
             _hover={{
-              bg: "app.bg.subtle",
-              color: "app.fg.default",
+              bg: "app.bilingualStoryReader.bg.subtle",
+              color: "app.bilingualStoryReader.fg.default",
             }}
           >
             <LuCircleHelp size={20} />
@@ -34,10 +34,10 @@ export function BilingualStoryReaderHelpButton() {
       </Tooltip>
 
       <DialogContent
-        bg="app.bg.card"
-        borderColor="app.border.default"
+        bg="app.bilingualStoryReader.bg.card"
+        borderColor="app.bilingualStoryReader.border.default"
         borderWidth="1px"
-        color="app.fg.default"
+        color="app.bilingualStoryReader.fg.default"
         maxW="520px"
         rounded="2xl"
       >
@@ -74,7 +74,7 @@ export function BilingualStoryReaderHelpButton() {
               <Text fontWeight="semibold" mb={1}>
                 Privacy
               </Text>
-              <Text color="app.fg.muted">
+              <Text color="app.bilingualStoryReader.fg.muted">
                 Clipboard responses are checked locally in your browser.
               </Text>
             </Box>

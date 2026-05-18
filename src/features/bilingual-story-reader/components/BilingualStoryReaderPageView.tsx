@@ -89,19 +89,27 @@ type Notice = {
 const CUSTOM_LANGUAGE_VALUE = "Custom";
 
 const CONTROL_INPUT_PROPS = {
-  bg: "app.bg.default",
-  borderColor: "app.border.default",
-  color: "app.fg.default",
+  bg: "app.bilingualStoryReader.bg.control",
+  borderColor: "app.bilingualStoryReader.border.default",
+  color: "app.bilingualStoryReader.fg.default",
   fontFamily: "ui",
   fontSize: "sm",
   rounded: "xl",
-  _placeholder: { color: "app.fg.subtle" },
+  _placeholder: { color: "app.bilingualStoryReader.fg.subtle" },
 } as const;
 
 const ACTION_BUTTON_PROPS = {
   fontFamily: "ui",
   fontSize: "sm",
   rounded: "xl",
+} as const;
+
+const PRIMARY_BUTTON_PROPS = {
+  bg: "app.bilingualStoryReader.button.primary.bg",
+  color: "app.bilingualStoryReader.button.primary.fg",
+  _hover: {
+    bg: "app.bilingualStoryReader.button.primary.hoverBg",
+  },
 } as const;
 
 function languageSelectValue(language: string): string {
@@ -278,7 +286,7 @@ export function BilingualStoryReaderPageView() {
           <HStack gap={2} wrap="wrap">
             {hasLoadedStory ? (
               <>
-                <Button {...ACTION_BUTTON_PROPS} colorPalette="blue" onClick={adjustPrompt}>
+                <Button {...ACTION_BUTTON_PROPS} {...PRIMARY_BUTTON_PROPS} onClick={adjustPrompt}>
                   <Icon>
                     <LuPencil />
                   </Icon>
@@ -298,9 +306,9 @@ export function BilingualStoryReaderPageView() {
                     <Clipboard.Trigger asChild>
                       <Button
                         {...ACTION_BUTTON_PROPS}
+                        {...PRIMARY_BUTTON_PROPS}
                         aria-label="Copy Prompt"
                         borderRightWidth={0}
-                        colorPalette="blue"
                         disabled={!isSetupComplete}
                         roundedRight={0}
                       >
@@ -323,9 +331,10 @@ export function BilingualStoryReaderPageView() {
                       <DialogTrigger asChild>
                         <IconButton
                           {...ACTION_BUTTON_PROPS}
+                          {...PRIMARY_BUTTON_PROPS}
                           aria-label="View generated prompt"
                           borderLeftWidth="1px"
-                          colorPalette="blue"
+                          borderLeftColor="app.bilingualStoryReader.button.primary.divider"
                           disabled={!isSetupComplete}
                           roundedLeft={0}
                         >
@@ -335,10 +344,10 @@ export function BilingualStoryReaderPageView() {
                     </Tooltip>
 
                     <DialogContent
-                      bg="app.bg.card"
-                      borderColor="app.border.default"
+                      bg="app.bilingualStoryReader.bg.card"
+                      borderColor="app.bilingualStoryReader.border.default"
                       borderWidth="1px"
-                      color="app.fg.default"
+                      color="app.bilingualStoryReader.fg.default"
                       maxW="720px"
                       rounded="2xl"
                     >
@@ -348,7 +357,7 @@ export function BilingualStoryReaderPageView() {
                       <DialogBody>
                         <VStack align="stretch" gap={3}>
                           {isPromptEditing ? (
-                            <Text color="app.fg.muted" fontSize="sm">
+                            <Text color="app.bilingualStoryReader.fg.muted" fontSize="sm">
                               Edits are temporary and are not saved to the setup.
                             </Text>
                           ) : null}
@@ -378,8 +387,8 @@ export function BilingualStoryReaderPageView() {
                               <Clipboard.Trigger asChild>
                                 <Button
                                   {...ACTION_BUTTON_PROPS}
+                                  {...PRIMARY_BUTTON_PROPS}
                                   aria-label="Copy generated prompt"
-                                  colorPalette="blue"
                                 >
                                   <Clipboard.Indicator copied={<Icon as={LuCheck} />}>
                                     <Icon as={LuCopy} />
@@ -407,10 +416,10 @@ export function BilingualStoryReaderPageView() {
                       <Button
                         {...ACTION_BUTTON_PROPS}
                         borderRightWidth={0}
-                        borderColor="app.border.default"
-                        bg="app.bg.default"
-                        color="app.fg.default"
-                        _hover={{ bg: "app.bg.subtle" }}
+                        borderColor="app.bilingualStoryReader.border.default"
+                        bg="app.bilingualStoryReader.bg.control"
+                        color="app.bilingualStoryReader.fg.default"
+                        _hover={{ bg: "app.bilingualStoryReader.bg.subtle" }}
                         onClick={pasteResponseFromClipboard}
                         roundedRight={0}
                         variant="outline"
@@ -428,11 +437,11 @@ export function BilingualStoryReaderPageView() {
                               ? "Hide manual paste"
                               : "Show manual paste"
                           }
-                          bg="app.bg.default"
+                          bg="app.bilingualStoryReader.bg.control"
                           borderLeftWidth="1px"
-                          borderLeftColor="app.border.default"
-                          color="app.fg.default"
-                          _hover={{ bg: "app.bg.subtle" }}
+                          borderLeftColor="app.bilingualStoryReader.border.default"
+                          color="app.bilingualStoryReader.fg.default"
+                          _hover={{ bg: "app.bilingualStoryReader.bg.subtle" }}
                           roundedLeft={0}
                           variant="outline"
                         >
@@ -444,8 +453,8 @@ export function BilingualStoryReaderPageView() {
 
                   <Popover.Positioner zIndex={20}>
                     <Popover.Content
-                      bg="bg.panel"
-                      borderColor="border.subtle"
+                      bg="app.bilingualStoryReader.bg.popover"
+                      borderColor="app.bilingualStoryReader.border.default"
                       borderWidth="1px"
                       minW={{ base: "280px", sm: "420px" }}
                       overflow="hidden"
@@ -478,6 +487,11 @@ export function BilingualStoryReaderPageView() {
                         size="sm"
                         variant="subtle"
                         w="full"
+                        bg="app.bilingualStoryReader.button.subtle.bg"
+                        color="app.bilingualStoryReader.button.subtle.fg"
+                        _hover={{
+                          bg: "app.bilingualStoryReader.button.subtle.hoverBg",
+                        }}
                       >
                         <Icon>
                           <LuBookOpen />
@@ -500,7 +514,7 @@ export function BilingualStoryReaderPageView() {
             contentPy={{ base: 3, md: 4 }}
           >
             <VStack align="stretch" gap={4} minW={0}>
-              <Card.Root borderColor="app.border.default" rounded="2xl">
+              <Card.Root borderColor="app.bilingualStoryReader.border.default" rounded="2xl">
                 <Card.Header>
                   <Card.Title>Story Setup</Card.Title>
                 </Card.Header>
@@ -668,7 +682,12 @@ export function BilingualStoryReaderPageView() {
               {jsonParseResult || storyValidationResult ? (
                 <VStack align="stretch" gap={2} id="ai-response-validation">
                 {jsonParseResult?.warnings.map((warning) => (
-                  <Text color="orange.600" fontSize="sm" key={warning.code} role="status">
+                  <Text
+                    color="app.bilingualStoryReader.fg.warning"
+                    fontSize="sm"
+                    key={warning.code}
+                    role="status"
+                  >
                     {warning.message}
                   </Text>
                 ))}
