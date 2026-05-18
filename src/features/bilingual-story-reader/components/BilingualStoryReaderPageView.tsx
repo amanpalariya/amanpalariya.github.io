@@ -7,19 +7,21 @@ import {
   Button,
   Card,
   CloseButton,
+  Combobox,
   Flex,
   Grid,
   Group,
   HStack,
   Icon,
   IconButton,
-  Input,
   NativeSelect,
   Popover,
+  Portal,
   SegmentGroup,
   Text,
   Textarea,
   VStack,
+  useListCollection,
 } from "@chakra-ui/react";
 import HighlightedSection from "@components/page/common/HighlightedSection";
 import {
@@ -87,8 +89,6 @@ type Notice = {
   message?: string;
 };
 
-const CUSTOM_LANGUAGE_VALUE = "Custom";
-
 const CONTROL_INPUT_PROPS = {
   bg: "app.bilingualStoryReader.bg.control",
   borderColor: "app.bilingualStoryReader.border.default",
@@ -120,6 +120,113 @@ const SUBTLE_BUTTON_PROPS = {
     bg: "app.bilingualStoryReader.button.subtle.hoverBg",
   },
 } as const;
+
+type StoryComboboxOption = {
+  value: string;
+  label: string;
+};
+
+const LANGUAGE_COMBOBOX_OPTIONS = BILINGUAL_STORY_READER_LANGUAGE_OPTIONS
+  .filter((language) => language.name !== "Custom")
+  .map((language) => ({
+    value: language.name,
+    label: language.label,
+  }));
+
+const STORY_THEME_OPTIONS = [
+  "Funny",
+  "Cozy",
+  "Mystery",
+  "Horror",
+  "Thriller",
+  "Adventure",
+  "Fantasy",
+  "Sci-fi",
+  "Romance",
+  "Drama",
+  "Suspense",
+  "Wholesome",
+  "Melancholy",
+  "Satire",
+].map((theme) => ({ value: theme, label: theme }));
+
+function StoryCombobox({
+  ariaLabel,
+  onValueChange,
+  options,
+  placeholder,
+  value,
+}: {
+  ariaLabel: string;
+  onValueChange: (value: string) => void;
+  options: StoryComboboxOption[];
+  placeholder: string;
+  value: string;
+}) {
+  const { collection, filter } = useListCollection({
+    initialItems: options,
+    itemToString: (item) => item.value,
+    itemToValue: (item) => item.value,
+    filter: (itemText, filterText, item) => {
+      const normalizedFilter = filterText.toLowerCase();
+      return (
+        itemText.toLowerCase().includes(normalizedFilter) ||
+        item.label.toLowerCase().includes(normalizedFilter)
+      );
+    },
+  });
+
+  return (
+    <Combobox.Root
+      allowCustomValue
+      collection={collection}
+      inputValue={value}
+      openOnClick
+      positioning={{ sameWidth: true }}
+      selectionBehavior="replace"
+      onInputValueChange={(details) => {
+        onValueChange(details.inputValue);
+        filter(details.inputValue);
+      }}
+      onValueChange={(details) => {
+        const nextValue = details.items[0]?.value ?? details.value[0];
+        if (nextValue) onValueChange(nextValue);
+      }}
+    >
+      <Combobox.Control>
+        <Combobox.Input
+          {...CONTROL_INPUT_PROPS}
+          aria-label={ariaLabel}
+          placeholder={placeholder}
+        />
+        <Combobox.IndicatorGroup>
+          <Combobox.ClearTrigger />
+          <Combobox.Trigger />
+        </Combobox.IndicatorGroup>
+      </Combobox.Control>
+      <Portal>
+        <Combobox.Positioner zIndex={30}>
+          <Combobox.Content
+            bg="app.bilingualStoryReader.bg.popover"
+            borderColor="app.bilingualStoryReader.border.default"
+            borderWidth="1px"
+            shadow="lg"
+          >
+            {collection.items.map((option) => (
+              <Combobox.Item item={option} key={option.value}>
+                <Combobox.ItemText>{option.label}</Combobox.ItemText>
+                <Combobox.ItemIndicator />
+              </Combobox.Item>
+            ))}
+            <Combobox.Empty color="app.bilingualStoryReader.fg.muted" fontSize="sm">
+              Use typed value
+            </Combobox.Empty>
+          </Combobox.Content>
+        </Combobox.Positioner>
+      </Portal>
+    </Combobox.Root>
+  );
+}
 
 function StorySegmentedControl<T extends string>({
   ariaLabel,
@@ -175,12 +282,6 @@ function StorySegmentedControl<T extends string>({
       ))}
     </SegmentGroup.Root>
   );
-}
-
-function languageSelectValue(language: string): string {
-  return BILINGUAL_STORY_READER_LANGUAGE_OPTIONS.some((option) => option.name === language)
-    ? language
-    : CUSTOM_LANGUAGE_VALUE;
 }
 
 export function BilingualStoryReaderPageView() {
@@ -585,81 +686,27 @@ export function BilingualStoryReaderPageView() {
                   <VStack align="stretch" gap={4}>
                     <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={3}>
                       <Field label="Known language">
-                        <NativeSelect.Root w="full">
-                          <NativeSelect.Field
-                            {...CONTROL_INPUT_PROPS}
-                            aria-label="Known language"
-                            value={languageSelectValue(setup.knownLanguage)}
-                            onChange={(event) => {
-                              const nextLanguage = event.currentTarget.value;
-                              updateTextField(
-                                "knownLanguage",
-                                nextLanguage === CUSTOM_LANGUAGE_VALUE
-                                  ? ""
-                                  : nextLanguage,
-                              );
-                            }}
-                          >
-                            {BILINGUAL_STORY_READER_LANGUAGE_OPTIONS.map((language) => (
-                              <option key={language.name} value={language.name}>
-                                {language.label}
-                              </option>
-                            ))}
-                          </NativeSelect.Field>
-                          <NativeSelect.Indicator />
-                        </NativeSelect.Root>
-                        {languageSelectValue(setup.knownLanguage) ===
-                        CUSTOM_LANGUAGE_VALUE ? (
-                          <Input
-                            {...CONTROL_INPUT_PROPS}
-                            aria-label="Custom known language"
-                            mt={2}
-                            placeholder="Type a language"
-                            value={setup.knownLanguage}
-                            onChange={(event) =>
-                              updateTextField("knownLanguage", event.currentTarget.value)
-                            }
-                          />
-                        ) : null}
+                        <StoryCombobox
+                          ariaLabel="Known language"
+                          options={LANGUAGE_COMBOBOX_OPTIONS}
+                          placeholder="Search or type a language"
+                          value={setup.knownLanguage}
+                          onValueChange={(value) =>
+                            updateTextField("knownLanguage", value)
+                          }
+                        />
                       </Field>
 
                       <Field label="Target language">
-                        <NativeSelect.Root w="full">
-                          <NativeSelect.Field
-                            {...CONTROL_INPUT_PROPS}
-                            aria-label="Target language"
-                            value={languageSelectValue(setup.targetLanguage)}
-                            onChange={(event) => {
-                              const nextLanguage = event.currentTarget.value;
-                              updateTextField(
-                                "targetLanguage",
-                                nextLanguage === CUSTOM_LANGUAGE_VALUE
-                                  ? ""
-                                  : nextLanguage,
-                              );
-                            }}
-                          >
-                            {BILINGUAL_STORY_READER_LANGUAGE_OPTIONS.map((language) => (
-                              <option key={language.name} value={language.name}>
-                                {language.label}
-                              </option>
-                            ))}
-                          </NativeSelect.Field>
-                          <NativeSelect.Indicator />
-                        </NativeSelect.Root>
-                        {languageSelectValue(setup.targetLanguage) ===
-                        CUSTOM_LANGUAGE_VALUE ? (
-                          <Input
-                            {...CONTROL_INPUT_PROPS}
-                            aria-label="Custom target language"
-                            mt={2}
-                            placeholder="Type a language"
-                            value={setup.targetLanguage}
-                            onChange={(event) =>
-                              updateTextField("targetLanguage", event.currentTarget.value)
-                            }
-                          />
-                        ) : null}
+                        <StoryCombobox
+                          ariaLabel="Target language"
+                          options={LANGUAGE_COMBOBOX_OPTIONS}
+                          placeholder="Search or type a language"
+                          value={setup.targetLanguage}
+                          onValueChange={(value) =>
+                            updateTextField("targetLanguage", value)
+                          }
+                        />
                       </Field>
                     </Grid>
 
@@ -702,14 +749,12 @@ export function BilingualStoryReaderPageView() {
                     </Grid>
 
                     <Field label="Theme">
-                      <Input
-                        {...CONTROL_INPUT_PROPS}
-                        aria-label="Theme"
-                        placeholder="Automatic random theme"
+                      <StoryCombobox
+                        ariaLabel="Theme"
+                        options={STORY_THEME_OPTIONS}
+                        placeholder="Search or type a theme"
                         value={setup.theme}
-                        onChange={(event) =>
-                          updateTextField("theme", event.currentTarget.value)
-                        }
+                        onValueChange={(value) => updateTextField("theme", value)}
                       />
                     </Field>
 
