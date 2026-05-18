@@ -65,53 +65,38 @@ function StoryMetadataItem({
 
 function SentenceHelpContent({ sentence }: { sentence: RenderableSentence }) {
   return (
-    <VStack align="stretch" gap={2.5}>
-      <HStack align="start" gap={3}>
-        <Box
-          bg="app.bilingualStoryReader.bg.activeSentence"
+    <VStack align="stretch" gap={2}>
+      <Text
+        color="app.bilingualStoryReader.fg.default"
+        fontSize="md"
+        lineHeight="1.65"
+      >
+        <Icon
+          as={LuLanguages}
+          boxSize={4}
           color="app.bilingualStoryReader.fg.accent"
-          display="grid"
-          flexShrink={0}
-          h={7}
-          placeItems="center"
-          rounded="full"
-          w={7}
-        >
-          <Icon as={LuLanguages} boxSize={4} />
-        </Box>
-        <Text
-          color="app.bilingualStoryReader.fg.default"
-          fontSize="md"
-          lineHeight="1.65"
-        >
-          {sentence.translation}
-        </Text>
-      </HStack>
+          display="inline"
+          me={1.5}
+          verticalAlign="-0.15em"
+        />
+        {sentence.translation}
+      </Text>
       {sentence.note ? (
-        <HStack
-          align="start"
-          gap={3}
+        <Text
+          color="app.bilingualStoryReader.fg.muted"
+          fontSize="md"
+          lineHeight="1.55"
         >
-          <Box
-            bg="app.bilingualStoryReader.bg.subtle"
+          <Icon
+            as={LuInfo}
+            boxSize={3.5}
             color="app.bilingualStoryReader.fg.muted"
-            display="grid"
-            flexShrink={0}
-            h={7}
-            placeItems="center"
-            rounded="full"
-            w={7}
-          >
-            <Icon as={LuInfo} boxSize={3.5} />
-          </Box>
-          <Text
-            color="app.bilingualStoryReader.fg.muted"
-            fontSize="md"
-            lineHeight="1.55"
-          >
-            {sentence.note}
-          </Text>
-        </HStack>
+            display="inline"
+            me={1.5}
+            verticalAlign="-0.1em"
+          />
+          {sentence.note}
+        </Text>
       ) : null}
     </VStack>
   );
