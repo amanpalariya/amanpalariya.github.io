@@ -2,7 +2,6 @@
 
 import {
   Alert,
-  Badge,
   Bleed,
   Box,
   Button,
@@ -44,7 +43,6 @@ import {
   LuCheck,
   LuChevronDown,
   LuChevronUp,
-  LuCircleHelp,
   LuClipboardCopy,
   LuClipboardPaste,
   LuEye,
@@ -177,7 +175,6 @@ export function BilingualStoryReaderPageView() {
     setStoryValidationResult(validationResult);
     if (validationResult.ok) {
       setIsManualPasteOpen(false);
-      notify("success", "Story loaded");
     } else {
       notify("error", "Response needs repair", "The response is missing story fields.");
     }
@@ -437,84 +434,6 @@ export function BilingualStoryReaderPageView() {
                 </Popover.Root>
               </>
             )}
-          </HStack>
-          <HStack gap={2} alignSelf={["flex-start", "center"]}>
-            <Badge colorPalette="gray">
-              {hasLoadedStory
-                ? "Story loaded"
-                : jsonParseResult?.ok
-                  ? "Response parsed"
-                  : "Ready"}
-            </Badge>
-            {!hasLoadedStory ? (
-              <DialogRoot>
-                <Tooltip content="Help">
-                  <DialogTrigger asChild>
-                    <IconButton
-                      {...ACTION_BUTTON_PROPS}
-                      aria-label="Open story reader help"
-                      color="app.fg.muted"
-                      variant="ghost"
-                    >
-                      <LuCircleHelp />
-                    </IconButton>
-                  </DialogTrigger>
-                </Tooltip>
-
-                <DialogContent
-                  bg="app.bg.card"
-                  borderColor="app.border.default"
-                  borderWidth="1px"
-                  color="app.fg.default"
-                  maxW="520px"
-                  rounded="2xl"
-                >
-                  <DialogHeader>
-                    <DialogTitle fontFamily="ui">Story reader help</DialogTitle>
-                  </DialogHeader>
-                  <DialogBody>
-                    <VStack align="stretch" gap={4} fontFamily="ui" fontSize="sm">
-                      <Box>
-                        <Text fontWeight="semibold" mb={2}>
-                          How to use
-                        </Text>
-                        <VStack
-                          as="ol"
-                          align="stretch"
-                          gap={1}
-                          ps={5}
-                          listStylePosition="outside"
-                          listStyleType="decimal"
-                        >
-                          <Text as="li" display="list-item">
-                            Copy the prompt.
-                          </Text>
-                          <Text as="li" display="list-item">
-                            Generate the story in your AI assistant.
-                          </Text>
-                          <Text as="li" display="list-item">
-                            Paste the response.
-                          </Text>
-                          <Text as="li" display="list-item">
-                            Read the story here.
-                          </Text>
-                        </VStack>
-                      </Box>
-
-                      <Box>
-                        <Text fontWeight="semibold" mb={1}>
-                          Privacy
-                        </Text>
-                        <Text color="app.fg.muted">
-                          Clipboard responses are checked locally in your browser.
-                        </Text>
-                      </Box>
-                    </VStack>
-                  </DialogBody>
-                  <DialogCloseTrigger />
-                </DialogContent>
-              </DialogRoot>
-            ) : null}
           </HStack>
         </Flex>
       </Box>

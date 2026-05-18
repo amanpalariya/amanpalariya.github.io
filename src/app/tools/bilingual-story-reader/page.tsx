@@ -1,7 +1,11 @@
 "use client";
 
 import { ClientOnly } from "@chakra-ui/react";
-import { BilingualStoryReaderPageView, BILINGUAL_STORY_READER_TOOL_ID } from "features/bilingual-story-reader";
+import {
+  BilingualStoryReaderHelpButton,
+  BilingualStoryReaderPageView,
+  BILINGUAL_STORY_READER_TOOL_ID,
+} from "features/bilingual-story-reader";
 import { getToolById, ToolDetailsSection } from "features/tools";
 
 export default function BilingualStoryReaderToolPage() {
@@ -9,11 +13,15 @@ export default function BilingualStoryReaderToolPage() {
 
   return (
     <>
-      {tool ? <ToolDetailsSection tool={tool} /> : null}
+      {tool ? (
+        <ToolDetailsSection
+          tool={tool}
+          titleAction={<BilingualStoryReaderHelpButton />}
+        />
+      ) : null}
       <ClientOnly>
         <BilingualStoryReaderPageView />
       </ClientOnly>
     </>
   );
 }
-

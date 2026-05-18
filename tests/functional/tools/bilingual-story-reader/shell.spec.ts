@@ -54,7 +54,7 @@ test.describe("Bilingual Story Reader shell", () => {
     await expect(page.getByRole("button", { name: "Open story reader help" })).toBeEnabled();
     await expect(page.getByRole("button", { name: "Paste Response" })).toBeEnabled();
     await expect(page.getByRole("button", { name: "Show manual paste" })).toBeEnabled();
-    await expect(page.getByText("Ready", { exact: true })).toBeVisible();
+    await expect(page.getByText("Ready", { exact: true })).toHaveCount(0);
     await expect(page.getByLabel("Known language")).toHaveValue("English");
     await expect(page.getByLabel("Target language")).toHaveValue("Spanish");
     await expect(page.getByLabel("Level")).not.toHaveValue("Custom");
@@ -135,16 +135,16 @@ test.describe("Bilingual Story Reader shell", () => {
     await page.getByLabel("AI response").fill(JSON.stringify(validStory()));
     await page.getByRole("button", { name: "Load Story" }).click();
 
-    await expect(page.getByText("Story loaded", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Story loaded", { exact: true })).toHaveCount(0);
     await expect(page.getByRole("heading", { name: "Story Setup" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Copy Prompt" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "View generated prompt" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Open story reader help" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Open story reader help" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Paste Response" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Edit Prompt" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "El tren" })).toBeVisible();
     await expect(page.getByText("Spanish from English · A1")).toBeVisible();
-    await expect(page.getByText("Paragraph 1 of 1")).toBeVisible();
+    await expect(page.getByText("Paragraph 1 of 1")).toHaveCount(0);
     await expect(page.locator("article").getByText("Lina entra.", { exact: true })).toBeVisible();
   });
 

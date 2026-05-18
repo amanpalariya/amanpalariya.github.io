@@ -164,9 +164,6 @@ export function RenderedStoryView({
         <VStack align="stretch" as="article" gap={5}>
           {story.paragraphs.map((paragraph, paragraphIndex) => (
             <Box key={paragraph.id}>
-              <Text color="app.fg.muted" fontSize="xs" mb={2}>
-                Paragraph {paragraphIndex + 1} of {story.paragraphs.length}
-              </Text>
               <Text fontSize="lg" lineHeight="1.9">
                 {paragraph.sentences.map((sentence, sentenceIndex) => {
                   const sentenceNumber =
