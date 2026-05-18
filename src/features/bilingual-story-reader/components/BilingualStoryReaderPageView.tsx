@@ -135,19 +135,12 @@ const LANGUAGE_COMBOBOX_OPTIONS = BILINGUAL_STORY_READER_LANGUAGE_OPTIONS
 
 const STORY_THEME_OPTIONS = [
   "Funny",
-  "Cozy",
+  "Scary",
   "Mystery",
-  "Horror",
-  "Thriller",
   "Adventure",
   "Fantasy",
-  "Sci-fi",
   "Romance",
   "Drama",
-  "Suspense",
-  "Wholesome",
-  "Melancholy",
-  "Satire",
 ].map((theme) => ({ value: theme, label: theme }));
 
 function StoryCombobox({
