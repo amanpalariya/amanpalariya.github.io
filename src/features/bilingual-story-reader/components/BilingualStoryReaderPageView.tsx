@@ -322,6 +322,7 @@ export function BilingualStoryReaderPageView() {
                         aria-label="Copy Prompt"
                         borderRightWidth={0}
                         disabled={!isSetupComplete}
+                        minW="9rem"
                         roundedRight={0}
                       >
                         <Clipboard.Indicator copied={<Icon as={LuCheck} />}>
@@ -401,6 +402,7 @@ export function BilingualStoryReaderPageView() {
                                   {...ACTION_BUTTON_PROPS}
                                   {...PRIMARY_BUTTON_PROPS}
                                   aria-label="Copy generated prompt"
+                                  minW="5.75rem"
                                 >
                                   <Clipboard.Indicator copied={<Icon as={LuCheck} />}>
                                     <Icon as={LuCopy} />
