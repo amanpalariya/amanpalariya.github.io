@@ -91,16 +91,21 @@ function SentenceHelpContent({ sentence }: { sentence: RenderableSentence }) {
       {sentence.note ? (
         <HStack
           align="start"
-          gap={2}
-          ms={10}
+          gap={3}
+          pe={7}
         >
-          <Icon
-            as={LuInfo}
-            boxSize={3.5}
+          <Box
+            bg="app.bilingualStoryReader.bg.subtle"
             color="app.bilingualStoryReader.fg.muted"
+            display="grid"
             flexShrink={0}
-            mt={0.5}
-          />
+            h={7}
+            placeItems="center"
+            rounded="full"
+            w={7}
+          >
+            <Icon as={LuInfo} boxSize={3.5} />
+          </Box>
           <Text
             color="app.bilingualStoryReader.fg.muted"
             fontSize="md"
