@@ -656,7 +656,7 @@ export function BilingualStoryReaderPageView() {
                       </Field>
                     </Grid>
 
-                    <Field label="Theme" optionalText="Automatic">
+                    <Field label="Theme">
                       <Input
                         {...CONTROL_INPUT_PROPS}
                         aria-label="Theme"
@@ -668,7 +668,7 @@ export function BilingualStoryReaderPageView() {
                       />
                     </Field>
 
-                    <Field label="Extra instructions" optionalText="Optional">
+                    <Field label="Extra instructions">
                       <Textarea
                         {...CONTROL_INPUT_PROPS}
                         aria-label="Extra instructions"
