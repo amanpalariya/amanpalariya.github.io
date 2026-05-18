@@ -91,12 +91,8 @@ function SentenceHelpContent({ sentence }: { sentence: RenderableSentence }) {
       {sentence.note ? (
         <HStack
           align="start"
-          bg="app.bilingualStoryReader.bg.subtle"
-          borderColor="app.bilingualStoryReader.border.muted"
-          borderWidth="1px"
           gap={2}
-          p={2.5}
-          rounded="md"
+          ms={10}
         >
           <Icon
             as={LuInfo}
