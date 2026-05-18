@@ -84,6 +84,14 @@ test.describe("Bilingual Story Reader shell", () => {
     await expect(promptTextbox).not.toContainText('"summary"');
     await expect(promptTextbox).not.toContainText('"schemaVersion"');
     await expect(promptTextbox).not.toContainText('"naturalTranslation"');
+
+    await page.getByRole("button", { name: "Edit" }).click();
+    await expect(page.getByText("Edits are temporary and are not saved to the setup.")).toBeVisible();
+    await promptTextbox.fill("custom edited prompt");
+    await page.getByRole("button", { name: "Copy generated prompt" }).click();
+    await expect
+      .poll(() => page.evaluate(() => navigator.clipboard.readText()))
+      .toBe("custom edited prompt");
     await page.keyboard.press("Escape");
 
     await page.getByRole("button", { name: "Copy Prompt" }).click();

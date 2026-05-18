@@ -45,6 +45,7 @@ import {
   LuChevronUp,
   LuClipboardCopy,
   LuClipboardPaste,
+  LuCopy,
   LuEye,
   LuFilePlus,
   LuPencil,
@@ -116,6 +117,9 @@ export function BilingualStoryReaderPageView() {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [rawResponseText, setRawResponseText] = useState("");
   const [isManualPasteOpen, setIsManualPasteOpen] = useState(false);
+  const [isPromptDialogOpen, setIsPromptDialogOpen] = useState(false);
+  const [isPromptEditing, setIsPromptEditing] = useState(false);
+  const [promptDraft, setPromptDraft] = useState("");
   const [jsonParseResult, setJsonParseResult] = useState<JsonParseResult | null>(
     null,
   );
@@ -144,6 +148,14 @@ export function BilingualStoryReaderPageView() {
 
   function updateTextField(field: TextFieldName, value: string): void {
     setSetup((current) => ({ ...current, [field]: value }));
+  }
+
+  function handlePromptDialogOpenChange(open: boolean): void {
+    setIsPromptDialogOpen(open);
+    if (open) {
+      setPromptDraft(prompt);
+      setIsPromptEditing(false);
+    }
   }
 
   function validateResponseText(responseText: string): void {
@@ -301,7 +313,12 @@ export function BilingualStoryReaderPageView() {
                       </Button>
                     </Clipboard.Trigger>
                   </Clipboard.Root>
-                  <DialogRoot>
+                  <DialogRoot
+                    open={isPromptDialogOpen}
+                    onOpenChange={(details) =>
+                      handlePromptDialogOpenChange(details.open)
+                    }
+                  >
                     <Tooltip content="View generated prompt">
                       <DialogTrigger asChild>
                         <IconButton
@@ -329,14 +346,52 @@ export function BilingualStoryReaderPageView() {
                         <DialogTitle fontFamily="ui">Generated prompt</DialogTitle>
                       </DialogHeader>
                       <DialogBody>
-                        <Textarea
-                          {...CONTROL_INPUT_PROPS}
-                          aria-label="Generated prompt"
-                          fontFamily="mono"
-                          minH={{ base: "xs", md: "md" }}
-                          readOnly
-                          value={prompt}
-                        />
+                        <VStack align="stretch" gap={3}>
+                          {isPromptEditing ? (
+                            <Text color="app.fg.muted" fontSize="sm">
+                              Edits are temporary and are not saved to the setup.
+                            </Text>
+                          ) : null}
+                          <Textarea
+                            {...CONTROL_INPUT_PROPS}
+                            aria-label="Generated prompt"
+                            fontFamily="mono"
+                            minH={{ base: "xs", md: "md" }}
+                            onChange={(event) =>
+                              setPromptDraft(event.currentTarget.value)
+                            }
+                            readOnly={!isPromptEditing}
+                            value={promptDraft}
+                          />
+                          <HStack gap={2} justify="end" wrap="wrap">
+                            <Button
+                              {...ACTION_BUTTON_PROPS}
+                              onClick={() => setIsPromptEditing(true)}
+                              variant="outline"
+                            >
+                              <Icon>
+                                <LuPencil />
+                              </Icon>
+                              Edit
+                            </Button>
+                            <Clipboard.Root value={promptDraft} timeout={1000}>
+                              <Clipboard.Trigger asChild>
+                                <Button
+                                  {...ACTION_BUTTON_PROPS}
+                                  aria-label="Copy generated prompt"
+                                  colorPalette="blue"
+                                >
+                                  <Clipboard.Indicator copied={<Icon as={LuCheck} />}>
+                                    <Icon as={LuCopy} />
+                                  </Clipboard.Indicator>
+                                  <Clipboard.Indicator copied="Copied">
+                                    Copy
+                                  </Clipboard.Indicator>
+                                </Button>
+                              </Clipboard.Trigger>
+                            </Clipboard.Root>
+                          </HStack>
+                        </VStack>
                       </DialogBody>
                       <DialogCloseTrigger />
                     </DialogContent>
