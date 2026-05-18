@@ -417,9 +417,9 @@ export function BilingualStoryReaderPageView() {
                         {...ACTION_BUTTON_PROPS}
                         borderRightWidth={0}
                         borderColor="app.bilingualStoryReader.border.default"
-                        bg="app.bilingualStoryReader.bg.control"
-                        color="app.bilingualStoryReader.fg.default"
-                        _hover={{ bg: "app.bilingualStoryReader.bg.subtle" }}
+                        bg="app.bilingualStoryReader.button.subtle.bg"
+                        color="app.bilingualStoryReader.button.subtle.fg"
+                        _hover={{ bg: "app.bilingualStoryReader.button.subtle.hoverBg" }}
                         onClick={pasteResponseFromClipboard}
                         roundedRight={0}
                         variant="outline"
@@ -440,8 +440,8 @@ export function BilingualStoryReaderPageView() {
                           bg="app.bilingualStoryReader.bg.control"
                           borderLeftWidth="1px"
                           borderLeftColor="app.bilingualStoryReader.border.default"
-                          color="app.bilingualStoryReader.fg.default"
-                          _hover={{ bg: "app.bilingualStoryReader.bg.subtle" }}
+                          color="app.bilingualStoryReader.button.subtle.fg"
+                          _hover={{ bg: "app.bilingualStoryReader.button.subtle.hoverBg" }}
                           roundedLeft={0}
                           variant="outline"
                         >
