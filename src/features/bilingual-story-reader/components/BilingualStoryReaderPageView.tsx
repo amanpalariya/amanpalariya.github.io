@@ -142,7 +142,8 @@ function StorySegmentedControl<T extends string>({
       borderWidth="1px"
       color="app.bilingualStoryReader.fg.default"
       fontFamily="ui"
-      overflowX="auto"
+      flexWrap="wrap"
+      minW={0}
       p={1}
       rounded="xl"
       size="sm"
@@ -158,7 +159,7 @@ function StorySegmentedControl<T extends string>({
       <SegmentGroup.Indicator />
       {options.map((option) => (
         <SegmentGroup.Item
-          flex={1}
+          flex="1 1 auto"
           key={option}
           minW={itemMinW}
           px={3}
@@ -582,7 +583,7 @@ export function BilingualStoryReaderPageView() {
                 </Card.Header>
                 <Card.Body>
                   <VStack align="stretch" gap={4}>
-                    <Grid templateColumns={["1fr", "1fr 1fr"]} gap={3}>
+                    <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={3}>
                       <Field label="Known language">
                         <NativeSelect.Root w="full">
                           <NativeSelect.Field
@@ -662,7 +663,7 @@ export function BilingualStoryReaderPageView() {
                       </Field>
                     </Grid>
 
-                    <Grid templateColumns={["1fr", "1fr 1fr"]} gap={3}>
+                    <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={3}>
                       <Field label="Level">
                         <StorySegmentedControl<BilingualStoryReaderLevel>
                           ariaLabel="Level"
