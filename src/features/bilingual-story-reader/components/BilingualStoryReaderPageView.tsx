@@ -112,6 +112,14 @@ const PRIMARY_BUTTON_PROPS = {
   },
 } as const;
 
+const SUBTLE_BUTTON_PROPS = {
+  bg: "app.bilingualStoryReader.button.subtle.bg",
+  color: "app.bilingualStoryReader.button.subtle.fg",
+  _hover: {
+    bg: "app.bilingualStoryReader.button.subtle.hoverBg",
+  },
+} as const;
+
 function languageSelectValue(language: string): string {
   return BILINGUAL_STORY_READER_LANGUAGE_OPTIONS.some((option) => option.name === language)
     ? language
@@ -292,7 +300,11 @@ export function BilingualStoryReaderPageView() {
                   </Icon>
                   Edit Prompt
                 </Button>
-                <Button {...ACTION_BUTTON_PROPS} variant="ghost" onClick={resetLoadedStory}>
+                <Button
+                  {...ACTION_BUTTON_PROPS}
+                  {...SUBTLE_BUTTON_PROPS}
+                  onClick={resetLoadedStory}
+                >
                   <Icon>
                     <LuFilePlus />
                   </Icon>
@@ -416,9 +428,7 @@ export function BilingualStoryReaderPageView() {
                       <Button
                         {...ACTION_BUTTON_PROPS}
                         borderWidth={0}
-                        bg="app.bilingualStoryReader.button.subtle.bg"
-                        color="app.bilingualStoryReader.button.subtle.fg"
-                        _hover={{ bg: "app.bilingualStoryReader.button.subtle.hoverBg" }}
+                        {...SUBTLE_BUTTON_PROPS}
                         onClick={pasteResponseFromClipboard}
                         roundedRight={0}
                         variant="outline"
@@ -436,10 +446,10 @@ export function BilingualStoryReaderPageView() {
                               ? "Hide manual paste"
                               : "Show manual paste"
                           }
-                          bg="app.bilingualStoryReader.button.subtle.bg"
                           borderWidth={0}
-                          color="app.bilingualStoryReader.button.subtle.fg"
-                          _hover={{ bg: "app.bilingualStoryReader.button.subtle.hoverBg" }}
+                          borderLeftColor="app.bilingualStoryReader.button.subtle.divider"
+                          borderLeftWidth="1px"
+                          {...SUBTLE_BUTTON_PROPS}
                           roundedLeft={0}
                           variant="outline"
                         >
@@ -485,11 +495,7 @@ export function BilingualStoryReaderPageView() {
                         size="sm"
                         variant="subtle"
                         w="full"
-                        bg="app.bilingualStoryReader.button.subtle.bg"
-                        color="app.bilingualStoryReader.button.subtle.fg"
-                        _hover={{
-                          bg: "app.bilingualStoryReader.button.subtle.hoverBg",
-                        }}
+                        {...SUBTLE_BUTTON_PROPS}
                       >
                         <Icon>
                           <LuBookOpen />

@@ -32,15 +32,16 @@ export const SEMANTIC_TOKENS = {
   },
   button: {
     primary: {
-      bg: semanticColor("{colors.blue.700}", "{colors.blue.300}"),
-      hoverBg: semanticColor("{colors.blue.800}", "{colors.blue.400}"),
-      fg: semanticColor("{colors.white}", "{colors.gray.900}"),
-      divider: semanticColor("{colors.blue.500}", "{colors.blue.500}"),
+      bg: semanticColor("#2f5f88", "#284f72"),
+      hoverBg: semanticColor("#284f72", "#21425f"),
+      fg: semanticColor("{colors.white}", "{colors.white}"),
+      divider: semanticColor("#6f96b6", "#5f82a0"),
     },
     subtle: {
-      bg: semanticColor("{colors.teal.50}", "{colors.gray.700}"),
-      hoverBg: semanticColor("{colors.teal.100}", "{colors.gray.600}"),
-      fg: semanticColor("{colors.teal.700}", "{colors.teal.200}"),
+      bg: semanticColor("#e7eef5", "#24384a"),
+      hoverBg: semanticColor("#d8e5f0", "#2b445a"),
+      fg: semanticColor("#315f87", "#9dbbd5"),
+      divider: semanticColor("#b7cadb", "#4a657c"),
     },
   },
   metadata: {
