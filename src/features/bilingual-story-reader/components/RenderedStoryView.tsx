@@ -130,10 +130,18 @@ function StorySentence({
   onClose: () => void;
   sentenceNumber: number;
 }) {
+  function togglePopover(): void {
+    if (isOpen) {
+      onClose();
+    } else {
+      onOpen();
+    }
+  }
+
   function handleKeyDown(event: KeyboardEvent<HTMLElement>): void {
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
-    onOpen();
+    togglePopover();
   }
 
   return (
@@ -149,7 +157,7 @@ function StorySentence({
     >
       <Popover.Anchor asChild>
         <Box
-          aria-label={`Open translation for sentence ${sentenceNumber}`}
+          aria-label={`${isOpen ? "Close" : "Open"} translation for sentence ${sentenceNumber}`}
           aria-pressed={isOpen}
           as="span"
           bg={isOpen ? "app.bilingualStoryReader.bg.activeSentence" : "transparent"}
@@ -162,7 +170,7 @@ function StorySentence({
           cursor="help"
           display="inline"
           mr={2}
-          onClick={onOpen}
+          onClick={togglePopover}
           onKeyDown={handleKeyDown}
           role="button"
           tabIndex={0}
