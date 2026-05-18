@@ -3,7 +3,6 @@
 import {
   Box,
   Card,
-  CloseButton,
   HStack,
   Icon,
   Popover,
@@ -67,7 +66,7 @@ function StoryMetadataItem({
 function SentenceHelpContent({ sentence }: { sentence: RenderableSentence }) {
   return (
     <VStack align="stretch" gap={2.5}>
-      <HStack align="start" gap={3} pe={7}>
+      <HStack align="start" gap={3}>
         <Box
           bg="app.bilingualStoryReader.bg.activeSentence"
           color="app.bilingualStoryReader.fg.accent"
@@ -92,7 +91,6 @@ function SentenceHelpContent({ sentence }: { sentence: RenderableSentence }) {
         <HStack
           align="start"
           gap={3}
-          pe={7}
         >
           <Box
             bg="app.bilingualStoryReader.bg.subtle"
@@ -180,18 +178,9 @@ function StorySentence({
           borderWidth="1px"
           maxW="min(400px, calc(100vw - 32px))"
           p={0}
-          position="relative"
           rounded="xl"
           shadow="lg"
         >
-          <CloseButton
-            aria-label="Close sentence help"
-            onClick={onClose}
-            position="absolute"
-            right={2}
-            size="sm"
-            top={2}
-          />
           <Box p={4}>
             <SentenceHelpContent sentence={sentence} />
           </Box>
