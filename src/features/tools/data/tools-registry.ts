@@ -25,7 +25,7 @@ const TOOL_SEEDS: ToolSeed[] = [
     tagline: "Generate and read bilingual AI story JSON with progressive help",
     description:
       "Build a language-learning story prompt, paste AI-generated JSON, and read with local sentence and vocabulary help.",
-    status: "alpha",
+    status: "beta",
     tags: [
       { id: "language", label: "Language" },
       { id: "reading", label: "Reading" },
