@@ -8,6 +8,7 @@ import {
   Card,
   CloseButton,
   Combobox,
+  EmptyState,
   Flex,
   Grid,
   Group,
@@ -37,6 +38,7 @@ import { Clipboard } from "@components/ui/clipboard";
 import { Field } from "@components/ui/field";
 import { Tooltip } from "@components/ui/tooltip";
 import {
+  useEffect,
   useMemo,
   useState,
   type ClipboardEvent as ReactClipboardEvent,
@@ -51,8 +53,15 @@ import {
   LuCopy,
   LuEye,
   LuFilePlus,
+  LuGraduationCap,
+  LuHistory,
+  LuLanguages,
+  LuMessageSquareText,
   LuPencil,
+  LuSparkles,
+  LuTrash2,
 } from "react-icons/lu";
+import type { IconType } from "react-icons";
 import {
   BILINGUAL_STORY_READER_LANGUAGE_OPTIONS,
   BILINGUAL_STORY_READER_LENGTHS,
@@ -72,6 +81,13 @@ import {
 import { readTextFromClipboard } from "../services/clipboard";
 import { parseJsonWithCleanup, type JsonParseResult } from "../services/json-cleanup";
 import {
+  prependStoryHistoryEntry,
+  readStoryHistory,
+  type StoryHistoryEntry,
+  writeStoryHistory,
+} from "../services/story-history";
+import {
+  type RenderableStory,
   validateBilingualStoryReaderSchema,
   type StoryValidationResult,
 } from "../domain/validate-story";
@@ -121,16 +137,25 @@ const SUBTLE_BUTTON_PROPS = {
   },
 } as const;
 
+const DANGER_BUTTON_PROPS = {
+  color: "red.600",
+  _hover: {
+    bg: "app.status.danger.bg",
+  },
+} as const;
+
 type StoryComboboxOption = {
   value: string;
   label: string;
+  prefix?: string;
 };
 
 const LANGUAGE_COMBOBOX_OPTIONS = BILINGUAL_STORY_READER_LANGUAGE_OPTIONS
   .filter((language) => language.name !== "Custom")
   .map((language) => ({
     value: language.name,
-    label: language.label,
+    label: language.name,
+    prefix: getLabelPrefix(language.label),
   }));
 
 const STORY_THEME_OPTIONS = [
@@ -143,22 +168,115 @@ const STORY_THEME_OPTIONS = [
   "Drama",
 ].map((theme) => ({ value: theme, label: theme }));
 
+function getLabelPrefix(label: string): string | undefined {
+  const prefixEnd = label.indexOf(" ");
+  return prefixEnd > 0 ? label.slice(0, prefixEnd) : undefined;
+}
+
+function getOptionPrefix(
+  options: StoryComboboxOption[],
+  value: string,
+): string | undefined {
+  return options.find((option) => option.value === value)?.prefix;
+}
+
+function getSelectedOptionValue(
+  options: StoryComboboxOption[],
+  value: string,
+): string[] {
+  const selectedOption = options.find((option) => option.value === value);
+  return selectedOption ? [selectedOption.value] : [];
+}
+
+function toControlId(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function ControlLeadingIcon({ icon }: { icon: IconType }) {
+  return (
+    <Icon
+      aria-hidden
+      as={icon}
+      boxSize={4}
+      color="app.bilingualStoryReader.fg.muted"
+      left={3}
+      pointerEvents="none"
+      position="absolute"
+      top="50%"
+      transform="translateY(-50%)"
+      zIndex={1}
+    />
+  );
+}
+
+function ControlLeadingPrefix({ prefix }: { prefix: string }) {
+  return (
+    <Text
+      aria-hidden
+      fontSize="md"
+      left={3}
+      lineHeight={1}
+      pointerEvents="none"
+      position="absolute"
+      top="50%"
+      transform="translateY(-50%)"
+      zIndex={1}
+    >
+      {prefix}
+    </Text>
+  );
+}
+
+function TextareaLeadingIcon({ icon }: { icon: IconType }) {
+  return (
+    <Icon
+      aria-hidden
+      as={icon}
+      boxSize={4}
+      color="app.bilingualStoryReader.fg.muted"
+      left={3}
+      pointerEvents="none"
+      position="absolute"
+      top={3}
+      zIndex={1}
+    />
+  );
+}
+
+function getLevelLabel(level: BilingualStoryReaderLevel): string {
+  if (level === "Beginner") return "Beginner";
+  return `CEFR ${level}`;
+}
+
 function StoryCombobox({
   ariaLabel,
+  allowClear = true,
+  icon,
+  iconVisibility = "always",
   onValueChange,
   options,
   placeholder,
   value,
 }: {
   ariaLabel: string;
+  allowClear?: boolean;
+  icon?: IconType;
+  iconVisibility?: "always" | "custom-value";
   onValueChange: (value: string) => void;
   options: StoryComboboxOption[];
   placeholder: string;
   value: string;
 }) {
+  const selectedPrefix = getOptionPrefix(options, value);
+  const selectedValue = getSelectedOptionValue(options, value);
+  const shouldShowIcon =
+    Boolean(icon) &&
+    (iconVisibility === "always" ||
+      (iconVisibility === "custom-value" && !selectedPrefix));
+  const optionsLabelId = `${toControlId(ariaLabel)}-options-label`;
   const { collection, filter } = useListCollection({
     initialItems: options,
-    itemToString: (item) => item.value,
+    itemToString: (item) => [item.prefix, item.label].filter(Boolean).join(" "),
     itemToValue: (item) => item.value,
     filter: (itemText, filterText, item) => {
       const normalizedFilter = filterText.toLowerCase();
@@ -169,31 +287,56 @@ function StoryCombobox({
     },
   });
 
+  function hasOptionMatch(filterText: string): boolean {
+    const normalizedFilter = filterText.toLowerCase();
+    if (!normalizedFilter) return true;
+    return options.some((option) => {
+      const optionText = [option.prefix, option.label].filter(Boolean).join(" ").toLowerCase();
+      return (
+        optionText.includes(normalizedFilter) ||
+        option.label.toLowerCase().includes(normalizedFilter)
+      );
+    });
+  }
+
   return (
     <Combobox.Root
       allowCustomValue
       collection={collection}
+      ids={{ label: optionsLabelId }}
       inputValue={value}
       openOnClick
       positioning={{ sameWidth: true }}
       selectionBehavior="replace"
+      value={selectedValue}
+      w="full"
       onInputValueChange={(details) => {
+        if (details.reason === "item-select") return;
         onValueChange(details.inputValue);
-        filter(details.inputValue);
+        filter(hasOptionMatch(details.inputValue) ? details.inputValue : "");
       }}
       onValueChange={(details) => {
         const nextValue = details.items[0]?.value ?? details.value[0];
         if (nextValue) onValueChange(nextValue);
       }}
     >
-      <Combobox.Control>
+      <Combobox.Label id={optionsLabelId} srOnly>
+        Available options
+      </Combobox.Label>
+      <Combobox.Control position="relative" w="full">
+        {selectedPrefix ? (
+          <ControlLeadingPrefix prefix={selectedPrefix} />
+        ) : shouldShowIcon && icon ? (
+          <ControlLeadingIcon icon={icon} />
+        ) : null}
         <Combobox.Input
           {...CONTROL_INPUT_PROPS}
           aria-label={ariaLabel}
+          ps={selectedPrefix || shouldShowIcon ? 10 : undefined}
           placeholder={placeholder}
         />
         <Combobox.IndicatorGroup>
-          <Combobox.ClearTrigger />
+          {allowClear ? <Combobox.ClearTrigger /> : null}
           <Combobox.Trigger />
         </Combobox.IndicatorGroup>
       </Combobox.Control>
@@ -207,13 +350,19 @@ function StoryCombobox({
           >
             {collection.items.map((option) => (
               <Combobox.Item item={option} key={option.value}>
-                <Combobox.ItemText>{option.label}</Combobox.ItemText>
+                <Combobox.ItemText>
+                  <HStack gap={2}>
+                    {option.prefix ? (
+                      <Text aria-hidden fontSize="md" lineHeight={1}>
+                        {option.prefix}
+                      </Text>
+                    ) : null}
+                    <Text>{option.label}</Text>
+                  </HStack>
+                </Combobox.ItemText>
                 <Combobox.ItemIndicator />
               </Combobox.Item>
             ))}
-            <Combobox.Empty color="app.bilingualStoryReader.fg.muted" fontSize="sm">
-              Use typed value
-            </Combobox.Empty>
           </Combobox.Content>
         </Combobox.Positioner>
       </Portal>
@@ -292,10 +441,15 @@ export function BilingualStoryReaderPageView() {
   );
   const [storyValidationResult, setStoryValidationResult] =
     useState<StoryValidationResult | null>(null);
+  const [storyHistory, setStoryHistory] = useState<StoryHistoryEntry[]>([]);
 
   const prompt = useMemo(() => buildBilingualStoryReaderPrompt(setup), [setup]);
   const isSetupComplete = isBilingualStoryReaderSetupComplete(setup);
   const hasLoadedStory = storyValidationResult?.ok === true;
+
+  useEffect(() => {
+    setStoryHistory(readStoryHistory());
+  }, []);
 
   function notify(
     status: Notice["status"],
@@ -323,6 +477,14 @@ export function BilingualStoryReaderPageView() {
       setPromptDraft(prompt);
       setIsPromptEditing(false);
     }
+  }
+
+  function saveStoryToHistory(story: RenderableStory): void {
+    setStoryHistory((current) => {
+      const next = prependStoryHistoryEntry(current, setup, story);
+      writeStoryHistory(next);
+      return next;
+    });
   }
 
   function validateResponseText(responseText: string): void {
@@ -354,6 +516,7 @@ export function BilingualStoryReaderPageView() {
     setStoryValidationResult(validationResult);
     if (validationResult.ok) {
       setIsManualPasteOpen(false);
+      saveStoryToHistory(validationResult.value);
     } else {
       notify("error", "Response needs repair", "The response is missing story fields.");
     }
@@ -394,6 +557,50 @@ export function BilingualStoryReaderPageView() {
     setJsonParseResult(null);
     setStoryValidationResult(null);
     setIsManualPasteOpen(false);
+  }
+
+  function openHistoryStory(entry: StoryHistoryEntry): void {
+    setStoryValidationResult({
+      ok: true,
+      value: entry.story,
+      warnings: [],
+    });
+    setJsonParseResult(null);
+    setRawResponseText("");
+    setIsManualPasteOpen(false);
+  }
+
+  function formatHistoryLoadedAt(loadedAt: string): string {
+    const parsedDate = new Date(loadedAt);
+    if (Number.isNaN(parsedDate.getTime())) return loadedAt;
+    return parsedDate.toLocaleString(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  }
+
+  function formatHistorySummary(entry: StoryHistoryEntry): string {
+    const parts = [
+      `${entry.story.story.knownLanguage} → ${entry.story.story.targetLanguage}`,
+      getLevelLabel(entry.setup.level),
+      entry.setup.length,
+    ];
+    const theme = entry.setup.theme.trim();
+    if (theme) parts.push(theme);
+    return parts.join(" • ");
+  }
+
+  function removeHistoryEntry(entryId: string): void {
+    setStoryHistory((current) => {
+      const next = current.filter((entry) => entry.id !== entryId);
+      writeStoryHistory(next);
+      return next;
+    });
+  }
+
+  function clearHistory(): void {
+    setStoryHistory([]);
+    writeStoryHistory([]);
   }
 
   return (
@@ -680,7 +887,10 @@ export function BilingualStoryReaderPageView() {
                     <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={3}>
                       <Field label="Known language">
                         <StoryCombobox
+                          allowClear={false}
                           ariaLabel="Known language"
+                          icon={LuLanguages}
+                          iconVisibility="custom-value"
                           options={LANGUAGE_COMBOBOX_OPTIONS}
                           placeholder="Search or type a language"
                           value={setup.knownLanguage}
@@ -692,7 +902,10 @@ export function BilingualStoryReaderPageView() {
 
                       <Field label="Target language">
                         <StoryCombobox
+                          allowClear={false}
                           ariaLabel="Target language"
+                          icon={LuLanguages}
+                          iconVisibility="custom-value"
                           options={LANGUAGE_COMBOBOX_OPTIONS}
                           placeholder="Search or type a language"
                           value={setup.targetLanguage}
@@ -705,28 +918,32 @@ export function BilingualStoryReaderPageView() {
 
                     <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={3}>
                       <Field label="Level">
-                        <NativeSelect.Root w="full">
-                          <NativeSelect.Field
-                            {...CONTROL_INPUT_PROPS}
-                            aria-label="Level"
-                            value={setup.level}
-                            onChange={(event) => {
-                              const nextLevel = event.currentTarget
-                                .value as BilingualStoryReaderLevel;
-                              setSetup((current) => ({
-                                ...current,
-                                level: nextLevel,
-                              }));
-                            }}
-                          >
-                            {BILINGUAL_STORY_READER_LEVELS.map((level) => (
-                              <option key={level} value={level}>
-                                {level}
-                              </option>
-                            ))}
-                          </NativeSelect.Field>
-                          <NativeSelect.Indicator />
-                        </NativeSelect.Root>
+                        <Box position="relative" w="full">
+                          <ControlLeadingIcon icon={LuGraduationCap} />
+                          <NativeSelect.Root w="full">
+                            <NativeSelect.Field
+                              {...CONTROL_INPUT_PROPS}
+                              aria-label="Level"
+                              ps={10}
+                              value={setup.level}
+                              onChange={(event) => {
+                                const nextLevel = event.currentTarget
+                                  .value as BilingualStoryReaderLevel;
+                                setSetup((current) => ({
+                                  ...current,
+                                  level: nextLevel,
+                                }));
+                              }}
+                            >
+                              {BILINGUAL_STORY_READER_LEVELS.map((level) => (
+                                <option key={level} value={level}>
+                                  {getLevelLabel(level)}
+                                </option>
+                              ))}
+                            </NativeSelect.Field>
+                            <NativeSelect.Indicator />
+                          </NativeSelect.Root>
+                        </Box>
                       </Field>
 
                       <Field label="Length">
@@ -744,6 +961,7 @@ export function BilingualStoryReaderPageView() {
                     <Field label="Theme">
                       <StoryCombobox
                         ariaLabel="Theme"
+                        icon={LuSparkles}
                         options={STORY_THEME_OPTIONS}
                         placeholder="Search or type a theme"
                         value={setup.theme}
@@ -752,15 +970,22 @@ export function BilingualStoryReaderPageView() {
                     </Field>
 
                     <Field label="Extra instructions">
-                      <Textarea
-                        {...CONTROL_INPUT_PROPS}
-                        aria-label="Extra instructions"
-                        placeholder="Use simple dialogue or include romanization."
-                        value={setup.extraInstructions}
-                        onChange={(event) =>
-                          updateTextField("extraInstructions", event.currentTarget.value)
-                        }
-                      />
+                      <Box position="relative" w="full">
+                        <TextareaLeadingIcon icon={LuMessageSquareText} />
+                        <Textarea
+                          {...CONTROL_INPUT_PROPS}
+                          aria-label="Extra instructions"
+                          placeholder="Use simple dialogue or include romanization."
+                          ps={10}
+                          value={setup.extraInstructions}
+                          onChange={(event) =>
+                            updateTextField(
+                              "extraInstructions",
+                              event.currentTarget.value,
+                            )
+                          }
+                        />
+                      </Box>
                     </Field>
                   </VStack>
                 </Card.Body>
@@ -828,6 +1053,136 @@ export function BilingualStoryReaderPageView() {
           </HighlightedSection>
         </Bleed>
       ) : null}
+
+      <Bleed inline={{ base: 1, md: 2 }}>
+        <HighlightedSection
+          contentPx={{ base: 3, md: 4 }}
+          contentPy={{ base: 3, md: 4 }}
+        >
+          <VStack align="stretch" gap={3}>
+            <HStack justify="space-between" wrap="wrap">
+              <HStack gap={2}>
+                <Icon color="app.bilingualStoryReader.fg.muted">
+                  <LuHistory />
+                </Icon>
+                <Text fontFamily="ui" fontSize="lg" fontWeight="semibold">
+                  Story History
+                </Text>
+              </HStack>
+              <HStack gap={2}>
+                <Text color="app.bilingualStoryReader.fg.muted" fontSize="sm">
+                  {storyHistory.length} saved
+                </Text>
+                {storyHistory.length > 0 ? (
+                  <Button
+                    {...ACTION_BUTTON_PROPS}
+                    {...DANGER_BUTTON_PROPS}
+                    onClick={clearHistory}
+                    size="sm"
+                    variant="outline"
+                  >
+                    <Icon>
+                      <LuTrash2 />
+                    </Icon>
+                    Clear History
+                  </Button>
+                ) : null}
+              </HStack>
+            </HStack>
+
+            {storyHistory.length === 0 ? (
+              <EmptyState.Root>
+                <EmptyState.Content>
+                  <EmptyState.Indicator>
+                    <Icon boxSize={9} color="app.bilingualStoryReader.fg.muted">
+                      <LuHistory />
+                    </Icon>
+                  </EmptyState.Indicator>
+                  <EmptyState.Title textAlign="center">No story history yet</EmptyState.Title>
+                  <Text
+                    color="app.bilingualStoryReader.fg.muted"
+                    fontFamily="ui"
+                    fontSize="sm"
+                    textAlign="center"
+                  >
+                    Stories you read will appear here.
+                  </Text>
+                </EmptyState.Content>
+              </EmptyState.Root>
+            ) : (
+              storyHistory.map((entry) => (
+                <Box
+                  bg="app.bilingualStoryReader.bg.popover"
+                  borderColor="app.bilingualStoryReader.border.default"
+                  borderWidth="1px"
+                  cursor="pointer"
+                  key={entry.id}
+                  onClick={() => openHistoryStory(entry)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      openHistoryStory(entry);
+                    }
+                  }}
+                  px={3.5}
+                  py={3}
+                  role="button"
+                  rounded="xl"
+                  tabIndex={0}
+                  transition="background-color 0.2s ease, border-color 0.2s ease"
+                  _hover={{
+                    bg: "app.bilingualStoryReader.bg.control",
+                    borderColor: "app.bilingualStoryReader.border.activeSentence",
+                  }}
+                >
+                  <VStack align="stretch" gap={2}>
+                    <HStack align="start" justify="space-between" gap={2}>
+                      <Text
+                        flex="1"
+                        fontFamily="ui"
+                        fontSize="md"
+                        fontWeight="semibold"
+                        lineClamp={1}
+                      >
+                        {entry.story.story.title}
+                      </Text>
+                      <Tooltip content="Delete story from history">
+                        <IconButton
+                          {...ACTION_BUTTON_PROPS}
+                          {...DANGER_BUTTON_PROPS}
+                          aria-label={`Delete ${entry.story.story.title} from history`}
+                          h={7}
+                          minW={7}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            removeHistoryEntry(entry.id);
+                          }}
+                          onKeyDown={(event) => {
+                            event.stopPropagation();
+                          }}
+                          p={0}
+                          size="xs"
+                          variant="ghost"
+                        >
+                          <LuTrash2 />
+                        </IconButton>
+                      </Tooltip>
+                    </HStack>
+
+                    <Text color="app.bilingualStoryReader.fg.muted" fontSize="sm">
+                      {formatHistorySummary(entry)}
+                    </Text>
+
+                    <Text color="app.bilingualStoryReader.fg.muted" fontSize="xs">
+                      {formatHistoryLoadedAt(entry.loadedAt)}
+                    </Text>
+                  </VStack>
+                </Box>
+              ))
+            )}
+          </VStack>
+        </HighlightedSection>
+      </Bleed>
 
     </VStack>
   );
