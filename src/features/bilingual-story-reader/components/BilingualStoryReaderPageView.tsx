@@ -394,6 +394,7 @@ function StorySegmentedControl<T extends string>({
       flexWrap="wrap"
       minW={0}
       p={1}
+      shadow="none"
       rounded="xl"
       size="sm"
       value={value}
@@ -405,17 +406,35 @@ function StorySegmentedControl<T extends string>({
         }
       }}
     >
-      <SegmentGroup.Indicator />
+      <SegmentGroup.Indicator
+        bg="app.bilingualStoryReader.button.subtle.bg"
+        borderColor="app.bilingualStoryReader.button.subtle.divider"
+        borderWidth="1px"
+        rounded="lg"
+        shadow="none"
+      />
       {options.map((option) => (
         <SegmentGroup.Item
+          color="app.bilingualStoryReader.fg.muted"
           flex="1 1 auto"
           key={option}
           minW={itemMinW}
           px={3}
+          rounded="lg"
+          transition="background-color 0.2s ease, color 0.2s ease"
           value={option}
+          _hover={{
+            color: "app.bilingualStoryReader.fg.default",
+          }}
           _checked={{
             color: "app.bilingualStoryReader.fg.accent",
             fontWeight: "semibold",
+          }}
+          _focusVisible={{
+            outlineColor: "app.bilingualStoryReader.border.activeSentence",
+            outlineOffset: "2px",
+            outlineStyle: "solid",
+            outlineWidth: "2px",
           }}
         >
           <SegmentGroup.ItemText>{option}</SegmentGroup.ItemText>
