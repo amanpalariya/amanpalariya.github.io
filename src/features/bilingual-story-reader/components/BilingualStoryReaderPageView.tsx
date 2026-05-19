@@ -669,119 +669,31 @@ export function BilingualStoryReaderPageView() {
                   New Story
                 </Button>
               </>
-            ) : (
-              <>
-                <Group attached>
-                  <Clipboard.Root value={prompt} timeout={1000}>
-                    <Clipboard.Trigger asChild>
-                      <Button
-                        {...ACTION_BUTTON_PROPS}
-                        {...PRIMARY_BUTTON_PROPS}
-                        aria-label="Copy Prompt"
-                        borderRightWidth={0}
-                        disabled={!isSetupComplete}
-                        minW="9rem"
-                        roundedRight={0}
-                      >
-                        <Clipboard.Indicator copied={<Icon as={LuCheck} />}>
-                          <Icon as={LuCopy} />
-                        </Clipboard.Indicator>
-                        <Clipboard.Indicator copied="Copied">
-                          Copy Prompt
-                        </Clipboard.Indicator>
-                      </Button>
-                    </Clipboard.Trigger>
-                  </Clipboard.Root>
-                  <DialogRoot
-                    open={isPromptDialogOpen}
-                    onOpenChange={(details) =>
-                      handlePromptDialogOpenChange(details.open)
-                    }
-                  >
-                    <Tooltip content="View generated prompt">
-                      <DialogTrigger asChild>
-                        <IconButton
-                          {...ACTION_BUTTON_PROPS}
-                          {...PRIMARY_BUTTON_PROPS}
-                          aria-label="View generated prompt"
-                          borderLeftWidth="1px"
-                          borderLeftColor="app.bilingualStoryReader.button.primary.divider"
-                          disabled={!isSetupComplete}
-                          roundedLeft={0}
-                        >
-                          <LuEye />
-                        </IconButton>
-                      </DialogTrigger>
-                    </Tooltip>
+            ) : null}
+          </HStack>
+        </Flex>
+      </Box>
 
-                    <DialogContent
-                      bg="app.bilingualStoryReader.bg.card"
-                      borderColor="app.bilingualStoryReader.border.default"
-                      borderWidth="1px"
-                      color="app.bilingualStoryReader.fg.default"
-                      maxW="720px"
-                      rounded="2xl"
-                    >
-                      <DialogHeader>
-                        <DialogTitle fontFamily="ui">Generated prompt</DialogTitle>
-                      </DialogHeader>
-                      <DialogBody>
-                        <VStack align="stretch" gap={3}>
-                          <Text color="app.bilingualStoryReader.fg.muted" fontSize="sm">
-                            Edits are temporary and are not saved to the setup.
-                          </Text>
-                          <Textarea
-                            {...CONTROL_INPUT_PROPS}
-                            aria-label="Generated prompt"
-                            fontFamily="mono"
-                            minH={{ base: "xs", md: "md" }}
-                            onChange={(event) =>
-                              setPromptDraft(event.currentTarget.value)
-                            }
-                            readOnly={!isPromptEditing}
-                            value={promptDraft}
-                          />
-                          <HStack gap={2} justify="end" wrap="wrap">
-                            <Button
-                              {...ACTION_BUTTON_PROPS}
-                              onClick={() =>
-                                setIsPromptEditing((current) => !current)
-                              }
-                              variant="outline"
-                            >
-                              <Icon>
-                                {isPromptEditing ? <LuEye /> : <LuPencil />}
-                              </Icon>
-                              {isPromptEditing ? "View" : "Edit"}
-                            </Button>
-                            <Clipboard.Root value={promptDraft} timeout={1000}>
-                              <Clipboard.Trigger asChild>
-                                <Button
-                                  {...ACTION_BUTTON_PROPS}
-                                  {...PRIMARY_BUTTON_PROPS}
-                                  aria-label="Copy generated prompt"
-                                  minW="5.75rem"
-                                >
-                                  <Clipboard.Indicator copied={<Icon as={LuCheck} />}>
-                                    <Icon as={LuCopy} />
-                                  </Clipboard.Indicator>
-                                  <Clipboard.Indicator copied="Copied">
-                                    Copy
-                                  </Clipboard.Indicator>
-                                </Button>
-                              </Clipboard.Trigger>
-                            </Clipboard.Root>
-                          </HStack>
-                        </VStack>
-                      </DialogBody>
-                      <DialogCloseTrigger />
-                    </DialogContent>
-                  </DialogRoot>
-                </Group>
+      {!hasLoadedStory ? (
+        <Bleed inline={{ base: 1, md: 2 }}>
+          <HighlightedSection
+            contentPx={{ base: 3, md: 4 }}
+            contentPy={{ base: 3, md: 4 }}
+          >
+            <VStack align="stretch" gap={4} minW={0}>
+              <HStack align="center" justify="space-between" wrap="wrap">
+                <HStack gap={2}>
+                  <Icon color="app.bilingualStoryReader.fg.muted">
+                    <LuSparkles />
+                  </Icon>
+                  <Text fontFamily="ui" fontSize="lg" fontWeight="semibold">
+                    Story Setup
+                  </Text>
+                </HStack>
                 <Popover.Root
                   open={isManualPasteOpen}
                   onOpenChange={(details) => setIsManualPasteOpen(details.open)}
-                  positioning={{ placement: "bottom-start", gutter: 6 }}
+                  positioning={{ placement: "bottom-end", gutter: 6 }}
                 >
                   <Box>
                     <HStack align="stretch" gap={0}>
@@ -865,28 +777,12 @@ export function BilingualStoryReaderPageView() {
                     </Popover.Content>
                   </Popover.Positioner>
                 </Popover.Root>
-              </>
-            )}
-          </HStack>
-        </Flex>
-      </Box>
-
-      {!hasLoadedStory ? (
-        <Bleed inline={{ base: 1, md: 2 }}>
-          <HighlightedSection
-            contentPx={{ base: 3, md: 4 }}
-            contentPy={{ base: 3, md: 4 }}
-          >
-            <VStack align="stretch" gap={4} minW={0}>
-              <HStack gap={2}>
-                <Icon color="app.bilingualStoryReader.fg.muted">
-                  <LuSparkles />
-                </Icon>
-                <Text fontFamily="ui" fontSize="lg" fontWeight="semibold">
-                  Story Setup
-                </Text>
               </HStack>
-              <Card.Root borderColor="app.bilingualStoryReader.border.default" rounded="2xl">
+              <Card.Root
+                borderColor="app.bilingualStoryReader.border.default"
+                overflow="hidden"
+                rounded="2xl"
+              >
                 <Card.Body>
                   <VStack align="stretch" gap={4}>
                     <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={3}>
@@ -994,6 +890,115 @@ export function BilingualStoryReaderPageView() {
                     </Field>
                   </VStack>
                 </Card.Body>
+                <Card.Footer p={0} w="full">
+                  <HStack w="full" gap={0}>
+                    <Box flex={1}>
+                      <Clipboard.Root value={prompt} timeout={1000}>
+                        <Clipboard.Trigger asChild>
+                          <Button
+                            {...ACTION_BUTTON_PROPS}
+                            {...PRIMARY_BUTTON_PROPS}
+                            aria-label="Copy Prompt"
+                            borderRightWidth={0}
+                            disabled={!isSetupComplete}
+                            h={12}
+                            justifyContent="center"
+                            px={4}
+                            rounded={0}
+                            w="full"
+                          >
+                            <HStack gap={2}>
+                              <Clipboard.Indicator copied={<Icon as={LuCheck} />}>
+                                <Icon as={LuCopy} />
+                              </Clipboard.Indicator>
+                              <Clipboard.Indicator copied="Copied">
+                                <Text>Copy Prompt</Text>
+                              </Clipboard.Indicator>
+                            </HStack>
+                          </Button>
+                        </Clipboard.Trigger>
+                      </Clipboard.Root>
+                    </Box>
+                    <DialogRoot
+                      open={isPromptDialogOpen}
+                      onOpenChange={(details) => handlePromptDialogOpenChange(details.open)}
+                    >
+                      <Tooltip content="View generated prompt">
+                        <DialogTrigger asChild>
+                          <IconButton
+                            {...ACTION_BUTTON_PROPS}
+                            {...PRIMARY_BUTTON_PROPS}
+                            aria-label="View generated prompt"
+                            borderLeftColor="app.bilingualStoryReader.button.primary.divider"
+                            borderLeftWidth="1px"
+                            disabled={!isSetupComplete}
+                            h={12}
+                            rounded={0}
+                          >
+                            <LuEye />
+                          </IconButton>
+                        </DialogTrigger>
+                      </Tooltip>
+
+                      <DialogContent
+                        bg="app.bilingualStoryReader.bg.card"
+                        borderColor="app.bilingualStoryReader.border.default"
+                        borderWidth="1px"
+                        color="app.bilingualStoryReader.fg.default"
+                        maxW="720px"
+                        rounded="2xl"
+                      >
+                        <DialogHeader>
+                          <DialogTitle fontFamily="ui">Generated prompt</DialogTitle>
+                        </DialogHeader>
+                        <DialogBody>
+                          <VStack align="stretch" gap={3}>
+                            <Text color="app.bilingualStoryReader.fg.muted" fontSize="sm">
+                              Edits are temporary and are not saved to the setup.
+                            </Text>
+                            <Textarea
+                              {...CONTROL_INPUT_PROPS}
+                              aria-label="Generated prompt"
+                              fontFamily="mono"
+                              minH={{ base: "xs", md: "md" }}
+                              onChange={(event) => setPromptDraft(event.currentTarget.value)}
+                              readOnly={!isPromptEditing}
+                              value={promptDraft}
+                            />
+                            <HStack gap={2} justify="end" wrap="wrap">
+                              <Button
+                                {...ACTION_BUTTON_PROPS}
+                                onClick={() => setIsPromptEditing((current) => !current)}
+                                variant="outline"
+                              >
+                                <Icon>{isPromptEditing ? <LuEye /> : <LuPencil />}</Icon>
+                                {isPromptEditing ? "View" : "Edit"}
+                              </Button>
+                              <Clipboard.Root value={promptDraft} timeout={1000}>
+                                <Clipboard.Trigger asChild>
+                                  <Button
+                                    {...ACTION_BUTTON_PROPS}
+                                    {...PRIMARY_BUTTON_PROPS}
+                                    aria-label="Copy generated prompt"
+                                    minW="5.75rem"
+                                  >
+                                    <Clipboard.Indicator copied={<Icon as={LuCheck} />}>
+                                      <Icon as={LuCopy} />
+                                    </Clipboard.Indicator>
+                                    <Clipboard.Indicator copied="Copied">
+                                      Copy
+                                    </Clipboard.Indicator>
+                                  </Button>
+                                </Clipboard.Trigger>
+                              </Clipboard.Root>
+                            </HStack>
+                          </VStack>
+                        </DialogBody>
+                        <DialogCloseTrigger />
+                      </DialogContent>
+                    </DialogRoot>
+                  </HStack>
+                </Card.Footer>
               </Card.Root>
 
               {jsonParseResult || storyValidationResult ? (
@@ -1075,9 +1080,6 @@ export function BilingualStoryReaderPageView() {
                 </Text>
               </HStack>
               <HStack gap={2}>
-                <Text color="app.bilingualStoryReader.fg.muted" fontSize="sm">
-                  {storyHistory.length} saved
-                </Text>
                 {storyHistory.length > 0 ? (
                   <Button
                     {...ACTION_BUTTON_PROPS}
@@ -1089,7 +1091,7 @@ export function BilingualStoryReaderPageView() {
                     <Icon>
                       <LuTrash2 />
                     </Icon>
-                    Clear History
+                    Clear History ({storyHistory.length})
                   </Button>
                 ) : null}
               </HStack>
