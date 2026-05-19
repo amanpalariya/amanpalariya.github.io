@@ -249,10 +249,10 @@ function HistoryMetadataPill({ icon, value }: { icon: IconType; value: string })
   return (
     <HStack
       as="span"
-      bg="app.bilingualStoryReader.metadata.bg"
-      borderColor="app.bilingualStoryReader.metadata.border"
+      bg="transparent"
+      borderColor="app.bilingualStoryReader.border.muted"
       borderWidth="1px"
-      color="app.bilingualStoryReader.metadata.fg"
+      color="app.bilingualStoryReader.fg.muted"
       gap={1}
       minH={6}
       px={2}
@@ -1118,7 +1118,7 @@ export function BilingualStoryReaderPageView() {
                     {...DANGER_BUTTON_PROPS}
                     onClick={clearHistory}
                     size="sm"
-                    variant="outline"
+                    variant="ghost"
                   >
                     <Icon>
                       <LuTrash2 />
