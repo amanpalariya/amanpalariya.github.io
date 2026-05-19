@@ -24,6 +24,7 @@ import {
   VStack,
   useListCollection,
 } from "@chakra-ui/react";
+import { TileList } from "@components/core/Tiles";
 import HighlightedSection from "@components/page/common/HighlightedSection";
 import {
   DialogBody,
@@ -47,6 +48,7 @@ import {
   LuBookOpen,
   LuCheck,
   LuChevronDown,
+  LuChevronRight,
   LuChevronUp,
   LuClipboardCopy,
   LuClipboardPaste,
@@ -240,6 +242,28 @@ function TextareaLeadingIcon({ icon }: { icon: IconType }) {
       top={3}
       zIndex={1}
     />
+  );
+}
+
+function HistoryMetadataPill({ icon, value }: { icon: IconType; value: string }) {
+  return (
+    <HStack
+      as="span"
+      bg="app.bilingualStoryReader.metadata.bg"
+      borderColor="app.bilingualStoryReader.metadata.border"
+      borderWidth="1px"
+      color="app.bilingualStoryReader.metadata.fg"
+      gap={1}
+      minH={6}
+      px={2}
+      rounded="full"
+      whiteSpace="nowrap"
+    >
+      <Icon as={icon} boxSize={3} />
+      <Text as="span" fontSize="xs" fontWeight="medium">
+        {value}
+      </Text>
+    </HStack>
   );
 }
 
@@ -596,17 +620,6 @@ export function BilingualStoryReaderPageView() {
       dateStyle: "medium",
       timeStyle: "short",
     });
-  }
-
-  function formatHistorySummary(entry: StoryHistoryEntry): string {
-    const parts = [
-      `${entry.story.story.knownLanguage} → ${entry.story.story.targetLanguage}`,
-      getLevelLabel(entry.setup.level),
-      entry.setup.length,
-    ];
-    const theme = entry.setup.theme.trim();
-    if (theme) parts.push(theme);
-    return parts.join(" • ");
   }
 
   function removeHistoryEntry(entryId: string): void {
@@ -1136,75 +1149,100 @@ export function BilingualStoryReaderPageView() {
                 </EmptyState.Content>
               </EmptyState.Root>
             ) : (
-              storyHistory.map((entry) => (
-                <Box
-                  bg="app.bilingualStoryReader.bg.popover"
-                  borderColor="app.bilingualStoryReader.border.default"
-                  borderWidth="1px"
-                  cursor="pointer"
-                  key={entry.id}
-                  onClick={() => openHistoryStory(entry)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      openHistoryStory(entry);
-                    }
-                  }}
-                  px={3.5}
-                  py={3}
-                  role="button"
-                  rounded="xl"
-                  tabIndex={0}
-                  transition="background-color 0.2s ease, border-color 0.2s ease"
-                  _hover={{
-                    bg: "app.bilingualStoryReader.bg.control",
-                    borderColor: "app.bilingualStoryReader.border.activeSentence",
-                  }}
-                >
-                  <VStack align="stretch" gap={2}>
-                    <HStack align="start" justify="space-between" gap={2}>
-                      <Text
-                        flex="1"
-                        fontFamily="ui"
-                        fontSize="md"
-                        fontWeight="semibold"
-                        lineClamp={1}
-                      >
-                        {entry.story.story.title}
-                      </Text>
-                      <Tooltip content="Delete story from history">
-                        <IconButton
-                          {...ACTION_BUTTON_PROPS}
-                          {...DANGER_BUTTON_PROPS}
-                          aria-label={`Delete ${entry.story.story.title} from history`}
-                          h={7}
-                          minW={7}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            removeHistoryEntry(entry.id);
-                          }}
-                          onKeyDown={(event) => {
-                            event.stopPropagation();
-                          }}
-                          p={0}
-                          size="xs"
-                          variant="ghost"
+              <TileList>
+                {storyHistory.map((entry) => (
+                  <Box
+                    className="group"
+                    cursor="pointer"
+                    key={entry.id}
+                    onClick={() => openHistoryStory(entry)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        openHistoryStory(entry);
+                      }
+                    }}
+                    px={0}
+                    py={{ base: 2, md: 3 }}
+                    role="button"
+                    rounded="md"
+                    tabIndex={0}
+                    transition="background-color 0.2s ease"
+                    _hover={{ bg: "app.bilingualStoryReader.bg.subtle" }}
+                  >
+                    <HStack align="start" justify="space-between" gap={3}>
+                      <VStack align="start" flex="1" gap={1} minW={0}>
+                        <Text
+                          color="app.bilingualStoryReader.fg.default"
+                          fontFamily="ui"
+                          fontSize="md"
+                          fontWeight="medium"
+                          lineClamp={1}
                         >
-                          <LuTrash2 />
-                        </IconButton>
-                      </Tooltip>
+                          {entry.story.story.title}
+                        </Text>
+                        <HStack gap={2} wrap="wrap">
+                          <HistoryMetadataPill
+                            icon={LuLanguages}
+                            value={`${entry.story.story.knownLanguage} → ${entry.story.story.targetLanguage}`}
+                          />
+                          <HistoryMetadataPill
+                            icon={LuGraduationCap}
+                            value={getLevelLabel(entry.setup.level)}
+                          />
+                          <HistoryMetadataPill icon={LuBookOpen} value={entry.setup.length} />
+                          {entry.setup.theme.trim() ? (
+                            <HistoryMetadataPill icon={LuSparkles} value={entry.setup.theme.trim()} />
+                          ) : null}
+                        </HStack>
+                        <Text color="app.bilingualStoryReader.fg.muted" fontSize="xs">
+                          {formatHistoryLoadedAt(entry.loadedAt)}
+                        </Text>
+                      </VStack>
+                      <HStack gap={1.5}>
+                        <Tooltip content="Delete story from history">
+                          <IconButton
+                            {...ACTION_BUTTON_PROPS}
+                            {...DANGER_BUTTON_PROPS}
+                            aria-label={`Delete ${entry.story.story.title} from history`}
+                            h={8}
+                            minW={8}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              removeHistoryEntry(entry.id);
+                            }}
+                            onKeyDown={(event) => {
+                              event.stopPropagation();
+                            }}
+                            p={0}
+                            size="sm"
+                            variant="ghost"
+                          >
+                            <LuTrash2 />
+                          </IconButton>
+                        </Tooltip>
+                        <Icon
+                          color="app.bilingualStoryReader.fg.muted"
+                          data-history-chevron="true"
+                          opacity={0}
+                          transform="translateX(-2px)"
+                          transition="opacity 0.2s ease, transform 0.2s ease"
+                          _groupFocusWithin={{
+                            opacity: 1,
+                            transform: "translateX(0)",
+                          }}
+                          _groupHover={{
+                            opacity: 1,
+                            transform: "translateX(0)",
+                          }}
+                        >
+                          <LuChevronRight />
+                        </Icon>
+                      </HStack>
                     </HStack>
-
-                    <Text color="app.bilingualStoryReader.fg.muted" fontSize="sm">
-                      {formatHistorySummary(entry)}
-                    </Text>
-
-                    <Text color="app.bilingualStoryReader.fg.muted" fontSize="xs">
-                      {formatHistoryLoadedAt(entry.loadedAt)}
-                    </Text>
-                  </VStack>
-                </Box>
-              ))
+                  </Box>
+                ))}
+              </TileList>
             )}
           </VStack>
         </HighlightedSection>
