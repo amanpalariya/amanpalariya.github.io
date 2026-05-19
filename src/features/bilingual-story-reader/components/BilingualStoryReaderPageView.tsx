@@ -878,10 +878,15 @@ export function BilingualStoryReaderPageView() {
             contentPy={{ base: 3, md: 4 }}
           >
             <VStack align="stretch" gap={4} minW={0}>
+              <HStack gap={2}>
+                <Icon color="app.bilingualStoryReader.fg.muted">
+                  <LuSparkles />
+                </Icon>
+                <Text fontFamily="ui" fontSize="lg" fontWeight="semibold">
+                  Story Setup
+                </Text>
+              </HStack>
               <Card.Root borderColor="app.bilingualStoryReader.border.default" rounded="2xl">
-                <Card.Header>
-                  <Card.Title>Story Setup</Card.Title>
-                </Card.Header>
                 <Card.Body>
                   <VStack align="stretch" gap={4}>
                     <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={3}>
