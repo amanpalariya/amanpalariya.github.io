@@ -42,6 +42,7 @@ import { Tooltip } from "@components/ui/tooltip";
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ClipboardEvent as ReactClipboardEvent,
 } from "react";
@@ -51,7 +52,7 @@ import {
   LuChevronDown,
   LuChevronRight,
   LuChevronUp,
-  LuClipboardCopy,
+  LuClapperboard,
   LuClipboardPaste,
   LuCopy,
   LuEye,
@@ -62,7 +63,7 @@ import {
   LuMessageSquareText,
   LuPencil,
   LuRotateCcw,
-  LuSparkles,
+  LuSlidersHorizontal,
   LuTrash2,
 } from "react-icons/lu";
 import type { IconType } from "react-icons";
@@ -180,14 +181,14 @@ const LANGUAGE_COMBOBOX_OPTIONS = BILINGUAL_STORY_READER_LANGUAGE_OPTIONS
   }));
 
 const STORY_THEME_OPTIONS = [
-  "Funny",
-  "Scary",
-  "Mystery",
-  "Adventure",
-  "Fantasy",
-  "Romance",
-  "Drama",
-].map((theme) => ({ value: theme, label: theme }));
+  { value: "Funny", label: "Funny", prefix: "😄" },
+  { value: "Scary", label: "Scary", prefix: "👻" },
+  { value: "Mystery", label: "Mystery", prefix: "🔎" },
+  { value: "Adventure", label: "Adventure", prefix: "🧭" },
+  { value: "Fantasy", label: "Fantasy", prefix: "✨" },
+  { value: "Romance", label: "Romance", prefix: "💌" },
+  { value: "Drama", label: "Drama", prefix: "🎭" },
+];
 
 function getLabelPrefix(label: string): string | undefined {
   const prefixEnd = label.indexOf(" ");
@@ -389,10 +390,18 @@ function StoryCombobox({
             bg="app.bilingualStoryReader.bg.popover"
             borderColor="app.bilingualStoryReader.border.default"
             borderWidth="1px"
+            p={1}
+            rounded="xl"
             shadow="lg"
           >
             {collection.items.map((option) => (
-              <Combobox.Item item={option} key={option.value}>
+              <Combobox.Item
+                item={option}
+                key={option.value}
+                px={3}
+                py={2}
+                rounded="lg"
+              >
                 <Combobox.ItemText>
                   <HStack gap={2}>
                     {option.prefix ? (
@@ -497,6 +506,8 @@ export function BilingualStoryReaderPageView() {
   const [isManualPasteOpen, setIsManualPasteOpen] = useState(false);
   const [isPromptDialogOpen, setIsPromptDialogOpen] = useState(false);
   const [isPromptEditing, setIsPromptEditing] = useState(false);
+  const [isPromptTextareaKeyboardFocused, setIsPromptTextareaKeyboardFocused] =
+    useState(false);
   const [promptDraft, setPromptDraft] = useState("");
   const [jsonParseResult, setJsonParseResult] = useState<JsonParseResult | null>(
     null,
@@ -508,9 +519,30 @@ export function BilingualStoryReaderPageView() {
   const prompt = useMemo(() => buildBilingualStoryReaderPrompt(setup), [setup]);
   const isSetupComplete = isBilingualStoryReaderSetupComplete(setup);
   const hasLoadedStory = storyValidationResult?.ok === true;
+  const promptTextareaKeyboardFocusRef = useRef(false);
 
   useEffect(() => {
     setStoryHistory(readStoryHistory());
+  }, []);
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent): void {
+      if (event.key === "Tab") {
+        promptTextareaKeyboardFocusRef.current = true;
+      }
+    }
+
+    function handlePointerDown(): void {
+      promptTextareaKeyboardFocusRef.current = false;
+      setIsPromptTextareaKeyboardFocused(false);
+    }
+
+    window.addEventListener("keydown", handleKeyDown, true);
+    window.addEventListener("pointerdown", handlePointerDown, true);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown, true);
+      window.removeEventListener("pointerdown", handlePointerDown, true);
+    };
   }, []);
 
   function notify(
@@ -627,6 +659,7 @@ export function BilingualStoryReaderPageView() {
       value: entry.story,
       warnings: [],
     });
+    setSetup(entry.setup);
     setJsonParseResult(null);
     setRawResponseText("");
     setIsManualPasteOpen(false);
@@ -735,7 +768,7 @@ export function BilingualStoryReaderPageView() {
               <HStack align="center" justify="space-between" wrap="wrap">
                 <HStack gap={2}>
                   <Icon color="app.bilingualStoryReader.fg.muted">
-                    <LuSparkles />
+                    <LuSlidersHorizontal />
                   </Icon>
                   <Text fontFamily="ui" fontSize="lg" fontWeight="semibold">
                     Story Setup
@@ -913,7 +946,7 @@ export function BilingualStoryReaderPageView() {
                     <Field label="Theme">
                       <StoryCombobox
                         ariaLabel="Theme"
-                        icon={LuSparkles}
+                        icon={LuClapperboard}
                         options={STORY_THEME_OPTIONS}
                         placeholder="Search or type a theme"
                         value={setup.theme}
@@ -1001,22 +1034,72 @@ export function BilingualStoryReaderPageView() {
                         rounded="2xl"
                       >
                         <DialogHeader>
-                          <DialogTitle fontFamily="ui">Generated prompt</DialogTitle>
+                          <DialogTitle fontFamily="ui">
+                            <HStack as="span" gap={2}>
+                              <Icon
+                                as={LuSlidersHorizontal}
+                                boxSize={5}
+                                color="app.bilingualStoryReader.fg.muted"
+                              />
+                              <Text as="span">Generated prompt</Text>
+                            </HStack>
+                          </DialogTitle>
                         </DialogHeader>
-                        <DialogBody>
+                        <DialogBody pb={0} px={0}>
                           <VStack align="stretch" gap={3}>
-                            <Text color="app.bilingualStoryReader.fg.muted" fontSize="sm">
+                            <Text
+                              color="app.bilingualStoryReader.fg.muted"
+                              fontSize="sm"
+                              px={6}
+                            >
                               Edits are temporary and are not saved to the setup.
                             </Text>
                             <Box position="relative">
                               <Textarea
                                 {...CONTROL_INPUT_PROPS}
                                 aria-label="Generated prompt"
+                                borderBottomWidth={0}
+                                borderXWidth={0}
                                 fontFamily="mono"
                                 minH={{ base: "xs", md: "md" }}
                                 onChange={(event) => setPromptDraft(event.currentTarget.value)}
+                                onBlur={() => setIsPromptTextareaKeyboardFocused(false)}
+                                onFocus={() =>
+                                  setIsPromptTextareaKeyboardFocused(
+                                    promptTextareaKeyboardFocusRef.current,
+                                  )
+                                }
+                                onPointerDown={() => {
+                                  promptTextareaKeyboardFocusRef.current = false;
+                                  setIsPromptTextareaKeyboardFocused(false);
+                                }}
                                 readOnly={!isPromptEditing}
+                                rounded={0}
                                 value={promptDraft}
+                                _focus={{
+                                  borderColor:
+                                    "app.bilingualStoryReader.border.default",
+                                  boxShadow: "none",
+                                  outline: "none",
+                                }}
+                                _focusVisible={
+                                  isPromptTextareaKeyboardFocused
+                                    ? {
+                                        borderColor:
+                                          "app.bilingualStoryReader.border.default",
+                                        boxShadow: "none",
+                                        outlineColor: "blue.500",
+                                        outlineOffset: "-2px",
+                                        outlineStyle: "solid",
+                                        outlineWidth: "2px",
+                                      }
+                                    : {
+                                        borderColor:
+                                          "app.bilingualStoryReader.border.default",
+                                        boxShadow: "none",
+                                        outline: "none",
+                                      }
+                                }
                               />
                             </Box>
                           </VStack>
@@ -1143,6 +1226,7 @@ export function BilingualStoryReaderPageView() {
             contentPy={{ base: 3, md: 4 }}
           >
             <RenderedStoryView
+              setup={setup}
               story={storyValidationResult.value}
               warnings={storyValidationResult.warnings}
             />
@@ -1246,7 +1330,10 @@ export function BilingualStoryReaderPageView() {
                           />
                           <HistoryMetadataPill icon={LuBookOpen} value={entry.setup.length} />
                           {entry.setup.theme.trim() ? (
-                            <HistoryMetadataPill icon={LuSparkles} value={entry.setup.theme.trim()} />
+                            <HistoryMetadataPill
+                              icon={LuClapperboard}
+                              value={entry.setup.theme.trim()}
+                            />
                           ) : null}
                         </HStack>
                         <Text color="app.bilingualStoryReader.fg.muted" fontSize="xs">

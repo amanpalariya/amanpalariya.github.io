@@ -12,13 +12,15 @@ import {
 import { useState, type ElementType, type KeyboardEvent } from "react";
 import {
   LuBookOpen,
+  LuClapperboard,
   LuClock,
-  LuGauge,
+  LuGraduationCap,
   LuInfo,
   LuLanguages,
   LuListTree,
   LuTriangleAlert,
 } from "react-icons/lu";
+import type { BilingualStoryReaderSetupFormValues } from "../domain/types";
 import type {
   RenderableSentence,
   RenderableStory,
@@ -61,6 +63,11 @@ function StoryMetadataItem({
       </Text>
     </HStack>
   );
+}
+
+function getLevelLabel(level: BilingualStoryReaderSetupFormValues["level"]): string {
+  if (level === "Beginner") return "Beginner";
+  return `CEFR ${level}`;
 }
 
 function SentenceHelpContent({ sentence }: { sentence: RenderableSentence }) {
@@ -184,9 +191,11 @@ function StorySentence({
 }
 
 export function RenderedStoryView({
+  setup,
   story,
   warnings,
 }: {
+  setup: BilingualStoryReaderSetupFormValues;
   story: RenderableStory;
   warnings: BilingualStoryReaderWarning[];
 }) {
@@ -209,9 +218,12 @@ export function RenderedStoryView({
           <HStack gap={2} wrap="wrap">
             <StoryMetadataItem
               icon={LuLanguages}
-              value={`${story.story.targetLanguage} from ${story.story.knownLanguage}`}
+              value={`${story.story.knownLanguage} → ${story.story.targetLanguage}`}
             />
-            <StoryMetadataItem icon={LuGauge} value={story.story.level} />
+            <StoryMetadataItem icon={LuGraduationCap} value={getLevelLabel(setup.level)} />
+            {setup.theme.trim() ? (
+              <StoryMetadataItem icon={LuClapperboard} value={setup.theme.trim()} />
+            ) : null}
             <StoryMetadataItem
               icon={LuBookOpen}
               value={`${story.paragraphs.length} paragraph${
