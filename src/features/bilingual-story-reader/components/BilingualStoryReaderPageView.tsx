@@ -39,6 +39,7 @@ import {
 import { Clipboard } from "@components/ui/clipboard";
 import { Field } from "@components/ui/field";
 import { Tooltip } from "@components/ui/tooltip";
+import { useRouter } from "next/navigation";
 import {
   useEffect,
   useMemo,
@@ -56,7 +57,6 @@ import {
   LuClipboardPaste,
   LuCopy,
   LuEye,
-  LuFilePlus,
   LuGraduationCap,
   LuHistory,
   LuLanguages,
@@ -86,7 +86,8 @@ import {
 import { readTextFromClipboard } from "../services/clipboard";
 import { parseJsonWithCleanup, type JsonParseResult } from "../services/json-cleanup";
 import {
-  prependStoryHistoryEntry,
+  createStoryHistoryEntry,
+  prependStoryHistoryEntryObject,
   readStoryHistory,
   type StoryHistoryEntry,
   writeStoryHistory,
@@ -96,7 +97,6 @@ import {
   validateBilingualStoryReaderSchema,
   type StoryValidationResult,
 } from "../domain/validate-story";
-import { RenderedStoryView } from "./RenderedStoryView";
 
 type TextFieldName = Exclude<
   keyof BilingualStoryReaderSetupFormValues,
@@ -498,6 +498,7 @@ function StorySegmentedControl<T extends string>({
 }
 
 export function BilingualStoryReaderPageView() {
+  const router = useRouter();
   const [setup, setSetup] = useState<BilingualStoryReaderSetupFormValues>(
     DEFAULT_BILINGUAL_STORY_READER_SETUP,
   );
@@ -518,7 +519,6 @@ export function BilingualStoryReaderPageView() {
 
   const prompt = useMemo(() => buildBilingualStoryReaderPrompt(setup), [setup]);
   const isSetupComplete = isBilingualStoryReaderSetupComplete(setup);
-  const hasLoadedStory = storyValidationResult?.ok === true;
   const promptTextareaKeyboardFocusRef = useRef(false);
 
   useEffect(() => {
@@ -573,12 +573,18 @@ export function BilingualStoryReaderPageView() {
     }
   }
 
-  function saveStoryToHistory(story: RenderableStory): void {
+  function getStoryRoute(entryId: string): string {
+    return `/tools/bilingual-story-reader/story/?id=${encodeURIComponent(entryId)}`;
+  }
+
+  function saveStoryToHistory(story: RenderableStory): StoryHistoryEntry {
+    const entry = createStoryHistoryEntry(setup, story);
     setStoryHistory((current) => {
-      const next = prependStoryHistoryEntry(current, setup, story);
+      const next = prependStoryHistoryEntryObject(current, entry);
       writeStoryHistory(next);
       return next;
     });
+    return entry;
   }
 
   function validateResponseText(responseText: string): void {
@@ -610,7 +616,8 @@ export function BilingualStoryReaderPageView() {
     setStoryValidationResult(validationResult);
     if (validationResult.ok) {
       setIsManualPasteOpen(false);
-      saveStoryToHistory(validationResult.value);
+      const entry = saveStoryToHistory(validationResult.value);
+      router.push(getStoryRoute(entry.id));
     } else {
       notify("error", "Response needs repair", "The response is missing story fields.");
     }
@@ -639,30 +646,8 @@ export function BilingualStoryReaderPageView() {
     validateResponseText(text);
   }
 
-  function adjustPrompt(): void {
-    setStoryValidationResult(null);
-    setJsonParseResult(null);
-    setRawResponseText("");
-  }
-
-  function resetLoadedStory(): void {
-    setSetup(DEFAULT_BILINGUAL_STORY_READER_SETUP);
-    setRawResponseText("");
-    setJsonParseResult(null);
-    setStoryValidationResult(null);
-    setIsManualPasteOpen(false);
-  }
-
   function openHistoryStory(entry: StoryHistoryEntry): void {
-    setStoryValidationResult({
-      ok: true,
-      value: entry.story,
-      warnings: [],
-    });
-    setSetup(entry.setup);
-    setJsonParseResult(null);
-    setRawResponseText("");
-    setIsManualPasteOpen(false);
+    router.push(getStoryRoute(entry.id));
   }
 
   function formatHistoryLoadedAt(loadedAt: string): string {
@@ -725,45 +710,11 @@ export function BilingualStoryReaderPageView() {
         </Box>
       ) : null}
 
-      <Box w="full" px={[4, 6]}>
-        <Flex
-          align={["stretch", "center"]}
-          direction={["column", "row"]}
-          gap={3}
-          justify="space-between"
-          wrap="wrap"
+      <Bleed inline={{ base: 1, md: 2 }}>
+        <HighlightedSection
+          contentPx={{ base: 3, md: 4 }}
+          contentPy={{ base: 3, md: 4 }}
         >
-          <HStack gap={2} wrap="wrap">
-            {hasLoadedStory ? (
-              <>
-                <Button {...ACTION_BUTTON_PROPS} {...PRIMARY_BUTTON_PROPS} onClick={adjustPrompt}>
-                  <Icon>
-                    <LuPencil />
-                  </Icon>
-                  Edit Prompt
-                </Button>
-                <Button
-                  {...ACTION_BUTTON_PROPS}
-                  {...SUBTLE_BUTTON_PROPS}
-                  onClick={resetLoadedStory}
-                >
-                  <Icon>
-                    <LuFilePlus />
-                  </Icon>
-                  New Story
-                </Button>
-              </>
-            ) : null}
-          </HStack>
-        </Flex>
-      </Box>
-
-      {!hasLoadedStory ? (
-        <Bleed inline={{ base: 1, md: 2 }}>
-          <HighlightedSection
-            contentPx={{ base: 3, md: 4 }}
-            contentPy={{ base: 3, md: 4 }}
-          >
             <VStack align="stretch" gap={4} minW={0}>
               <HStack align="center" justify="space-between" wrap="wrap">
                 <HStack gap={2}>
@@ -1191,7 +1142,7 @@ export function BilingualStoryReaderPageView() {
 
                 {storyValidationResult?.ok ? (
                   <Text color="green.600" fontSize="sm" role="status">
-                    Story rendered.
+                    Story saved.
                   </Text>
                 ) : null}
 
@@ -1215,24 +1166,8 @@ export function BilingualStoryReaderPageView() {
                 </VStack>
               ) : null}
             </VStack>
-          </HighlightedSection>
-        </Bleed>
-      ) : null}
-
-      {storyValidationResult?.ok ? (
-        <Bleed inline={{ base: 1, md: 2 }}>
-          <HighlightedSection
-            contentPx={{ base: 3, md: 4 }}
-            contentPy={{ base: 3, md: 4 }}
-          >
-            <RenderedStoryView
-              setup={setup}
-              story={storyValidationResult.value}
-              warnings={storyValidationResult.warnings}
-            />
-          </HighlightedSection>
-        </Bleed>
-      ) : null}
+        </HighlightedSection>
+      </Bleed>
 
       <Bleed inline={{ base: 1, md: 2 }}>
         <HighlightedSection
