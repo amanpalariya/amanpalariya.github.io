@@ -9,6 +9,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
+import { Heading1, Heading2 } from "@components/core/Texts";
 import { useState, type ElementType, type KeyboardEvent } from "react";
 import {
   LuBookOpen,
@@ -191,10 +192,16 @@ function StorySentence({
 }
 
 export function RenderedStoryView({
+  unframed = false,
+  hideTitle = false,
+  loadedAt,
   setup,
   story,
   warnings,
 }: {
+  unframed?: boolean;
+  hideTitle?: boolean;
+  loadedAt?: string;
   setup: BilingualStoryReaderSetupFormValues;
   story: RenderableStory;
   warnings: BilingualStoryReaderWarning[];
@@ -204,6 +211,126 @@ export function RenderedStoryView({
     0,
   );
   const [openSentenceId, setOpenSentenceId] = useState<string | null>(null);
+  const loadedDate = loadedAt ? new Date(loadedAt) : null;
+  const loadedLabel =
+    loadedDate && !Number.isNaN(loadedDate.getTime())
+      ? loadedDate.toLocaleDateString(undefined, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })
+      : null;
+  const loadedTimeLabel =
+    loadedDate && !Number.isNaN(loadedDate.getTime())
+      ? loadedDate.toLocaleTimeString(undefined, {
+          hour: "numeric",
+          minute: "2-digit",
+        })
+      : null;
+
+  const metadataPills = (
+    <HStack gap={2} wrap="wrap">
+      <StoryMetadataItem
+        icon={LuLanguages}
+        value={`${story.story.knownLanguage} → ${story.story.targetLanguage}`}
+      />
+      <StoryMetadataItem icon={LuGraduationCap} value={getLevelLabel(setup.level)} />
+      {setup.theme.trim() ? (
+        <StoryMetadataItem icon={LuClapperboard} value={setup.theme.trim()} />
+      ) : null}
+      <StoryMetadataItem
+        icon={LuBookOpen}
+        value={`${story.paragraphs.length} paragraph${
+          story.paragraphs.length === 1 ? "" : "s"
+        }`}
+      />
+      <StoryMetadataItem
+        icon={LuListTree}
+        value={`${sentenceCount} sentence${sentenceCount === 1 ? "" : "s"}`}
+      />
+      {story.story.estimatedMinutes ? (
+        <StoryMetadataItem
+          icon={LuClock}
+          value={`${story.story.estimatedMinutes} min`}
+        />
+      ) : null}
+      {warnings.length > 0 ? (
+        <StoryMetadataItem
+          icon={LuTriangleAlert}
+          tone="warning"
+          value={`${warnings.length} warning${warnings.length === 1 ? "" : "s"}`}
+        />
+      ) : null}
+    </HStack>
+  );
+
+  const storyBody = (
+    <VStack align="stretch" as="article" gap={0}>
+      {story.paragraphs.map((paragraph, paragraphIndex) => (
+        <Box key={paragraph.id}>
+          <Text
+            color="app.fg.muted"
+            fontFamily="body"
+            fontSize={["19px", "20px"]}
+            fontWeight="normal"
+            hyphens="auto"
+            lineHeight="1.42"
+            mb={paragraphIndex === story.paragraphs.length - 1 ? 0 : 7}
+            textAlign="justify"
+            css={{ WebkitHyphens: "auto", textWrap: "pretty" }}
+          >
+            {paragraph.sentences.map((sentence, sentenceIndex) => {
+              const sentenceNumber =
+                story.paragraphs
+                  .slice(0, paragraphIndex)
+                  .reduce(
+                    (count, previousParagraph) =>
+                      count + previousParagraph.sentences.length,
+                    0,
+                  ) +
+                sentenceIndex +
+                1;
+              return (
+                <StorySentence
+                  isOpen={openSentenceId === sentence.id}
+                  key={sentence.id}
+                  onClose={() => setOpenSentenceId(null)}
+                  onOpen={() => setOpenSentenceId(sentence.id)}
+                  sentence={sentence}
+                  sentenceNumber={sentenceNumber}
+                />
+              );
+            })}
+          </Text>
+        </Box>
+      ))}
+    </VStack>
+  );
+
+  if (unframed) {
+    return (
+      <VStack align="stretch" as="article" gap={4}>
+        {hideTitle ? null : (
+          <Box as="header" letterSpacing="wide" mt={4} mx={[4, 6]}>
+            <Heading1>{story.story.title}</Heading1>
+          </Box>
+        )}
+        {loadedLabel ? (
+          <HStack gap={3} px={[4, 6]} fontSize="sm" color="app.fg.muted">
+            <Text as="p">
+              <time dateTime={loadedDate?.toISOString()}>
+                {loadedTimeLabel ? `${loadedLabel}, ${loadedTimeLabel}` : loadedLabel}
+              </time>
+            </Text>
+          </HStack>
+        ) : null}
+        <HStack gap={3} wrap="wrap" align="center" px={[4, 6]} py={0}>
+          {metadataPills}
+        </HStack>
+        <Box m={[4, 6]}>{storyBody}</Box>
+      </VStack>
+    );
+  }
 
   return (
     <Card.Root
@@ -214,74 +341,11 @@ export function RenderedStoryView({
     >
       <Card.Header>
         <VStack align="stretch" gap={3}>
-          <Card.Title>{story.story.title}</Card.Title>
-          <HStack gap={2} wrap="wrap">
-            <StoryMetadataItem
-              icon={LuLanguages}
-              value={`${story.story.knownLanguage} → ${story.story.targetLanguage}`}
-            />
-            <StoryMetadataItem icon={LuGraduationCap} value={getLevelLabel(setup.level)} />
-            {setup.theme.trim() ? (
-              <StoryMetadataItem icon={LuClapperboard} value={setup.theme.trim()} />
-            ) : null}
-            <StoryMetadataItem
-              icon={LuBookOpen}
-              value={`${story.paragraphs.length} paragraph${
-                story.paragraphs.length === 1 ? "" : "s"
-              }`}
-            />
-            <StoryMetadataItem
-              icon={LuListTree}
-              value={`${sentenceCount} sentence${sentenceCount === 1 ? "" : "s"}`}
-            />
-            {story.story.estimatedMinutes ? (
-              <StoryMetadataItem
-                icon={LuClock}
-                value={`${story.story.estimatedMinutes} min`}
-              />
-            ) : null}
-            {warnings.length > 0 ? (
-              <StoryMetadataItem
-                icon={LuTriangleAlert}
-                tone="warning"
-                value={`${warnings.length} warning${warnings.length === 1 ? "" : "s"}`}
-              />
-            ) : null}
-          </HStack>
+          {hideTitle ? null : <Heading2>{story.story.title}</Heading2>}
+          {metadataPills}
         </VStack>
       </Card.Header>
-      <Card.Body>
-        <VStack align="stretch" as="article" gap={5}>
-          {story.paragraphs.map((paragraph, paragraphIndex) => (
-            <Box key={paragraph.id}>
-              <Text fontSize="lg" lineHeight="1.9">
-                {paragraph.sentences.map((sentence, sentenceIndex) => {
-                  const sentenceNumber =
-                    story.paragraphs
-                      .slice(0, paragraphIndex)
-                      .reduce(
-                        (count, previousParagraph) =>
-                          count + previousParagraph.sentences.length,
-                        0,
-                      ) +
-                    sentenceIndex +
-                    1;
-                  return (
-                    <StorySentence
-                      isOpen={openSentenceId === sentence.id}
-                      key={sentence.id}
-                      onClose={() => setOpenSentenceId(null)}
-                      onOpen={() => setOpenSentenceId(sentence.id)}
-                      sentence={sentence}
-                      sentenceNumber={sentenceNumber}
-                    />
-                  );
-                })}
-              </Text>
-            </Box>
-          ))}
-        </VStack>
-      </Card.Body>
+      <Card.Body>{storyBody}</Card.Body>
     </Card.Root>
   );
 }
