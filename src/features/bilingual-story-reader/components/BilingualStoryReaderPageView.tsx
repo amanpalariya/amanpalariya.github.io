@@ -30,6 +30,7 @@ import {
   DialogBody,
   DialogCloseTrigger,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogRoot,
   DialogTitle,
@@ -60,6 +61,7 @@ import {
   LuLanguages,
   LuMessageSquareText,
   LuPencil,
+  LuRotateCcw,
   LuSparkles,
   LuTrash2,
 } from "react-icons/lu";
@@ -139,10 +141,27 @@ const SUBTLE_BUTTON_PROPS = {
   },
 } as const;
 
+const PROMPT_DIALOG_FOOTER_BUTTON_PROPS = {
+  h: 12,
+  justifyContent: "center",
+  minW: 0,
+  px: 4,
+  rounded: 0,
+  w: "full",
+} as const;
+
 const DANGER_BUTTON_PROPS = {
+  bg: "red.50",
   color: "red.600",
   _hover: {
-    bg: "app.status.danger.bg",
+    bg: "red.100",
+  },
+  _dark: {
+    bg: "red.950",
+    color: "red.200",
+    _hover: {
+      bg: "red.900",
+    },
   },
 } as const;
 
@@ -978,6 +997,7 @@ export function BilingualStoryReaderPageView() {
                         borderWidth="1px"
                         color="app.bilingualStoryReader.fg.default"
                         maxW="720px"
+                        overflow="hidden"
                         rounded="2xl"
                       >
                         <DialogHeader>
@@ -988,44 +1008,78 @@ export function BilingualStoryReaderPageView() {
                             <Text color="app.bilingualStoryReader.fg.muted" fontSize="sm">
                               Edits are temporary and are not saved to the setup.
                             </Text>
-                            <Textarea
-                              {...CONTROL_INPUT_PROPS}
-                              aria-label="Generated prompt"
-                              fontFamily="mono"
-                              minH={{ base: "xs", md: "md" }}
-                              onChange={(event) => setPromptDraft(event.currentTarget.value)}
-                              readOnly={!isPromptEditing}
-                              value={promptDraft}
-                            />
-                            <HStack gap={2} justify="end" wrap="wrap">
-                              <Button
-                                {...ACTION_BUTTON_PROPS}
-                                onClick={() => setIsPromptEditing((current) => !current)}
-                                variant="outline"
-                              >
-                                <Icon>{isPromptEditing ? <LuEye /> : <LuPencil />}</Icon>
-                                {isPromptEditing ? "View" : "Edit"}
-                              </Button>
+                            <Box position="relative">
+                              <Textarea
+                                {...CONTROL_INPUT_PROPS}
+                                aria-label="Generated prompt"
+                                fontFamily="mono"
+                                minH={{ base: "xs", md: "md" }}
+                                onChange={(event) => setPromptDraft(event.currentTarget.value)}
+                                readOnly={!isPromptEditing}
+                                value={promptDraft}
+                              />
+                            </Box>
+                          </VStack>
+                        </DialogBody>
+                        <DialogFooter p={0} w="full">
+                          <Grid templateColumns="repeat(3, minmax(0, 1fr))" w="full">
+                            <Button
+                              {...ACTION_BUTTON_PROPS}
+                              {...PROMPT_DIALOG_FOOTER_BUTTON_PROPS}
+                              aria-pressed={isPromptEditing}
+                              bg={
+                                isPromptEditing
+                                  ? "app.bilingualStoryReader.button.primary.bg"
+                                  : "app.bilingualStoryReader.button.subtle.bg"
+                              }
+                              color={
+                                isPromptEditing
+                                  ? "app.bilingualStoryReader.button.primary.fg"
+                                  : "app.bilingualStoryReader.button.subtle.fg"
+                              }
+                              onClick={() => setIsPromptEditing((current) => !current)}
+                              _hover={{
+                                bg: isPromptEditing
+                                  ? "app.bilingualStoryReader.button.primary.hoverBg"
+                                  : "app.bilingualStoryReader.button.subtle.hoverBg",
+                              }}
+                            >
+                              <Icon as={LuPencil} />
+                              Edit
+                            </Button>
+                            <Box minW={0}>
                               <Clipboard.Root value={promptDraft} timeout={1000}>
                                 <Clipboard.Trigger asChild>
                                   <Button
                                     {...ACTION_BUTTON_PROPS}
                                     {...PRIMARY_BUTTON_PROPS}
+                                    {...PROMPT_DIALOG_FOOTER_BUTTON_PROPS}
                                     aria-label="Copy generated prompt"
-                                    minW="5.75rem"
+                                    borderLeftColor="app.bilingualStoryReader.button.primary.divider"
+                                    borderLeftWidth="1px"
+                                    borderRightColor="app.bilingualStoryReader.button.primary.divider"
+                                    borderRightWidth="1px"
                                   >
                                     <Clipboard.Indicator copied={<Icon as={LuCheck} />}>
                                       <Icon as={LuCopy} />
                                     </Clipboard.Indicator>
-                                    <Clipboard.Indicator copied="Copied">
-                                      Copy
-                                    </Clipboard.Indicator>
+                                    Copy
                                   </Button>
                                 </Clipboard.Trigger>
                               </Clipboard.Root>
-                            </HStack>
-                          </VStack>
-                        </DialogBody>
+                            </Box>
+                            <Button
+                              {...ACTION_BUTTON_PROPS}
+                              {...PROMPT_DIALOG_FOOTER_BUTTON_PROPS}
+                              {...DANGER_BUTTON_PROPS}
+                              aria-label="Reset generated prompt"
+                              onClick={() => setPromptDraft(prompt)}
+                            >
+                              <Icon as={LuRotateCcw} />
+                              Reset
+                            </Button>
+                          </Grid>
+                        </DialogFooter>
                         <DialogCloseTrigger />
                       </DialogContent>
                     </DialogRoot>
