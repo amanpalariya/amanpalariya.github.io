@@ -145,3 +145,10 @@ export function prependStoryHistoryEntryObject(
     STORY_HISTORY_LIMIT,
   );
 }
+
+export function removeStoryHistoryEntry(
+  entries: StoryHistoryEntry[],
+  entryId: string,
+): StoryHistoryEntry[] {
+  return entries.filter((entry) => entry.id !== entryId);
+}

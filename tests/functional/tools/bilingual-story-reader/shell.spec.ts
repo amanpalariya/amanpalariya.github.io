@@ -151,13 +151,30 @@ test.describe("Bilingual Story Reader shell", () => {
     await expect(page.getByRole("button", { name: "Load Story from Clipboard" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Edit Prompt" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "El tren" })).toBeVisible();
-    await expect(page.getByText("Spanish from English")).toBeVisible();
+    await expect(page.getByText("English → Spanish")).toBeVisible();
     await expect(page.getByText("A1", { exact: true })).toBeVisible();
     await expect(page.getByText("1 paragraph")).toBeVisible();
     await expect(page.getByText("2 sentences")).toBeVisible();
     await expect(page.getByText("3 min")).toBeVisible();
     await expect(page.getByText("Paragraph 1 of 1")).toHaveCount(0);
     await expect(page.locator("article").getByText("Lina entra.", { exact: true })).toBeVisible();
+  });
+
+  test("deletes the current story from story reader", async ({ page }) => {
+    await page.goto("/tools/bilingual-story-reader");
+
+    await page.getByRole("button", { name: "Show manual paste" }).click();
+    await page.getByLabel("AI response").fill(JSON.stringify(validStory()));
+    await page.getByRole("button", { name: "Load Story", exact: true }).click();
+
+    await expect(page.getByRole("heading", { name: "El tren" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Delete story" })).toBeVisible();
+
+    await page.getByRole("button", { name: "Delete story" }).click();
+
+    await expect(page).toHaveURL(/\/tools\/bilingual-story-reader\/?$/);
+    await expect(page.getByRole("heading", { name: "Story Setup" })).toBeVisible();
+    await expect(page.getByText("No story history yet")).toBeVisible();
   });
 
   test("shows sentence translation and concise note in a popover", async ({ page }) => {

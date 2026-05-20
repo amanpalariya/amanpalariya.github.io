@@ -63,6 +63,7 @@ import {
   LuMessageSquareText,
   LuPencil,
   LuRotateCcw,
+  LuSparkles,
   LuSlidersHorizontal,
   LuTrash2,
 } from "react-icons/lu";
@@ -89,6 +90,7 @@ import {
   createStoryHistoryEntry,
   prependStoryHistoryEntryObject,
   readStoryHistory,
+  removeStoryHistoryEntry,
   type StoryHistoryEntry,
   writeStoryHistory,
 } from "../services/story-history";
@@ -661,7 +663,7 @@ export function BilingualStoryReaderPageView() {
 
   function removeHistoryEntry(entryId: string): void {
     setStoryHistory((current) => {
-      const next = current.filter((entry) => entry.id !== entryId);
+      const next = removeStoryHistoryEntry(current, entryId);
       writeStoryHistory(next);
       return next;
     });
@@ -988,7 +990,7 @@ export function BilingualStoryReaderPageView() {
                           <DialogTitle fontFamily="ui">
                             <HStack as="span" gap={2}>
                               <Icon
-                                as={LuSlidersHorizontal}
+                                as={LuSparkles}
                                 boxSize={5}
                                 color="app.bilingualStoryReader.fg.muted"
                               />
