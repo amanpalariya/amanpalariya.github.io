@@ -78,6 +78,7 @@ function SentenceHelpContent({ sentence }: { sentence: RenderableSentence }) {
         color="app.bilingualStoryReader.fg.default"
         fontSize="md"
         lineHeight="1.65"
+        textAlign="left"
       >
         <Icon
           as={LuLanguages}
@@ -94,6 +95,7 @@ function SentenceHelpContent({ sentence }: { sentence: RenderableSentence }) {
           color="app.bilingualStoryReader.fg.muted"
           fontSize="md"
           lineHeight="1.55"
+          textAlign="left"
         >
           <Icon
             as={LuInfo}
@@ -177,10 +179,12 @@ function StorySentence({
           bg="app.bilingualStoryReader.bg.popover"
           borderColor="app.bilingualStoryReader.border.default"
           borderWidth="1px"
-          maxW="min(400px, calc(100vw - 32px))"
+          maxW="min(420px, calc(100vw - 32px))"
+          minW={0}
           p={0}
           rounded="xl"
           shadow="lg"
+          w="max-content"
         >
           <Box p={4}>
             <SentenceHelpContent sentence={sentence} />
