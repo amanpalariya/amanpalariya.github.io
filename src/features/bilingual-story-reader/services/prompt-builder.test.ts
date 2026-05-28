@@ -10,7 +10,7 @@ const completeSetup = {
   ...DEFAULT_BILINGUAL_STORY_READER_SETUP,
   knownLanguage: "English",
   targetLanguage: "Spanish",
-  theme: "lost phone at a train station",
+  theme: "Mystery",
 };
 
 describe("bilingual story reader prompt builder", () => {
@@ -31,9 +31,16 @@ describe("bilingual story reader prompt builder", () => {
     expect(prompt).toContain("- Known language: English");
     expect(prompt).toContain("- Target language: Spanish");
     expect(prompt).toContain("- Learner level: A1");
+    expect(prompt).toContain(
+      "- Theme: Mystery (overall story feel/genre label; copy this exact value into story.theme)",
+    );
     expect(prompt).toContain("- Length constraints: 2-2 paragraphs, 4-6 sentences");
     expect(prompt).toContain("6-10 target-language words per sentence");
     expect(prompt).toContain("80-120 target-language words");
+    expect(prompt).toContain('"theme": "Mystery"');
+    expect(prompt).toContain("- story.theme");
+    expect(prompt).toContain("Do not turn it into a setting, premise, title");
+    expect(prompt).toContain("Do not include length");
     expect(prompt).not.toContain('"schemaVersion"');
   });
 
@@ -48,15 +55,16 @@ describe("bilingual story reader prompt builder", () => {
     expect(prompt).not.toContain('"generationRequest"');
   });
 
-  it("uses an automatic random theme when theme is blank", () => {
+  it("uses an automatic broad feel when theme is blank", () => {
     const prompt = buildBilingualStoryReaderPrompt({
       ...DEFAULT_BILINGUAL_STORY_READER_SETUP,
       theme: "",
     });
 
     expect(prompt).toContain(
-      "- Theme: Automatic: choose a random concrete, learner-appropriate theme.",
+      "- Theme: Automatic: choose one broad overall story feel/genre label",
     );
+    expect(prompt).toContain('"theme": "Mystery"');
   });
 
   it("includes populated extra instructions", () => {

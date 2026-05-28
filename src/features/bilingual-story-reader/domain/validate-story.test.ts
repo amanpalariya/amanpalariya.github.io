@@ -8,6 +8,7 @@ function validStory(overrides: Record<string, unknown> = {}) {
       targetLanguage: "Spanish",
       knownLanguage: "English",
       level: "A1",
+      theme: "train station",
       estimatedMinutes: 3,
     },
     paragraphs: [
@@ -34,6 +35,8 @@ describe("validateBilingualStoryReaderSchema", () => {
     expect(result.value.story.title).toBe("El tren");
     expect(result.value.story.targetLanguage).toBe("Spanish");
     expect(result.value.story.knownLanguage).toBe("English");
+    expect(result.value.story.level).toBe("A1");
+    expect(result.value.story.theme).toBe("train station");
     expect(result.value.paragraphs[0]?.id).toBe("p1");
     expect(result.value.paragraphs[0]?.sentences[0]).toMatchObject({
       id: "p1-s1",
@@ -55,6 +58,7 @@ describe("validateBilingualStoryReaderSchema", () => {
       expect.arrayContaining([
         "story.title",
         "story.level",
+        "story.theme",
         "story.targetLanguage",
         "story.knownLanguage",
         "paragraphs",

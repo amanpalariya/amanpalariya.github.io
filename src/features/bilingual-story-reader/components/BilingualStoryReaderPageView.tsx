@@ -55,11 +55,13 @@ import {
   LuChevronUp,
   LuClapperboard,
   LuClipboardPaste,
+  LuClock,
   LuCopy,
   LuEye,
   LuGraduationCap,
   LuHistory,
   LuLanguages,
+  LuListTree,
   LuMessageSquareText,
   LuPencil,
   LuRotateCcw,
@@ -289,9 +291,21 @@ function HistoryMetadataPill({ icon, value }: { icon: IconType; value: string })
   );
 }
 
-function getLevelLabel(level: BilingualStoryReaderLevel): string {
+function getLevelLabel(level: string): string {
   if (level === "Beginner") return "Beginner";
-  return `CEFR ${level}`;
+  if (/^[ABC][12]$/.test(level)) return `CEFR ${level}`;
+  return level;
+}
+
+function formatCount(count: number, singular: string): string {
+  return `${count} ${singular}${count === 1 ? "" : "s"}`;
+}
+
+function getStorySentenceCount(story: RenderableStory): number {
+  return story.paragraphs.reduce(
+    (count, paragraph) => count + paragraph.sentences.length,
+    0,
+  );
 }
 
 function StoryCombobox({
@@ -580,7 +594,7 @@ export function BilingualStoryReaderPageView() {
   }
 
   function saveStoryToHistory(story: RenderableStory): StoryHistoryEntry {
-    const entry = createStoryHistoryEntry(setup, story);
+    const entry = createStoryHistoryEntry(story);
     setStoryHistory((current) => {
       const next = prependStoryHistoryEntryObject(current, entry);
       writeStoryHistory(next);
@@ -1263,13 +1277,26 @@ export function BilingualStoryReaderPageView() {
                           />
                           <HistoryMetadataPill
                             icon={LuGraduationCap}
-                            value={getLevelLabel(entry.setup.level)}
+                            value={getLevelLabel(entry.story.story.level)}
                           />
-                          <HistoryMetadataPill icon={LuBookOpen} value={entry.setup.length} />
-                          {entry.setup.theme.trim() ? (
+                          <HistoryMetadataPill
+                            icon={LuBookOpen}
+                            value={formatCount(entry.story.paragraphs.length, "paragraph")}
+                          />
+                          <HistoryMetadataPill
+                            icon={LuListTree}
+                            value={formatCount(getStorySentenceCount(entry.story), "sentence")}
+                          />
+                          {entry.story.story.estimatedMinutes ? (
+                            <HistoryMetadataPill
+                              icon={LuClock}
+                              value={`${entry.story.story.estimatedMinutes} min`}
+                            />
+                          ) : null}
+                          {entry.story.story.theme.trim() ? (
                             <HistoryMetadataPill
                               icon={LuClapperboard}
-                              value={entry.setup.theme.trim()}
+                              value={entry.story.story.theme.trim()}
                             />
                           ) : null}
                         </HStack>

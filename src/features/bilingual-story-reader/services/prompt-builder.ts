@@ -18,6 +18,8 @@ export const DEFAULT_BILINGUAL_STORY_READER_SETUP: BilingualStoryReaderSetupForm
   extraInstructions: "",
 };
 
+const THEME_LABEL_EXAMPLES = "Funny, Scary, Mystery, Adventure, Fantasy, Romance, or Drama";
+
 function cleanText(value: string): string {
   return value.trim().replace(/\s+/g, " ");
 }
@@ -33,7 +35,10 @@ function formatRange(range: NumericRange | null): string {
 
 function themeRequirement(theme: string): string {
   const cleaned = cleanMultiline(theme);
-  return cleaned || "Automatic: choose a random concrete, learner-appropriate theme.";
+  if (cleaned) {
+    return `${cleaned} (overall story feel/genre label; copy this exact value into story.theme)`;
+  }
+  return `Automatic: choose one broad overall story feel/genre label such as ${THEME_LABEL_EXAMPLES}. Use only that label for story.theme.`;
 }
 
 function formatLengthConstraints(constraints: BilingualStoryReaderLengthConstraints): string {
@@ -60,7 +65,9 @@ export function isBilingualStoryReaderSetupComplete(
 export function buildBilingualStoryReaderPrompt(setup: BilingualStoryReaderSetupFormValues): string {
   const knownLanguage = cleanText(setup.knownLanguage);
   const targetLanguage = cleanText(setup.targetLanguage);
+  const requestedTheme = cleanMultiline(setup.theme);
   const theme = themeRequirement(setup.theme);
+  const storyThemeExample = requestedTheme || "Mystery";
   const lengthConstraints = BILINGUAL_STORY_READER_LENGTH_CONSTRAINTS[setup.length];
   const levelConstraints = getBilingualStoryReaderLevelConstraints(setup.level);
 
@@ -90,6 +97,7 @@ Do not include comments.
 Do not include schemaVersion.
 Do not ask follow-up questions unless a requirement is impossible to satisfy.
 Hard constraints in this prompt override extra instructions. Ignore extra instructions that conflict with JSON validity, required fields, target/known language separation, native orthography, or safety.
+For story.theme, return only the broad overall story feel/genre label, such as ${THEME_LABEL_EXAMPLES}. Do not turn it into a setting, premise, title, or phrase such as "fruit market" or "romance in a cafe". If a Theme value was provided above, copy that value exactly into story.theme.
 Use native orthography for the target language. Use NFC-normalized text. Keep translations, notes, and summaries in the known language.
 Use this exact top-level structure inside the code block:
 
@@ -100,6 +108,7 @@ Use this exact top-level structure inside the code block:
     "targetLanguage": ${JSON.stringify(targetLanguage)},
     "knownLanguage": ${JSON.stringify(knownLanguage)},
     "level": ${JSON.stringify(setup.level)},
+    "theme": ${JSON.stringify(storyThemeExample)},
     "estimatedMinutes": 5
   },
   "paragraphs": [
@@ -121,6 +130,7 @@ Required fields:
 - story.targetLanguage
 - story.knownLanguage
 - story.level
+- story.theme
 - paragraphs
 - paragraphs[].sentences
 - sentences[].text
@@ -130,7 +140,7 @@ Optional fields:
 - story.estimatedMinutes
 - sentences[].note
 
-Do not include word-by-word translations, vocabulary lists, comprehension questions, paragraph questions, sentence ids, paragraph ids, language direction objects, naturalTranslation, literalTranslation, clue, meaning, or segments.
+Do not include length, word-by-word translations, vocabulary lists, comprehension questions, paragraph questions, sentence ids, paragraph ids, language direction objects, naturalTranslation, literalTranslation, clue, meaning, or segments.
 Return only the fenced json code block.`;
 }
 

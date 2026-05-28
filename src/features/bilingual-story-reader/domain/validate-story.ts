@@ -34,6 +34,7 @@ export interface RenderableStory {
     targetLanguage: string;
     knownLanguage: string;
     level: string;
+    theme: string;
     estimatedMinutes: number | null;
   };
   paragraphs: RenderableParagraph[];
@@ -163,6 +164,7 @@ export function validateBilingualStoryReaderSchema(value: unknown): StoryValidat
   const targetLanguage = stringValue(story.targetLanguage);
   const knownLanguage = stringValue(story.knownLanguage);
   const level = stringValue(story.level);
+  const theme = stringValue(story.theme);
 
   if (!title) errors.push({ path: "story.title", message: "story.title is required." });
   if (!targetLanguage) {
@@ -178,6 +180,7 @@ export function validateBilingualStoryReaderSchema(value: unknown): StoryValidat
     });
   }
   if (!level) errors.push({ path: "story.level", message: "story.level is required." });
+  if (!theme) errors.push({ path: "story.theme", message: "story.theme is required." });
 
   const paragraphs = validateParagraphs(value.paragraphs, errors);
 
@@ -194,6 +197,7 @@ export function validateBilingualStoryReaderSchema(value: unknown): StoryValidat
         targetLanguage: targetLanguage ?? "",
         knownLanguage: knownLanguage ?? "",
         level: level ?? "",
+        theme: theme ?? "",
         estimatedMinutes: numberValue(story.estimatedMinutes),
       },
       paragraphs,

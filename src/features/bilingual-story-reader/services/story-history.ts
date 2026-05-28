@@ -1,17 +1,11 @@
 import { buildToolStorageKey } from "@utils/storage";
-import {
-  BILINGUAL_STORY_READER_LENGTHS,
-  BILINGUAL_STORY_READER_LEVELS,
-  BILINGUAL_STORY_READER_TOOL_ID,
-} from "../domain/constants";
-import type { BilingualStoryReaderSetupFormValues } from "../domain/types";
+import { BILINGUAL_STORY_READER_TOOL_ID } from "../domain/constants";
 import type { RenderableStory } from "../domain/validate-story";
 import { validateBilingualStoryReaderSchema } from "../domain/validate-story";
 
 export interface StoryHistoryEntry {
   id: string;
   loadedAt: string;
-  setup: BilingualStoryReaderSetupFormValues;
   story: RenderableStory;
 }
 
@@ -31,45 +25,18 @@ function nonEmptyString(value: unknown): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
-function normalizeSetup(value: unknown): BilingualStoryReaderSetupFormValues | null {
-  if (!isRecord(value)) return null;
-
-  const knownLanguage = nonEmptyString(value.knownLanguage);
-  const targetLanguage = nonEmptyString(value.targetLanguage);
-  const theme = typeof value.theme === "string" ? value.theme : "";
-  const extraInstructions =
-    typeof value.extraInstructions === "string" ? value.extraInstructions : "";
-  const level = value.level;
-  const length = value.length;
-
-  if (!knownLanguage || !targetLanguage) return null;
-  if (!BILINGUAL_STORY_READER_LEVELS.includes(level as never)) return null;
-  if (!BILINGUAL_STORY_READER_LENGTHS.includes(length as never)) return null;
-
-  return {
-    knownLanguage,
-    targetLanguage,
-    level: level as BilingualStoryReaderSetupFormValues["level"],
-    theme,
-    length: length as BilingualStoryReaderSetupFormValues["length"],
-    extraInstructions,
-  };
-}
-
 function normalizeHistoryEntry(value: unknown): StoryHistoryEntry | null {
   if (!isRecord(value)) return null;
 
   const id = nonEmptyString(value.id);
   const loadedAt = nonEmptyString(value.loadedAt);
-  const setup = normalizeSetup(value.setup);
   const storyValidation = validateBilingualStoryReaderSchema(value.story);
 
-  if (!id || !loadedAt || !setup || !storyValidation.ok) return null;
+  if (!id || !loadedAt || !storyValidation.ok) return null;
 
   return {
     id,
     loadedAt,
-    setup,
     story: storyValidation.value,
   };
 }
@@ -107,32 +74,22 @@ export function writeStoryHistory(entries: StoryHistoryEntry[]): void {
 }
 
 export function createStoryHistoryEntry(
-  setup: BilingualStoryReaderSetupFormValues,
   story: RenderableStory,
 ): StoryHistoryEntry {
   return {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
     loadedAt: new Date().toISOString(),
-    setup: {
-      knownLanguage: setup.knownLanguage,
-      targetLanguage: setup.targetLanguage,
-      level: setup.level,
-      theme: setup.theme,
-      length: setup.length,
-      extraInstructions: setup.extraInstructions,
-    },
     story,
   };
 }
 
 export function prependStoryHistoryEntry(
   entries: StoryHistoryEntry[],
-  setup: BilingualStoryReaderSetupFormValues,
   story: RenderableStory,
 ): StoryHistoryEntry[] {
   return prependStoryHistoryEntryObject(
     entries,
-    createStoryHistoryEntry(setup, story),
+    createStoryHistoryEntry(story),
   );
 }
 

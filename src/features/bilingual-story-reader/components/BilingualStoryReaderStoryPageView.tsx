@@ -253,7 +253,6 @@ export function BilingualStoryReaderStoryPageView({
             hideTitle
             loadedAt={entry.loadedAt}
             unframed
-            setup={entry.setup}
             story={entry.story}
             warnings={[]}
           />
