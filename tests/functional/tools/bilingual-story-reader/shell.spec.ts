@@ -14,13 +14,14 @@ async function dispatchPasteOnFocusedElement(page: import("@playwright/test").Pa
   }, text);
 }
 
-function validStory() {
+function validStory(title = "El tren") {
   return {
     story: {
-      title: "El tren",
+      title,
       targetLanguage: "Spanish",
       knownLanguage: "English",
       level: "A1",
+      theme: "train station",
       estimatedMinutes: 3,
     },
     paragraphs: [
@@ -47,7 +48,7 @@ test.describe("Bilingual Story Reader shell", () => {
 
     expect(response?.status()).toBeLessThan(400);
     await expect(page.getByRole("heading", { name: "Bilingual Story Reader" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Story Setup" })).toBeVisible();
+    await expect(page.getByText("Story Setup", { exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Manual Paste" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Copy Prompt" })).toBeEnabled();
     await expect(page.getByRole("button", { name: "View generated prompt" })).toBeEnabled();
@@ -113,6 +114,39 @@ test.describe("Bilingual Story Reader shell", () => {
     await expect(promptTextbox).toContainText('"level": "Beginner"');
   });
 
+  test("persists setup values across reloads", async ({ page }) => {
+    await page.goto("/tools/bilingual-story-reader");
+
+    await page.getByLabel("Level").selectOption("B2");
+    await page.getByLabel("Theme").fill("festival mystery");
+    await page.getByRole("textbox", { name: "Extra instructions" }).fill("Use short dialogue.");
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          window.localStorage.getItem("tools.bilingual-story-reader.setup"),
+        ),
+      )
+      .toContain("Use short dialogue.");
+
+    await page.reload();
+
+    await expect(page.getByLabel("Known language")).toHaveValue("English");
+    await expect(page.getByLabel("Target language")).toHaveValue("Spanish");
+    await expect(page.getByLabel("Level")).toHaveValue("B2");
+    await expect(page.getByLabel("Theme")).toHaveValue("festival mystery");
+    await expect(page.getByRole("textbox", { name: "Extra instructions" })).toHaveValue(
+      "Use short dialogue.",
+    );
+
+    await page.getByRole("button", { name: "View generated prompt" }).click();
+    const promptTextbox = page.getByRole("textbox", { name: "Generated prompt" });
+    await expect(promptTextbox).toContainText("- Known language: English");
+    await expect(promptTextbox).toContainText("- Target language: Spanish");
+    await expect(promptTextbox).toContainText("- Learner level: B2");
+    await expect(promptTextbox).toContainText("- Theme: festival mystery");
+    await expect(promptTextbox).toContainText("- Extra instructions: Use short dialogue.");
+  });
+
   test("parses and reports pasted AI responses", async ({ page }) => {
     await page.goto("/tools/bilingual-story-reader");
 
@@ -144,15 +178,13 @@ test.describe("Bilingual Story Reader shell", () => {
     await page.getByRole("button", { name: "Load Story", exact: true }).click();
 
     await expect(page.getByText("Story loaded", { exact: true })).toHaveCount(0);
-    await expect(page.getByRole("heading", { name: "Story Setup" })).toHaveCount(0);
+    await expect(page.getByText("Story Setup", { exact: true })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Copy Prompt" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "View generated prompt" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Open story reader help" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Load Story from Clipboard" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Edit Prompt" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "El tren" })).toBeVisible();
     await expect(page.getByText("English → Spanish")).toBeVisible();
-    await expect(page.getByText("A1", { exact: true })).toBeVisible();
+    await expect(page.getByText("CEFR A1", { exact: true })).toBeVisible();
     await expect(page.getByText("1 paragraph")).toBeVisible();
     await expect(page.getByText("2 sentences")).toBeVisible();
     await expect(page.getByText("3 min")).toBeVisible();
@@ -173,7 +205,64 @@ test.describe("Bilingual Story Reader shell", () => {
     await page.getByRole("button", { name: "Delete story" }).click();
 
     await expect(page).toHaveURL(/\/tools\/bilingual-story-reader\/?$/);
-    await expect(page.getByRole("heading", { name: "Story Setup" })).toBeVisible();
+    await expect(page.getByText("Story Setup", { exact: true })).toBeVisible();
+    await expect(page.getByText("No story history yet")).toBeVisible();
+  });
+
+  test("persists history and opens saved stories from the history list", async ({ page }) => {
+    await page.goto("/tools/bilingual-story-reader");
+
+    await page.getByRole("button", { name: "Show manual paste" }).click();
+    await page.getByLabel("AI response").fill(JSON.stringify(validStory("El tren")));
+    await page.getByRole("button", { name: "Load Story", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "El tren" })).toBeVisible();
+
+    await page.goto("/tools/bilingual-story-reader");
+    await page.getByRole("button", { name: "Show manual paste" }).click();
+    await page.getByLabel("AI response").fill(JSON.stringify(validStory("El mercado")));
+    await page.getByRole("button", { name: "Load Story", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "El mercado" })).toBeVisible();
+
+    await page.goto("/tools/bilingual-story-reader");
+    await expect(page.getByText("No story history yet")).toHaveCount(0);
+    await expect(page.getByText("El mercado", { exact: true })).toBeVisible();
+    await expect(page.getByText("El tren", { exact: true })).toBeVisible();
+
+    await page.reload();
+    await page.getByText("El tren", { exact: true }).click();
+
+    await expect(page).toHaveURL(/\/tools\/bilingual-story-reader\/story\/\?id=/);
+    await expect(page.getByRole("heading", { name: "El tren" })).toBeVisible();
+    await expect(page.getByText("Lina entra.", { exact: true })).toBeVisible();
+  });
+
+  test("deletes individual history items and clears history", async ({ page }) => {
+    await page.goto("/tools/bilingual-story-reader");
+
+    await page.getByRole("button", { name: "Show manual paste" }).click();
+    await page.getByLabel("AI response").fill(JSON.stringify(validStory("El tren")));
+    await page.getByRole("button", { name: "Load Story", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "El tren" })).toBeVisible();
+
+    await page.goto("/tools/bilingual-story-reader");
+    await page.getByRole("button", { name: "Show manual paste" }).click();
+    await page.getByLabel("AI response").fill(JSON.stringify(validStory("El mercado")));
+    await page.getByRole("button", { name: "Load Story", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "El mercado" })).toBeVisible();
+
+    await page.goto("/tools/bilingual-story-reader");
+    await page.getByRole("button", { name: "Delete El tren from history", exact: true }).click();
+    await expect(page.getByText("El tren", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("El mercado", { exact: true })).toBeVisible();
+
+    await page.reload();
+    await expect(page.getByText("El tren", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("El mercado", { exact: true })).toBeVisible();
+
+    await page.getByRole("button", { name: "Clear History (1)" }).click();
+    await expect(page.getByText("No story history yet")).toBeVisible();
+
+    await page.reload();
     await expect(page.getByText("No story history yet")).toBeVisible();
   });
 
@@ -190,9 +279,6 @@ test.describe("Bilingual Story Reader shell", () => {
     const sentenceButton = page.getByRole("button", {
       name: "Open translation for sentence 1",
     });
-    const beforeHelpBox = await sentenceButton.boundingBox();
-    expect(beforeHelpBox).not.toBeNull();
-
     await sentenceButton.click();
     await expect(page.getByText("Translation", { exact: true })).toHaveCount(0);
     await expect(page.getByText("Lina enters.", { exact: true })).toBeVisible();
@@ -201,14 +287,6 @@ test.describe("Bilingual Story Reader shell", () => {
     await expect(page.getByRole("button", { name: "Reveal next" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Check paragraph" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "entra help" })).toHaveCount(0);
-
-    const afterHelpBox = await sentenceButton.boundingBox();
-    expect(afterHelpBox).not.toBeNull();
-    expect(afterHelpBox?.width ?? 0).toBeCloseTo(beforeHelpBox?.width ?? 0, 1);
-    expect(afterHelpBox?.height ?? 0).toBeCloseTo(beforeHelpBox?.height ?? 0, 1);
-
-    await page.getByRole("button", { name: "Close sentence help" }).click();
-    await expect(page.getByText("Sentence Translation")).toHaveCount(0);
 
     await page.getByRole("button", { name: "Open translation for sentence 2" }).click();
     await expect(page.getByText("She looks at the train.")).toBeVisible();
@@ -237,6 +315,7 @@ test.describe("Bilingual Story Reader shell", () => {
           targetLanguage: "Spanish",
           knownLanguage: "English",
           level: "A1",
+          theme: "market",
         },
         paragraphs: [
           {

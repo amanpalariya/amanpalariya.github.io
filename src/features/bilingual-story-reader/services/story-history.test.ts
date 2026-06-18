@@ -4,8 +4,12 @@ import { BILINGUAL_STORY_READER_TOOL_ID } from "../domain/constants";
 import type { RenderableStory } from "../domain/validate-story";
 import {
   createStoryHistoryEntry,
+  prependStoryHistoryEntryObject,
   readStoryHistory,
+  removeStoryHistoryEntry,
+  STORY_HISTORY_LIMIT,
   writeStoryHistory,
+  type StoryHistoryEntry,
 } from "./story-history";
 
 function story(): RenderableStory {
@@ -31,6 +35,14 @@ function story(): RenderableStory {
         ],
       },
     ],
+  };
+}
+
+function historyEntry(id: string): StoryHistoryEntry {
+  return {
+    id,
+    loadedAt: `2026-01-01T00:00:${id.padStart(2, "0")}.000Z`,
+    story: story(),
   };
 }
 
@@ -87,6 +99,37 @@ describe("story history", () => {
       theme: "train station",
     });
     expect((persistedEntry as { setup?: unknown } | undefined)?.setup).toBeUndefined();
+  });
+
+  it("prepends new history entries and replaces duplicate ids", () => {
+    const existing = [historyEntry("1"), historyEntry("2")];
+    const replacement = historyEntry("2");
+
+    const nextHistory = prependStoryHistoryEntryObject(existing, replacement);
+
+    expect(nextHistory.map((entry) => entry.id)).toEqual(["2", "1"]);
+    expect(nextHistory[0]).toBe(replacement);
+  });
+
+  it("limits history to the configured maximum", () => {
+    const existing = Array.from({ length: STORY_HISTORY_LIMIT }, (_, index) =>
+      historyEntry(String(index)),
+    );
+
+    const nextHistory = prependStoryHistoryEntryObject(existing, historyEntry("new"));
+
+    expect(nextHistory).toHaveLength(STORY_HISTORY_LIMIT);
+    expect(nextHistory[0]?.id).toBe("new");
+    expect(nextHistory.at(-1)?.id).toBe(String(STORY_HISTORY_LIMIT - 2));
+  });
+
+  it("removes a matching history entry without touching the others", () => {
+    const nextHistory = removeStoryHistoryEntry(
+      [historyEntry("1"), historyEntry("2"), historyEntry("3")],
+      "2",
+    );
+
+    expect(nextHistory.map((entry) => entry.id)).toEqual(["1", "3"]);
   });
 
   it("drops entries whose pasted story metadata is incomplete", () => {

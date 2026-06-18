@@ -97,6 +97,10 @@ import {
   writeStoryHistory,
 } from "../services/story-history";
 import {
+  readBilingualStoryReaderSetup,
+  writeBilingualStoryReaderSetup,
+} from "../services/setup-storage";
+import {
   type RenderableStory,
   validateBilingualStoryReaderSchema,
   type StoryValidationResult,
@@ -532,14 +536,22 @@ export function BilingualStoryReaderPageView() {
   const [storyValidationResult, setStoryValidationResult] =
     useState<StoryValidationResult | null>(null);
   const [storyHistory, setStoryHistory] = useState<StoryHistoryEntry[]>([]);
+  const [hasLoadedSetup, setHasLoadedSetup] = useState(false);
 
   const prompt = useMemo(() => buildBilingualStoryReaderPrompt(setup), [setup]);
   const isSetupComplete = isBilingualStoryReaderSetupComplete(setup);
   const promptTextareaKeyboardFocusRef = useRef(false);
 
   useEffect(() => {
+    setSetup(readBilingualStoryReaderSetup());
+    setHasLoadedSetup(true);
     setStoryHistory(readStoryHistory());
   }, []);
+
+  useEffect(() => {
+    if (!hasLoadedSetup) return;
+    writeBilingualStoryReaderSetup(setup);
+  }, [hasLoadedSetup, setup]);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent): void {
