@@ -1,0 +1,119 @@
+import { describe, expect, it } from "vitest";
+import {
+  buildBilingualStoryReaderPrompt,
+  DEFAULT_BILINGUAL_STORY_READER_SETUP,
+  isBilingualStoryReaderPromptText,
+  isBilingualStoryReaderSetupComplete,
+} from "./prompt-builder";
+
+const completeSetup = {
+  ...DEFAULT_BILINGUAL_STORY_READER_SETUP,
+  knownLanguage: "English",
+  targetLanguage: "Spanish",
+  theme: "Mystery",
+};
+
+describe("bilingual story reader prompt builder", () => {
+  it("requires only known language and target language", () => {
+    expect(isBilingualStoryReaderSetupComplete(DEFAULT_BILINGUAL_STORY_READER_SETUP)).toBe(true);
+    expect(
+      isBilingualStoryReaderSetupComplete({
+        ...DEFAULT_BILINGUAL_STORY_READER_SETUP,
+        targetLanguage: "",
+      }),
+    ).toBe(false);
+    expect(isBilingualStoryReaderSetupComplete(completeSetup)).toBe(true);
+  });
+
+  it("expands required fields and short A1 constraints", () => {
+    const prompt = buildBilingualStoryReaderPrompt(completeSetup);
+
+    expect(prompt).toContain("- Known language: English");
+    expect(prompt).toContain("- Target language: Spanish");
+    expect(prompt).toContain("- Learner level: A1");
+    expect(prompt).toContain(
+      "- Theme: Mystery (overall story feel/genre label; copy this exact value into story.theme)",
+    );
+    expect(prompt).toContain("- Length constraints: 2-2 paragraphs, 4-6 sentences");
+    expect(prompt).toContain("6-10 target-language words per sentence");
+    expect(prompt).toContain("80-120 target-language words");
+    expect(prompt).toContain('"theme": "Mystery"');
+    expect(prompt).toContain("- story.theme");
+    expect(prompt).toContain("Do not turn it into a setting, premise, title");
+    expect(prompt).toContain("Do not include length");
+    expect(prompt).not.toContain('"schemaVersion"');
+  });
+
+  it("omits blank extra instructions but keeps theme automatic", () => {
+    const prompt = buildBilingualStoryReaderPrompt(completeSetup);
+    const requirementSection = prompt.slice(
+      prompt.indexOf("Create a story using these requirements:"),
+      prompt.indexOf("Return the response as a single fenced code block"),
+    );
+
+    expect(requirementSection).not.toContain("- Extra instructions:");
+    expect(prompt).not.toContain('"generationRequest"');
+  });
+
+  it("uses an automatic broad feel when theme is blank", () => {
+    const prompt = buildBilingualStoryReaderPrompt({
+      ...DEFAULT_BILINGUAL_STORY_READER_SETUP,
+      theme: "",
+    });
+
+    expect(prompt).toContain(
+      "- Theme: Automatic: choose one broad overall story feel/genre label",
+    );
+    expect(prompt).toContain('"theme": "Mystery"');
+  });
+
+  it("includes populated extra instructions", () => {
+    const prompt = buildBilingualStoryReaderPrompt({
+      ...completeSetup,
+      extraInstructions: "Use simple dialogue.",
+    });
+
+    expect(prompt).toContain("- Extra instructions: Use simple dialogue.");
+  });
+
+  it("asks for concise optional notes and no old help fields", () => {
+    const prompt = buildBilingualStoryReaderPrompt(completeSetup);
+
+    expect(prompt).toContain("Keep each note one short sentence");
+    expect(prompt).toContain("```json");
+    expect(prompt).toContain("Return only the fenced json code block.");
+    expect(prompt).toContain('"translation": "Natural translation in the known language."');
+    expect(prompt).toContain(
+      '"note": "Optional concise note for a difficult phrase or conjugation."',
+    );
+    expect(prompt).not.toContain('"summary"');
+    expect(prompt).not.toContain('"naturalTranslation"');
+    expect(prompt).not.toContain('"literalTranslation"');
+    expect(prompt).not.toContain('"segments"');
+    expect(prompt).not.toContain('"comprehensionQuestions"');
+  });
+
+  it("expands medium and B2 constraints", () => {
+    const prompt = buildBilingualStoryReaderPrompt({
+      ...completeSetup,
+      length: "Medium",
+      level: "B2",
+    });
+
+    expect(prompt).toContain("- Length constraints: 3-4 paragraphs, 8-12 sentences");
+    expect(prompt).toContain("180-260 target-language words");
+    expect(prompt).toContain("12-24 target-language words per sentence");
+    expect(prompt).toContain("include a natural translation for every sentence");
+  });
+
+  it("is deterministic for the same setup state", () => {
+    expect(buildBilingualStoryReaderPrompt(completeSetup)).toBe(buildBilingualStoryReaderPrompt(completeSetup));
+  });
+
+  it("detects generated prompt text so it is not accepted as a story response", () => {
+    const prompt = buildBilingualStoryReaderPrompt(completeSetup);
+
+    expect(isBilingualStoryReaderPromptText(prompt)).toBe(true);
+    expect(isBilingualStoryReaderPromptText('{"story":{"title":"Hola"}}')).toBe(false);
+  });
+});

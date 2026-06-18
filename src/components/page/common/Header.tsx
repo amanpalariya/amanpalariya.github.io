@@ -70,7 +70,7 @@ const HEADER_NAV_ITEMS: readonly HeaderNavItem[] = [
   },
 ];
 
-function ColorModeToggleIconButton() {
+export function ColorModeToggleIconButton() {
   const { colorMode, toggleColorMode } = useColorMode();
   const isDark = colorMode === "dark";
 

@@ -39,6 +39,11 @@ export const toolPageCases: FunctionalPageCase[] = [
     heading: "Calendar Drill",
   },
   {
+    name: "Bilingual Story Reader",
+    path: "/tools/bilingual-story-reader",
+    heading: "Bilingual Story Reader",
+  },
+  {
     name: "EPUB Maker",
     path: "/tools/epub-maker",
     heading: "EPUB Maker",

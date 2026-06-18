@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import ToolsShell from "./ToolsShell";
 import { getPageTitle } from "app/metadata";
 import { getToolsPageContent } from "features/tools/data/content";
 
@@ -14,5 +13,5 @@ export default function ToolsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <ToolsShell>{children}</ToolsShell>;
+  return children;
 }

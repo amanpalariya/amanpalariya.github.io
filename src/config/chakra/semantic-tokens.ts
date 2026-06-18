@@ -1,4 +1,5 @@
 import { SEMANTIC_TOKENS as EPUB_MAKER_SEMANTIC_COLOR_TOKENS } from "@features/epub-maker/theme";
+import { SEMANTIC_TOKENS as BILINGUAL_STORY_READER_SEMANTIC_COLOR_TOKENS } from "@features/bilingual-story-reader/theme";
 
 export interface AppSemanticTokenDefinition {
   value:
@@ -124,5 +125,6 @@ export const APP_SEMANTIC_COLOR_TOKENS = {
       },
     },
     epub: EPUB_MAKER_SEMANTIC_COLOR_TOKENS,
+    bilingualStoryReader: BILINGUAL_STORY_READER_SEMANTIC_COLOR_TOKENS,
   },
 } as const;

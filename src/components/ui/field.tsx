@@ -1,4 +1,8 @@
-import { Field as ChakraField, Fieldset as ChakraFieldset } from "@chakra-ui/react";
+import {
+  Field as ChakraField,
+  Fieldset as ChakraFieldset,
+  chakra,
+} from "@chakra-ui/react";
 import * as React from "react";
 import type { ReactNode } from "react";
 
@@ -39,7 +43,17 @@ const FieldRoot = React.forwardRef<HTMLDivElement, FieldProps>(
         {label ? (
           <ChakraField.Label {...labelProps}>
             {label}
-            <ChakraField.RequiredIndicator fallback={optionalText} />
+            {optionalText ? (
+              <chakra.span
+                color="app.fg.muted"
+                fontWeight="normal"
+                ms={1}
+              >
+                {optionalText}
+              </chakra.span>
+            ) : (
+              <ChakraField.RequiredIndicator />
+            )}
           </ChakraField.Label>
         ) : null}
         {children}

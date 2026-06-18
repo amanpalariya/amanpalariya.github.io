@@ -20,6 +20,22 @@ const TOOL_SEEDS: ToolSeed[] = [
     updatedAt: "2026-04-05",
   },
   {
+    id: "bilingual-story-reader",
+    name: "Bilingual Story Reader",
+    tagline: "Generate and read bilingual AI stories",
+    description:
+      "Build a language-learning story prompt, paste the AI response, and read with local sentence translations and notes.",
+    status: "beta",
+    tags: [
+      { id: "language", label: "Language" },
+      { id: "reading", label: "Reading" },
+    ],
+    path: "/tools/bilingual-story-reader/",
+    sortOrder: 9,
+    icon: "book",
+    updatedAt: "2026-05-16",
+  },
+  {
     id: "epub-maker",
     name: "EPUB Maker",
     tagline: "Convert pasted HTML, text, or images into clean EPUB files",
