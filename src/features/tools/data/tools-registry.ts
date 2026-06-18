@@ -22,9 +22,9 @@ const TOOL_SEEDS: ToolSeed[] = [
   {
     id: "bilingual-story-reader",
     name: "Bilingual Story Reader",
-    tagline: "Generate and read bilingual AI story JSON with progressive help",
+    tagline: "Generate and read bilingual AI stories",
     description:
-      "Build a language-learning story prompt, paste AI-generated JSON, and read with local sentence and vocabulary help.",
+      "Build a language-learning story prompt, paste the AI response, and read with local sentence translations and notes.",
     status: "beta",
     tags: [
       { id: "language", label: "Language" },
