@@ -11,7 +11,7 @@ import {
 } from "react-icons/fi";
 import type { AppAccentPalette, AppPalette } from "theme/colors/types";
 import CvSection from "./CvSection";
-import { CV_CMU_FONT_FAMILY, CV_META_TEXT_SIZE } from "./cvStyleTokens";
+import { CV_BODY_FONT_FAMILY, CV_META_TEXT_SIZE } from "./cvStyleTokens";
 
 function iconFromKey(iconKey?: CvContactChannel["iconKey"]) {
   switch (iconKey) {
@@ -54,7 +54,7 @@ function ContactItem({ item }: { item: CvContactChannel }) {
           fontSize={CV_META_TEXT_SIZE}
           color={textColor}
           fontWeight="medium"
-          fontFamily={CV_CMU_FONT_FAMILY}
+          fontFamily={CV_BODY_FONT_FAMILY}
           display={{ base: "none", md: "block" }}
         >
           {item.label}
@@ -66,7 +66,7 @@ function ContactItem({ item }: { item: CvContactChannel }) {
           target="_blank"
           rel="noopener noreferrer"
           fontSize={CV_META_TEXT_SIZE}
-          fontFamily={CV_CMU_FONT_FAMILY}
+          fontFamily={CV_BODY_FONT_FAMILY}
         >
           {item.value}
         </Link>
@@ -74,7 +74,7 @@ function ContactItem({ item }: { item: CvContactChannel }) {
         <Text
           fontSize={CV_META_TEXT_SIZE}
           color={textColor}
-          fontFamily={CV_CMU_FONT_FAMILY}
+          fontFamily={CV_BODY_FONT_FAMILY}
         >
           {item.value}
         </Text>

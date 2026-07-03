@@ -118,14 +118,14 @@ export function ParagraphText({
   return (
     <Text
       color={"app.fg.muted"}
-      fontFamily={"'CMU Sans Serif', 'Noto Sans', sans-serif"}
+      fontFamily={"body"}
       fontSize={fontSize}
       fontWeight={"normal"}
       lineHeight={"1.42"}
       letterSpacing={"0.01em"}
       textAlign={justifyText ? "justify" : "left"}
-      hyphens={justifyText ? "auto" : undefined}
-      css={justifyText ? { WebkitHyphens: "auto", textWrap: "pretty" } : undefined}
+      hyphens={justifyText ? "none" : undefined}
+      css={justifyText ? { WebkitHyphens: "none", textWrap: "pretty" } : undefined}
       {...textProps}
     >
       {children}

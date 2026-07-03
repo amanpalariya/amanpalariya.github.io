@@ -4,7 +4,7 @@ import type { ElementType } from "react";
 import { Tooltip } from "@components/ui/tooltip";
 import CvSection from "./CvSection";
 import type { AppAccentPalette, AppPalette } from "theme/colors/types";
-import { CV_CMU_FONT_FAMILY, CV_META_TEXT_SIZE } from "./cvStyleTokens";
+import { CV_BODY_FONT_FAMILY, CV_META_TEXT_SIZE } from "./cvStyleTokens";
 
 const LEVEL_SCALE: Record<string, number> = {
   beginner: 1,
@@ -78,7 +78,7 @@ export default function CvSkillsSection({
               fontWeight="bold"
               color="app.fg.muted"
               letterSpacing="wider"
-              fontFamily={CV_CMU_FONT_FAMILY}
+              fontFamily={CV_BODY_FONT_FAMILY}
             >
               {group.group}
             </Text>
@@ -110,7 +110,7 @@ export default function CvSkillsSection({
                         fontSize={CV_META_TEXT_SIZE}
                         fontWeight="normal"
                         color="app.fg.default"
-                        fontFamily={CV_CMU_FONT_FAMILY}
+                        fontFamily={CV_BODY_FONT_FAMILY}
                       >
                         {item.name}
                       </Text>

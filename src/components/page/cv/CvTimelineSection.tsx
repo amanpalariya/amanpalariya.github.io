@@ -20,8 +20,8 @@ import type { AppAccentPalette, AppPalette } from "theme/colors/types";
 import {
   CV_BULLET_ITEM_GAP,
   CV_BULLET_TEXT_COLOR,
-  CV_CMU_BULLET_FONT_FAMILY,
-  CV_CMU_FONT_FAMILY,
+  CV_BULLET_FONT_FAMILY,
+  CV_BODY_FONT_FAMILY,
   CV_BULLET_LINE_HEIGHT,
   CV_BULLET_TEXT_SIZE,
   CV_META_TEXT_SIZE,
@@ -71,7 +71,7 @@ function TimelineItem({
                 color={emphasizeOrganization ? "app.fg.muted" : CV_SECONDARY_TEXT_COLOR}
                 fontSize={CV_META_TEXT_SIZE}
                 fontWeight={emphasizeOrganization ? "medium" : "normal"}
-                fontFamily={CV_CMU_FONT_FAMILY}
+                fontFamily={CV_BODY_FONT_FAMILY}
               >
                 · {item.organization}
               </Text>
@@ -82,7 +82,7 @@ function TimelineItem({
                 color={CV_SECONDARY_TEXT_COLOR}
                 fontSize={CV_META_TEXT_SIZE}
                 wrap="wrap"
-                fontFamily={CV_CMU_FONT_FAMILY}
+                fontFamily={CV_BODY_FONT_FAMILY}
               >
                 {timeframe ? <Text>{timeframe}</Text> : null}
                 {item.location ? <Text>{`· ${item.location}`}</Text> : null}
@@ -94,7 +94,7 @@ function TimelineItem({
               href={item.url}
               target="_blank"
               rel="noopener noreferrer"
-              fontFamily={CV_CMU_FONT_FAMILY}
+              fontFamily={CV_BODY_FONT_FAMILY}
               fontSize={CV_META_TEXT_SIZE}
               color={CV_SECONDARY_TEXT_COLOR}
             >
@@ -119,7 +119,7 @@ function TimelineItem({
                 <Text
                   fontSize={CV_BULLET_TEXT_SIZE}
                   color={CV_BULLET_TEXT_COLOR}
-                  fontFamily={CV_CMU_BULLET_FONT_FAMILY}
+                  fontFamily={CV_BULLET_FONT_FAMILY}
                   lineHeight={CV_BULLET_LINE_HEIGHT}
                   textAlign="justify"
                   hyphens="auto"

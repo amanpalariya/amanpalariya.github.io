@@ -4,7 +4,7 @@ import type { CvLanguageItem, CvSectionBase } from "data/cv";
 import type { ElementType } from "react";
 import CvSection from "./CvSection";
 import type { AppAccentPalette, AppPalette } from "theme/colors/types";
-import { CV_CMU_FONT_FAMILY, CV_META_TEXT_SIZE } from "./cvStyleTokens";
+import { CV_BODY_FONT_FAMILY, CV_META_TEXT_SIZE } from "./cvStyleTokens";
 
 function fluencyLabel(value?: CvLanguageItem["proficiency"]) {
   if (!value) return "Not specified";
@@ -67,7 +67,7 @@ export default function CvLanguagesSection({
                   <Text
                     fontSize={CV_META_TEXT_SIZE}
                     color={mutedColor}
-                    fontFamily={CV_CMU_FONT_FAMILY}
+                    fontFamily={CV_BODY_FONT_FAMILY}
                   >
                     {item.nativeName}
                   </Text>
@@ -81,7 +81,7 @@ export default function CvLanguagesSection({
                 bg={fluencyBg}
                 color={fluencyColor}
                 whiteSpace="nowrap"
-                fontFamily={CV_CMU_FONT_FAMILY}
+                fontFamily={CV_BODY_FONT_FAMILY}
               >
                 {fluencyLabel(item.proficiency)}
               </Text>

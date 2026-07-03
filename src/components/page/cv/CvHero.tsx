@@ -23,7 +23,7 @@ import {
 import { FaXTwitter } from "react-icons/fa6";
 import { Tooltip } from "@components/ui/tooltip";
 import PersonalData from "../../../data/Personal";
-import { CV_CMU_FONT_FAMILY } from "./cvStyleTokens";
+import { CV_BODY_FONT_FAMILY } from "./cvStyleTokens";
 
 export default function CvHero({ profile }: { profile: CvProfile }) {
   const secondaryColor = "app.fg.muted";
@@ -63,7 +63,7 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
         <Text
           fontSize={"19px"}
           color={"app.fg.subtle"}
-          fontFamily={CV_CMU_FONT_FAMILY}
+          fontFamily={CV_BODY_FONT_FAMILY}
         >
           {profile.headline}
         </Text>
@@ -76,7 +76,7 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
                 <Icon as={FiMapPin} />
                 <Text
                   fontSize={contactTextSize}
-                  fontFamily={CV_CMU_FONT_FAMILY}
+                  fontFamily={CV_BODY_FONT_FAMILY}
                   fontWeight="medium"
                 >
                   {profile.location}
@@ -93,7 +93,7 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
                 <Icon as={FiMail} />
                 <Link
                   fontSize={contactTextSize}
-                  fontFamily={CV_CMU_FONT_FAMILY}
+                  fontFamily={CV_BODY_FONT_FAMILY}
                   fontWeight="medium"
                   href={`mailto:${profile.email}`}
                 >
@@ -109,7 +109,7 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
                       as="button"
                       fontSize="17px"
                       color={secondaryColor}
-                      fontFamily={CV_CMU_FONT_FAMILY}
+                      fontFamily={CV_BODY_FONT_FAMILY}
                       fontWeight="medium"
                     >
                       <HStack gap={1}>
@@ -144,7 +144,7 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
                       rel="noopener noreferrer"
                       fontSize={contactTextSize}
                       color={secondaryColor}
-                      fontFamily={CV_CMU_FONT_FAMILY}
+                      fontFamily={CV_BODY_FONT_FAMILY}
                       fontWeight="medium"
                     >
                       {link.label}
@@ -154,7 +154,7 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
                     <Text
                       fontSize={contactTextSize}
                       color={secondaryColor}
-                      fontFamily={CV_CMU_FONT_FAMILY}
+                      fontFamily={CV_BODY_FONT_FAMILY}
                       aria-hidden="true"
                     >
                       •
