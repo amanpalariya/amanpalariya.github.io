@@ -2,7 +2,7 @@ import { Link, Wrap, WrapItem, Text } from "@chakra-ui/react";
 import type { CvData } from "data/cv";
 import { getRenderableCvSections } from "./cvRenderUtils";
 import { getCvSectionPaletteUnsafe } from "./cvPalettes";
-import { CV_CMU_FONT_FAMILY, CV_META_TEXT_SIZE } from "./cvStyleTokens";
+import { CV_BODY_FONT_FAMILY, CV_META_TEXT_SIZE } from "./cvStyleTokens";
 
 export function renderSectionAnchorLinks(sections: CvData["sections"]) {
   return getRenderableCvSections(sections).map((section) => ({
@@ -26,7 +26,7 @@ export default function CvJumpNav({ sections }: { sections: CvData["sections"] }
             <WrapItem>
               <Link
                 href={`#${link.id}`}
-                fontFamily={CV_CMU_FONT_FAMILY}
+                fontFamily={CV_BODY_FONT_FAMILY}
                 fontSize={CV_META_TEXT_SIZE}
                 color={`${link.accentColorPalette}.fg`}
                 _hover={{
@@ -41,7 +41,7 @@ export default function CvJumpNav({ sections }: { sections: CvData["sections"] }
                 <Text
                   fontSize={CV_META_TEXT_SIZE}
                   color={separatorColor}
-                  fontFamily={CV_CMU_FONT_FAMILY}
+                  fontFamily={CV_BODY_FONT_FAMILY}
                   aria-hidden="true"
                 >
                   •

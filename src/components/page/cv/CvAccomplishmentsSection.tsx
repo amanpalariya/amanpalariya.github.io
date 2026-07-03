@@ -19,7 +19,7 @@ import { FiLink, FiEye } from "react-icons/fi";
 import CvSection from "./CvSection";
 import { AppAccentPalette, AppPalette } from "theme/colors";
 import {
-  CV_CMU_FONT_FAMILY,
+  CV_BODY_FONT_FAMILY,
   CV_META_TEXT_SIZE,
   CV_SECONDARY_TEXT_COLOR,
 } from "./cvStyleTokens";
@@ -93,7 +93,7 @@ function AccomplishmentCard({
                   aria-label={`Open ${item.title} credential (opens in a new tab)`}
                   fontSize={CV_META_TEXT_SIZE}
                   color={CV_SECONDARY_TEXT_COLOR}
-                  fontFamily={CV_CMU_FONT_FAMILY}
+                  fontFamily={CV_BODY_FONT_FAMILY}
                   _hover={{ color: "app.fg.default" }}
                 >
                   <Icon as={FiLink} />
@@ -105,7 +105,7 @@ function AccomplishmentCard({
             <Text
               fontSize={CV_META_TEXT_SIZE}
               color={CV_SECONDARY_TEXT_COLOR}
-              fontFamily={CV_CMU_FONT_FAMILY}
+              fontFamily={CV_BODY_FONT_FAMILY}
             >
               {metaText}
             </Text>

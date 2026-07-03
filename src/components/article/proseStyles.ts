@@ -5,13 +5,13 @@ import type { CSSObject } from "@emotion/react";
 
 export function useProseStyles(): CSSObject {
   const proseBodyFontFamily =
-    "'CMU Sans Serif', 'Computer Modern Sans', sans-serif";
+    "'Source Serif 4', Georgia, 'Times New Roman', serif";
   const proseHeadingFontFamily = "'Lexend', sans-serif";
   const proseCodeFontFamily =
-    "'CMU Typewriter Text', 'CMU Typewriter', 'Computer Modern Typewriter', mono";
+    "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace";
 
   const headingColor = useColorModeValue("gray.800", "whiteAlpha.900");
-  const textColor = useColorModeValue("gray.700", "gray.200");
+  const textColor = useColorModeValue("gray.900", "gray.100");
   const subtleTextColor = useColorModeValue("gray.600", "gray.400");
   const linkColor = useColorModeValue("#007a8a", "teal.300");
   const borderColor = useColorModeValue("gray.200", "gray.700");
@@ -33,9 +33,9 @@ export function useProseStyles(): CSSObject {
     marginInline: "auto",
     wordBreak: "normal",
     overflowWrap: "break-word",
-    hyphens: "auto",
-    WebkitHyphens: "auto",
-    msHyphens: "auto",
+    hyphens: "none",
+    WebkitHyphens: "none",
+    msHyphens: "none",
     "& > *": {
       marginTop: 0,
       marginBottom: 7,
@@ -69,7 +69,9 @@ export function useProseStyles(): CSSObject {
     "& p": {
       marginBottom: 7,
       textAlign: "justify",
-      hyphens: "auto",
+      hyphens: "none",
+      WebkitHyphens: "none",
+      msHyphens: "none",
     },
     "& p:last-of-type": {
       marginBottom: 0,
@@ -134,7 +136,9 @@ export function useProseStyles(): CSSObject {
     },
     "& li": {
       marginBottom: 2,
-      hyphens: "auto",
+      hyphens: "none",
+      WebkitHyphens: "none",
+      msHyphens: "none",
     },
     "& li::marker": {
       color: useColorModeValue("gray.400", "gray.500"),
