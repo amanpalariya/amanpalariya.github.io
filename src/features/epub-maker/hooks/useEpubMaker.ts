@@ -66,6 +66,11 @@ import {
 
 const AUTO_COVER_RENDERER: AutoCoverRendererId = "raster-png";
 
+type GenerateEpubOptions = {
+  manualImageReplacements?: Record<string, ManualImageReplacement>;
+  blockOnFailedImages?: boolean;
+};
+
 function isBaseCoverBackgroundId(
   value: CoverBackgroundId,
 ): value is BaseCoverBackgroundId {
@@ -1010,9 +1015,12 @@ export function useEpubMaker(): UseEpubMakerReturn {
     );
   }
 
-  async function generateEpubWithOptions(
-    manualImageReplacements?: Record<string, ManualImageReplacement>,
-  ) {
+  async function generateEpubWithOptions(options: GenerateEpubOptions = {}) {
+    const {
+      manualImageReplacements,
+      blockOnFailedImages = true,
+    } = options;
+
     if (isGenerating) return;
     clearGenerationStatusTimers();
 
@@ -1100,7 +1108,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
           replacement: previousBySource.get(item.source)?.replacement,
         }));
       });
-      if (failedImageItems.length > 0) {
+      if (blockOnFailedImages && failedImageItems.length > 0) {
         setSummary(
           `EPUB is ready to review with ${failedImageItems.length} external image source(s). Add replacements, then generate again to download.`,
         );
@@ -1125,7 +1133,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
         `EPUB generated and downloaded as “${effectiveFileName}”.`,
       );
 
-      if (manualImageReplacements) {
+      if (!blockOnFailedImages) {
         setIsManualImageEmbeddingOpen(false);
       }
 
@@ -1159,7 +1167,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
   }
 
   async function generateEpub() {
-    await generateEpubWithOptions();
+    await generateEpubWithOptions({ blockOnFailedImages: true });
   }
 
   function openManualImageEmbeddingDialog() {
@@ -1239,7 +1247,11 @@ export function useEpubMaker(): UseEpubMakerReturn {
     }, {});
 
     await generateEpubWithOptions(
-      Object.keys(replacements).length > 0 ? replacements : undefined,
+      {
+        manualImageReplacements:
+          Object.keys(replacements).length > 0 ? replacements : undefined,
+        blockOnFailedImages: false,
+      },
     );
   }
 

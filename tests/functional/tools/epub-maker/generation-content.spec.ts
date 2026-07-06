@@ -84,18 +84,21 @@ test.describe("EPUB Maker generated content", () => {
     expect(imageFiles(archive).length).toBe(1);
   });
 
-  test("reviews failed remote images and embeds a manual replacement", async ({
+  test("reviews failed remote images and embeds a partial manual replacement", async ({
     page,
     epubMaker,
   }) => {
     await epubMaker.goto();
     await epubMaker.titleInput.fill("Manual Image Book");
 
-    const failedImageUrl = "https://remote-images.test/blocked-cover.png";
-    await page.route(failedImageUrl, (route) => route.abort("blockedbyclient"));
+    const replacedImageUrl = "https://remote-images.test/blocked-cover.png";
+    const externalImageUrl = "https://remote-images.test/still-external.png";
+    await page.route("https://remote-images.test/**", (route) =>
+      route.abort("blockedbyclient"),
+    );
 
     await epubMaker.addHtmlPage(
-      `<h1>Manual image chapter</h1><p>Image below.</p><img src="${failedImageUrl}" alt="blocked remote" />`,
+      `<h1>Manual image chapter</h1><p>Images below.</p><img src="${replacedImageUrl}" alt="blocked remote" /><img src="${externalImageUrl}" alt="still external" />`,
     );
     await epubMaker.setEmbedRemoteImages(true);
 
@@ -104,15 +107,15 @@ test.describe("EPUB Maker generated content", () => {
       name: "Review external images",
     });
     await expect(reviewDialog).toBeVisible();
-    await expect(reviewDialog.getByText("1 of 1 selected")).toHaveCount(0);
+    await expect(reviewDialog.getByText("1 of 2 selected")).toHaveCount(0);
 
     const replacementBytes = await fs.readFile("src/app/icon.png");
-    await reviewDialog.locator('input[type="file"]').setInputFiles({
+    await reviewDialog.locator('input[type="file"]').first().setInputFiles({
       name: "replacement-icon.png",
       mimeType: "image/png",
       buffer: replacementBytes,
     });
-    await expect(reviewDialog.getByText("1 of 1 selected")).toBeVisible();
+    await expect(reviewDialog.getByText("1 of 2 selected")).toBeVisible();
 
     const downloadPromise = page.waitForEvent("download");
     await reviewDialog.getByRole("button", { name: "Generate EPUB" }).click();
@@ -128,7 +131,9 @@ test.describe("EPUB Maker generated content", () => {
     await expectImageManifestMatchesFiles(archive);
     await expectPackagedImageReferencesResolve(archive);
     expect(chapter).toContain("../images/image-");
-    expect(chapter).not.toContain(failedImageUrl);
+    expect(chapter).not.toContain(replacedImageUrl);
+    expect(chapter).toContain(externalImageUrl);
+    await expect(reviewDialog).toBeHidden();
 
     const chapterImageSrc = imageSrcsFromXhtml(chapter).find((src) =>
       src.startsWith("../images/"),
