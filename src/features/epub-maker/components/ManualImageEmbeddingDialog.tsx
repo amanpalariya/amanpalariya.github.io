@@ -232,6 +232,7 @@ export function ManualImageEmbeddingDialog({
     <DialogRoot
       open={open}
       onOpenChange={(details) => onOpenChange(details.open)}
+      closeOnInteractOutside={false}
       placement={"center"}
       size={"lg"}
     >
