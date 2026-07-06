@@ -8,6 +8,7 @@ import {
   IconButton,
   Image,
   Popover,
+  Separator,
   Stack,
   Text,
   Textarea,
@@ -26,6 +27,7 @@ import { Tooltip } from "@components/ui/tooltip";
 import {
   type ChangeEvent,
   type ClipboardEvent as ReactClipboardEvent,
+  Fragment,
   useEffect,
   useRef,
   useState,
@@ -138,11 +140,8 @@ function FailedImageRow({
   return (
     <Stack
       gap={3}
-      p={3}
-      borderWidth={"1px"}
-      borderColor={"app.epub.border.default"}
-      rounded={"lg"}
-      bg={"app.epub.bg.card"}
+      px={1}
+      py={3}
       direction={{ base: "column", md: "row" }}
       align={{ base: "stretch", md: "center" }}
     >
@@ -351,15 +350,24 @@ export function ManualImageEmbeddingDialog({
               embedded before downloading.
             </Text>
 
-            <VStack align={"stretch"} gap={2} maxH={"52vh"} overflowY={"auto"}>
-              {items.map((item) => (
-                <FailedImageRow
-                  key={item.source}
-                  item={item}
-                  disabled={isGenerating}
-                  onUpload={onUpload}
-                  onPaste={onPaste}
-                />
+            <VStack
+              align={"stretch"}
+              gap={0}
+              maxH={"52vh"}
+              overflowY={"auto"}
+            >
+              {items.map((item, index) => (
+                <Fragment key={item.source}>
+                  <FailedImageRow
+                    item={item}
+                    disabled={isGenerating}
+                    onUpload={onUpload}
+                    onPaste={onPaste}
+                  />
+                  {index < items.length - 1 ? (
+                    <Separator size={"md"} />
+                  ) : null}
+                </Fragment>
               ))}
             </VStack>
           </VStack>
