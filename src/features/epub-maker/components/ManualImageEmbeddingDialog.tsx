@@ -2,7 +2,6 @@ import {
   Badge,
   Box,
   Button,
-  FileUpload,
   HStack,
   Icon,
   IconButton,
@@ -197,29 +196,33 @@ function FailedImageRow({
         onOpenChange={(details) => setIsManualPasteOpen(details.open)}
         positioning={{ placement: "bottom-end", gutter: 6 }}
       >
-        <HStack gap={0} justify={{ base: "end", md: "start" }} flexShrink={0}>
-          <Button
-            {...actionButtonProps}
-            size={"sm"}
-            roundedRight={0}
-            borderRightWidth={"0"}
-            bg={"app.epub.button.primary.bg"}
-            color={"app.epub.button.primary.fg"}
-            _hover={{ bg: "app.epub.button.primary.hoverBg" }}
-            disabled={disabled}
-            onClick={() => void onPaste(item.source)}
-          >
-            <Icon>
-              <LuFilePlus />
-            </Icon>
-            Paste
-          </Button>
+        <Box w={{ base: "full", md: "auto" }} flexShrink={0}>
+          <HStack gap={0} w={"full"} maxW={"full"} justify={"start"}>
+            <Button
+              {...actionButtonProps}
+              size={"sm"}
+              flex={{ base: "1 1 auto", md: "0 0 auto" }}
+              minW={0}
+              roundedRight={0}
+              borderRightWidth={"0"}
+              bg={"app.epub.button.primary.bg"}
+              color={"app.epub.button.primary.fg"}
+              _hover={{ bg: "app.epub.button.primary.hoverBg" }}
+              disabled={disabled}
+              onClick={() => void onPaste(item.source)}
+            >
+              <Icon>
+                <LuFilePlus />
+              </Icon>
+              Paste
+            </Button>
 
-          <FileUpload.Root maxFiles={1}>
-            <FileUpload.HiddenInput
+            <input
               ref={uploadInputRef}
               aria-label={"Upload replacement image"}
               accept={"image/*"}
+              hidden
+              type={"file"}
               onChange={handleUploadChange}
             />
             <Tooltip content={"Upload replacement image"}>
@@ -227,6 +230,7 @@ function FailedImageRow({
                 {...actionButtonProps}
                 aria-label={"Upload replacement image"}
                 size={"sm"}
+                flex={"0 0 auto"}
                 rounded={0}
                 borderLeftWidth={"1px"}
                 borderLeftColor={"app.epub.button.primary.divider"}
@@ -239,29 +243,30 @@ function FailedImageRow({
                 <LuUpload />
               </IconButton>
             </Tooltip>
-          </FileUpload.Root>
 
-          <Popover.Trigger asChild>
-            <IconButton
-              {...actionButtonProps}
-              aria-label={
-                isManualPasteOpen
-                  ? "Hide manual image paste"
-                  : "Show manual image paste"
-              }
-              size={"sm"}
-              roundedLeft={0}
-              borderLeftWidth={"1px"}
-              borderLeftColor={"app.epub.button.primary.divider"}
-              bg={"app.epub.button.primary.bg"}
-              color={"app.epub.button.primary.fg"}
-              _hover={{ bg: "app.epub.button.primary.hoverBg" }}
-              disabled={disabled}
-            >
-              {isManualPasteOpen ? <LuChevronUp /> : <LuChevronDown />}
-            </IconButton>
-          </Popover.Trigger>
-        </HStack>
+            <Popover.Trigger asChild>
+              <IconButton
+                {...actionButtonProps}
+                aria-label={
+                  isManualPasteOpen
+                    ? "Hide manual image paste"
+                    : "Show manual image paste"
+                }
+                size={"sm"}
+                flex={"0 0 auto"}
+                roundedLeft={0}
+                borderLeftWidth={"1px"}
+                borderLeftColor={"app.epub.button.primary.divider"}
+                bg={"app.epub.button.primary.bg"}
+                color={"app.epub.button.primary.fg"}
+                _hover={{ bg: "app.epub.button.primary.hoverBg" }}
+                disabled={disabled}
+              >
+                {isManualPasteOpen ? <LuChevronUp /> : <LuChevronDown />}
+              </IconButton>
+            </Popover.Trigger>
+          </HStack>
+        </Box>
 
         <Popover.Positioner zIndex={30}>
           <Popover.Content
