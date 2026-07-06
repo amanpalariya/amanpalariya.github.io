@@ -142,8 +142,6 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
         onUpload={props.replaceFailedImageFromFiles}
         onPaste={props.replaceFailedImageFromClipboard}
         onReset={props.resetFailedImageReplacement}
-        canDownloadAnyway={Boolean(props.manualImageEmbedding.pendingDownload)}
-        onDownloadAnyway={props.downloadEpubWithExternalImages}
         onRegenerate={props.regenerateEpubWithManualImages}
       />
 

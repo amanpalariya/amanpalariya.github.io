@@ -36,7 +36,7 @@ import {
   LuCircleCheck,
   LuExternalLink,
   LuFilePlus,
-  LuRefreshCw,
+  LuBookDown,
   LuRotateCcw,
   LuUpload,
 } from "react-icons/lu";
@@ -473,8 +473,6 @@ export function ManualImageEmbeddingDialog({
   onUpload,
   onPaste,
   onReset,
-  canDownloadAnyway,
-  onDownloadAnyway,
   onRegenerate,
 }: {
   open: boolean;
@@ -484,8 +482,6 @@ export function ManualImageEmbeddingDialog({
   onUpload: (source: string, files: FileList | File[]) => Promise<void>;
   onPaste: (source: string) => Promise<void>;
   onReset: (source: string) => void;
-  canDownloadAnyway: boolean;
-  onDownloadAnyway: () => void;
   onRegenerate: () => Promise<void>;
 }) {
   const replacementCount = items.filter(
@@ -559,26 +555,17 @@ export function ManualImageEmbeddingDialog({
               <Button
                 size={"sm"}
                 rounded={BUTTON_RADIUS}
-                variant={"subtle"}
-                disabled={isGenerating || !canDownloadAnyway}
-                onClick={onDownloadAnyway}
-              >
-                Download anyway
-              </Button>
-              <Button
-                size={"sm"}
-                rounded={BUTTON_RADIUS}
                 bg={"app.epub.button.success.bg"}
                 color={"app.epub.button.success.fg"}
                 _hover={{ bg: "app.epub.button.success.hoverBg" }}
-                disabled={replacementCount === 0}
+                disabled={isGenerating}
                 loading={isGenerating}
                 onClick={() => void onRegenerate()}
               >
                 <Icon>
-                  <LuRefreshCw />
+                  <LuBookDown />
                 </Icon>
-                Regenerate EPUB
+                Generate EPUB
               </Button>
             </HStack>
           </HStack>

@@ -67,13 +67,6 @@ export interface ManualImageEmbeddingItem {
   replacement?: ManualImageReplacement;
 }
 
-export interface PendingEpubDownload {
-  blob: Blob;
-  fileName: string;
-  summary: GenerationSummary;
-  warnings: GenerationWarning[];
-}
-
 export interface SanitizedHtmlResult {
   title: string;
   baseUrl: string | null;
@@ -218,6 +211,5 @@ export interface EpubMakerState {
   manualImageEmbedding: {
     isOpen: boolean;
     items: ManualImageEmbeddingItem[];
-    pendingDownload: PendingEpubDownload | null;
   };
 }
