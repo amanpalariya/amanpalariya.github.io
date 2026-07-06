@@ -31,6 +31,9 @@ import type {
   CoverBackgroundId,
   EpubMakerState,
   GenerationWarning,
+  ManualImageEmbeddingItem,
+  ManualImageReplacement,
+  PendingEpubDownload,
   PageId,
   PageDraft,
   SanitizationPolicy,
@@ -114,6 +117,15 @@ export type UseEpubMakerReturn = EpubMakerState & {
   toggleFileNameMode: () => void;
   setEmbedRemoteImages: (value: boolean) => void;
   setAllowExternalLinks: (value: boolean) => void;
+  openManualImageEmbeddingDialog: () => void;
+  closeManualImageEmbeddingDialog: () => void;
+  replaceFailedImageFromFiles: (
+    source: string,
+    files: FileList | File[],
+  ) => Promise<void>;
+  replaceFailedImageFromClipboard: (source: string) => Promise<void>;
+  downloadEpubWithExternalImages: () => void;
+  regenerateEpubWithManualImages: () => Promise<void>;
   replaceCoverFromFiles: (files: FileList | File[]) => Promise<void>;
   replaceCoverFromClipboard: () => Promise<void>;
   resetCoverToAuto: () => void;
@@ -153,6 +165,13 @@ export function useEpubMaker(): UseEpubMakerReturn {
   const [warnings, setWarnings] = useState<GenerationWarning[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const [summary, setSummary] = useState("");
+  const [isManualImageEmbeddingOpen, setIsManualImageEmbeddingOpen] =
+    useState(false);
+  const [manualImageEmbeddingItems, setManualImageEmbeddingItems] = useState<
+    ManualImageEmbeddingItem[]
+  >([]);
+  const [pendingManualImageDownload, setPendingManualImageDownload] =
+    useState<PendingEpubDownload | null>(null);
   const [prefs, setPrefs] = useState<EpubMakerState["prefs"]>(initialPrefs);
   const [isPrefsLoaded, setIsPrefsLoaded] = useState(false);
   const isFileImportInProgressRef = useRef(false);
@@ -952,7 +971,51 @@ export function useEpubMaker(): UseEpubMakerReturn {
     });
   }
 
-  async function generateEpub() {
+  function buildManualImageEmbeddingItems(
+    nextWarnings: GenerationWarning[],
+  ): ManualImageEmbeddingItem[] {
+    const pageTitleById = new Map(pages.map((page) => [page.id, page.title]));
+    const itemsBySource = new Map<string, ManualImageEmbeddingItem>();
+
+    for (const warning of nextWarnings) {
+      if (warning.code !== "FETCH_IMAGE_FAILED" || !warning.source) continue;
+      const existing = itemsBySource.get(warning.source);
+      if (existing) {
+        if (!existing.pageId && warning.pageId) {
+          existing.pageId = warning.pageId;
+          existing.pageTitle = pageTitleById.get(warning.pageId);
+        }
+        continue;
+      }
+
+      itemsBySource.set(warning.source, {
+        source: warning.source,
+        pageId: warning.pageId,
+        pageTitle: warning.pageId
+          ? pageTitleById.get(warning.pageId)
+          : undefined,
+      });
+    }
+
+    return Array.from(itemsBySource.values());
+  }
+
+  function setManualImageReplacement(
+    source: string,
+    replacement: ManualImageReplacement,
+  ) {
+    setManualImageEmbeddingItems((prev) =>
+      prev.map((item) =>
+        item.source === source
+          ? { ...item, replacement }
+          : item,
+      ),
+    );
+  }
+
+  async function generateEpubWithOptions(
+    manualImageReplacements?: Record<string, ManualImageReplacement>,
+  ) {
     if (isGenerating) return;
     clearGenerationStatusTimers();
 
@@ -964,6 +1027,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     setWarnings([]);
     setErrors([]);
     setSummary("");
+    setPendingManualImageDownload(null);
 
     const abortController = new AbortController();
     generationAbortControllerRef.current = abortController;
@@ -1001,6 +1065,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
         pages,
         cover: coverEnabled ? (coverDraftRef.current ?? coverDraft) : undefined,
         sanitizePolicy,
+        manualImageReplacements,
         signal: abortController.signal,
         onProgress: (update: BuildEpubProgressUpdate) => {
           setGenerationProgress(update.value);
@@ -1023,10 +1088,44 @@ export function useEpubMaker(): UseEpubMakerReturn {
         },
       });
 
+      setWarnings(result.warnings);
+
+      if (result.warnings.length > 0) {
+        // Keep warnings in the on-page warnings list only (no toast notification)
+      }
+
+      const failedImageItems = buildManualImageEmbeddingItems(result.warnings);
+      setManualImageEmbeddingItems((prev) => {
+        const previousBySource = new Map(
+          prev.map((item) => [item.source, item] as const),
+        );
+        return failedImageItems.map((item) => ({
+          ...item,
+          replacement: previousBySource.get(item.source)?.replacement,
+        }));
+      });
+      if (failedImageItems.length > 0) {
+        setPendingManualImageDownload({
+          blob: result.blob,
+          fileName: effectiveFileName,
+          summary: result.summary,
+          warnings: result.warnings,
+        });
+        setSummary(
+          `EPUB is ready to review with ${failedImageItems.length} external image source(s). Add replacements or download it with external image references.`,
+        );
+        setIsManualImageEmbeddingOpen(true);
+        notify(
+          "warning",
+          "Review images before download",
+          `${failedImageItems.length} image source${failedImageItems.length === 1 ? "" : "s"} could not be embedded.`,
+        );
+        return;
+      }
+
       downloadBlob(result.blob, effectiveFileName);
       scheduleGenerationStatusCleanup();
       showDownloadCompleteIconTemporarily();
-      setWarnings(result.warnings);
       setSummary(
         `Generated and downloaded “${effectiveFileName}” with ${result.summary.chapterCount} page(s)${result.summary.coverIncluded ? " and a cover" : ""}, ${result.summary.embeddedImageCount} embedded image(s), and ${result.summary.externalImageCount} external image reference(s).`,
       );
@@ -1036,8 +1135,8 @@ export function useEpubMaker(): UseEpubMakerReturn {
         `EPUB generated and downloaded as “${effectiveFileName}”.`,
       );
 
-      if (result.warnings.length > 0) {
-        // Keep warnings in the on-page warnings list only (no toast notification)
+      if (manualImageReplacements) {
+        setIsManualImageEmbeddingOpen(false);
       }
 
       if (prefs.fileNameMode === "manual" && !prefs.manualFileName.trim()) {
@@ -1067,6 +1166,109 @@ export function useEpubMaker(): UseEpubMakerReturn {
       setActiveGenerationPageId(null);
       generationAbortControllerRef.current = null;
     }
+  }
+
+  async function generateEpub() {
+    await generateEpubWithOptions();
+  }
+
+  function openManualImageEmbeddingDialog() {
+    if (manualImageEmbeddingItems.length === 0) return;
+    setIsManualImageEmbeddingOpen(true);
+  }
+
+  function closeManualImageEmbeddingDialog() {
+    setIsManualImageEmbeddingOpen(false);
+  }
+
+  async function replaceFailedImageFromFiles(
+    source: string,
+    files: FileList | File[],
+  ) {
+    const imageFile = Array.from(files).find((file) =>
+      file.type.toLowerCase().startsWith("image/"),
+    );
+    if (!imageFile) {
+      notify(
+        "warning",
+        "Choose an image file",
+        "Only image files can replace failed EPUB images.",
+      );
+      return;
+    }
+
+    setManualImageReplacement(source, {
+      blob: imageFile,
+      label: imageFile.name || "Uploaded image",
+    });
+    notify(
+      "success",
+      "Replacement added",
+      "The image will be embedded on regenerate.",
+    );
+  }
+
+  async function replaceFailedImageFromClipboard(source: string) {
+    try {
+      const imageBlob = await readClipboardImageBlob();
+      setManualImageReplacement(source, {
+        blob: imageBlob,
+        label: "Clipboard image",
+      });
+      notify(
+        "success",
+        "Replacement added",
+        "The clipboard image will be embedded on regenerate.",
+      );
+    } catch {
+      notify(
+        "warning",
+        "No clipboard image found",
+        "Copy an image first, then paste it here.",
+      );
+    }
+  }
+
+  function downloadEpubWithExternalImages() {
+    if (!pendingManualImageDownload) return;
+    downloadBlob(
+      pendingManualImageDownload.blob,
+      pendingManualImageDownload.fileName,
+    );
+    scheduleGenerationStatusCleanup();
+    showDownloadCompleteIconTemporarily();
+    setSummary(
+      `Generated and downloaded “${pendingManualImageDownload.fileName}” with ${pendingManualImageDownload.summary.chapterCount} page(s)${pendingManualImageDownload.summary.coverIncluded ? " and a cover" : ""}, ${pendingManualImageDownload.summary.embeddedImageCount} embedded image(s), and ${pendingManualImageDownload.summary.externalImageCount} external image reference(s).`,
+    );
+    notify(
+      "success",
+      "EPUB ready",
+      `EPUB generated and downloaded as “${pendingManualImageDownload.fileName}”.`,
+    );
+    setIsManualImageEmbeddingOpen(false);
+    setPendingManualImageDownload(null);
+  }
+
+  async function regenerateEpubWithManualImages() {
+    const replacements = manualImageEmbeddingItems.reduce<
+      Record<string, ManualImageReplacement>
+    >((acc, item) => {
+      if (item.replacement) {
+        acc[item.source] = item.replacement;
+      }
+      return acc;
+    }, {});
+
+    if (Object.keys(replacements).length === 0) {
+      notify(
+        "warning",
+        "No replacements selected",
+        "Add at least one image replacement before regenerating.",
+      );
+      return;
+    }
+
+    await generateEpubWithOptions(replacements);
   }
 
   function cancelGeneration() {
@@ -1105,6 +1307,11 @@ export function useEpubMaker(): UseEpubMakerReturn {
     errors,
     summary,
     notifications,
+    manualImageEmbedding: {
+      isOpen: isManualImageEmbeddingOpen,
+      items: manualImageEmbeddingItems,
+      pendingDownload: pendingManualImageDownload,
+    },
     pageFlashById,
     prefs,
     normalizedBookTitle,
@@ -1238,6 +1445,12 @@ export function useEpubMaker(): UseEpubMakerReturn {
           allowExternalLinks: value,
         },
       })),
+    openManualImageEmbeddingDialog,
+    closeManualImageEmbeddingDialog,
+    replaceFailedImageFromFiles,
+    replaceFailedImageFromClipboard,
+    downloadEpubWithExternalImages,
+    regenerateEpubWithManualImages,
     replaceCoverFromFiles,
     replaceCoverFromClipboard,
     resetCoverToAuto,

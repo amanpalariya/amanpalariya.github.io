@@ -55,6 +55,25 @@ export interface EpubImage {
   sourceUrl: string;
 }
 
+export interface ManualImageReplacement {
+  blob: Blob;
+  label: string;
+}
+
+export interface ManualImageEmbeddingItem {
+  source: string;
+  pageId?: PageId;
+  pageTitle?: string;
+  replacement?: ManualImageReplacement;
+}
+
+export interface PendingEpubDownload {
+  blob: Blob;
+  fileName: string;
+  summary: GenerationSummary;
+  warnings: GenerationWarning[];
+}
+
 export interface SanitizedHtmlResult {
   title: string;
   baseUrl: string | null;
@@ -128,6 +147,7 @@ export interface BuildEpubInput {
   pages: PageDraft[];
   cover?: CoverDraft;
   sanitizePolicy: SanitizationPolicy;
+  manualImageReplacements?: Record<string, ManualImageReplacement>;
   signal?: AbortSignal;
   onProgress?: (update: BuildEpubProgressUpdate) => void;
 }
@@ -195,4 +215,9 @@ export interface EpubMakerState {
   summary: string;
   notifications: UiNotification[];
   prefs: EpubMakerPrefs;
+  manualImageEmbedding: {
+    isOpen: boolean;
+    items: ManualImageEmbeddingItem[];
+    pendingDownload: PendingEpubDownload | null;
+  };
 }
