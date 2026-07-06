@@ -7,6 +7,7 @@ import {
   Image,
   Popover,
   SimpleGrid,
+  Splitter,
   Text,
   Textarea,
   VStack,
@@ -41,6 +42,41 @@ import {
 } from "react-icons/lu";
 import type { ManualImageEmbeddingItem } from "../types";
 
+const SURFACE_RADIUS = "xl" as const;
+const BUTTON_RADIUS = "xl" as const;
+
+function PreviewImage({
+  src,
+  alt,
+  onError,
+}: {
+  src: string;
+  alt: string;
+  onError?: () => void;
+}) {
+  return (
+    <Box
+      position={"relative"}
+      w={"full"}
+      h={"full"}
+      display={"flex"}
+      alignItems={"center"}
+      justifyContent={"center"}
+      bg={"app.epub.bg.preview"}
+      overflow={"hidden"}
+    >
+      <Image
+        src={src}
+        alt={alt}
+        maxW={"full"}
+        maxH={"full"}
+        objectFit={"contain"}
+        onError={onError}
+      />
+    </Box>
+  );
+}
+
 function ImagePreview({
   item,
   disabled,
@@ -52,9 +88,11 @@ function ImagePreview({
 }) {
   const [replacementUrl, setReplacementUrl] = useState<string | null>(null);
   const [hasError, setHasError] = useState(false);
+  const [sweepPercent, setSweepPercent] = useState(50);
 
   useEffect(() => {
     setHasError(false);
+    setSweepPercent(50);
     if (!item.replacement) {
       setReplacementUrl(null);
       return;
@@ -71,6 +109,9 @@ function ImagePreview({
       ? "Using the image you pasted from the clipboard."
       : `Using ${item.replacement.label} as the replacement image.`
     : "This image still needs a replacement before it can be embedded.";
+  const showComparison = Boolean(item.replacement && replacementUrl);
+  const splitterLeftLabelOffset = `calc(${sweepPercent}% - 0.375rem)`;
+  const splitterRightLabelOffset = `calc(${sweepPercent}% + 0.375rem)`;
 
   return (
     <Box
@@ -93,13 +134,88 @@ function ImagePreview({
         >
           Preview unavailable
         </Text>
+      ) : showComparison && replacementUrl ? (
+        <Box position={"relative"} w={"full"} h={"full"}>
+          <Box position={"absolute"} inset={0}>
+            <PreviewImage
+              src={item.source}
+              alt={"Original external preview"}
+              onError={() => setHasError(true)}
+            />
+          </Box>
+          <Box
+            position={"absolute"}
+            inset={0}
+            clipPath={`inset(0 0 0 ${sweepPercent}%)`}
+            pointerEvents={"none"}
+          >
+            <PreviewImage
+              src={replacementUrl}
+              alt={"Replacement preview"}
+            />
+          </Box>
+          <Box
+            position={"absolute"}
+            bottom={2}
+            left={splitterLeftLabelOffset}
+            transform={"translateX(-100%)"}
+            textAlign={"center"}
+            px={2}
+            py={0.5}
+            rounded={BUTTON_RADIUS}
+            bg={"blackAlpha.700"}
+            color={"white"}
+            fontFamily={"ui"}
+            fontSize={"2xs"}
+            fontWeight={"semibold"}
+            pointerEvents={"none"}
+            zIndex={2}
+          >
+            Original
+          </Box>
+          <Box
+            position={"absolute"}
+            bottom={2}
+            left={splitterRightLabelOffset}
+            textAlign={"center"}
+            px={2}
+            py={0.5}
+            rounded={BUTTON_RADIUS}
+            bg={"blackAlpha.700"}
+            color={"white"}
+            fontFamily={"ui"}
+            fontSize={"2xs"}
+            fontWeight={"semibold"}
+            pointerEvents={"none"}
+            zIndex={2}
+          >
+            Added
+          </Box>
+          <Splitter.Root
+            orientation={"horizontal"}
+            defaultSize={[50, 50]}
+            panels={[
+              { id: "original", minSize: 5 },
+              { id: "replacement", minSize: 5 },
+            ]}
+            onResize={(details) => setSweepPercent(details.size[0] ?? 50)}
+            position={"absolute"}
+            inset={0}
+            zIndex={1}
+            pointerEvents={"none"}
+          >
+            <Splitter.Panel id={"original"} />
+            <Splitter.ResizeTrigger
+              id={"original:replacement"}
+              pointerEvents={"auto"}
+            />
+            <Splitter.Panel id={"replacement"} />
+          </Splitter.Root>
+        </Box>
       ) : (
-        <Image
+        <PreviewImage
           src={previewUrl}
           alt={item.replacement ? "Replacement preview" : "External preview"}
-          maxW={"full"}
-          maxH={"full"}
-          objectFit={"contain"}
           onError={() => setHasError(true)}
         />
       )}
@@ -125,46 +241,53 @@ function ImagePreview({
           </Icon>
         </Box>
       </Tooltip>
-      <Tooltip content={"Open image in a new tab"}>
-        <IconButton
-          asChild
-          aria-label={"Open image in a new tab"}
-          size={"sm"}
-          variant={"solid"}
-          position={"absolute"}
-          top={2}
-          right={2}
-          rounded={"full"}
-          bg={"blackAlpha.700"}
-          color={"white"}
-          _hover={{ bg: "blackAlpha.800" }}
-          disabled={disabled}
-        >
-          <a href={item.source} target={"_blank"} rel={"noreferrer"}>
-            <LuExternalLink />
-          </a>
-        </IconButton>
-      </Tooltip>
-      {item.replacement ? (
-        <Tooltip content={"Reset replacement"}>
+      <Box
+        position={"absolute"}
+        top={2}
+        right={2}
+        display={"flex"}
+        rounded={BUTTON_RADIUS}
+        overflow={"hidden"}
+        bg={"blackAlpha.700"}
+        boxShadow={"sm"}
+      >
+        <Tooltip content={"Open image in a new tab"}>
           <IconButton
-            aria-label={"Reset replacement"}
+            asChild
+            aria-label={"Open image in a new tab"}
             size={"sm"}
             variant={"solid"}
-            position={"absolute"}
-            bottom={2}
-            right={2}
-            rounded={"full"}
-            bg={"blackAlpha.700"}
+            rounded={0}
+            bg={"transparent"}
             color={"white"}
             _hover={{ bg: "blackAlpha.800" }}
             disabled={disabled}
-            onClick={() => onReset(item.source)}
           >
-            <LuRotateCcw />
+            <a href={item.source} target={"_blank"} rel={"noreferrer"}>
+              <LuExternalLink />
+            </a>
           </IconButton>
         </Tooltip>
-      ) : null}
+        {item.replacement ? (
+          <Tooltip content={"Reset replacement"}>
+            <IconButton
+              aria-label={"Reset replacement"}
+              size={"sm"}
+              variant={"solid"}
+              rounded={0}
+              bg={"transparent"}
+              color={"white"}
+              _hover={{ bg: "blackAlpha.800" }}
+              disabled={disabled}
+              borderLeftWidth={"1px"}
+              borderLeftColor={"whiteAlpha.300"}
+              onClick={() => onReset(item.source)}
+            >
+              <LuRotateCcw />
+            </IconButton>
+          </Tooltip>
+        ) : null}
+      </Box>
     </Box>
   );
 }
@@ -185,7 +308,7 @@ function FailedImageCard({
   const actionButtonProps = {
     fontFamily: "ui",
     fontSize: "sm",
-    rounded: "xl",
+    rounded: BUTTON_RADIUS,
   } as const;
 
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
@@ -218,7 +341,7 @@ function FailedImageCard({
       minW={0}
       borderWidth={"1px"}
       borderColor={"app.epub.border.default"}
-      rounded={"lg"}
+      rounded={SURFACE_RADIUS}
       bg={"app.epub.bg.card"}
       overflow={"hidden"}
     >
@@ -239,7 +362,7 @@ function FailedImageCard({
               roundedTopLeft={0}
               roundedTopRight={0}
               roundedRight={0}
-              roundedBottomLeft={"lg"}
+              roundedBottomLeft={SURFACE_RADIUS}
               borderRightWidth={"0"}
               bg={"app.epub.button.subtle.bg"}
               color={"app.epub.button.subtle.fg"}
@@ -295,7 +418,7 @@ function FailedImageCard({
                 roundedTopLeft={0}
                 roundedTopRight={0}
                 roundedLeft={0}
-                roundedBottomRight={"lg"}
+                roundedBottomRight={SURFACE_RADIUS}
                 borderLeftWidth={"1px"}
                 borderLeftColor={"app.epub.border.accent"}
                 bg={"app.epub.button.subtle.bg"}
@@ -314,7 +437,7 @@ function FailedImageCard({
             p={0}
             borderWidth={"1px"}
             borderColor={"app.epub.border.default"}
-            rounded={"xl"}
+            rounded={SURFACE_RADIUS}
             overflow={"hidden"}
             bg={"app.epub.bg.popover"}
             shadow={"lg"}
@@ -382,7 +505,7 @@ export function ManualImageEmbeddingDialog({
         color={"app.epub.fg.default"}
         borderWidth={"1px"}
         borderColor={"app.epub.border.default"}
-        rounded={"xl"}
+        rounded={SURFACE_RADIUS}
         maxW={{ base: "calc(100vw - 1rem)", md: "820px" }}
       >
         <DialogHeader>
@@ -435,6 +558,7 @@ export function ManualImageEmbeddingDialog({
             <HStack gap={2}>
               <Button
                 size={"sm"}
+                rounded={BUTTON_RADIUS}
                 variant={"subtle"}
                 disabled={isGenerating || !canDownloadAnyway}
                 onClick={onDownloadAnyway}
@@ -443,6 +567,7 @@ export function ManualImageEmbeddingDialog({
               </Button>
               <Button
                 size={"sm"}
+                rounded={BUTTON_RADIUS}
                 bg={"app.epub.button.success.bg"}
                 color={"app.epub.button.success.fg"}
                 _hover={{ bg: "app.epub.button.success.hoverBg" }}
