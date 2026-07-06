@@ -1,5 +1,4 @@
 import {
-  Badge,
   Box,
   Button,
   HStack,
@@ -7,8 +6,7 @@ import {
   IconButton,
   Image,
   Popover,
-  Separator,
-  Stack,
+  SimpleGrid,
   Text,
   Textarea,
   VStack,
@@ -26,7 +24,6 @@ import { Tooltip } from "@components/ui/tooltip";
 import {
   type ChangeEvent,
   type ClipboardEvent as ReactClipboardEvent,
-  Fragment,
   useEffect,
   useRef,
   useState,
@@ -34,14 +31,25 @@ import {
 import {
   LuChevronDown,
   LuChevronUp,
+  LuCircleAlert,
+  LuCircleCheck,
   LuExternalLink,
   LuFilePlus,
   LuRefreshCw,
+  LuRotateCcw,
   LuUpload,
 } from "react-icons/lu";
 import type { ManualImageEmbeddingItem } from "../types";
 
-function ImagePreview({ item }: { item: ManualImageEmbeddingItem }) {
+function ImagePreview({
+  item,
+  disabled,
+  onReset,
+}: {
+  item: ManualImageEmbeddingItem;
+  disabled: boolean;
+  onReset: (source: string) => void;
+}) {
   const [replacementUrl, setReplacementUrl] = useState<string | null>(null);
   const [hasError, setHasError] = useState(false);
 
@@ -61,12 +69,10 @@ function ImagePreview({ item }: { item: ManualImageEmbeddingItem }) {
 
   return (
     <Box
-      w={{ base: "full", md: "112px" }}
-      h={{ base: "160px", md: "96px" }}
+      position={"relative"}
+      w={"full"}
+      h={"156px"}
       flexShrink={0}
-      rounded={"md"}
-      borderWidth={"1px"}
-      borderColor={"app.epub.border.default"}
       bg={"app.epub.bg.preview"}
       overflow={"hidden"}
       display={"flex"}
@@ -92,20 +98,81 @@ function ImagePreview({ item }: { item: ManualImageEmbeddingItem }) {
           onError={() => setHasError(true)}
         />
       )}
+      <Box
+        position={"absolute"}
+        top={2}
+        left={2}
+        boxSize={7}
+        rounded={"full"}
+        bg={item.replacement ? "green.500" : "orange.500"}
+        color={"white"}
+        boxShadow={"sm"}
+        display={"inline-flex"}
+        alignItems={"center"}
+        justifyContent={"center"}
+        lineHeight={1}
+        aria-label={item.replacement ? "Replacement selected" : "Needs image"}
+      >
+        <Icon boxSize={4}>
+          {item.replacement ? <LuCircleCheck /> : <LuCircleAlert />}
+        </Icon>
+      </Box>
+      <Tooltip content={"Open image in a new tab"}>
+        <IconButton
+          asChild
+          aria-label={"Open image in a new tab"}
+          size={"sm"}
+          variant={"solid"}
+          position={"absolute"}
+          top={2}
+          right={2}
+          rounded={"full"}
+          bg={"blackAlpha.700"}
+          color={"white"}
+          _hover={{ bg: "blackAlpha.800" }}
+          disabled={disabled}
+        >
+          <a href={item.source} target={"_blank"} rel={"noreferrer"}>
+            <LuExternalLink />
+          </a>
+        </IconButton>
+      </Tooltip>
+      {item.replacement ? (
+        <Tooltip content={"Reset replacement"}>
+          <IconButton
+            aria-label={"Reset replacement"}
+            size={"sm"}
+            variant={"solid"}
+            position={"absolute"}
+            bottom={2}
+            right={2}
+            rounded={"full"}
+            bg={"blackAlpha.700"}
+            color={"white"}
+            _hover={{ bg: "blackAlpha.800" }}
+            disabled={disabled}
+            onClick={() => onReset(item.source)}
+          >
+            <LuRotateCcw />
+          </IconButton>
+        </Tooltip>
+      ) : null}
     </Box>
   );
 }
 
-function FailedImageRow({
+function FailedImageCard({
   item,
   disabled,
   onUpload,
   onPaste,
+  onReset,
 }: {
   item: ManualImageEmbeddingItem;
   disabled: boolean;
   onUpload: (source: string, files: FileList | File[]) => Promise<void>;
   onPaste: (source: string) => Promise<void>;
+  onReset: (source: string) => void;
 }) {
   const actionButtonProps = {
     fontFamily: "ui",
@@ -137,73 +204,34 @@ function FailedImageRow({
   }
 
   return (
-    <Stack
-      gap={3}
-      px={1}
-      py={3}
-      direction={{ base: "column", md: "row" }}
-      align={{ base: "stretch", md: "center" }}
+    <VStack
+      align={"stretch"}
+      gap={0}
+      minW={0}
+      borderWidth={"1px"}
+      borderColor={"app.epub.border.default"}
+      rounded={"lg"}
+      bg={"app.epub.bg.card"}
+      overflow={"hidden"}
     >
-      <ImagePreview item={item} />
-
-      <VStack align={"stretch"} gap={1} flex={1} minW={0}>
-        <HStack gap={2} wrap={"wrap"}>
-          {item.pageTitle ? (
-            <Badge colorPalette={"blue"} variant={"subtle"}>
-              {item.pageTitle}
-            </Badge>
-          ) : null}
-          {item.replacement ? (
-            <Badge colorPalette={"green"} variant={"subtle"}>
-              {item.replacement.label}
-            </Badge>
-          ) : (
-            <Badge colorPalette={"orange"} variant={"subtle"}>
-              Needs image
-            </Badge>
-          )}
-        </HStack>
-        <HStack gap={1.5} align={"start"}>
-          <Text
-            fontFamily={"mono"}
-            fontSize={"xs"}
-            color={"app.epub.fg.muted"}
-            lineClamp={2}
-            overflowWrap={"anywhere"}
-            flex={1}
-            minW={0}
-          >
-            {item.source}
-          </Text>
-          <Tooltip content={"Open image in a new tab"}>
-            <IconButton
-              asChild
-              aria-label={"Open image in a new tab"}
-              size={"sm"}
-              variant={"ghost"}
-              disabled={disabled}
-            >
-              <a href={item.source} target={"_blank"} rel={"noreferrer"}>
-                <LuExternalLink />
-              </a>
-            </IconButton>
-          </Tooltip>
-        </HStack>
-      </VStack>
+      <ImagePreview item={item} disabled={disabled} onReset={onReset} />
 
       <Popover.Root
         open={isManualPasteOpen}
         onOpenChange={(details) => setIsManualPasteOpen(details.open)}
         positioning={{ placement: "bottom-end", gutter: 6 }}
       >
-        <Box w={{ base: "full", md: "auto" }} flexShrink={0}>
+        <Box w={"full"} flexShrink={0}>
           <HStack gap={0} w={"full"} maxW={"full"} justify={"start"}>
             <Button
               {...actionButtonProps}
               size={"sm"}
-              flex={{ base: "1 1 auto", md: "0 0 auto" }}
+              flex={"1 1 auto"}
               minW={0}
+              roundedTopLeft={0}
+              roundedTopRight={0}
               roundedRight={0}
+              roundedBottomLeft={"lg"}
               borderRightWidth={"0"}
               bg={"app.epub.button.primary.bg"}
               color={"app.epub.button.primary.fg"}
@@ -232,6 +260,8 @@ function FailedImageRow({
                 size={"sm"}
                 flex={"0 0 auto"}
                 rounded={0}
+                roundedTopLeft={0}
+                roundedTopRight={0}
                 borderLeftWidth={"1px"}
                 borderLeftColor={"app.epub.button.primary.divider"}
                 bg={"app.epub.button.primary.bg"}
@@ -254,7 +284,10 @@ function FailedImageRow({
                 }
                 size={"sm"}
                 flex={"0 0 auto"}
+                roundedTopLeft={0}
+                roundedTopRight={0}
                 roundedLeft={0}
+                roundedBottomRight={"lg"}
                 borderLeftWidth={"1px"}
                 borderLeftColor={"app.epub.button.primary.divider"}
                 bg={"app.epub.button.primary.bg"}
@@ -297,7 +330,7 @@ function FailedImageRow({
           </Popover.Content>
         </Popover.Positioner>
       </Popover.Root>
-    </Stack>
+    </VStack>
   );
 }
 
@@ -308,6 +341,7 @@ export function ManualImageEmbeddingDialog({
   onOpenChange,
   onUpload,
   onPaste,
+  onReset,
   canDownloadAnyway,
   onDownloadAnyway,
   onRegenerate,
@@ -318,6 +352,7 @@ export function ManualImageEmbeddingDialog({
   onOpenChange: (open: boolean) => void;
   onUpload: (source: string, files: FileList | File[]) => Promise<void>;
   onPaste: (source: string) => Promise<void>;
+  onReset: (source: string) => void;
   canDownloadAnyway: boolean;
   onDownloadAnyway: () => void;
   onRegenerate: () => Promise<void>;
@@ -340,7 +375,7 @@ export function ManualImageEmbeddingDialog({
         borderWidth={"1px"}
         borderColor={"app.epub.border.default"}
         rounded={"xl"}
-        maxW={{ base: "calc(100vw - 1rem)", md: "760px" }}
+        maxW={{ base: "calc(100vw - 1rem)", md: "820px" }}
       >
         <DialogHeader>
           <DialogTitle fontFamily={"ui"}>Review external images</DialogTitle>
@@ -348,33 +383,39 @@ export function ManualImageEmbeddingDialog({
         <DialogCloseTrigger />
 
         <DialogBody>
-          <VStack align={"stretch"} gap={4}>
+          <VStack align={"stretch"} gap={3}>
             <Text fontSize={"sm"} color={"app.epub.fg.muted"}>
-              These image sources could not be fetched during EPUB generation.
-              Review the preview, then upload or paste the image you want
-              embedded before downloading.
+              Review each preview, then paste or upload replacements before
+              downloading.
             </Text>
 
-            <VStack
-              align={"stretch"}
-              gap={0}
+            <SimpleGrid
+              columns={1}
+              css={{
+                "@media (min-width: 360px)": {
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                },
+                "@media (min-width: 620px)": {
+                  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                },
+              }}
+              gap={3}
+              alignItems={"start"}
               maxH={"52vh"}
               overflowY={"auto"}
+              pr={{ base: 0, md: 1 }}
             >
-              {items.map((item, index) => (
-                <Fragment key={item.source}>
-                  <FailedImageRow
-                    item={item}
-                    disabled={isGenerating}
-                    onUpload={onUpload}
-                    onPaste={onPaste}
-                  />
-                  {index < items.length - 1 ? (
-                    <Separator size={"md"} />
-                  ) : null}
-                </Fragment>
+              {items.map((item) => (
+                <FailedImageCard
+                  key={item.source}
+                  item={item}
+                  disabled={isGenerating}
+                  onUpload={onUpload}
+                  onPaste={onPaste}
+                  onReset={onReset}
+                />
               ))}
-            </VStack>
+            </SimpleGrid>
           </VStack>
         </DialogBody>
 

@@ -124,6 +124,7 @@ export type UseEpubMakerReturn = EpubMakerState & {
     files: FileList | File[],
   ) => Promise<void>;
   replaceFailedImageFromClipboard: (source: string) => Promise<void>;
+  resetFailedImageReplacement: (source: string) => void;
   downloadEpubWithExternalImages: () => void;
   regenerateEpubWithManualImages: () => Promise<void>;
   replaceCoverFromFiles: (files: FileList | File[]) => Promise<void>;
@@ -1229,6 +1230,14 @@ export function useEpubMaker(): UseEpubMakerReturn {
     }
   }
 
+  function resetFailedImageReplacement(source: string) {
+    setManualImageEmbeddingItems((prev) =>
+      prev.map((item) =>
+        item.source === source ? { ...item, replacement: undefined } : item,
+      ),
+    );
+  }
+
   function downloadEpubWithExternalImages() {
     if (!pendingManualImageDownload) return;
     downloadBlob(
@@ -1449,6 +1458,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
     closeManualImageEmbeddingDialog,
     replaceFailedImageFromFiles,
     replaceFailedImageFromClipboard,
+    resetFailedImageReplacement,
     downloadEpubWithExternalImages,
     regenerateEpubWithManualImages,
     replaceCoverFromFiles,
