@@ -7,8 +7,10 @@ import {
   Icon,
   IconButton,
   Image,
+  Popover,
   Stack,
   Text,
+  Textarea,
   VStack,
 } from "@chakra-ui/react";
 import {
@@ -21,12 +23,20 @@ import {
   DialogTitle,
 } from "@components/ui/dialog";
 import { Tooltip } from "@components/ui/tooltip";
-import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import {
-  LuClipboard,
+  type ChangeEvent,
+  type ClipboardEvent as ReactClipboardEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import {
+  LuChevronDown,
+  LuChevronUp,
   LuExternalLink,
-  LuImagePlus,
+  LuFilePlus,
   LuRefreshCw,
+  LuUpload,
 } from "react-icons/lu";
 import type { ManualImageEmbeddingItem } from "../types";
 
@@ -96,13 +106,33 @@ function FailedImageRow({
   onUpload: (source: string, files: FileList | File[]) => Promise<void>;
   onPaste: (source: string) => Promise<void>;
 }) {
+  const actionButtonProps = {
+    fontFamily: "ui",
+    fontSize: "sm",
+    rounded: "xl",
+  } as const;
+
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
+  const [isManualPasteOpen, setIsManualPasteOpen] = useState(false);
 
   function handleUploadChange(event: ChangeEvent<HTMLInputElement>) {
     const files = event.target.files;
     if (!files || files.length === 0) return;
     void onUpload(item.source, files);
     event.target.value = "";
+  }
+
+  function handleManualPaste(
+    event: ReactClipboardEvent<HTMLTextAreaElement>,
+  ) {
+    const imageFile = Array.from(event.clipboardData.items)
+      .find((clipboardItem) => clipboardItem.type.startsWith("image/"))
+      ?.getAsFile();
+    if (!imageFile) return;
+
+    event.preventDefault();
+    void onUpload(item.source, [imageFile]);
+    setIsManualPasteOpen(false);
   }
 
   return (
@@ -163,42 +193,106 @@ function FailedImageRow({
         </HStack>
       </VStack>
 
-      <HStack gap={0} justify={{ base: "end", md: "start" }} flexShrink={0}>
-        <FileUpload.Root maxFiles={1}>
-          <FileUpload.HiddenInput
-            ref={uploadInputRef}
-            aria-label={"Upload replacement image"}
-            accept={"image/*"}
-            onChange={handleUploadChange}
-          />
+      <Popover.Root
+        open={isManualPasteOpen}
+        onOpenChange={(details) => setIsManualPasteOpen(details.open)}
+        positioning={{ placement: "bottom-end", gutter: 6 }}
+      >
+        <HStack gap={0} justify={{ base: "end", md: "start" }} flexShrink={0}>
           <Button
+            {...actionButtonProps}
             size={"sm"}
             roundedRight={0}
-            variant={"subtle"}
+            borderRightWidth={"0"}
+            bg={"app.epub.button.primary.bg"}
+            color={"app.epub.button.primary.fg"}
+            _hover={{ bg: "app.epub.button.primary.hoverBg" }}
             disabled={disabled}
-            onClick={() => uploadInputRef.current?.click()}
+            onClick={() => void onPaste(item.source)}
           >
             <Icon>
-              <LuImagePlus />
+              <LuFilePlus />
             </Icon>
-            Upload
+            Paste
           </Button>
-        </FileUpload.Root>
-        <Button
-          size={"sm"}
-          roundedLeft={0}
-          borderLeftWidth={"1px"}
-          borderLeftColor={"app.epub.border.default"}
-          variant={"subtle"}
-          disabled={disabled}
-          onClick={() => void onPaste(item.source)}
-        >
-          <Icon>
-            <LuClipboard />
-          </Icon>
-          Paste
-        </Button>
-      </HStack>
+
+          <FileUpload.Root maxFiles={1}>
+            <FileUpload.HiddenInput
+              ref={uploadInputRef}
+              aria-label={"Upload replacement image"}
+              accept={"image/*"}
+              onChange={handleUploadChange}
+            />
+            <Tooltip content={"Upload replacement image"}>
+              <IconButton
+                {...actionButtonProps}
+                aria-label={"Upload replacement image"}
+                size={"sm"}
+                rounded={0}
+                borderLeftWidth={"1px"}
+                borderLeftColor={"app.epub.button.primary.divider"}
+                bg={"app.epub.button.primary.bg"}
+                color={"app.epub.button.primary.fg"}
+                _hover={{ bg: "app.epub.button.primary.hoverBg" }}
+                disabled={disabled}
+                onClick={() => uploadInputRef.current?.click()}
+              >
+                <LuUpload />
+              </IconButton>
+            </Tooltip>
+          </FileUpload.Root>
+
+          <Popover.Trigger asChild>
+            <IconButton
+              {...actionButtonProps}
+              aria-label={
+                isManualPasteOpen
+                  ? "Hide manual image paste"
+                  : "Show manual image paste"
+              }
+              size={"sm"}
+              roundedLeft={0}
+              borderLeftWidth={"1px"}
+              borderLeftColor={"app.epub.button.primary.divider"}
+              bg={"app.epub.button.primary.bg"}
+              color={"app.epub.button.primary.fg"}
+              _hover={{ bg: "app.epub.button.primary.hoverBg" }}
+              disabled={disabled}
+            >
+              {isManualPasteOpen ? <LuChevronUp /> : <LuChevronDown />}
+            </IconButton>
+          </Popover.Trigger>
+        </HStack>
+
+        <Popover.Positioner zIndex={30}>
+          <Popover.Content
+            p={0}
+            borderWidth={"1px"}
+            borderColor={"app.epub.border.default"}
+            rounded={"xl"}
+            overflow={"hidden"}
+            bg={"app.epub.bg.popover"}
+            shadow={"lg"}
+            w={{ base: "calc(100vw - 2rem)", sm: "360px" }}
+          >
+            <Textarea
+              onPaste={handleManualPaste}
+              disabled={disabled}
+              minH={"116px"}
+              m={0}
+              display={"block"}
+              rounded={"none"}
+              borderWidth={0}
+              bg={"app.epub.bg.card"}
+              color={"app.epub.fg.default"}
+              _placeholder={{ color: "app.epub.fg.subtle" }}
+              placeholder={
+                "Paste a copied image here (Cmd/Ctrl+V). It will be used for this source."
+              }
+            />
+          </Popover.Content>
+        </Popover.Positioner>
+      </Popover.Root>
     </Stack>
   );
 }
