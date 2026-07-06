@@ -1180,6 +1180,9 @@ export function useEpubMaker(): UseEpubMakerReturn {
 
   function closeManualImageEmbeddingDialog() {
     setIsManualImageEmbeddingOpen(false);
+    if (pendingManualImageDownload) {
+      clearGenerationStatus();
+    }
   }
 
   async function replaceFailedImageFromFiles(
