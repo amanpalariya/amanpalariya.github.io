@@ -174,6 +174,8 @@ export function useEpubMaker(): UseEpubMakerReturn {
   const [manualImageEmbeddingItems, setManualImageEmbeddingItems] = useState<
     ManualImageEmbeddingItem[]
   >([]);
+  const [manualImageReplacementBySource, setManualImageReplacementBySource] =
+    useState<Record<string, ManualImageReplacement>>({});
   const [prefs, setPrefs] = useState<EpubMakerState["prefs"]>(initialPrefs);
   const [isPrefsLoaded, setIsPrefsLoaded] = useState(false);
   const isFileImportInProgressRef = useRef(false);
@@ -996,6 +998,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
         pageTitle: warning.pageId
           ? pageTitleById.get(warning.pageId)
           : undefined,
+        replacement: manualImageReplacementBySource[warning.source],
       });
     }
 
@@ -1006,6 +1009,10 @@ export function useEpubMaker(): UseEpubMakerReturn {
     source: string,
     replacement: ManualImageReplacement,
   ) {
+    setManualImageReplacementBySource((prev) => ({
+      ...prev,
+      [source]: replacement,
+    }));
     setManualImageEmbeddingItems((prev) =>
       prev.map((item) =>
         item.source === source
@@ -1105,18 +1112,19 @@ export function useEpubMaker(): UseEpubMakerReturn {
         );
         return failedImageItems.map((item) => ({
           ...item,
-          replacement: previousBySource.get(item.source)?.replacement,
+          replacement:
+            item.replacement ?? previousBySource.get(item.source)?.replacement,
         }));
       });
       if (blockOnFailedImages && failedImageItems.length > 0) {
         setSummary(
-          `EPUB is ready to review with ${failedImageItems.length} external image source(s). Add replacements, then generate again to download.`,
+          `EPUB is ready to review with ${failedImageItems.length} external image source(s) that could not be fetched automatically. Add replacements where needed, then generate again to download.`,
         );
         setIsManualImageEmbeddingOpen(true);
         notify(
           "warning",
           "Review images before download",
-          `${failedImageItems.length} image source${failedImageItems.length === 1 ? "" : "s"} could not be embedded.`,
+          `${failedImageItems.length} image source${failedImageItems.length === 1 ? "" : "s"} could not be fetched automatically.`,
         );
         return;
       }
@@ -1229,6 +1237,11 @@ export function useEpubMaker(): UseEpubMakerReturn {
   }
 
   function resetFailedImageReplacement(source: string) {
+    setManualImageReplacementBySource((prev) => {
+      const next = { ...prev };
+      delete next[source];
+      return next;
+    });
     setManualImageEmbeddingItems((prev) =>
       prev.map((item) =>
         item.source === source ? { ...item, replacement: undefined } : item,
@@ -1237,14 +1250,7 @@ export function useEpubMaker(): UseEpubMakerReturn {
   }
 
   async function regenerateEpubWithManualImages() {
-    const replacements = manualImageEmbeddingItems.reduce<
-      Record<string, ManualImageReplacement>
-    >((acc, item) => {
-      if (item.replacement) {
-        acc[item.source] = item.replacement;
-      }
-      return acc;
-    }, {});
+    const replacements = manualImageReplacementBySource;
 
     await generateEpubWithOptions(
       {

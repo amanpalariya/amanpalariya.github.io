@@ -107,6 +107,9 @@ test.describe("EPUB Maker generated content", () => {
       name: "Review external images",
     });
     await expect(reviewDialog).toBeVisible();
+    await expect(
+      reviewDialog.getByText("could not be fetched automatically"),
+    ).toBeVisible();
     await expect(reviewDialog.getByText("1 of 2 selected")).toHaveCount(0);
 
     const replacementBytes = await fs.readFile("src/app/icon.png");
@@ -152,6 +155,10 @@ test.describe("EPUB Maker generated content", () => {
       },
     );
     expectBytesEqual(embeddedReplacementBytes, replacementBytes);
+
+    await epubMaker.saveButton.click();
+    await expect(reviewDialog).toBeVisible();
+    await expect(reviewDialog.getByText("1 of 2 selected")).toBeVisible();
   });
 
   test("applies external link sanitization option to generated chapters", async ({

@@ -37,6 +37,7 @@ import {
   LuExternalLink,
   LuFilePlus,
   LuBookDown,
+  LuInfo,
   LuRotateCcw,
   LuUpload,
 } from "react-icons/lu";
@@ -108,7 +109,7 @@ function ImagePreview({
     ? item.replacement.label === "Clipboard image"
       ? "Using the image you pasted from the clipboard."
       : `Using ${item.replacement.label} as the replacement image.`
-    : "This image still needs a replacement before it can be embedded.";
+    : "No replacement selected yet. It will remain as an external image if you generate now.";
   const showComparison = Boolean(item.replacement && replacementUrl);
   const splitterLeftLabelOffset = `calc(${sweepPercent}% - 0.375rem)`;
   const splitterRightLabelOffset = `calc(${sweepPercent}% + 0.375rem)`;
@@ -511,10 +512,22 @@ export function ManualImageEmbeddingDialog({
 
         <DialogBody>
           <VStack align={"stretch"} gap={3}>
-            <Text fontSize={"sm"} color={"app.epub.fg.muted"}>
-              Review each preview, then paste or upload replacements before
-              downloading.
-            </Text>
+            <HStack
+              align={"start"}
+              gap={2.5}
+              p={3}
+              rounded={SURFACE_RADIUS}
+              bg={"app.epub.bg.preview"}
+              color={"app.epub.fg.muted"}
+            >
+              <Icon as={LuInfo} boxSize={4} mt={0.5} flexShrink={0} />
+              <Text fontSize={"sm"} lineHeight={"tall"}>
+                These images are visible in the preview, but could not be
+                fetched automatically for packaging. To embed one, copy it
+                directly from the preview image, then paste it here or upload a
+                saved copy.
+              </Text>
+            </HStack>
 
             <SimpleGrid
               columns={1}

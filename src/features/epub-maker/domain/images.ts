@@ -186,7 +186,7 @@ async function createImageFromDataUrl({
       absoluteSrc: sourceUrl,
       warning: {
         code: "MALFORMED_DATA_URL",
-        message: "Skipped malformed manual image replacement.",
+        message: "Skipped malformed data URL image.",
         pageId: nestedParams.pageId,
         source: sourceUrl,
       },
