@@ -84,6 +84,83 @@ test.describe("EPUB Maker generated content", () => {
     expect(imageFiles(archive).length).toBe(1);
   });
 
+  test("reviews failed remote images and embeds a partial manual replacement", async ({
+    page,
+    epubMaker,
+  }) => {
+    await epubMaker.goto();
+    await epubMaker.titleInput.fill("Manual Image Book");
+
+    const replacedImageUrl = "https://remote-images.test/blocked-cover.png";
+    const externalImageUrl = "https://remote-images.test/still-external.png";
+    await page.route("https://remote-images.test/**", (route) =>
+      route.abort("blockedbyclient"),
+    );
+
+    await epubMaker.addHtmlPage(
+      `<h1>Manual image chapter</h1><p>Images below.</p><img src="${replacedImageUrl}" alt="blocked remote" /><img src="${externalImageUrl}" alt="still external" />`,
+    );
+    await epubMaker.setEmbedRemoteImages(true);
+
+    await epubMaker.saveButton.click();
+    const reviewDialog = page.getByRole("dialog", {
+      name: "Review external images",
+    });
+    await expect(reviewDialog).toBeVisible();
+    await expect(
+      reviewDialog.getByText("could not be fetched automatically"),
+    ).toBeVisible();
+    await expect(reviewDialog.getByText("1 of 2 selected")).toHaveCount(0);
+
+    const replacementBytes = await fs.readFile("src/app/icon.png");
+    await reviewDialog.locator('input[type="file"]').first().setInputFiles({
+      name: "replacement-icon.png",
+      mimeType: "image/png",
+      buffer: replacementBytes,
+    });
+    await expect(reviewDialog.getByText("1 of 2 selected")).toBeVisible();
+
+    const downloadPromise = page.waitForEvent("download");
+    await reviewDialog.getByRole("button", { name: "Generate EPUB" }).click();
+    const archive = await loadEpubArchive(await downloadPromise);
+    const chapter = await archive.text("OEBPS/chapters/chapter-1.xhtml");
+
+    await expectWellFormedEpubPackage(archive, {
+      title: "Manual Image Book",
+      spineHrefs: ["chapters/chapter-1.xhtml"],
+      navLabels: ["Manual image chapter"],
+      coverIncluded: true,
+    });
+    await expectImageManifestMatchesFiles(archive);
+    await expectPackagedImageReferencesResolve(archive);
+    expect(chapter).toContain("../images/image-");
+    expect(chapter).not.toContain(replacedImageUrl);
+    expect(chapter).toContain(externalImageUrl);
+    await expect(reviewDialog).toBeHidden();
+
+    const chapterImageSrc = imageSrcsFromXhtml(chapter).find((src) =>
+      src.startsWith("../images/"),
+    );
+    expect(chapterImageSrc).toBeTruthy();
+    const embeddedReplacementPath = resolveImageSrc(
+      "OEBPS/chapters/chapter-1.xhtml",
+      chapterImageSrc!,
+    );
+    const { bytes: embeddedReplacementBytes } = await expectPngImage(
+      archive,
+      embeddedReplacementPath,
+      {
+        width: 32,
+        height: 32,
+      },
+    );
+    expectBytesEqual(embeddedReplacementBytes, replacementBytes);
+
+    await epubMaker.saveButton.click();
+    await expect(reviewDialog).toBeVisible();
+    await expect(reviewDialog.getByText("1 of 2 selected")).toBeVisible();
+  });
+
   test("applies external link sanitization option to generated chapters", async ({
     epubMaker,
   }) => {

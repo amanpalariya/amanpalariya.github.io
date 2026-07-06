@@ -1,5 +1,10 @@
 import { resolveAbsoluteUrl } from "../utils/url";
-import type { EpubImage, GenerationWarning, PageId } from "../types";
+import type {
+  EpubImage,
+  GenerationWarning,
+  ManualImageReplacement,
+  PageId,
+} from "../types";
 
 export function mediaTypeToExtension(mediaType: string): string {
   const normalized = mediaType.toLowerCase();
@@ -53,6 +58,26 @@ function textToBytes(value: string): Uint8Array {
   return new TextEncoder().encode(value);
 }
 
+async function blobToBytes(blob: Blob): Promise<Uint8Array> {
+  if ("arrayBuffer" in blob && typeof blob.arrayBuffer === "function") {
+    return new Uint8Array(await blob.arrayBuffer());
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (!(reader.result instanceof ArrayBuffer)) {
+        reject(new Error("Could not read image blob."));
+        return;
+      }
+      resolve(new Uint8Array(reader.result));
+    };
+    reader.onerror = () =>
+      reject(reader.error ?? new Error("Could not read image blob."));
+    reader.readAsArrayBuffer(blob);
+  });
+}
+
 function escapeAttributeValue(value: string): string {
   return value
     .replace(/&/g, "&amp;")
@@ -82,6 +107,7 @@ export type RegisterImageParams = {
   baseUrl: string | null;
   pageId?: PageId;
   embedRemoteImages: boolean;
+  manualImageReplacements?: Record<string, ManualImageReplacement>;
   signal?: AbortSignal;
   imagesByKey: Map<string, EpubImage>;
   nextImageNumber: () => number;
@@ -128,13 +154,110 @@ async function rewriteEmbeddedSvgDataImages(
     return svgBytes;
   }
 
-  const rewrittenSvg = svg.replace(imageHrefPattern, (fullMatch, attr, dataUrl) => {
-    const replacement = replacements.get(dataUrl);
-    if (!replacement) return fullMatch;
-    return `${attr}="${escapeAttributeValue(replacement)}"`;
-  });
+  const rewrittenSvg = svg.replace(
+    imageHrefPattern,
+    (fullMatch, attr, dataUrl) => {
+      const replacement = replacements.get(dataUrl);
+      if (!replacement) return fullMatch;
+      return `${attr}="${escapeAttributeValue(replacement)}"`;
+    },
+  );
 
   return textToBytes(rewrittenSvg);
+}
+
+async function createImageFromDataUrl({
+  dataUrl,
+  sourceUrl,
+  imagesByKey,
+  nextImageNumber,
+  nestedParams,
+}: {
+  dataUrl: string;
+  sourceUrl: string;
+  imagesByKey: Map<string, EpubImage>;
+  nextImageNumber: () => number;
+  nestedParams: Omit<RegisterImageParams, "src">;
+}): Promise<RegisterImageResult> {
+  const parsed = dataUrlToBytes(dataUrl);
+  if (!parsed) {
+    return {
+      localHref: null,
+      absoluteSrc: sourceUrl,
+      warning: {
+        code: "MALFORMED_DATA_URL",
+        message: "Skipped malformed data URL image.",
+        pageId: nestedParams.pageId,
+        source: sourceUrl,
+      },
+    };
+  }
+
+  return createImageFromBytes({
+    bytes: parsed.bytes,
+    mediaType: parsed.mediaType,
+    sourceUrl,
+    imagesByKey,
+    nextImageNumber,
+    nestedParams,
+  });
+}
+
+async function createImageFromBlob({
+  blob,
+  sourceUrl,
+  imagesByKey,
+  nextImageNumber,
+  nestedParams,
+}: {
+  blob: Blob;
+  sourceUrl: string;
+  imagesByKey: Map<string, EpubImage>;
+  nextImageNumber: () => number;
+  nestedParams: Omit<RegisterImageParams, "src">;
+}): Promise<RegisterImageResult> {
+  const mediaType = blob.type || "application/octet-stream";
+  const bytes = await blobToBytes(blob);
+  return createImageFromBytes({
+    bytes,
+    mediaType,
+    sourceUrl,
+    imagesByKey,
+    nextImageNumber,
+    nestedParams,
+  });
+}
+
+async function createImageFromBytes({
+  bytes: rawBytes,
+  mediaType,
+  sourceUrl,
+  imagesByKey,
+  nextImageNumber,
+  nestedParams,
+}: {
+  bytes: Uint8Array;
+  mediaType: string;
+  sourceUrl: string;
+  imagesByKey: Map<string, EpubImage>;
+  nextImageNumber: () => number;
+  nestedParams: Omit<RegisterImageParams, "src">;
+}): Promise<RegisterImageResult> {
+  const index = nextImageNumber();
+  const ext = mediaTypeToExtension(mediaType);
+  const href = `images/image-${index}.${ext}`;
+  const bytes = mediaType.toLowerCase().includes("image/svg+xml")
+    ? await rewriteEmbeddedSvgDataImages(rawBytes, href, nestedParams)
+    : rawBytes;
+  const image: EpubImage = {
+    id: `img-${index}`,
+    href,
+    mediaType,
+    bytes,
+    sourceUrl,
+  };
+  imagesByKey.set(sourceUrl, image);
+  return { localHref: image.href, absoluteSrc: sourceUrl };
 }
 
 export async function registerImageAsset(
@@ -145,6 +268,7 @@ export async function registerImageAsset(
     baseUrl,
     pageId,
     embedRemoteImages,
+    manualImageReplacements,
     signal,
     imagesByKey,
     nextImageNumber,
@@ -167,43 +291,41 @@ export async function registerImageAsset(
   const existing = imagesByKey.get(absoluteSrc);
   if (existing) return { localHref: existing.href, absoluteSrc };
 
-  if (absoluteSrc.startsWith("data:")) {
-    const parsed = dataUrlToBytes(absoluteSrc);
-    if (!parsed) {
-      return {
-        localHref: null,
-        absoluteSrc,
-        warning: {
-          code: "MALFORMED_DATA_URL",
-          message: "Skipped malformed data URL image.",
-          pageId,
-          source: absoluteSrc,
-        },
-      };
-    }
-
-    const index = nextImageNumber();
-    const ext = mediaTypeToExtension(parsed.mediaType);
-    const href = `images/image-${index}.${ext}`;
-    const bytes = parsed.mediaType.toLowerCase().includes("image/svg+xml")
-      ? await rewriteEmbeddedSvgDataImages(parsed.bytes, href, {
-          baseUrl,
-          pageId,
-          embedRemoteImages,
-          signal,
-          imagesByKey,
-          nextImageNumber,
-        })
-      : parsed.bytes;
-    const image: EpubImage = {
-      id: `img-${index}`,
-      href,
-      mediaType: parsed.mediaType,
-      bytes,
+  const manualReplacement = manualImageReplacements?.[absoluteSrc];
+  if (manualReplacement) {
+    return createImageFromBlob({
+      blob: manualReplacement.blob,
       sourceUrl: absoluteSrc,
-    };
-    imagesByKey.set(absoluteSrc, image);
-    return { localHref: image.href, absoluteSrc };
+      imagesByKey,
+      nextImageNumber,
+      nestedParams: {
+        baseUrl,
+        pageId,
+        embedRemoteImages,
+        manualImageReplacements,
+        signal,
+        imagesByKey,
+        nextImageNumber,
+      },
+    });
+  }
+
+  if (absoluteSrc.startsWith("data:")) {
+    return createImageFromDataUrl({
+      dataUrl: absoluteSrc,
+      sourceUrl: absoluteSrc,
+      imagesByKey,
+      nextImageNumber,
+      nestedParams: {
+        baseUrl,
+        pageId,
+        embedRemoteImages,
+        manualImageReplacements,
+        signal,
+        imagesByKey,
+        nextImageNumber,
+      },
+    });
   }
 
   if (!embedRemoteImages) {
@@ -214,20 +336,21 @@ export async function registerImageAsset(
     const response = await fetch(absoluteSrc, { signal });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const blob = await response.blob();
-    const mediaType = blob.type || "application/octet-stream";
-    const bytes = new Uint8Array(await blob.arrayBuffer());
-
-    const index = nextImageNumber();
-    const ext = mediaTypeToExtension(mediaType);
-    const image: EpubImage = {
-      id: `img-${index}`,
-      href: `images/image-${index}.${ext}`,
-      mediaType,
-      bytes,
+    return createImageFromBlob({
+      blob,
       sourceUrl: absoluteSrc,
-    };
-    imagesByKey.set(absoluteSrc, image);
-    return { localHref: image.href, absoluteSrc };
+      imagesByKey,
+      nextImageNumber,
+      nestedParams: {
+        baseUrl,
+        pageId,
+        embedRemoteImages,
+        manualImageReplacements,
+        signal,
+        imagesByKey,
+        nextImageNumber,
+      },
+    });
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
       throw error;

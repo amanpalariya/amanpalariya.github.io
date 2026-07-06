@@ -7,6 +7,7 @@ import { EpubToolbar } from "./EpubToolbar";
 import { EpubMetadataForm } from "./EpubMetadataForm";
 import { PageDraftGrid } from "./PageDraftGrid";
 import { TopRightNotifications } from "./TopRightNotifications";
+import { ManualImageEmbeddingDialog } from "./ManualImageEmbeddingDialog";
 
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
@@ -128,6 +129,20 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
       <TopRightNotifications
         notifications={props.notifications}
         onDismiss={props.dismissNotification}
+      />
+      <ManualImageEmbeddingDialog
+        open={props.manualImageEmbedding.isOpen}
+        items={props.manualImageEmbedding.items}
+        isGenerating={props.isGenerating}
+        onOpenChange={(open) =>
+          open
+            ? props.openManualImageEmbeddingDialog()
+            : props.closeManualImageEmbeddingDialog()
+        }
+        onUpload={props.replaceFailedImageFromFiles}
+        onPaste={props.replaceFailedImageFromClipboard}
+        onReset={props.resetFailedImageReplacement}
+        onRegenerate={props.regenerateEpubWithManualImages}
       />
 
       <Box w={"full"} px={[4, 6]}>
