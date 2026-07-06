@@ -66,6 +66,11 @@ function ImagePreview({
   }, [item.replacement]);
 
   const previewUrl = replacementUrl ?? item.source;
+  const statusLabel = item.replacement
+    ? item.replacement.label === "Clipboard image"
+      ? "Using the image you pasted from the clipboard."
+      : `Using ${item.replacement.label} as the replacement image.`
+    : "This image still needs a replacement before it can be embedded.";
 
   return (
     <Box
@@ -98,25 +103,28 @@ function ImagePreview({
           onError={() => setHasError(true)}
         />
       )}
-      <Box
-        position={"absolute"}
-        top={2}
-        left={2}
-        boxSize={7}
-        rounded={"full"}
-        bg={item.replacement ? "green.500" : "orange.500"}
-        color={"white"}
-        boxShadow={"sm"}
-        display={"inline-flex"}
-        alignItems={"center"}
-        justifyContent={"center"}
-        lineHeight={1}
-        aria-label={item.replacement ? "Replacement selected" : "Needs image"}
-      >
-        <Icon boxSize={4}>
-          {item.replacement ? <LuCircleCheck /> : <LuCircleAlert />}
-        </Icon>
-      </Box>
+      <Tooltip content={statusLabel}>
+        <Box
+          position={"absolute"}
+          top={2}
+          left={2}
+          boxSize={7}
+          rounded={"full"}
+          bg={item.replacement ? "green.500" : "orange.500"}
+          color={"white"}
+          boxShadow={"sm"}
+          display={"inline-flex"}
+          alignItems={"center"}
+          justifyContent={"center"}
+          lineHeight={1}
+          aria-label={statusLabel}
+          tabIndex={0}
+        >
+          <Icon boxSize={4}>
+            {item.replacement ? <LuCircleCheck /> : <LuCircleAlert />}
+          </Icon>
+        </Box>
+      </Tooltip>
       <Tooltip content={"Open image in a new tab"}>
         <IconButton
           asChild
@@ -233,9 +241,9 @@ function FailedImageCard({
               roundedRight={0}
               roundedBottomLeft={"lg"}
               borderRightWidth={"0"}
-              bg={"app.epub.button.primary.bg"}
-              color={"app.epub.button.primary.fg"}
-              _hover={{ bg: "app.epub.button.primary.hoverBg" }}
+              bg={"app.epub.button.subtle.bg"}
+              color={"app.epub.button.subtle.fg"}
+              _hover={{ bg: "app.epub.button.subtle.hoverBg" }}
               disabled={disabled}
               onClick={() => void onPaste(item.source)}
             >
@@ -263,10 +271,10 @@ function FailedImageCard({
                 roundedTopLeft={0}
                 roundedTopRight={0}
                 borderLeftWidth={"1px"}
-                borderLeftColor={"app.epub.button.primary.divider"}
-                bg={"app.epub.button.primary.bg"}
-                color={"app.epub.button.primary.fg"}
-                _hover={{ bg: "app.epub.button.primary.hoverBg" }}
+                borderLeftColor={"app.epub.border.accent"}
+                bg={"app.epub.button.subtle.bg"}
+                color={"app.epub.button.subtle.fg"}
+                _hover={{ bg: "app.epub.button.subtle.hoverBg" }}
                 disabled={disabled}
                 onClick={() => uploadInputRef.current?.click()}
               >
@@ -289,10 +297,10 @@ function FailedImageCard({
                 roundedLeft={0}
                 roundedBottomRight={"lg"}
                 borderLeftWidth={"1px"}
-                borderLeftColor={"app.epub.button.primary.divider"}
-                bg={"app.epub.button.primary.bg"}
-                color={"app.epub.button.primary.fg"}
-                _hover={{ bg: "app.epub.button.primary.hoverBg" }}
+                borderLeftColor={"app.epub.border.accent"}
+                bg={"app.epub.button.subtle.bg"}
+                color={"app.epub.button.subtle.fg"}
+                _hover={{ bg: "app.epub.button.subtle.hoverBg" }}
                 disabled={disabled}
               >
                 {isManualPasteOpen ? <LuChevronUp /> : <LuChevronDown />}
