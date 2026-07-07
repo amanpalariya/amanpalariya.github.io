@@ -1755,8 +1755,21 @@ export function PageDraftCard({
                         </Box>
                       </VStack>
 
-                      <Box>
-                        <AspectRatio ratio={dialogPreviewRatio}>
+                      <Box
+                        display={"flex"}
+                        justifyContent={"center"}
+                        w={"full"}
+                      >
+                        <AspectRatio
+                          ratio={dialogPreviewRatio}
+                          w={"full"}
+                          maxW={{
+                            base: "64",
+                            md: "72",
+                            lg: "80",
+                            xl: "96",
+                          }}
+                        >
                           <Box
                             position={"relative"}
                             rounded={"lg"}
