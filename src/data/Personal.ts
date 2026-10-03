@@ -5,8 +5,9 @@ const PersonalData = {
     full: "Aman Palariya",
   },
   intro: {
+    role: "Software Engineer",
     short:
-      "Software Developer at Oracle & a CS grad from IIT Ropar with specialization in AI",
+      "Software engineer at Rippling & a CS grad from IIT Ropar with specialization in AI",
   },
   avatar: {
     url: "https://drive.google.com/thumbnail?id=1iQCju1QGnV1umzB1yzNcCEr0Y6gUla3y&sz=w1000",

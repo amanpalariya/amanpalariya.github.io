@@ -1,5 +1,5 @@
 import { Avatar } from "@components/ui/avatar";
-import { PersonalData, WorkData } from "data";
+import { PersonalData } from "data";
 import TimeBasedOnlineStatusBadge from "./TimeBasedOnlineStatusBadge";
 import CopyEmailButton from "../common/CopyEmailSecondaryButton";
 import LinkedInButton from "../common/LinkedInPrimaryButton";
@@ -8,7 +8,7 @@ export default function Profile() {
   return (
     <section className="home-intro" aria-labelledby="home-name">
       <div className="home-intro-label">
-        <span>{WorkData.current.role}</span>
+        <span>{PersonalData.intro.role}</span>
         <TimeBasedOnlineStatusBadge />
       </div>
       <div className="home-identity-row">

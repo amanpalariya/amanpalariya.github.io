@@ -217,9 +217,9 @@ const CvData: CvData = {
   profile: {
     name: PersonalData.name.full,
     headline:
-      "Software Engineer @ Oracle ·  CS graduate (AI specialization) @ IIT Ropar",
+      "Software Engineer @ Rippling ·  CS graduate (AI specialization) @ IIT Ropar",
     summary:
-      "I work on Oracle Integration, building backend-heavy platform capabilities across Java, Python, Docker, and Kubernetes. I have shipped features end-to-end, led high-severity issue resolution with customers, and regularly improve CI/CD and development workflows. I hold a B.Tech in Computer Science from IIT Ropar with specialization in AI, and I enjoy mentoring and teaching alongside engineering work.",
+      "I am a software engineer at Rippling. Previously, I worked on Oracle Integration, building backend-heavy platform capabilities across Java, Python, Docker, and Kubernetes. I have shipped features end-to-end, led high-severity issue resolution with customers, and regularly improve CI/CD and development workflows. I hold a B.Tech in Computer Science from IIT Ropar with specialization in AI, and I enjoy mentoring and teaching alongside engineering work.",
     focusAreas: [
       "Backend Engineering",
       "Platform Reliability",
@@ -238,7 +238,7 @@ const CvData: CvData = {
       description: "A concise profile summary focused on engineering impact.",
       visibility: { enabled: false, priority: 1 },
       content:
-        "I work on Oracle Integration, building backend-heavy platform capabilities across Java, Python, Docker, and Kubernetes. I have shipped features end-to-end, led high-severity issue resolution with customers, and regularly improve CI/CD and development workflows. I hold a B.Tech in Computer Science from IIT Ropar with specialization in AI, and I enjoy mentoring and teaching alongside engineering work.",
+        "I am a software engineer at Rippling. Previously, I worked on Oracle Integration, building backend-heavy platform capabilities across Java, Python, Docker, and Kubernetes. I have shipped features end-to-end, led high-severity issue resolution with customers, and regularly improve CI/CD and development workflows. I hold a B.Tech in Computer Science from IIT Ropar with specialization in AI, and I enjoy mentoring and teaching alongside engineering work.",
     },
     openTo: {
       id: "open-to",
@@ -259,9 +259,17 @@ const CvData: CvData = {
       visibility: { enabled: true, priority: 3 },
       items: [
         {
+          title: "Software Engineer 2",
+          organization: "Rippling",
+          logoSrc: "/images/logo/rippling.svg",
+          start: "2026-07",
+          url: "https://www.rippling.com/",
+        },
+        {
           title: "Senior Member of Technical Staff",
           organization: "Oracle",
           start: "2025-09",
+          end: "2026-07",
           location: workLocation,
           highlights: [
             "Designed and implemented Kubernetes deployment optimization framework saving ~$2.56M annually (patentable candidate).",
@@ -341,7 +349,7 @@ const CvData: CvData = {
             "Implemented GraphQL APIs in JavaScript with high-coverage unit tests and documentation.",
           ],
           tags: ["GraphQL", "JavaScript", "Backend"],
-          logoSrc: "/images/logo/newzera.jpeg",
+          logoSrc: "/images/logo/newzera.svg",
           url: "https://www.linkedin.com/company/newzera/",
         },
       ],
