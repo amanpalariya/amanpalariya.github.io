@@ -1,9 +1,9 @@
 "use client";
 
-import { Bleed, EmptyState, VStack, Spacer, Box, Icon } from "@chakra-ui/react";
-import { Heading1, SectionText, SubtitleText } from "@components/core/Texts";
-import { TileList, TitleDescriptionTile } from "@components/core/Tiles";
-import HighlightedSection from "@components/page/common/HighlightedSection";
+import { EmptyState, VStack, Icon } from "@chakra-ui/react";
+import PageIntro from "@components/page/common/PageIntro";
+import { FeedList, TitleDescriptionTile } from "@components/core/Tiles";
+import ContentSection from "@components/page/common/ContentSection";
 import { homepageTabs } from "app/route-info";
 import ProjectsData from "data/projects";
 import type { ProjectMeta } from "data/projects/loader";
@@ -13,35 +13,29 @@ import FeatureFlagsData from "data/features";
 
 function Main() {
   return (
-    <Box m={[4, 6]} letterSpacing={"wide"} lineHeight={"tall"}>
-      <VStack align={"stretch"} gap={"5"}>
-        <SectionText>{homepageTabs.projects.name}</SectionText>
-        <Spacer h={4} />
-        <Heading1>{ProjectsData.projectsPage.title}</Heading1>
-        <SubtitleText>{ProjectsData.projectsPage.subtitle}</SubtitleText>
-      </VStack>
-    </Box>
+    <PageIntro
+      title={ProjectsData.projectsPage.title}
+      subtitle={ProjectsData.projectsPage.subtitle}
+    />
   );
 }
 
 function NoProjectsElement() {
   return (
-    <Bleed inline={{ base: 1, md: 2 }}>
-      <HighlightedSection>
-        <EmptyState.Root>
-          <EmptyState.Content>
-            <EmptyState.Indicator>
-              <Icon boxSize={12} color={"gray.500"}>
-                <FiTool />
-              </Icon>
-            </EmptyState.Indicator>
-            <EmptyState.Title textAlign={"center"}>
-              {ProjectsData.projectsPage.emptyStateTitle}
-            </EmptyState.Title>
-          </EmptyState.Content>
-        </EmptyState.Root>
-      </HighlightedSection>
-    </Bleed>
+    <ContentSection borderTop={0}>
+      <EmptyState.Root>
+        <EmptyState.Content>
+          <EmptyState.Indicator>
+            <Icon boxSize={12} color={"gray.500"}>
+              <FiTool />
+            </Icon>
+          </EmptyState.Indicator>
+          <EmptyState.Title textAlign={"center"}>
+            {ProjectsData.projectsPage.emptyStateTitle}
+          </EmptyState.Title>
+        </EmptyState.Content>
+      </EmptyState.Root>
+    </ContentSection>
   );
 }
 
@@ -55,28 +49,24 @@ function ProjectsListElement({
   const projectDetailsIdsSet = new Set(projectIdsWithDetails);
 
   return (
-    <Bleed inline={{ base: 1, md: 2 }}>
-      <HighlightedSection>
-        <TileList>
-          {projects.map((project) => {
-            const hasDetails = projectDetailsIdsSet.has(project.id);
-            return (
-              <TitleDescriptionTile
-                key={project.id}
-                title={project.title}
-                description={project.description}
-                url={
-                  hasDetails
-                    ? homepageTabs.projects.getSubpagePathname(project.id)
-                    : project.url
-                }
-                isUrlExternal={!hasDetails}
-              />
-            );
-          })}
-        </TileList>
-      </HighlightedSection>
-    </Bleed>
+    <FeedList>
+      {projects.map((project) => {
+        const hasDetails = projectDetailsIdsSet.has(project.id);
+        return (
+          <TitleDescriptionTile
+            key={project.id}
+            title={project.title}
+            description={project.description}
+            url={
+              hasDetails
+                ? homepageTabs.projects.getSubpagePathname(project.id)
+                : project.url
+            }
+            isUrlExternal={!hasDetails}
+          />
+        );
+      })}
+    </FeedList>
   );
 }
 
@@ -109,7 +99,7 @@ export default function ProjectsClient({
   projectIdsWithDetails: string[];
 }) {
   return (
-    <VStack align={"stretch"}>
+    <VStack align="stretch" gap={0}>
       <Main />
       <Projects
         projects={projects}

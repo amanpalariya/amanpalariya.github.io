@@ -20,13 +20,13 @@ export function ToolsSearchBar({
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         background={"app.bg.card"}
-        rounded={"2xl"}
+        rounded="md"
         roundedRight={0}
       />
       <CloseButton
         aria-label={"Clear search"}
         variant={"outline"}
-        rounded={"2xl"}
+        rounded="md"
         roundedLeft={0}
         background={"app.bg.card"}
         onClick={onClear}

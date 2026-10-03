@@ -10,7 +10,7 @@ import {
   Spacer,
   Text,
 } from "@chakra-ui/react";
-import { HeaderCard } from "@components/core/Cards";
+import ContentSection from "@components/page/common/ContentSection";
 import { Heading1, Heading2 } from "@components/core/Texts";
 import {
   ColorModeToggleIconButton,
@@ -149,7 +149,7 @@ export function BilingualStoryReaderStoryPageView({
             zIndex={10}
           >
             <Box p={[1, 4]}>
-              <HeaderCard>
+              <ContentSection mx={0} px={4}>
                 <HStack align="center" justify="space-between">
                   <HStack gap={4} minW={0}>
                     <HeaderNavIconButton
@@ -161,7 +161,7 @@ export function BilingualStoryReaderStoryPageView({
                   </HStack>
                   <ColorModeToggleIconButton />
                 </HStack>
-              </HeaderCard>
+              </ContentSection>
             </Box>
           </Box>
           <Spacer h={HEADER_OFFSET_HEIGHT} />
@@ -209,7 +209,7 @@ export function BilingualStoryReaderStoryPageView({
           zIndex={10}
         >
           <Box p={[1, 4]}>
-            <HeaderCard>
+            <ContentSection mx={0} px={4}>
               <HStack align="center" justify="space-between">
                 <HStack gap={4} minW={0}>
                   <HeaderNavIconButton
@@ -221,7 +221,7 @@ export function BilingualStoryReaderStoryPageView({
                 </HStack>
                 <ColorModeToggleIconButton />
               </HStack>
-            </HeaderCard>
+            </ContentSection>
           </Box>
         </Box>
         <Spacer h={HEADER_OFFSET_HEIGHT} />

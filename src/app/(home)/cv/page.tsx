@@ -1,7 +1,6 @@
 "use client";
 
 import { VStack, Box } from "@chakra-ui/react";
-import { SectionText } from "@components/core/Texts";
 import { CvData } from "data";
 import CvHero from "@components/page/cv/CvHero";
 import CvTimelineSection from "@components/page/cv/CvTimelineSection";
@@ -36,7 +35,7 @@ import {
   mapEducationToTimelineItems,
   mapVolunteeringToTimelineItems,
 } from "@components/page/cv/cvRenderUtils";
-import { getCvSectionPaletteUnsafe } from "@components/page/cv/cvPalettes";
+import "./cv.css";
 import type { AppAccentPalette, AppNeutralPalette } from "theme/colors/types";
 import type {
   CvAwardItem,
@@ -79,7 +78,9 @@ function toVisualItems(
       const award = item as CvAwardItem;
       return {
         title: award.title,
-        meta: [award.issuer, formatCvDate(award.date)].filter(Boolean).join(" · "),
+        meta: [award.issuer, formatCvDate(award.date)]
+          .filter(Boolean)
+          .join(" · "),
         summary: award.summary,
       };
     }
@@ -87,7 +88,9 @@ function toVisualItems(
     const award = item as CvAwardItem;
     return {
       title: award.title,
-      meta: [award.issuer, formatCvDate(award.date)].filter(Boolean).join(" · "),
+      meta: [award.issuer, formatCvDate(award.date)]
+        .filter(Boolean)
+        .join(" · "),
       summary: award.summary,
     };
   });
@@ -119,9 +122,9 @@ export default function CvPage() {
       }
     : undefined;
 
-  function getSectionTheme(sectionId: string) {
+  function getSectionTheme() {
     const primaryColorPalette: AppNeutralPalette = "gray";
-    const accentColorPalette: AppAccentPalette = getCvSectionPaletteUnsafe(sectionId);
+    const accentColorPalette: AppAccentPalette = "blue";
     return {
       primaryColorPalette,
       accentColorPalette,
@@ -129,7 +132,7 @@ export default function CvPage() {
   }
 
   function renderSectionById(sectionId: string) {
-    const { primaryColorPalette, accentColorPalette } = getSectionTheme(sectionId);
+    const { primaryColorPalette, accentColorPalette } = getSectionTheme();
 
     switch (sectionId) {
       case "about":
@@ -288,12 +291,9 @@ export default function CvPage() {
   }
 
   return (
-    <VStack align="stretch" gap={2}>
-      <Box m={[4, 6]}>
+    <VStack className="cv-feed" align="stretch" gap={0}>
+      <Box px={4} py={[6, 8]}>
         <VStack align="stretch" gap={5}>
-          <VStack align="stretch" gap={2}>
-            <SectionText>Curriculum Vitae</SectionText>
-          </VStack>
           <CvHero profile={profile} />
           <CvJumpNav sections={sections} />
         </VStack>

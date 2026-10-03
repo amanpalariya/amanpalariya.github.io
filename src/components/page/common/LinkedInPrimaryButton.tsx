@@ -15,8 +15,8 @@ export default function LinkedInButton() {
         fontFamily="ui"
         fontSize="sm"
         px={2.5}
-        shadow="xs"
-        rounded="xl"
+        shadow="none"
+        rounded="full"
         variant="solid"
         background="app.brand.linkedin.solid"
         aria-label={"Open LinkedIn profile (opens in a new tab)"}

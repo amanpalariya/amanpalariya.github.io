@@ -1,180 +1,169 @@
 "use client";
 
-import {
-  Bleed,
-  EmptyState,
-  VStack,
-  HStack,
-  Box,
-  Icon,
-} from "@chakra-ui/react";
-import { SectionText } from "@components/core/Texts";
-import {
-  TileList,
-  TitleDescriptionAvatarTile,
-  TitleDescriptionTile,
-} from "@components/core/Tiles";
-import BottomMessage from "@components/page/common/BottomMessage";
-import HighlightedSection, {
-  SectionActionLink,
-} from "@components/page/common/HighlightedSection";
+import type { ReactNode } from "react";
+import NextLink from "next/link";
+import { Avatar } from "@components/ui/avatar";
 import Profile from "@components/page/home/Profile";
+import LinkedInButton from "@components/page/common/LinkedInPrimaryButton";
+import CopyEmailButton from "@components/page/common/CopyEmailSecondaryButton";
 import ProjectsData from "data/projects";
 import { homepageTabs } from "app/route-info";
 import { WorkData } from "data";
 import type { WorkExperience } from "data/Work";
-import TimeBasedOnlineStatusBadge from "@components/page/home/TimeBasedOnlineStatusBadge";
 import { useFeatureFlag } from "utils/features";
 import FeatureFlagsData from "data/features";
-import { FiBriefcase, FiTool, FiChevronRight } from "react-icons/fi";
+import "./home.css";
 
-function Main() {
+function ExternalArrow() {
   return (
-    <Box m={[4, 6]}>
-      <VStack align={"stretch"} gap={8}>
-        <HStack justify={"space-between"}>
-          <SectionText>{WorkData.current.role}</SectionText>
-          <TimeBasedOnlineStatusBadge />
-        </HStack>
-        <Profile />
-      </VStack>
-    </Box>
+    <svg
+      className="home-external-arrow"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M9 15L18 6M8 6H18V16"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 
-function Projects() {
-  const [forceEmptyStates] = useFeatureFlag(
-    FeatureFlagsData.featuresIds.FORCE_EMPTY_STATES,
+function FeedRow({
+  href,
+  external = false,
+  children,
+}: {
+  href?: string;
+  external?: boolean;
+  children: ReactNode;
+}) {
+  const content = (
+    <>
+      {children}
+      {external && href ? <ExternalArrow /> : null}
+    </>
   );
-
-  if (forceEmptyStates || ProjectsData.allProjects.length == 0) {
-    return (
-      <Bleed inline={{ base: 1, md: 2 }}>
-        <HighlightedSection title="Projects">
-          <EmptyState.Root>
-            <EmptyState.Content>
-              <EmptyState.Indicator>
-                <Icon as={FiTool} boxSize={12} color={"gray.500"} />
-              </EmptyState.Indicator>
-              <EmptyState.Title textAlign={"center"}>
-                {ProjectsData.projectsPage.emptyStateTitle}
-              </EmptyState.Title>
-            </EmptyState.Content>
-          </EmptyState.Root>
-        </HighlightedSection>
-      </Bleed>
-    );
-  }
-
-  return (
-    <Bleed inline={{ base: 1, md: 2 }}>
-      <HighlightedSection
-        title="Projects"
-        titleActionElement={
-          <SectionActionLink
-            icon={FiChevronRight}
-            url={homepageTabs.projects.pathname}
-          >
-            View All
-          </SectionActionLink>
-        }
-        separateHeader
-      >
-        <TileList>
-          {ProjectsData.allProjects.slice(0, 3).map((project) => (
-            <TitleDescriptionTile
-              key={project.id}
-              title={project.title}
-              description={project.description}
-              url={
-                project.url ?? homepageTabs.projects.getSubpagePathname(project.id)
-              }
-              isUrlExternal={project.url ? !project.url.startsWith("/") : false}
-            />
-          ))}
-        </TileList>
-      </HighlightedSection>
-    </Bleed>
+  return href ? (
+    <NextLink
+      className="home-feed-row"
+      href={href}
+      target={external ? "_blank" : undefined}
+      rel={external ? "noopener noreferrer" : undefined}
+    >
+      {content}
+      {external ? (
+        <span className="home-sr-only"> (opens in a new tab)</span>
+      ) : null}
+    </NextLink>
+  ) : (
+    <div className="home-feed-row">{content}</div>
   );
 }
 
 function getTimeStringFromExp(exp: WorkExperience) {
-  function formatDate(date: Date | null) {
-    if (date) {
-      const year = new Intl.DateTimeFormat("en", {
-        year: "numeric",
-        month: "short",
-      }).format(date);
-      return year;
-    } else {
-      return "Present";
-    }
-  }
-
-  const startTime = formatDate(exp.time.start);
-  const endTime = formatDate(exp.time.end);
-  const time =
-    startTime == endTime ? `${startTime}` : `${startTime} - ${endTime}`;
-
-  return time;
+  const formatDate = (date: Date | null) =>
+    date
+      ? new Intl.DateTimeFormat("en", {
+          year: "numeric",
+          month: "short",
+        }).format(date)
+      : "Present";
+  const start = formatDate(exp.time.start);
+  const end = formatDate(exp.time.end);
+  return start === end ? start : `${start} - ${end}`;
 }
 
-function WorkExperience() {
+export default function Home() {
   const [forceEmptyStates] = useFeatureFlag(
     FeatureFlagsData.featuresIds.FORCE_EMPTY_STATES,
   );
 
-  if (forceEmptyStates) {
-    return (
-      <Bleed inline={{ base: 1, md: 2 }}>
-        <HighlightedSection title="Work Experience">
-          <EmptyState.Root>
-            <EmptyState.Content>
-              <EmptyState.Indicator>
-                <Icon as={FiBriefcase} boxSize={12} color={"gray.500"} />
-              </EmptyState.Indicator>
-              <EmptyState.Title textAlign={"center"}>
-                {WorkData.emptyStateTitle}
-              </EmptyState.Title>
-            </EmptyState.Content>
-          </EmptyState.Root>
-        </HighlightedSection>
-      </Bleed>
-    );
-  }
-
   return (
-    <Bleed inline={{ base: 1, md: 2 }}>
-      <HighlightedSection title="Work Experience" separateHeader>
-        <TileList>
-          {WorkData.experience.map((exp, index) => (
-            <TitleDescriptionAvatarTile
-              key={index}
-              title={exp.company.name}
-              description={`${exp.role} · ${getTimeStringFromExp(exp)}`}
-              avatarSrc={exp.company.logoSrc}
-              url={exp.url}
-              compact
-              isUrlExternal
-            />
-          ))}
-        </TileList>
-      </HighlightedSection>
-    </Bleed>
-  );
-}
+    <div className="home-feed">
+      <Profile />
 
-function ExtraInfo() {
-  return <BottomMessage />;
-}
+      <section aria-labelledby="home-experience-heading">
+        <header className="home-section-heading">
+          <h2 id="home-experience-heading">Work Experience</h2>
+        </header>
+        {forceEmptyStates ? (
+          <p className="home-empty">{WorkData.emptyStateTitle}</p>
+        ) : (
+          <ul className="home-feed-list">
+            {WorkData.experience.map((exp, index) => (
+              <li key={`${exp.company.name}-${index}`}>
+                <FeedRow href={exp.url} external>
+                  <Avatar
+                    aria-hidden="true"
+                    className="home-company-avatar"
+                    name={exp.company.name}
+                    src={exp.company.logoSrc}
+                    boxSize="40px"
+                    flexShrink={0}
+                  />
+                  <div className="home-row-content">
+                    <div className="home-row-title">{exp.company.name}</div>
+                    <p>{exp.role}</p>
+                    <div className="home-row-meta">
+                      {getTimeStringFromExp(exp)}
+                    </div>
+                  </div>
+                </FeedRow>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
-export default function Home() {
-  return (
-    <VStack align={"stretch"}>
-      <Main />
-      <WorkExperience />
-      <Projects />
-      <ExtraInfo />
-    </VStack>
+      <section aria-labelledby="home-projects-heading">
+        <header className="home-section-heading">
+          <h2 id="home-projects-heading">Projects</h2>
+          <NextLink href={homepageTabs.projects.pathname}>View All</NextLink>
+        </header>
+        {forceEmptyStates || ProjectsData.allProjects.length === 0 ? (
+          <p className="home-empty">
+            {ProjectsData.projectsPage.emptyStateTitle}
+          </p>
+        ) : (
+          <ul className="home-feed-list">
+            {ProjectsData.allProjects.slice(0, 3).map((project, index) => (
+              <li key={project.id}>
+                <FeedRow
+                  href={
+                    project.url ??
+                    homepageTabs.projects.getSubpagePathname(project.id)
+                  }
+                  external={Boolean(
+                    project.url && !project.url.startsWith("/"),
+                  )}
+                >
+                  <span className="home-project-index" aria-hidden="true">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <div className="home-row-content">
+                    <div className="home-row-title">{project.title}</div>
+                    <p>{project.description}</p>
+                  </div>
+                </FeedRow>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="home-contact" aria-labelledby="home-contact-heading">
+        <h2 id="home-contact-heading">Let&apos;s grow together.</h2>
+        <p>Connect with me to talk, work, and share ideas</p>
+        <div className="home-actions">
+          <LinkedInButton />
+          <CopyEmailButton />
+        </div>
+      </section>
+    </div>
   );
 }

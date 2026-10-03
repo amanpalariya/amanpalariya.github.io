@@ -1,6 +1,6 @@
 "use client";
-import { Box, Spacer, VStack } from "@chakra-ui/react";
-import { SectionText } from "@components/core/Texts";
+import { Box, VStack } from "@chakra-ui/react";
+import { Heading2 } from "@components/core/Texts";
 import * as art from "@components/article/Components";
 import { useProseStyles } from "@components/article/proseStyles";
 
@@ -75,10 +75,9 @@ export default function ArticleRenderer({
   title: string;
 }) {
   return (
-    <Box m={[4, 6]} letterSpacing={"wide"}>
+    <Box py={4}>
       <VStack align={"stretch"} gap={"7"}>
-        <SectionText>{title}</SectionText>
-        <Spacer h={2} />
+        <Heading2>{title}</Heading2>
         {Array.isArray(content)
           ? content.map((n, i) => renderBlock(n, i))
           : content}
@@ -98,9 +97,9 @@ export function HtmlArticleRenderer({
 }) {
   const proseStyles = useProseStyles();
   return (
-    <Box m={[4, 6]}>
+    <Box my={[4, 6]}>
       <VStack align={"stretch"} gap={"0"}>
-        {showTitle ? <SectionText>{title}</SectionText> : null}
+        {showTitle ? <Heading2>{title}</Heading2> : null}
         <Box
           className="prose-content"
           css={proseStyles}

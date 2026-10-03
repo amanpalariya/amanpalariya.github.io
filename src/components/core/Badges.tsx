@@ -55,7 +55,7 @@ export function CategoryBadge({
     >
       <Text
         as={"pre"}
-        fontFamily={"mono"}
+        fontFamily={"ui"}
         fontSize={"xs"}
         letterSpacing={"wide"}
       >

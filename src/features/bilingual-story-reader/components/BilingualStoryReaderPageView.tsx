@@ -2,7 +2,6 @@
 
 import {
   Alert,
-  Bleed,
   Box,
   Button,
   Card,
@@ -25,7 +24,7 @@ import {
   useListCollection,
 } from "@chakra-ui/react";
 import { TileList } from "@components/core/Tiles";
-import HighlightedSection from "@components/page/common/HighlightedSection";
+import ContentSection from "@components/page/common/ContentSection";
 import {
   DialogBody,
   DialogCloseTrigger,
@@ -738,632 +737,628 @@ export function BilingualStoryReaderPageView() {
         </Box>
       ) : null}
 
-      <Bleed inline={{ base: 1, md: 2 }}>
-        <HighlightedSection
-          contentPx={{ base: 3, md: 4 }}
-          contentPy={{ base: 3, md: 4 }}
-        >
-            <VStack align="stretch" gap={4} minW={0}>
-              <HStack align="center" justify="space-between" wrap="wrap">
-                <HStack gap={2}>
-                  <Icon color="app.bilingualStoryReader.fg.muted">
-                    <LuSlidersHorizontal />
-                  </Icon>
-                  <Text fontFamily="ui" fontSize="lg" fontWeight="semibold">
-                    Story Setup
-                  </Text>
-                </HStack>
-                <Popover.Root
-                  open={isManualPasteOpen}
-                  onOpenChange={(details) => setIsManualPasteOpen(details.open)}
-                  positioning={{ placement: "bottom-end", gutter: 6 }}
-                >
-                  <Box>
-                    <HStack align="stretch" gap={0}>
-                      <Button
-                        {...ACTION_BUTTON_PROPS}
-                        borderWidth={0}
-                        {...SUBTLE_BUTTON_PROPS}
-                        onClick={pasteResponseFromClipboard}
-                        roundedRight={0}
-                        variant="outline"
-                      >
-                        <Icon>
-                          <LuClipboardPaste />
-                        </Icon>
-                        Load Story from Clipboard
-                      </Button>
-                      <Popover.Trigger asChild>
-                        <IconButton
-                          {...ACTION_BUTTON_PROPS}
-                          aria-label={
-                            isManualPasteOpen
-                              ? "Hide manual paste"
-                              : "Show manual paste"
-                          }
-                          borderWidth={0}
-                          borderLeftColor="app.bilingualStoryReader.button.subtle.divider"
-                          borderLeftWidth="1px"
-                          {...SUBTLE_BUTTON_PROPS}
-                          roundedLeft={0}
-                          variant="outline"
-                        >
-                          {isManualPasteOpen ? <LuChevronUp /> : <LuChevronDown />}
-                        </IconButton>
-                      </Popover.Trigger>
-                    </HStack>
-                  </Box>
-
-                  <Popover.Positioner zIndex={20}>
-                    <Popover.Content
-                      bg="app.bilingualStoryReader.bg.popover"
-                      borderColor="app.bilingualStoryReader.border.default"
-                      borderWidth="1px"
-                      minW={{ base: "280px", sm: "420px" }}
-                      overflow="hidden"
-                      p={0}
-                      rounded="lg"
-                      shadow="lg"
-                      w={{ base: "calc(100vw - 2rem)", sm: "420px" }}
-                    >
-                      <Textarea
-                        aria-describedby="ai-response-validation"
-                        aria-label="AI response"
-                        borderWidth={0}
-                        minH="140px"
-                        onChange={(event) => {
-                          setRawResponseText(event.currentTarget.value);
-                          setJsonParseResult(null);
-                          setStoryValidationResult(null);
-                        }}
-                        onPaste={handleManualPaste}
-                        placeholder="Paste the AI response here, then load the story."
-                        rounded="none"
-                        value={rawResponseText}
-                      />
-                      <Button
-                        {...ACTION_BUTTON_PROPS}
-                        disabled={!rawResponseText.trim()}
-                        mt="-1px"
-                        onClick={readStory}
-                        rounded="none"
-                        size="sm"
-                        variant="subtle"
-                        w="full"
-                        {...SUBTLE_BUTTON_PROPS}
-                      >
-                        <Icon>
-                          <LuBookOpen />
-                        </Icon>
-                        Load Story
-                      </Button>
-                    </Popover.Content>
-                  </Popover.Positioner>
-                </Popover.Root>
-              </HStack>
-              <Card.Root
-                borderColor="app.bilingualStoryReader.border.default"
-                overflow="hidden"
-                rounded="2xl"
-              >
-                <Card.Body>
-                  <VStack align="stretch" gap={4}>
-                    <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={3}>
-                      <Field label="Known language">
-                        <StoryCombobox
-                          allowClear={false}
-                          ariaLabel="Known language"
-                          icon={LuLanguages}
-                          iconVisibility="custom-value"
-                          options={LANGUAGE_COMBOBOX_OPTIONS}
-                          placeholder="Search or type a language"
-                          value={setup.knownLanguage}
-                          onValueChange={(value) =>
-                            updateTextField("knownLanguage", value)
-                          }
-                        />
-                      </Field>
-
-                      <Field label="Target language">
-                        <StoryCombobox
-                          allowClear={false}
-                          ariaLabel="Target language"
-                          icon={LuLanguages}
-                          iconVisibility="custom-value"
-                          options={LANGUAGE_COMBOBOX_OPTIONS}
-                          placeholder="Search or type a language"
-                          value={setup.targetLanguage}
-                          onValueChange={(value) =>
-                            updateTextField("targetLanguage", value)
-                          }
-                        />
-                      </Field>
-                    </Grid>
-
-                    <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={3}>
-                      <Field label="Level">
-                        <Box position="relative" w="full">
-                          <ControlLeadingIcon icon={LuGraduationCap} />
-                          <NativeSelect.Root w="full">
-                            <NativeSelect.Field
-                              {...CONTROL_INPUT_PROPS}
-                              aria-label="Level"
-                              ps={10}
-                              value={setup.level}
-                              onChange={(event) => {
-                                const nextLevel = event.currentTarget
-                                  .value as BilingualStoryReaderLevel;
-                                setSetup((current) => ({
-                                  ...current,
-                                  level: nextLevel,
-                                }));
-                              }}
-                            >
-                              {BILINGUAL_STORY_READER_LEVELS.map((level) => (
-                                <option key={level} value={level}>
-                                  {getLevelLabel(level)}
-                                </option>
-                              ))}
-                            </NativeSelect.Field>
-                            <NativeSelect.Indicator />
-                          </NativeSelect.Root>
-                        </Box>
-                      </Field>
-
-                      <Field label="Length">
-                        <StorySegmentedControl<BilingualStoryReaderLength>
-                          ariaLabel="Length"
-                          options={BILINGUAL_STORY_READER_LENGTHS}
-                          value={setup.length}
-                          onValueChange={(length) =>
-                            setSetup((current) => ({ ...current, length }))
-                          }
-                        />
-                      </Field>
-                    </Grid>
-
-                    <Field label="Theme">
-                      <StoryCombobox
-                        ariaLabel="Theme"
-                        icon={LuClapperboard}
-                        options={STORY_THEME_OPTIONS}
-                        placeholder="Search or type a theme"
-                        value={setup.theme}
-                        onValueChange={(value) => updateTextField("theme", value)}
-                      />
-                    </Field>
-
-                    <Field label="Extra instructions">
-                      <Box position="relative" w="full">
-                        <TextareaLeadingIcon icon={LuMessageSquareText} />
-                        <Textarea
-                          {...CONTROL_INPUT_PROPS}
-                          aria-label="Extra instructions"
-                          placeholder="Use simple dialogue or include romanization."
-                          ps={10}
-                          value={setup.extraInstructions}
-                          onChange={(event) =>
-                            updateTextField(
-                              "extraInstructions",
-                              event.currentTarget.value,
-                            )
-                          }
-                        />
-                      </Box>
-                    </Field>
-                  </VStack>
-                </Card.Body>
-                <Card.Footer p={0} w="full">
-                  <HStack w="full" gap={0}>
-                    <Box flex={1}>
-                      <Clipboard.Root value={prompt} timeout={1000}>
-                        <Clipboard.Trigger asChild>
-                          <Button
-                            {...ACTION_BUTTON_PROPS}
-                            {...PRIMARY_BUTTON_PROPS}
-                            aria-label="Copy Prompt"
-                            borderRightWidth={0}
-                            disabled={!isSetupComplete}
-                            h={12}
-                            justifyContent="center"
-                            px={4}
-                            rounded={0}
-                            w="full"
-                          >
-                            <HStack gap={2}>
-                              <Clipboard.Indicator copied={<Icon as={LuCheck} />}>
-                                <Icon as={LuCopy} />
-                              </Clipboard.Indicator>
-                              <Clipboard.Indicator copied="Copied">
-                                <Text>Copy Prompt</Text>
-                              </Clipboard.Indicator>
-                            </HStack>
-                          </Button>
-                        </Clipboard.Trigger>
-                      </Clipboard.Root>
-                    </Box>
-                    <DialogRoot
-                      open={isPromptDialogOpen}
-                      onOpenChange={(details) => handlePromptDialogOpenChange(details.open)}
-                    >
-                      <Tooltip content="View generated prompt">
-                        <DialogTrigger asChild>
-                          <IconButton
-                            {...ACTION_BUTTON_PROPS}
-                            {...PRIMARY_BUTTON_PROPS}
-                            aria-label="View generated prompt"
-                            borderLeftColor="app.bilingualStoryReader.button.primary.divider"
-                            borderLeftWidth="1px"
-                            disabled={!isSetupComplete}
-                            h={12}
-                            rounded={0}
-                          >
-                            <LuEye />
-                          </IconButton>
-                        </DialogTrigger>
-                      </Tooltip>
-
-                      <DialogContent
-                        bg="app.bilingualStoryReader.bg.card"
-                        borderColor="app.bilingualStoryReader.border.default"
-                        borderWidth="1px"
-                        color="app.bilingualStoryReader.fg.default"
-                        maxW="720px"
-                        overflow="hidden"
-                        rounded="2xl"
-                      >
-                        <DialogHeader>
-                          <DialogTitle fontFamily="ui">
-                            <HStack as="span" gap={2}>
-                              <Icon
-                                as={LuSparkles}
-                                boxSize={5}
-                                color="app.bilingualStoryReader.fg.muted"
-                              />
-                              <Text as="span">Generated prompt</Text>
-                            </HStack>
-                          </DialogTitle>
-                        </DialogHeader>
-                        <DialogBody pb={0} px={0}>
-                          <VStack align="stretch" gap={3}>
-                            <Text
-                              color="app.bilingualStoryReader.fg.muted"
-                              fontSize="sm"
-                              px={6}
-                            >
-                              Edits are temporary and are not saved to the setup.
-                            </Text>
-                            <Box position="relative">
-                              <Textarea
-                                {...CONTROL_INPUT_PROPS}
-                                aria-label="Generated prompt"
-                                borderBottomWidth={0}
-                                borderXWidth={0}
-                                fontFamily="mono"
-                                minH={{ base: "xs", md: "md" }}
-                                onChange={(event) => setPromptDraft(event.currentTarget.value)}
-                                onBlur={() => setIsPromptTextareaKeyboardFocused(false)}
-                                onFocus={() =>
-                                  setIsPromptTextareaKeyboardFocused(
-                                    promptTextareaKeyboardFocusRef.current,
-                                  )
-                                }
-                                onPointerDown={() => {
-                                  promptTextareaKeyboardFocusRef.current = false;
-                                  setIsPromptTextareaKeyboardFocused(false);
-                                }}
-                                readOnly={!isPromptEditing}
-                                rounded={0}
-                                value={promptDraft}
-                                _focus={{
-                                  borderColor:
-                                    "app.bilingualStoryReader.border.default",
-                                  boxShadow: "none",
-                                  outline: "none",
-                                }}
-                                _focusVisible={
-                                  isPromptTextareaKeyboardFocused
-                                    ? {
-                                        borderColor:
-                                          "app.bilingualStoryReader.border.default",
-                                        boxShadow: "none",
-                                        outlineColor: "blue.500",
-                                        outlineOffset: "-2px",
-                                        outlineStyle: "solid",
-                                        outlineWidth: "2px",
-                                      }
-                                    : {
-                                        borderColor:
-                                          "app.bilingualStoryReader.border.default",
-                                        boxShadow: "none",
-                                        outline: "none",
-                                      }
-                                }
-                              />
-                            </Box>
-                          </VStack>
-                        </DialogBody>
-                        <DialogFooter p={0} w="full">
-                          <Grid templateColumns="repeat(3, minmax(0, 1fr))" w="full">
-                            <Button
-                              {...ACTION_BUTTON_PROPS}
-                              {...PROMPT_DIALOG_FOOTER_BUTTON_PROPS}
-                              aria-pressed={isPromptEditing}
-                              bg={
-                                isPromptEditing
-                                  ? "app.bilingualStoryReader.button.primary.bg"
-                                  : "app.bilingualStoryReader.button.subtle.bg"
-                              }
-                              color={
-                                isPromptEditing
-                                  ? "app.bilingualStoryReader.button.primary.fg"
-                                  : "app.bilingualStoryReader.button.subtle.fg"
-                              }
-                              onClick={() => setIsPromptEditing((current) => !current)}
-                              _hover={{
-                                bg: isPromptEditing
-                                  ? "app.bilingualStoryReader.button.primary.hoverBg"
-                                  : "app.bilingualStoryReader.button.subtle.hoverBg",
-                              }}
-                            >
-                              <Icon as={LuPencil} />
-                              Edit
-                            </Button>
-                            <Box minW={0}>
-                              <Clipboard.Root value={promptDraft} timeout={1000}>
-                                <Clipboard.Trigger asChild>
-                                  <Button
-                                    {...ACTION_BUTTON_PROPS}
-                                    {...PRIMARY_BUTTON_PROPS}
-                                    {...PROMPT_DIALOG_FOOTER_BUTTON_PROPS}
-                                    aria-label="Copy generated prompt"
-                                    borderLeftColor="app.bilingualStoryReader.button.primary.divider"
-                                    borderLeftWidth="1px"
-                                    borderRightColor="app.bilingualStoryReader.button.primary.divider"
-                                    borderRightWidth="1px"
-                                  >
-                                    <Clipboard.Indicator copied={<Icon as={LuCheck} />}>
-                                      <Icon as={LuCopy} />
-                                    </Clipboard.Indicator>
-                                    Copy
-                                  </Button>
-                                </Clipboard.Trigger>
-                              </Clipboard.Root>
-                            </Box>
-                            <Button
-                              {...ACTION_BUTTON_PROPS}
-                              {...PROMPT_DIALOG_FOOTER_BUTTON_PROPS}
-                              {...DANGER_BUTTON_PROPS}
-                              aria-label="Reset generated prompt"
-                              onClick={() => setPromptDraft(prompt)}
-                            >
-                              <Icon as={LuRotateCcw} />
-                              Reset
-                            </Button>
-                          </Grid>
-                        </DialogFooter>
-                        <DialogCloseTrigger />
-                      </DialogContent>
-                    </DialogRoot>
-                  </HStack>
-                </Card.Footer>
-              </Card.Root>
-
-              {jsonParseResult || storyValidationResult ? (
-                <VStack align="stretch" gap={2} id="ai-response-validation">
-                {jsonParseResult?.warnings.map((warning) => (
-                  <Text
-                    color="app.bilingualStoryReader.fg.warning"
-                    fontSize="sm"
-                    key={warning.code}
-                    role="status"
-                  >
-                    {warning.message}
-                  </Text>
-                ))}
-
-                {jsonParseResult?.ok ? (
-                  <Text color="green.600" fontSize="sm" role="status">
-                    Response parsed.
-                  </Text>
-                ) : null}
-
-                {storyValidationResult?.ok ? (
-                  <Text color="green.600" fontSize="sm" role="status">
-                    Story saved.
-                  </Text>
-                ) : null}
-
-                {jsonParseResult && !jsonParseResult.ok
-                  ? jsonParseResult.errors.map((error) => (
-                      <Text color="red.600" fontSize="sm" key={error.message} role="alert">
-                        {error.line && error.column
-                          ? `${error.message} Line ${error.line}, column ${error.column}.`
-                          : error.message}
-                      </Text>
-                    ))
-                  : null}
-
-                {storyValidationResult && !storyValidationResult.ok
-                  ? storyValidationResult.errors.map((error) => (
-                      <Text color="red.600" fontSize="sm" key={error.path} role="alert">
-                        {error.path}: {error.message}
-                      </Text>
-                    ))
-                  : null}
-                </VStack>
-              ) : null}
-            </VStack>
-        </HighlightedSection>
-      </Bleed>
-
-      <Bleed inline={{ base: 1, md: 2 }}>
-        <HighlightedSection
-          contentPx={{ base: 3, md: 4 }}
-          contentPy={{ base: 3, md: 4 }}
-        >
-          <VStack align="stretch" gap={3}>
-            <HStack justify="space-between" wrap="wrap">
+      <ContentSection
+        px={{ base: 3, md: 4 }}
+        py={{ base: 3, md: 4 }}
+      >
+          <VStack align="stretch" gap={4} minW={0}>
+            <HStack align="center" justify="space-between" wrap="wrap">
               <HStack gap={2}>
                 <Icon color="app.bilingualStoryReader.fg.muted">
-                  <LuHistory />
+                  <LuSlidersHorizontal />
                 </Icon>
                 <Text fontFamily="ui" fontSize="lg" fontWeight="semibold">
-                  Story History
+                  Story Setup
                 </Text>
               </HStack>
-              <HStack gap={2}>
-                {storyHistory.length > 0 ? (
-                  <Button
-                    {...ACTION_BUTTON_PROPS}
-                    {...DANGER_BUTTON_PROPS}
-                    onClick={clearHistory}
-                    size="sm"
-                    variant="ghost"
-                  >
-                    <Icon>
-                      <LuTrash2 />
-                    </Icon>
-                    Clear History ({storyHistory.length})
-                  </Button>
-                ) : null}
-              </HStack>
-            </HStack>
+              <Popover.Root
+                open={isManualPasteOpen}
+                onOpenChange={(details) => setIsManualPasteOpen(details.open)}
+                positioning={{ placement: "bottom-end", gutter: 6 }}
+              >
+                <Box>
+                  <HStack align="stretch" gap={0}>
+                    <Button
+                      {...ACTION_BUTTON_PROPS}
+                      borderWidth={0}
+                      {...SUBTLE_BUTTON_PROPS}
+                      onClick={pasteResponseFromClipboard}
+                      roundedRight={0}
+                      variant="outline"
+                    >
+                      <Icon>
+                        <LuClipboardPaste />
+                      </Icon>
+                      Load Story from Clipboard
+                    </Button>
+                    <Popover.Trigger asChild>
+                      <IconButton
+                        {...ACTION_BUTTON_PROPS}
+                        aria-label={
+                          isManualPasteOpen
+                            ? "Hide manual paste"
+                            : "Show manual paste"
+                        }
+                        borderWidth={0}
+                        borderLeftColor="app.bilingualStoryReader.button.subtle.divider"
+                        borderLeftWidth="1px"
+                        {...SUBTLE_BUTTON_PROPS}
+                        roundedLeft={0}
+                        variant="outline"
+                      >
+                        {isManualPasteOpen ? <LuChevronUp /> : <LuChevronDown />}
+                      </IconButton>
+                    </Popover.Trigger>
+                  </HStack>
+                </Box>
 
-            {storyHistory.length === 0 ? (
-              <EmptyState.Root>
-                <EmptyState.Content>
-                  <EmptyState.Indicator>
-                    <Icon boxSize={9} color="app.bilingualStoryReader.fg.muted">
-                      <LuHistory />
-                    </Icon>
-                  </EmptyState.Indicator>
-                  <EmptyState.Title textAlign="center">No story history yet</EmptyState.Title>
-                  <Text
-                    color="app.bilingualStoryReader.fg.muted"
-                    fontFamily="ui"
-                    fontSize="sm"
-                    textAlign="center"
+                <Popover.Positioner zIndex={20}>
+                  <Popover.Content
+                    bg="app.bilingualStoryReader.bg.popover"
+                    borderColor="app.bilingualStoryReader.border.default"
+                    borderWidth="1px"
+                    minW={{ base: "280px", sm: "420px" }}
+                    overflow="hidden"
+                    p={0}
+                    rounded="lg"
+                    shadow="lg"
+                    w={{ base: "calc(100vw - 2rem)", sm: "420px" }}
                   >
-                    Stories you read will appear here.
-                  </Text>
-                </EmptyState.Content>
-              </EmptyState.Root>
-            ) : (
-              <TileList>
-                {storyHistory.map((entry) => (
-                  <Box
-                    className="group"
-                    cursor="pointer"
-                    key={entry.id}
-                    onClick={() => openHistoryStory(entry)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        openHistoryStory(entry);
-                      }
-                    }}
-                    px={0}
-                    py={{ base: 2, md: 3 }}
-                    role="button"
-                    rounded="md"
-                    tabIndex={0}
-                    transition="background-color 0.2s ease"
-                    _hover={{ bg: "app.bilingualStoryReader.bg.subtle" }}
-                  >
-                    <HStack align="start" justify="space-between" gap={3}>
-                      <VStack align="start" flex="1" gap={1} minW={0}>
-                        <Text
-                          color="app.bilingualStoryReader.fg.default"
-                          fontFamily="ui"
-                          fontSize="md"
-                          fontWeight="medium"
-                          lineClamp={1}
-                        >
-                          {entry.story.story.title}
-                        </Text>
-                        <HStack gap={2} wrap="wrap">
-                          <HistoryMetadataPill
-                            icon={LuLanguages}
-                            value={`${entry.story.story.knownLanguage} → ${entry.story.story.targetLanguage}`}
-                          />
-                          <HistoryMetadataPill
-                            icon={LuGraduationCap}
-                            value={getLevelLabel(entry.story.story.level)}
-                          />
-                          <HistoryMetadataPill
-                            icon={LuBookOpen}
-                            value={formatCount(entry.story.paragraphs.length, "paragraph")}
-                          />
-                          <HistoryMetadataPill
-                            icon={LuListTree}
-                            value={formatCount(getStorySentenceCount(entry.story), "sentence")}
-                          />
-                          {entry.story.story.estimatedMinutes ? (
-                            <HistoryMetadataPill
-                              icon={LuClock}
-                              value={`${entry.story.story.estimatedMinutes} min`}
-                            />
-                          ) : null}
-                          {entry.story.story.theme.trim() ? (
-                            <HistoryMetadataPill
-                              icon={LuClapperboard}
-                              value={entry.story.story.theme.trim()}
-                            />
-                          ) : null}
-                        </HStack>
-                        <Text color="app.bilingualStoryReader.fg.muted" fontSize="xs">
-                          {formatHistoryLoadedAt(entry.loadedAt)}
-                        </Text>
-                      </VStack>
-                      <HStack gap={1.5}>
-                        <Tooltip content="Delete story from history">
-                          <IconButton
-                            {...ACTION_BUTTON_PROPS}
-                            {...DANGER_BUTTON_PROPS}
-                            aria-label={`Delete ${entry.story.story.title} from history`}
-                            h={8}
-                            minW={8}
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              removeHistoryEntry(entry.id);
+                    <Textarea
+                      aria-describedby="ai-response-validation"
+                      aria-label="AI response"
+                      borderWidth={0}
+                      minH="140px"
+                      onChange={(event) => {
+                        setRawResponseText(event.currentTarget.value);
+                        setJsonParseResult(null);
+                        setStoryValidationResult(null);
+                      }}
+                      onPaste={handleManualPaste}
+                      placeholder="Paste the AI response here, then load the story."
+                      rounded="none"
+                      value={rawResponseText}
+                    />
+                    <Button
+                      {...ACTION_BUTTON_PROPS}
+                      disabled={!rawResponseText.trim()}
+                      mt="-1px"
+                      onClick={readStory}
+                      rounded="none"
+                      size="sm"
+                      variant="subtle"
+                      w="full"
+                      {...SUBTLE_BUTTON_PROPS}
+                    >
+                      <Icon>
+                        <LuBookOpen />
+                      </Icon>
+                      Load Story
+                    </Button>
+                  </Popover.Content>
+                </Popover.Positioner>
+              </Popover.Root>
+            </HStack>
+            <Card.Root
+              borderColor="app.bilingualStoryReader.border.default"
+              overflow="hidden"
+              rounded="2xl"
+            >
+              <Card.Body>
+                <VStack align="stretch" gap={4}>
+                  <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={3}>
+                    <Field label="Known language">
+                      <StoryCombobox
+                        allowClear={false}
+                        ariaLabel="Known language"
+                        icon={LuLanguages}
+                        iconVisibility="custom-value"
+                        options={LANGUAGE_COMBOBOX_OPTIONS}
+                        placeholder="Search or type a language"
+                        value={setup.knownLanguage}
+                        onValueChange={(value) =>
+                          updateTextField("knownLanguage", value)
+                        }
+                      />
+                    </Field>
+
+                    <Field label="Target language">
+                      <StoryCombobox
+                        allowClear={false}
+                        ariaLabel="Target language"
+                        icon={LuLanguages}
+                        iconVisibility="custom-value"
+                        options={LANGUAGE_COMBOBOX_OPTIONS}
+                        placeholder="Search or type a language"
+                        value={setup.targetLanguage}
+                        onValueChange={(value) =>
+                          updateTextField("targetLanguage", value)
+                        }
+                      />
+                    </Field>
+                  </Grid>
+
+                  <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={3}>
+                    <Field label="Level">
+                      <Box position="relative" w="full">
+                        <ControlLeadingIcon icon={LuGraduationCap} />
+                        <NativeSelect.Root w="full">
+                          <NativeSelect.Field
+                            {...CONTROL_INPUT_PROPS}
+                            aria-label="Level"
+                            ps={10}
+                            value={setup.level}
+                            onChange={(event) => {
+                              const nextLevel = event.currentTarget
+                                .value as BilingualStoryReaderLevel;
+                              setSetup((current) => ({
+                                ...current,
+                                level: nextLevel,
+                              }));
                             }}
-                            onKeyDown={(event) => {
-                              event.stopPropagation();
-                            }}
-                            p={0}
-                            size="sm"
-                            variant="ghost"
                           >
-                            <LuTrash2 />
-                          </IconButton>
-                        </Tooltip>
-                        <Icon
-                          color="app.bilingualStoryReader.fg.muted"
-                          data-history-chevron="true"
-                          opacity={0}
-                          transform="translateX(-2px)"
-                          transition="opacity 0.2s ease, transform 0.2s ease"
-                          _groupFocusWithin={{
-                            opacity: 1,
-                            transform: "translateX(0)",
-                          }}
-                          _groupHover={{
-                            opacity: 1,
-                            transform: "translateX(0)",
-                          }}
+                            {BILINGUAL_STORY_READER_LEVELS.map((level) => (
+                              <option key={level} value={level}>
+                                {getLevelLabel(level)}
+                              </option>
+                            ))}
+                          </NativeSelect.Field>
+                          <NativeSelect.Indicator />
+                        </NativeSelect.Root>
+                      </Box>
+                    </Field>
+
+                    <Field label="Length">
+                      <StorySegmentedControl<BilingualStoryReaderLength>
+                        ariaLabel="Length"
+                        options={BILINGUAL_STORY_READER_LENGTHS}
+                        value={setup.length}
+                        onValueChange={(length) =>
+                          setSetup((current) => ({ ...current, length }))
+                        }
+                      />
+                    </Field>
+                  </Grid>
+
+                  <Field label="Theme">
+                    <StoryCombobox
+                      ariaLabel="Theme"
+                      icon={LuClapperboard}
+                      options={STORY_THEME_OPTIONS}
+                      placeholder="Search or type a theme"
+                      value={setup.theme}
+                      onValueChange={(value) => updateTextField("theme", value)}
+                    />
+                  </Field>
+
+                  <Field label="Extra instructions">
+                    <Box position="relative" w="full">
+                      <TextareaLeadingIcon icon={LuMessageSquareText} />
+                      <Textarea
+                        {...CONTROL_INPUT_PROPS}
+                        aria-label="Extra instructions"
+                        placeholder="Use simple dialogue or include romanization."
+                        ps={10}
+                        value={setup.extraInstructions}
+                        onChange={(event) =>
+                          updateTextField(
+                            "extraInstructions",
+                            event.currentTarget.value,
+                          )
+                        }
+                      />
+                    </Box>
+                  </Field>
+                </VStack>
+              </Card.Body>
+              <Card.Footer p={0} w="full">
+                <HStack w="full" gap={0}>
+                  <Box flex={1}>
+                    <Clipboard.Root value={prompt} timeout={1000}>
+                      <Clipboard.Trigger asChild>
+                        <Button
+                          {...ACTION_BUTTON_PROPS}
+                          {...PRIMARY_BUTTON_PROPS}
+                          aria-label="Copy Prompt"
+                          borderRightWidth={0}
+                          disabled={!isSetupComplete}
+                          h={12}
+                          justifyContent="center"
+                          px={4}
+                          rounded={0}
+                          w="full"
                         >
-                          <LuChevronRight />
-                        </Icon>
-                      </HStack>
-                    </HStack>
+                          <HStack gap={2}>
+                            <Clipboard.Indicator copied={<Icon as={LuCheck} />}>
+                              <Icon as={LuCopy} />
+                            </Clipboard.Indicator>
+                            <Clipboard.Indicator copied="Copied">
+                              <Text>Copy Prompt</Text>
+                            </Clipboard.Indicator>
+                          </HStack>
+                        </Button>
+                      </Clipboard.Trigger>
+                    </Clipboard.Root>
                   </Box>
-                ))}
-              </TileList>
-            )}
+                  <DialogRoot
+                    open={isPromptDialogOpen}
+                    onOpenChange={(details) => handlePromptDialogOpenChange(details.open)}
+                  >
+                    <Tooltip content="View generated prompt">
+                      <DialogTrigger asChild>
+                        <IconButton
+                          {...ACTION_BUTTON_PROPS}
+                          {...PRIMARY_BUTTON_PROPS}
+                          aria-label="View generated prompt"
+                          borderLeftColor="app.bilingualStoryReader.button.primary.divider"
+                          borderLeftWidth="1px"
+                          disabled={!isSetupComplete}
+                          h={12}
+                          rounded={0}
+                        >
+                          <LuEye />
+                        </IconButton>
+                      </DialogTrigger>
+                    </Tooltip>
+
+                    <DialogContent
+                      bg="app.bilingualStoryReader.bg.card"
+                      borderColor="app.bilingualStoryReader.border.default"
+                      borderWidth="1px"
+                      color="app.bilingualStoryReader.fg.default"
+                      maxW="720px"
+                      overflow="hidden"
+                      rounded="2xl"
+                    >
+                      <DialogHeader>
+                        <DialogTitle fontFamily="ui">
+                          <HStack as="span" gap={2}>
+                            <Icon
+                              as={LuSparkles}
+                              boxSize={5}
+                              color="app.bilingualStoryReader.fg.muted"
+                            />
+                            <Text as="span">Generated prompt</Text>
+                          </HStack>
+                        </DialogTitle>
+                      </DialogHeader>
+                      <DialogBody pb={0} px={0}>
+                        <VStack align="stretch" gap={3}>
+                          <Text
+                            color="app.bilingualStoryReader.fg.muted"
+                            fontSize="sm"
+                            px={6}
+                          >
+                            Edits are temporary and are not saved to the setup.
+                          </Text>
+                          <Box position="relative">
+                            <Textarea
+                              {...CONTROL_INPUT_PROPS}
+                              aria-label="Generated prompt"
+                              borderBottomWidth={0}
+                              borderXWidth={0}
+                              fontFamily="mono"
+                              minH={{ base: "xs", md: "md" }}
+                              onChange={(event) => setPromptDraft(event.currentTarget.value)}
+                              onBlur={() => setIsPromptTextareaKeyboardFocused(false)}
+                              onFocus={() =>
+                                setIsPromptTextareaKeyboardFocused(
+                                  promptTextareaKeyboardFocusRef.current,
+                                )
+                              }
+                              onPointerDown={() => {
+                                promptTextareaKeyboardFocusRef.current = false;
+                                setIsPromptTextareaKeyboardFocused(false);
+                              }}
+                              readOnly={!isPromptEditing}
+                              rounded={0}
+                              value={promptDraft}
+                              _focus={{
+                                borderColor:
+                                  "app.bilingualStoryReader.border.default",
+                                boxShadow: "none",
+                                outline: "none",
+                              }}
+                              _focusVisible={
+                                isPromptTextareaKeyboardFocused
+                                  ? {
+                                      borderColor:
+                                        "app.bilingualStoryReader.border.default",
+                                      boxShadow: "none",
+                                      outlineColor: "blue.500",
+                                      outlineOffset: "-2px",
+                                      outlineStyle: "solid",
+                                      outlineWidth: "2px",
+                                    }
+                                  : {
+                                      borderColor:
+                                        "app.bilingualStoryReader.border.default",
+                                      boxShadow: "none",
+                                      outline: "none",
+                                    }
+                              }
+                            />
+                          </Box>
+                        </VStack>
+                      </DialogBody>
+                      <DialogFooter p={0} w="full">
+                        <Grid templateColumns="repeat(3, minmax(0, 1fr))" w="full">
+                          <Button
+                            {...ACTION_BUTTON_PROPS}
+                            {...PROMPT_DIALOG_FOOTER_BUTTON_PROPS}
+                            aria-pressed={isPromptEditing}
+                            bg={
+                              isPromptEditing
+                                ? "app.bilingualStoryReader.button.primary.bg"
+                                : "app.bilingualStoryReader.button.subtle.bg"
+                            }
+                            color={
+                              isPromptEditing
+                                ? "app.bilingualStoryReader.button.primary.fg"
+                                : "app.bilingualStoryReader.button.subtle.fg"
+                            }
+                            onClick={() => setIsPromptEditing((current) => !current)}
+                            _hover={{
+                              bg: isPromptEditing
+                                ? "app.bilingualStoryReader.button.primary.hoverBg"
+                                : "app.bilingualStoryReader.button.subtle.hoverBg",
+                            }}
+                          >
+                            <Icon as={LuPencil} />
+                            Edit
+                          </Button>
+                          <Box minW={0}>
+                            <Clipboard.Root value={promptDraft} timeout={1000}>
+                              <Clipboard.Trigger asChild>
+                                <Button
+                                  {...ACTION_BUTTON_PROPS}
+                                  {...PRIMARY_BUTTON_PROPS}
+                                  {...PROMPT_DIALOG_FOOTER_BUTTON_PROPS}
+                                  aria-label="Copy generated prompt"
+                                  borderLeftColor="app.bilingualStoryReader.button.primary.divider"
+                                  borderLeftWidth="1px"
+                                  borderRightColor="app.bilingualStoryReader.button.primary.divider"
+                                  borderRightWidth="1px"
+                                >
+                                  <Clipboard.Indicator copied={<Icon as={LuCheck} />}>
+                                    <Icon as={LuCopy} />
+                                  </Clipboard.Indicator>
+                                  Copy
+                                </Button>
+                              </Clipboard.Trigger>
+                            </Clipboard.Root>
+                          </Box>
+                          <Button
+                            {...ACTION_BUTTON_PROPS}
+                            {...PROMPT_DIALOG_FOOTER_BUTTON_PROPS}
+                            {...DANGER_BUTTON_PROPS}
+                            aria-label="Reset generated prompt"
+                            onClick={() => setPromptDraft(prompt)}
+                          >
+                            <Icon as={LuRotateCcw} />
+                            Reset
+                          </Button>
+                        </Grid>
+                      </DialogFooter>
+                      <DialogCloseTrigger />
+                    </DialogContent>
+                  </DialogRoot>
+                </HStack>
+              </Card.Footer>
+            </Card.Root>
+
+            {jsonParseResult || storyValidationResult ? (
+              <VStack align="stretch" gap={2} id="ai-response-validation">
+              {jsonParseResult?.warnings.map((warning) => (
+                <Text
+                  color="app.bilingualStoryReader.fg.warning"
+                  fontSize="sm"
+                  key={warning.code}
+                  role="status"
+                >
+                  {warning.message}
+                </Text>
+              ))}
+
+              {jsonParseResult?.ok ? (
+                <Text color="green.600" fontSize="sm" role="status">
+                  Response parsed.
+                </Text>
+              ) : null}
+
+              {storyValidationResult?.ok ? (
+                <Text color="green.600" fontSize="sm" role="status">
+                  Story saved.
+                </Text>
+              ) : null}
+
+              {jsonParseResult && !jsonParseResult.ok
+                ? jsonParseResult.errors.map((error) => (
+                    <Text color="red.600" fontSize="sm" key={error.message} role="alert">
+                      {error.line && error.column
+                        ? `${error.message} Line ${error.line}, column ${error.column}.`
+                        : error.message}
+                    </Text>
+                  ))
+                : null}
+
+              {storyValidationResult && !storyValidationResult.ok
+                ? storyValidationResult.errors.map((error) => (
+                    <Text color="red.600" fontSize="sm" key={error.path} role="alert">
+                      {error.path}: {error.message}
+                    </Text>
+                  ))
+                : null}
+              </VStack>
+            ) : null}
           </VStack>
-        </HighlightedSection>
-      </Bleed>
+      </ContentSection>
+
+      <ContentSection
+        px={{ base: 3, md: 4 }}
+        py={{ base: 3, md: 4 }}
+      >
+        <VStack align="stretch" gap={3}>
+          <HStack justify="space-between" wrap="wrap">
+            <HStack gap={2}>
+              <Icon color="app.bilingualStoryReader.fg.muted">
+                <LuHistory />
+              </Icon>
+              <Text fontFamily="ui" fontSize="lg" fontWeight="semibold">
+                Story History
+              </Text>
+            </HStack>
+            <HStack gap={2}>
+              {storyHistory.length > 0 ? (
+                <Button
+                  {...ACTION_BUTTON_PROPS}
+                  {...DANGER_BUTTON_PROPS}
+                  onClick={clearHistory}
+                  size="sm"
+                  variant="ghost"
+                >
+                  <Icon>
+                    <LuTrash2 />
+                  </Icon>
+                  Clear History ({storyHistory.length})
+                </Button>
+              ) : null}
+            </HStack>
+          </HStack>
+
+          {storyHistory.length === 0 ? (
+            <EmptyState.Root>
+              <EmptyState.Content>
+                <EmptyState.Indicator>
+                  <Icon boxSize={9} color="app.bilingualStoryReader.fg.muted">
+                    <LuHistory />
+                  </Icon>
+                </EmptyState.Indicator>
+                <EmptyState.Title textAlign="center">No story history yet</EmptyState.Title>
+                <Text
+                  color="app.bilingualStoryReader.fg.muted"
+                  fontFamily="ui"
+                  fontSize="sm"
+                  textAlign="center"
+                >
+                  Stories you read will appear here.
+                </Text>
+              </EmptyState.Content>
+            </EmptyState.Root>
+          ) : (
+            <TileList>
+              {storyHistory.map((entry) => (
+                <Box
+                  className="group"
+                  cursor="pointer"
+                  key={entry.id}
+                  onClick={() => openHistoryStory(entry)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      openHistoryStory(entry);
+                    }
+                  }}
+                  px={0}
+                  py={{ base: 2, md: 3 }}
+                  role="button"
+                  rounded="md"
+                  tabIndex={0}
+                  transition="background-color 0.2s ease"
+                  _hover={{ bg: "app.bilingualStoryReader.bg.subtle" }}
+                >
+                  <HStack align="start" justify="space-between" gap={3}>
+                    <VStack align="start" flex="1" gap={1} minW={0}>
+                      <Text
+                        color="app.bilingualStoryReader.fg.default"
+                        fontFamily="ui"
+                        fontSize="md"
+                        fontWeight="medium"
+                        lineClamp={1}
+                      >
+                        {entry.story.story.title}
+                      </Text>
+                      <HStack gap={2} wrap="wrap">
+                        <HistoryMetadataPill
+                          icon={LuLanguages}
+                          value={`${entry.story.story.knownLanguage} → ${entry.story.story.targetLanguage}`}
+                        />
+                        <HistoryMetadataPill
+                          icon={LuGraduationCap}
+                          value={getLevelLabel(entry.story.story.level)}
+                        />
+                        <HistoryMetadataPill
+                          icon={LuBookOpen}
+                          value={formatCount(entry.story.paragraphs.length, "paragraph")}
+                        />
+                        <HistoryMetadataPill
+                          icon={LuListTree}
+                          value={formatCount(getStorySentenceCount(entry.story), "sentence")}
+                        />
+                        {entry.story.story.estimatedMinutes ? (
+                          <HistoryMetadataPill
+                            icon={LuClock}
+                            value={`${entry.story.story.estimatedMinutes} min`}
+                          />
+                        ) : null}
+                        {entry.story.story.theme.trim() ? (
+                          <HistoryMetadataPill
+                            icon={LuClapperboard}
+                            value={entry.story.story.theme.trim()}
+                          />
+                        ) : null}
+                      </HStack>
+                      <Text color="app.bilingualStoryReader.fg.muted" fontSize="xs">
+                        {formatHistoryLoadedAt(entry.loadedAt)}
+                      </Text>
+                    </VStack>
+                    <HStack gap={1.5}>
+                      <Tooltip content="Delete story from history">
+                        <IconButton
+                          {...ACTION_BUTTON_PROPS}
+                          {...DANGER_BUTTON_PROPS}
+                          aria-label={`Delete ${entry.story.story.title} from history`}
+                          h={8}
+                          minW={8}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            removeHistoryEntry(entry.id);
+                          }}
+                          onKeyDown={(event) => {
+                            event.stopPropagation();
+                          }}
+                          p={0}
+                          size="sm"
+                          variant="ghost"
+                        >
+                          <LuTrash2 />
+                        </IconButton>
+                      </Tooltip>
+                      <Icon
+                        color="app.bilingualStoryReader.fg.muted"
+                        data-history-chevron="true"
+                        opacity={0}
+                        transform="translateX(-2px)"
+                        transition="opacity 0.2s ease, transform 0.2s ease"
+                        _groupFocusWithin={{
+                          opacity: 1,
+                          transform: "translateX(0)",
+                        }}
+                        _groupHover={{
+                          opacity: 1,
+                          transform: "translateX(0)",
+                        }}
+                      >
+                        <LuChevronRight />
+                      </Icon>
+                    </HStack>
+                  </HStack>
+                </Box>
+              ))}
+            </TileList>
+          )}
+        </VStack>
+      </ContentSection>
 
     </VStack>
   );

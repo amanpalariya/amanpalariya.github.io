@@ -1,10 +1,8 @@
 "use client";
 
 import {
-  Bleed,
   Box,
   Button,
-  Card,
   Collapsible,
   Grid,
   HStack,
@@ -18,7 +16,6 @@ import { Field, Fieldset } from "@components/ui/field";
 import { NumberInput } from "@components/ui/number-input";
 import { ShortcutHint } from "@components/core/ShortcutHint";
 import { Switch } from "@components/ui/switch";
-import HighlightedSection from "@components/page/common/HighlightedSection";
 import {
   useCallback,
   useEffect,
@@ -510,583 +507,511 @@ export function CalendarDrillPage() {
   }, []);
 
   return (
-    <VStack align={"stretch"} gap={4} pt={4} pb={0}>
-      <Box w={"full"} px={[4, 6]}>
-        <VStack align={"stretch"} gap={4}>
-          <SessionStatsCard
-            showPlaceholderStats={status === "idle"}
-            accuracy={accuracy}
-            attempts={stats.attempts}
-            avgResponseMs={avgResponseMs}
-            displayedAvgResponseMs={displayedAvgResponseMs}
-            streak={stats.streak}
-            trends={trends}
-          />
-        </VStack>
+    <VStack align={"stretch"} gap={0} mt={4} mx={-4}>
+      <Separator size="sm" borderColor="var(--site-line)" />
+      <Box p={4}>
+        <SessionStatsCard
+          showPlaceholderStats={status === "idle"}
+          accuracy={accuracy}
+          attempts={stats.attempts}
+          avgResponseMs={avgResponseMs}
+          displayedAvgResponseMs={displayedAvgResponseMs}
+          streak={stats.streak}
+          trends={trends}
+        />
       </Box>
 
-      <Box>
-        <Bleed inline={{ base: 1, md: 2 }}>
-          <HighlightedSection
-            contentPx={{ base: 3, md: 4 }}
-            contentPy={{ base: 3, md: 4 }}
-          >
-              <Card.Root
-                borderColor={"app.border.default"}
-                rounded={"2xl"}
-                overflow={"hidden"}
+      <Separator size="sm" borderColor="var(--site-line)" />
+      <Box p={4}>
+        <VStack align={"stretch"} gap={4}>
+          {status === "running" && question ? (
+            <VStack align={"stretch"} gap={4}>
+              <HStack
+                justify={"space-between"}
+                align={"center"}
+                gap={3}
+                wrap={"wrap"}
               >
-                <Card.Body>
-                  <VStack align={"stretch"} gap={4}>
-                    {status === "running" && question ? (
-                      <VStack align={"stretch"} gap={4}>
-                        <HStack
-                          justify={"space-between"}
-                          align={"center"}
-                          gap={3}
-                          wrap={"wrap"}
-                        >
-                          <HStack align={"center"} gap={2} wrap={"wrap"}>
-                            <Box
-                              as={"span"}
-                              minW={8}
-                              h={8}
-                              display={"inline-flex"}
-                              alignItems={"center"}
-                              justifyContent={"center"}
-                              rounded={"full"}
-                              borderWidth={"1px"}
-                              borderColor={"app.border.default"}
+                <HStack align={"center"} gap={2} wrap={"wrap"}>
+                  <Box
+                    as={"span"}
+                    minW={8}
+                    h={8}
+                    display={"inline-flex"}
+                    alignItems={"center"}
+                    justifyContent={"center"}
+                    rounded={"full"}
+                    borderWidth={"1px"}
+                    borderColor={"app.border.default"}
+                    color={"app.fg.subtle"}
+                    fontSize={"sm"}
+                    fontWeight={"medium"}
+                  >
+                    {questionIndex + 1}
+                  </Box>
+                  <Text fontSize={"2xl"} fontWeight={"normal"}>
+                    <Text
+                      as={"span"}
+                      color={"app.fg.muted"}
+                      fontWeight={"normal"}
+                    >
+                      Weekday for
+                    </Text>{" "}
+                    <Text as={"span"} fontWeight={"semibold"}>
+                      {question.formattedDate}
+                    </Text>
+                    <Text
+                      as={"span"}
+                      color={"app.fg.muted"}
+                      fontWeight={"normal"}
+                    >
+                      ?
+                    </Text>
+                  </Text>
+                </HStack>
+              </HStack>
+
+              <Grid
+                templateColumns={["repeat(2, 1fr)", "repeat(4, 1fr)"]}
+                gap={3}
+              >
+                {question.choices.map((choice) => {
+                  const hasAnswered = Boolean(answerState);
+                  const hasPrefix = prefix.length > 0;
+
+                  return (
+                    <ChoiceButton
+                      key={choice.value}
+                      choice={choice}
+                      requiredPrefixLength={
+                        requiredPrefixLengthByChoiceValue.get(choice.value) ?? 1
+                      }
+                      correctValue={question.correctValue}
+                      selectedValue={answerState?.selectedValue}
+                      hasAnswered={hasAnswered}
+                      hasPrefix={hasPrefix}
+                      isSessionRunning={status === "running"}
+                      prefix={prefix}
+                      onSelect={submitAnswer}
+                    />
+                  );
+                })}
+              </Grid>
+            </VStack>
+          ) : (
+            <Fieldset.Root w={"full"} minW={0}>
+              <Fieldset.Legend>
+                <HStack gap={2}>
+                  <Icon as={LuCalendarRange} />
+                  <Text>Year Range</Text>
+                </HStack>
+              </Fieldset.Legend>
+              <Fieldset.Content minW={0}>
+                <VStack align={"stretch"} gap={4} minW={0}>
+                  <Grid
+                    w={"full"}
+                    minW={0}
+                    templateColumns={["1fr", "repeat(3, minmax(0, 1fr))"]}
+                    gap={3}
+                    alignItems={"end"}
+                  >
+                    <Field.Root w={"full"}>
+                      <Field.Label>From Year</Field.Label>
+                      <NumberInput.Root
+                        w={"full"}
+                        value={String(settingsDraft.minYear)}
+                        min={MIN_ALLOWED_YEAR}
+                        max={MAX_ALLOWED_YEAR}
+                        onValueChange={(
+                          details: NumberInputValueChangeDetails,
+                        ) => {
+                          const parsed = Number(details.value);
+                          if (!Number.isNaN(parsed)) {
+                            const minYear = clampYear(parsed);
+                            setSettingsDraft((current) => ({
+                              ...current,
+                              minYear,
+                              maxYear: Math.max(minYear, current.maxYear),
+                            }));
+                          }
+                        }}
+                      >
+                        <NumberInput.Control />
+                        <NumberInput.Input rounded={"xl"} w={"full"} />
+                      </NumberInput.Root>
+                    </Field.Root>
+
+                    <Field.Root w={"full"}>
+                      <Field.Label>To Year</Field.Label>
+                      <NumberInput.Root
+                        w={"full"}
+                        value={String(settingsDraft.maxYear)}
+                        min={MIN_ALLOWED_YEAR}
+                        max={MAX_ALLOWED_YEAR}
+                        onValueChange={(
+                          details: NumberInputValueChangeDetails,
+                        ) => {
+                          const parsed = Number(details.value);
+                          if (!Number.isNaN(parsed)) {
+                            const maxYear = clampYear(parsed);
+                            setSettingsDraft((current) => ({
+                              ...current,
+                              minYear: Math.min(current.minYear, maxYear),
+                              maxYear,
+                            }));
+                          }
+                        }}
+                      >
+                        <NumberInput.Control />
+                        <NumberInput.Input rounded={"xl"} w={"full"} />
+                      </NumberInput.Root>
+                    </Field.Root>
+
+                    <Button
+                      w={"full"}
+                      rounded={"xl"}
+                      variant={"outline"}
+                      onClick={() => {
+                        const currentYear = new Date().getFullYear();
+                        setSettingsDraft((current) => ({
+                          ...current,
+                          minYear: currentYear,
+                          maxYear: currentYear,
+                        }));
+                      }}
+                    >
+                      Current Year
+                    </Button>
+                  </Grid>
+
+                  <Collapsible.Root
+                    open={isAdvancedSettingsOpen}
+                    onOpenChange={(details) =>
+                      setIsAdvancedSettingsOpen(details.open)
+                    }
+                  >
+                    <Collapsible.Trigger asChild>
+                      <Button
+                        w={"full"}
+                        variant={"ghost"}
+                        justifyContent={"space-between"}
+                        rounded={"xl"}
+                        px={3}
+                        h={"auto"}
+                        py={3}
+                        minW={0}
+                        overflow={"hidden"}
+                      >
+                        <HStack gap={3} minW={0} flex={1} overflow={"hidden"}>
+                          <Icon as={LuSettings2} flexShrink={0} />
+                          <VStack
+                            align={"start"}
+                            gap={0}
+                            minW={0}
+                            flex={1}
+                            overflow={"hidden"}
+                          >
+                            <Text>Advanced Settings</Text>
+                            <Text
+                              fontSize={"xs"}
                               color={"app.fg.subtle"}
-                              fontSize={"sm"}
-                              fontWeight={"medium"}
+                              maxW={"full"}
+                              truncate
                             >
-                              {questionIndex + 1}
-                            </Box>
-                            <Text fontSize={"2xl"} fontWeight={"normal"}>
-                              <Text
-                                as={"span"}
-                                color={"app.fg.muted"}
-                                fontWeight={"normal"}
-                              >
-                                Weekday for
-                              </Text>{" "}
-                              <Text as={"span"} fontWeight={"semibold"}>
-                                {question.formattedDate}
-                              </Text>
-                              <Text
-                                as={"span"}
-                                color={"app.fg.muted"}
-                                fontWeight={"normal"}
-                              >
-                                ?
-                              </Text>
+                              {advancedSettingsSummary}
                             </Text>
-                          </HStack>
+                          </VStack>
                         </HStack>
+                        <Collapsible.Indicator asChild>
+                          <Icon
+                            as={LuChevronDown}
+                            flexShrink={0}
+                            transition={"transform 0.15s ease"}
+                            _open={{ transform: "rotate(180deg)" }}
+                          />
+                        </Collapsible.Indicator>
+                      </Button>
+                    </Collapsible.Trigger>
 
-                        <Grid
-                          templateColumns={["repeat(2, 1fr)", "repeat(4, 1fr)"]}
-                          gap={3}
-                        >
-                          {question.choices.map((choice) => {
-                            const hasAnswered = Boolean(answerState);
-                            const hasPrefix = prefix.length > 0;
-
-                            return (
-                              <ChoiceButton
-                                key={choice.value}
-                                choice={choice}
-                                requiredPrefixLength={
-                                  requiredPrefixLengthByChoiceValue.get(
-                                    choice.value,
-                                  ) ?? 1
-                                }
-                                correctValue={question.correctValue}
-                                selectedValue={answerState?.selectedValue}
-                                hasAnswered={hasAnswered}
-                                hasPrefix={hasPrefix}
-                                isSessionRunning={status === "running"}
-                                prefix={prefix}
-                                onSelect={submitAnswer}
+                    <Collapsible.Content pt={3} _open={{ overflow: "visible" }}>
+                      <VStack align={"stretch"} gap={5}>
+                        <Separator
+                          size="sm"
+                          borderColor="var(--site-line)"
+                          mx={-4}
+                        />
+                        <VStack align={"stretch"} gap={3}>
+                          <HStack justify={"space-between"} gap={3}>
+                            <HStack gap={2}>
+                              <Icon
+                                as={LuCalendarRange}
+                                color={"app.fg.subtle"}
                               />
-                            );
-                          })}
-                        </Grid>
-                      </VStack>
-                    ) : (
-                      <Fieldset.Root w={"full"} minW={0}>
-                        <Fieldset.Legend>
-                          <HStack gap={2}>
-                            <Icon as={LuCalendarRange} />
-                            <Text>Year Range</Text>
+                              <Text fontWeight={"medium"}>Date Display</Text>
+                            </HStack>
                           </HStack>
-                        </Fieldset.Legend>
-                        <Fieldset.Content minW={0}>
-                          <VStack align={"stretch"} gap={4} minW={0}>
-                            <Grid
-                              w={"full"}
-                              minW={0}
-                              templateColumns={[
-                                "1fr",
-                                "repeat(3, minmax(0, 1fr))",
-                              ]}
-                              gap={3}
-                              alignItems={"end"}
-                            >
-                              <Field.Root w={"full"}>
-                                <Field.Label>From Year</Field.Label>
-                                <NumberInput.Root
-                                  w={"full"}
-                                  value={String(settingsDraft.minYear)}
-                                  min={MIN_ALLOWED_YEAR}
-                                  max={MAX_ALLOWED_YEAR}
-                                  onValueChange={(
-                                    details: NumberInputValueChangeDetails,
-                                  ) => {
-                                    const parsed = Number(details.value);
-                                    if (!Number.isNaN(parsed)) {
-                                      const minYear = clampYear(parsed);
-                                      setSettingsDraft((current) => ({
-                                        ...current,
-                                        minYear,
-                                        maxYear: Math.max(
-                                          minYear,
-                                          current.maxYear,
-                                        ),
-                                      }));
-                                    }
-                                  }}
-                                >
-                                  <NumberInput.Control />
-                                  <NumberInput.Input
-                                    rounded={"xl"}
-                                    w={"full"}
-                                  />
-                                </NumberInput.Root>
-                              </Field.Root>
 
-                              <Field.Root w={"full"}>
-                                <Field.Label>To Year</Field.Label>
-                                <NumberInput.Root
-                                  w={"full"}
-                                  value={String(settingsDraft.maxYear)}
-                                  min={MIN_ALLOWED_YEAR}
-                                  max={MAX_ALLOWED_YEAR}
-                                  onValueChange={(
-                                    details: NumberInputValueChangeDetails,
-                                  ) => {
-                                    const parsed = Number(details.value);
-                                    if (!Number.isNaN(parsed)) {
-                                      const maxYear = clampYear(parsed);
-                                      setSettingsDraft((current) => ({
-                                        ...current,
-                                        minYear: Math.min(
-                                          current.minYear,
-                                          maxYear,
-                                        ),
-                                        maxYear,
-                                      }));
-                                    }
-                                  }}
-                                >
-                                  <NumberInput.Control />
-                                  <NumberInput.Input
-                                    rounded={"xl"}
-                                    w={"full"}
-                                  />
-                                </NumberInput.Root>
-                              </Field.Root>
-
-                              <Button
-                                w={"full"}
+                          <Field.Root w={"full"}>
+                            <Field.Label>Date Format</Field.Label>
+                            <NativeSelect.Root w={"full"}>
+                              <NativeSelect.Field
                                 rounded={"xl"}
-                                variant={"outline"}
-                                onClick={() => {
-                                  const currentYear = new Date().getFullYear();
+                                bg={"app.bg.default"}
+                                value={settingsDraft.dateFormat}
+                                aria-label={"Select date format"}
+                                onChange={(event) => {
+                                  const dateFormat = event.currentTarget
+                                    .value as PracticeSettings["dateFormat"];
                                   setSettingsDraft((current) => ({
                                     ...current,
-                                    minYear: currentYear,
-                                    maxYear: currentYear,
+                                    dateFormat,
                                   }));
                                 }}
                               >
-                                Current Year
-                              </Button>
-                            </Grid>
-
-                            <Collapsible.Root
-                              open={isAdvancedSettingsOpen}
-                              onOpenChange={(details) =>
-                                setIsAdvancedSettingsOpen(details.open)
-                              }
-                            >
-                              <Collapsible.Trigger asChild>
-                                <Button
-                                  w={"full"}
-                                  variant={"ghost"}
-                                  justifyContent={"space-between"}
-                                  rounded={"xl"}
-                                  px={3}
-                                  h={"auto"}
-                                  py={3}
-                                  minW={0}
-                                  overflow={"hidden"}
-                                >
-                                  <HStack
-                                    gap={3}
-                                    minW={0}
-                                    flex={1}
-                                    overflow={"hidden"}
+                                {dateFormatOptions.map((option) => (
+                                  <option
+                                    key={option.value}
+                                    value={option.value}
                                   >
-                                    <Icon as={LuSettings2} flexShrink={0} />
-                                    <VStack
-                                      align={"start"}
-                                      gap={0}
-                                      minW={0}
-                                      flex={1}
-                                      overflow={"hidden"}
-                                    >
-                                      <Text>Advanced Settings</Text>
-                                      <Text
-                                        fontSize={"xs"}
-                                        color={"app.fg.subtle"}
-                                        maxW={"full"}
-                                        truncate
-                                      >
-                                        {advancedSettingsSummary}
-                                      </Text>
-                                    </VStack>
-                                  </HStack>
-                                  <Collapsible.Indicator asChild>
-                                    <Icon
-                                      as={LuChevronDown}
-                                      flexShrink={0}
-                                      transition={"transform 0.15s ease"}
-                                      _open={{ transform: "rotate(180deg)" }}
-                                    />
-                                  </Collapsible.Indicator>
-                                </Button>
-                              </Collapsible.Trigger>
+                                    {option.label}
+                                  </option>
+                                ))}
+                              </NativeSelect.Field>
+                              <NativeSelect.Indicator />
+                            </NativeSelect.Root>
+                          </Field.Root>
+                        </VStack>
 
-                              <Collapsible.Content
-                                pt={3}
-                                _open={{ overflow: "visible" }}
-                              >
-                                <VStack
-                                  align={"stretch"}
-                                  gap={5}
-                                  borderWidth={"1px"}
-                                  borderColor={"app.border.default"}
-                                  rounded={"xl"}
-                                  bg={"app.bg.subtle"}
-                                  p={{ base: 3, md: 4 }}
-                                >
-                                  <VStack align={"stretch"} gap={3}>
-                                    <HStack justify={"space-between"} gap={3}>
-                                      <HStack gap={2}>
-                                        <Icon
-                                          as={LuCalendarRange}
-                                          color={"app.fg.subtle"}
-                                        />
-                                        <Text fontWeight={"medium"}>
-                                          Date Display
-                                        </Text>
-                                      </HStack>
-                                    </HStack>
+                        <Separator
+                          size="sm"
+                          borderColor="var(--site-line)"
+                          mx={-4}
+                        />
 
-                                    <Field.Root w={"full"}>
-                                      <Field.Label>Date Format</Field.Label>
-                                      <NativeSelect.Root w={"full"}>
-                                        <NativeSelect.Field
-                                          rounded={"xl"}
-                                          bg={"app.bg.default"}
-                                          value={settingsDraft.dateFormat}
-                                          aria-label={"Select date format"}
-                                          onChange={(event) => {
-                                            const dateFormat = event
-                                              .currentTarget
-                                              .value as PracticeSettings["dateFormat"];
-                                            setSettingsDraft((current) => ({
-                                              ...current,
-                                              dateFormat,
-                                            }));
-                                          }}
-                                        >
-                                          {dateFormatOptions.map((option) => (
-                                            <option
-                                              key={option.value}
-                                              value={option.value}
-                                            >
-                                              {option.label}
-                                            </option>
-                                          ))}
-                                        </NativeSelect.Field>
-                                        <NativeSelect.Indicator />
-                                      </NativeSelect.Root>
-                                    </Field.Root>
-                                  </VStack>
-
-                                  <Separator />
-
-                                  <VStack align={"stretch"} gap={3}>
-                                    <HStack
-                                      justify={"space-between"}
-                                      gap={3}
-                                      wrap={"wrap"}
-                                    >
-                                      <HStack gap={2}>
-                                        <Icon
-                                          as={LuCalendarRange}
-                                          color={"app.fg.subtle"}
-                                        />
-                                        <Text fontWeight={"medium"}>
-                                          Month Filter
-                                        </Text>
-                                      </HStack>
-                                      <HStack>
-                                        <Button
-                                          size={"xs"}
-                                          rounded={"full"}
-                                          variant={
-                                            areAllMonthsSelected
-                                              ? "subtle"
-                                              : "outline"
-                                          }
-                                          aria-pressed={areAllMonthsSelected}
-                                          onClick={toggleAllMonths}
-                                        >
-                                          All
-                                        </Button>
-                                      </HStack>
-                                    </HStack>
-
-                                    <Grid
-                                      templateColumns={[
-                                        "repeat(3, minmax(0, 1fr))",
-                                        "repeat(6, minmax(0, 1fr))",
-                                      ]}
-                                      gap={2}
-                                      onPointerMove={applyMonthDragFromPointer}
-                                    >
-                                      {ALL_MONTHS.map((month) => {
-                                        const isSelected =
-                                          selectedMonths.includes(month);
-
-                                        return (
-                                          <Button
-                                            key={month}
-                                            data-calendar-drill-month={month}
-                                            size={"sm"}
-                                            rounded={"lg"}
-                                            variant={"ghost"}
-                                            colorPalette={"gray"}
-                                            borderWidth={0}
-                                            bg={
-                                              isSelected
-                                                ? "app.bg.surface"
-                                                : "transparent"
-                                            }
-                                            color={
-                                              isSelected
-                                                ? "app.fg.default"
-                                                : undefined
-                                            }
-                                            _hover={{
-                                              bg: isSelected
-                                                ? "app.bg.surface"
-                                                : "transparent",
-                                              outlineWidth: "1px",
-                                              outlineStyle: "solid",
-                                              outlineColor: "app.border.strong",
-                                              outlineOffset: "0",
-                                            }}
-                                            _focusVisible={{
-                                              outlineWidth: "2px",
-                                              outlineStyle: "solid",
-                                              outlineColor: "app.border.accent",
-                                              outlineOffset: "2px",
-                                            }}
-                                            aria-pressed={isSelected}
-                                            onPointerDown={(event) =>
-                                              beginMonthDrag(
-                                                month,
-                                                isSelected,
-                                                event,
-                                              )
-                                            }
-                                            onPointerEnter={() =>
-                                              applyMonthDrag(month)
-                                            }
-                                            onClick={() => {
-                                              if (
-                                                didHandleMonthPointerRef.current
-                                              ) {
-                                                didHandleMonthPointerRef.current = false;
-                                                return;
-                                              }
-
-                                              toggleMonth(month);
-                                            }}
-                                          >
-                                            {MONTH_LABELS[month - 1]}
-                                          </Button>
-                                        );
-                                      })}
-                                    </Grid>
-                                  </VStack>
-
-                                  <Separator />
-
-                                  <VStack align={"stretch"} gap={3}>
-                                    <HStack gap={2}>
-                                      <Icon
-                                        as={LuKeyboard}
-                                        color={"app.fg.subtle"}
-                                      />
-                                      <Text fontWeight={"medium"}>
-                                        Weekdays Layout
-                                      </Text>
-                                    </HStack>
-
-                                    <Grid
-                                      templateColumns={[
-                                        "1fr",
-                                        "repeat(2, minmax(0, 1fr))",
-                                      ]}
-                                      gap={{ base: 3, md: 6 }}
-                                    >
-                                      <Switch
-                                        checked={
-                                          settingsDraft.weekStartDay ===
-                                          "monday"
-                                        }
-                                        onCheckedChange={(
-                                          details: SwitchCheckedChangeDetails,
-                                        ) => {
-                                          const weekStartDay = details.checked
-                                            ? "monday"
-                                            : "sunday";
-                                          setSettingsDraft((current) => ({
-                                            ...current,
-                                            weekStartDay,
-                                          }));
-                                        }}
-                                      >
-                                        Monday as first day
-                                      </Switch>
-
-                                      <Switch
-                                        checked={
-                                          settingsDraft.firstDayNumberBase === 0
-                                        }
-                                        onCheckedChange={(
-                                          details: SwitchCheckedChangeDetails,
-                                        ) => {
-                                          const firstDayNumberBase =
-                                            details.checked ? 0 : 1;
-                                          setSettingsDraft((current) => ({
-                                            ...current,
-                                            firstDayNumberBase,
-                                          }));
-                                        }}
-                                      >
-                                        First day starts at 0
-                                      </Switch>
-                                    </Grid>
-                                  </VStack>
-                                </VStack>
-                              </Collapsible.Content>
-                            </Collapsible.Root>
-                          </VStack>
-                        </Fieldset.Content>
-                      </Fieldset.Root>
-                    )}
-                  </VStack>
-                </Card.Body>
-                <Card.Footer p={0} w={"full"}>
-                  {status === "running" ? (
-                    <HStack w={"full"} gap={0}>
-                      <Button
-                        flex={1}
-                        rounded={0}
-                        h={12}
-                        onClick={nextQuestion}
-                        disabled={!answerState}
-                        {...CALENDAR_DRILL_PRIMARY_ACTION_BUTTON_STYLES}
-                        justifyContent={"center"}
-                        px={4}
-                        position={"relative"}
-                      >
-                        <HStack gap={2}>
-                          <Icon as={LuPlay} />
-                          <Text>Next</Text>
-                        </HStack>
-                        {answerState ? (
-                          <Box
-                            position={"absolute"}
-                            insetEnd={{ base: 2, sm: 4 }}
+                        <VStack align={"stretch"} gap={3}>
+                          <HStack
+                            justify={"space-between"}
+                            gap={3}
+                            wrap={"wrap"}
                           >
-                            <Box display={{ base: "none", sm: "block" }}>
-                              <ShortcutHint
-                                icon={LuCornerDownLeft}
-                                label={"Enter"}
+                            <HStack gap={2}>
+                              <Icon
+                                as={LuCalendarRange}
+                                color={"app.fg.subtle"}
                               />
-                            </Box>
-                            <Box display={{ base: "block", sm: "none" }}>
-                              <ShortcutHint
-                                icon={LuCornerDownLeft}
-                                label={""}
-                              />
-                            </Box>
-                          </Box>
-                        ) : null}
-                      </Button>
-                      <Button
-                        flex={1}
-                        rounded={0}
-                        h={12}
-                        variant={"subtle"}
-                        colorPalette={"gray"}
-                        onClick={resetSession}
-                      >
-                        <Icon as={LuRotateCcw} />
-                        Reset
-                      </Button>
-                    </HStack>
-                  ) : (
-                    <Button
-                      w={"full"}
-                      rounded={0}
-                      h={12}
-                      onClick={startSession}
-                      {...CALENDAR_DRILL_PRIMARY_ACTION_BUTTON_STYLES}
-                      justifyContent={"center"}
-                      px={4}
-                      position={"relative"}
-                    >
-                      <HStack gap={2}>
-                        <Icon as={LuPlay} />
-                        <Text>Start</Text>
-                      </HStack>
-                      <Box position={"absolute"} insetEnd={{ base: 2, sm: 4 }}>
-                        <Box display={{ base: "none", sm: "block" }}>
-                          <ShortcutHint
-                            icon={LuCornerDownLeft}
-                            label={"Enter"}
-                          />
-                        </Box>
-                        <Box display={{ base: "block", sm: "none" }}>
-                          <ShortcutHint icon={LuCornerDownLeft} label={""} />
-                        </Box>
-                      </Box>
-                    </Button>
-                  )}
-                </Card.Footer>
-              </Card.Root>
-          </HighlightedSection>
-        </Bleed>
+                              <Text fontWeight={"medium"}>Month Filter</Text>
+                            </HStack>
+                            <HStack>
+                              <Button
+                                size={"xs"}
+                                rounded={"full"}
+                                variant={
+                                  areAllMonthsSelected ? "subtle" : "outline"
+                                }
+                                aria-pressed={areAllMonthsSelected}
+                                onClick={toggleAllMonths}
+                              >
+                                All
+                              </Button>
+                            </HStack>
+                          </HStack>
+
+                          <Grid
+                            templateColumns={[
+                              "repeat(3, minmax(0, 1fr))",
+                              "repeat(6, minmax(0, 1fr))",
+                            ]}
+                            gap={2}
+                            onPointerMove={applyMonthDragFromPointer}
+                          >
+                            {ALL_MONTHS.map((month) => {
+                              const isSelected = selectedMonths.includes(month);
+
+                              return (
+                                <Button
+                                  key={month}
+                                  data-calendar-drill-month={month}
+                                  size={"sm"}
+                                  rounded={"lg"}
+                                  variant={"ghost"}
+                                  colorPalette={"gray"}
+                                  borderWidth={0}
+                                  bg={
+                                    isSelected
+                                      ? "app.bg.surface"
+                                      : "transparent"
+                                  }
+                                  color={
+                                    isSelected ? "app.fg.default" : undefined
+                                  }
+                                  _hover={{
+                                    bg: isSelected
+                                      ? "app.bg.surface"
+                                      : "transparent",
+                                    outlineWidth: "1px",
+                                    outlineStyle: "solid",
+                                    outlineColor: "app.border.strong",
+                                    outlineOffset: "0",
+                                  }}
+                                  _focusVisible={{
+                                    outlineWidth: "2px",
+                                    outlineStyle: "solid",
+                                    outlineColor: "app.border.accent",
+                                    outlineOffset: "2px",
+                                  }}
+                                  aria-pressed={isSelected}
+                                  onPointerDown={(event) =>
+                                    beginMonthDrag(month, isSelected, event)
+                                  }
+                                  onPointerEnter={() => applyMonthDrag(month)}
+                                  onClick={() => {
+                                    if (didHandleMonthPointerRef.current) {
+                                      didHandleMonthPointerRef.current = false;
+                                      return;
+                                    }
+
+                                    toggleMonth(month);
+                                  }}
+                                >
+                                  {MONTH_LABELS[month - 1]}
+                                </Button>
+                              );
+                            })}
+                          </Grid>
+                        </VStack>
+
+                        <Separator
+                          size="sm"
+                          borderColor="var(--site-line)"
+                          mx={-4}
+                        />
+
+                        <VStack align={"stretch"} gap={3}>
+                          <HStack gap={2}>
+                            <Icon as={LuKeyboard} color={"app.fg.subtle"} />
+                            <Text fontWeight={"medium"}>Weekdays Layout</Text>
+                          </HStack>
+
+                          <Grid
+                            templateColumns={[
+                              "1fr",
+                              "repeat(2, minmax(0, 1fr))",
+                            ]}
+                            gap={{ base: 3, md: 6 }}
+                          >
+                            <Switch
+                              checked={settingsDraft.weekStartDay === "monday"}
+                              onCheckedChange={(
+                                details: SwitchCheckedChangeDetails,
+                              ) => {
+                                const weekStartDay = details.checked
+                                  ? "monday"
+                                  : "sunday";
+                                setSettingsDraft((current) => ({
+                                  ...current,
+                                  weekStartDay,
+                                }));
+                              }}
+                            >
+                              Monday as first day
+                            </Switch>
+
+                            <Switch
+                              checked={settingsDraft.firstDayNumberBase === 0}
+                              onCheckedChange={(
+                                details: SwitchCheckedChangeDetails,
+                              ) => {
+                                const firstDayNumberBase = details.checked
+                                  ? 0
+                                  : 1;
+                                setSettingsDraft((current) => ({
+                                  ...current,
+                                  firstDayNumberBase,
+                                }));
+                              }}
+                            >
+                              First day starts at 0
+                            </Switch>
+                          </Grid>
+                        </VStack>
+                      </VStack>
+                    </Collapsible.Content>
+                  </Collapsible.Root>
+                </VStack>
+              </Fieldset.Content>
+            </Fieldset.Root>
+          )}
+        </VStack>
       </Box>
+      <Separator size="sm" borderColor="var(--site-line)" />
+      <Box w={"full"}>
+        {status === "running" ? (
+          <HStack w={"full"} gap={0}>
+            <Button
+              flex={1}
+              rounded={0}
+              h={12}
+              onClick={nextQuestion}
+              disabled={!answerState}
+              {...CALENDAR_DRILL_PRIMARY_ACTION_BUTTON_STYLES}
+              justifyContent={"center"}
+              px={4}
+              position={"relative"}
+            >
+              <HStack gap={2}>
+                <Icon as={LuPlay} />
+                <Text>Next</Text>
+              </HStack>
+              {answerState ? (
+                <Box position={"absolute"} insetEnd={{ base: 2, sm: 4 }}>
+                  <Box display={{ base: "none", sm: "block" }}>
+                    <ShortcutHint icon={LuCornerDownLeft} label={"Enter"} />
+                  </Box>
+                  <Box display={{ base: "block", sm: "none" }}>
+                    <ShortcutHint icon={LuCornerDownLeft} label={""} />
+                  </Box>
+                </Box>
+              ) : null}
+            </Button>
+            <Button
+              flex={1}
+              rounded={0}
+              h={12}
+              variant={"subtle"}
+              colorPalette={"gray"}
+              onClick={resetSession}
+            >
+              <Icon as={LuRotateCcw} />
+              Reset
+            </Button>
+          </HStack>
+        ) : (
+          <Button
+            w={"full"}
+            rounded={0}
+            h={12}
+            onClick={startSession}
+            {...CALENDAR_DRILL_PRIMARY_ACTION_BUTTON_STYLES}
+            justifyContent={"center"}
+            px={4}
+            position={"relative"}
+          >
+            <HStack gap={2}>
+              <Icon as={LuPlay} />
+              <Text>Start</Text>
+            </HStack>
+            <Box position={"absolute"} insetEnd={{ base: 2, sm: 4 }}>
+              <Box display={{ base: "none", sm: "block" }}>
+                <ShortcutHint icon={LuCornerDownLeft} label={"Enter"} />
+              </Box>
+              <Box display={{ base: "block", sm: "none" }}>
+                <ShortcutHint icon={LuCornerDownLeft} label={""} />
+              </Box>
+            </Box>
+          </Button>
+        )}
+      </Box>
+      <Separator size="sm" borderColor="var(--site-line)" />
     </VStack>
   );
 }

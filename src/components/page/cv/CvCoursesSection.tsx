@@ -1,5 +1,6 @@
-import { Box, Text, VStack, SimpleGrid, HStack } from "@chakra-ui/react";
-import { Heading4 } from "@components/core/Texts";
+import CvList from "./CvList";
+import { Box, Text, VStack, HStack } from "@chakra-ui/react";
+import { Heading4 } from "./CvTypography";
 import type { CvCourseItem, CvSectionBase } from "data/cv";
 import type { ElementType } from "react";
 import type { AppAccentPalette, AppPalette } from "theme/colors/types";
@@ -24,8 +25,6 @@ export default function CvCoursesSection({
 }) {
   if (!section || section.items.length === 0) return null;
 
-  const cardBg = "app.bg.card";
-  const cardBorder = "app.border.muted";
   const mutedColor = CV_SECONDARY_TEXT_COLOR;
 
   const resolvedAccentPalette = accentColorPalette ?? primaryColorPalette;
@@ -45,7 +44,7 @@ export default function CvCoursesSection({
       primaryColorPalette={primaryColorPalette}
       accentColorPalette={accentColorPalette}
     >
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={[2, 3]}>
+      <CvList>
         {section.items.map((item, index) => {
           const timeframe =
             item.timeframe ?? (item.date ? formatCvDate(item.date) : undefined);
@@ -53,24 +52,17 @@ export default function CvCoursesSection({
           return (
             <Box
               key={`${item.name}-${index}`}
-              borderWidth={1}
-              borderColor={cardBorder}
-              borderRadius="2xl"
-              p={3}
-              bg={cardBg}
+              borderRadius={0}
+              bg="transparent"
               height="full"
-              transition="border-color 0.2s ease"
-              _hover={{ borderColor: "app.border.default" }}
             >
               <VStack align="stretch" gap={2} height="full">
                 <VStack align="stretch" gap={1}>
                   <HStack justify="space-between" align="start">
-                    <Heading4 lineClamp={2}>
-                      {item.name}
-                    </Heading4>
+                    <Heading4 lineClamp={2}>{item.name}</Heading4>
                     {item.courseCode && (
                       <Text
-                        fontSize="17px"
+                        fontSize="14px"
                         px={2}
                         py={0.5}
                         borderRadius="md"
@@ -131,7 +123,7 @@ export default function CvCoursesSection({
             </Box>
           );
         })}
-      </SimpleGrid>
+      </CvList>
     </CvSection>
   );
 }

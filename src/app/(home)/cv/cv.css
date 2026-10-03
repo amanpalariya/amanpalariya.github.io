@@ -1,0 +1,17 @@
+.site-main-content:has(.cv-feed) {
+  padding: 0;
+}
+.cv-feed {
+  color: var(--site-body);
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.cv-feed a {
+  color: var(--site-accent);
+  overflow-wrap: anywhere;
+}
+.cv-feed a:focus-visible {
+  outline: 2px solid var(--site-accent);
+  outline-offset: 3px;
+}

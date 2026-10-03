@@ -1,3 +1,4 @@
+import CvList from "./CvList";
 import {
   Box,
   HStack,
@@ -7,12 +8,11 @@ import {
   VStack,
   Wrap,
   WrapItem,
-  SimpleGrid,
   Image,
   Button,
 } from "@chakra-ui/react";
 import { CategoryBadge } from "@components/core/Badges";
-import { ParagraphText, Heading4 } from "@components/core/Texts";
+import { ParagraphText, Heading4 } from "./CvTypography";
 import type { CvSectionBase } from "data/cv";
 import { useState, type ElementType } from "react";
 import { FiLink, FiEye } from "react-icons/fi";
@@ -60,16 +60,7 @@ function AccomplishmentCard({
     item.meta || [item.issuer, item.date].filter(Boolean).join(" · ");
 
   return (
-    <Box
-      borderWidth={1}
-      borderColor={"app.border.default"}
-      borderRadius="2xl"
-      p={4}
-      bg={"app.bg.card"}
-      height="full"
-      transition="transform 0.2s ease, border-color 0.2s ease"
-      _hover={{ borderColor: "app.border.strong" }}
-    >
+    <Box borderRadius={0} bg="transparent" height="full">
       <VStack align="stretch" gap={2} height="full">
         <VStack align="stretch" gap={0.5}>
           <HStack justify="space-between" align="start" gap={2}>
@@ -165,7 +156,7 @@ export default function CvAccomplishmentsSection({
       primaryColorPalette={primaryColorPalette}
       accentColorPalette={accentColorPalette}
     >
-      <SimpleGrid columns={{ base: 1, md: 2 }} gap={[2, 3]}>
+      <CvList>
         {items.map((item, index) => (
           <AccomplishmentCard
             key={`${item.title}-${index}`}
@@ -174,7 +165,7 @@ export default function CvAccomplishmentsSection({
             onViewImage={(src, title) => setSelectedImage({ src, title })}
           />
         ))}
-      </SimpleGrid>
+      </CvList>
 
       <DialogRoot
         open={!!selectedImage}

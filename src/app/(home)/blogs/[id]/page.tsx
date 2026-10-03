@@ -1,7 +1,7 @@
 import Client from "./Client";
 import { blogIds } from "data/blogs/ids";
 import { getBlogById } from "data/blogs/loader";
-import { renderMarkdownToHtml } from "@utils/markdown";
+import { renderMarkdownWithOutline } from "@utils/markdown";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getPageTitle } from "app/metadata";
@@ -35,7 +35,7 @@ export default async function BlogDetailPage({
   if (!blogIds.includes(resolvedParams.id)) return notFound();
   const blog = getBlogById(resolvedParams.id);
   if (!blog) return notFound();
-  const html = await renderMarkdownToHtml(blog.content, {
+  const { html } = await renderMarkdownWithOutline(blog.content, {
     includeMath: true,
     includeToc: true,
     allowDangerousHtml: true,

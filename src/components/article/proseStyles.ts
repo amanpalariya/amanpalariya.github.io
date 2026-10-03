@@ -5,17 +5,17 @@ import type { CSSObject } from "@emotion/react";
 
 export function useProseStyles(): CSSObject {
   const proseBodyFontFamily =
-    "'Source Serif 4', Georgia, 'Times New Roman', serif";
-  const proseHeadingFontFamily = "'Lexend', sans-serif";
+    "var(--font-dm-sans), sans-serif";
+  const proseHeadingFontFamily = proseBodyFontFamily;
   const proseCodeFontFamily =
     "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace";
 
-  const headingColor = useColorModeValue("gray.800", "whiteAlpha.900");
-  const textColor = useColorModeValue("gray.900", "gray.100");
-  const subtleTextColor = useColorModeValue("gray.600", "gray.400");
-  const linkColor = useColorModeValue("#007a8a", "teal.300");
+  const headingColor = "app.prose.heading";
+  const textColor = "app.prose.body";
+  const subtleTextColor = "app.prose.subtle";
+  const linkColor = "var(--site-accent)";
   const borderColor = useColorModeValue("gray.200", "gray.700");
-  const codeBg = useColorModeValue("gray.100", "gray.900");
+  const codeBg = "app.bg.surface";
   const preBg = useColorModeValue("gray.50", "gray.900");
   const preBorder = useColorModeValue("gray.200", "gray.700");
   const preTextColor = useColorModeValue("gray.800", "whiteAlpha.900");
@@ -26,9 +26,11 @@ export function useProseStyles(): CSSObject {
   return {
     color: textColor,
     fontFamily: proseBodyFontFamily,
-    lineHeight: "1.42",
-    fontSize: ["lg", "xl"],
-    letterSpacing: "0.01em",
+    fontWeight: 450,
+    lineHeight: "1.6",
+    fontSize: "16px",
+    letterSpacing: "normal",
+    textAlign: "left",
     width: "100%",
     marginInline: "auto",
     wordBreak: "normal",
@@ -38,47 +40,48 @@ export function useProseStyles(): CSSObject {
     msHyphens: "none",
     "& > *": {
       marginTop: 0,
-      marginBottom: 7,
+      marginBottom: 4,
     },
     "& > *:last-child": {
       marginBottom: 0,
     },
-    "& h1, & h2, & h3, & h4": {
+    "& h1, & h2, & h3, & h4, & h5, & h6": {
       color: headingColor,
       fontFamily: proseHeadingFontFamily,
       letterSpacing: "-0.01em",
-      lineHeight: "shorter",
-      marginTop: 10,
-      marginBottom: 4,
-      fontWeight: "medium",
+      lineHeight: "1.3",
+      marginTop: 8,
+      marginBottom: 3,
+      fontWeight: 700,
     },
     "& h1": {
-      fontSize: ["2xl", "3xl"],
-      fontWeight: "semibold",
+      fontSize: "26px",
+      fontWeight: 750,
     },
     "& h2": {
-      fontSize: ["xl", "2xl"],
-      fontWeight: "semibold",
+      fontSize: "22px",
     },
     "& h3": {
-      fontSize: ["lg", "xl"],
+      fontSize: "18px",
     },
-    "& h4": {
-      fontSize: "lg",
+    "& h4, & h5, & h6": {
+      fontSize: "16px",
     },
     "& p": {
-      marginBottom: 7,
+      marginBottom: 4,
       textAlign: "justify",
-      hyphens: "none",
-      WebkitHyphens: "none",
-      msHyphens: "none",
+      textAlignLast: "left",
+      hyphens: "auto",
+      WebkitHyphens: "auto",
+      msHyphens: "auto",
+      hyphenateLimitChars: "7 3 3",
     },
-    "& p:last-of-type": {
-      marginBottom: 0,
+    "& > :first-child": {
+      marginTop: 0,
     },
-    "& strong": {
+    "& strong, & b": {
       color: headingColor,
-      fontWeight: "medium",
+      fontWeight: 700,
     },
     "& em, & i": {
       color: textColor,
@@ -120,7 +123,7 @@ export function useProseStyles(): CSSObject {
       transform: "translateY(-0.05em)",
     },
     "& a:hover": {
-      color: useColorModeValue("#006fd6", "teal.200"),
+      color: linkColor,
     },
     "& ul, & ol": {
       paddingLeft: 6,
@@ -169,9 +172,10 @@ export function useProseStyles(): CSSObject {
       overflowX: "hidden",
       border: "1px solid",
       borderColor: preBorder,
-      fontSize: ["md", "lg"],
+      fontSize: "14px",
+      lineHeight: "1.6",
       marginY: 6,
-      marginX: [-2, -3],
+      marginX: 0,
       hyphens: "none",
       WebkitHyphens: "none",
       msHyphens: "none",
@@ -261,7 +265,7 @@ export function useProseStyles(): CSSObject {
     "& thead th": {
       background: codeBg,
       color: headingColor,
-      fontWeight: "medium",
+      fontWeight: 700,
     },
   } as const;
 }

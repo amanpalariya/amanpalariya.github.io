@@ -1,9 +1,9 @@
 "use client";
 
-import { Bleed, EmptyState, VStack, Spacer, Box, Icon } from "@chakra-ui/react";
-import { Heading1, SectionText, SubtitleText } from "@components/core/Texts";
-import { TileList, TitleDescriptionMetaTile } from "@components/core/Tiles";
-import HighlightedSection from "@components/page/common/HighlightedSection";
+import { EmptyState, VStack, Icon } from "@chakra-ui/react";
+import PageIntro from "@components/page/common/PageIntro";
+import { FeedList, TitleDescriptionMetaTile } from "@components/core/Tiles";
+import ContentSection from "@components/page/common/ContentSection";
 import { homepageTabs } from "app/route-info";
 import BlogsData from "data/blogs";
 import type { BlogMeta } from "data/blogs/loader";
@@ -14,58 +14,48 @@ import { notFound } from "next/navigation";
 
 function Main() {
   return (
-    <Box m={[4, 6]} letterSpacing={"wide"} lineHeight={"tall"}>
-      <VStack align={"stretch"} gap={5}>
-        <SectionText>{homepageTabs.blogs.name}</SectionText>
-        <Spacer h={4} />
-        <Heading1>{BlogsData.blogsPage.title}</Heading1>
-        <SubtitleText>{BlogsData.blogsPage.subtitle}</SubtitleText>
-      </VStack>
-    </Box>
+    <PageIntro
+      title={BlogsData.blogsPage.title}
+      subtitle={BlogsData.blogsPage.subtitle}
+    />
   );
 }
 
 function NoBlogsElement() {
   return (
-    <Bleed inline={{ base: 1, md: 2 }}>
-      <HighlightedSection>
-        <EmptyState.Root>
-          <EmptyState.Content>
-            <EmptyState.Indicator>
-              <Icon boxSize={12} color={"gray.500"}>
-                <FiBookmark />
-              </Icon>
-            </EmptyState.Indicator>
-            <EmptyState.Title textAlign={"center"}>
-              {BlogsData.blogsPage.emptyStateTitle}
-            </EmptyState.Title>
-          </EmptyState.Content>
-        </EmptyState.Root>
-      </HighlightedSection>
-    </Bleed>
+    <ContentSection borderTop={0}>
+      <EmptyState.Root>
+        <EmptyState.Content>
+          <EmptyState.Indicator>
+            <Icon boxSize={12} color={"gray.500"}>
+              <FiBookmark />
+            </Icon>
+          </EmptyState.Indicator>
+          <EmptyState.Title textAlign={"center"}>
+            {BlogsData.blogsPage.emptyStateTitle}
+          </EmptyState.Title>
+        </EmptyState.Content>
+      </EmptyState.Root>
+    </ContentSection>
   );
 }
 
 function BlogsListElement({ blogs }: { blogs: BlogMeta[] }) {
   return (
-    <Bleed inline={{ base: 1, md: 2 }}>
-      <HighlightedSection>
-        <TileList>
-          {blogs.map((blog) => (
-            <TitleDescriptionMetaTile
-              key={blog.id}
-              title={blog.title}
-              description={blog.description}
-              tags={blog.tags}
-              published={blog.published}
-              updated={blog.updated}
-              url={homepageTabs.blogs.getSubpagePathname(blog.id)}
-              isUrlExternal={false}
-            />
-          ))}
-        </TileList>
-      </HighlightedSection>
-    </Bleed>
+    <FeedList>
+      {blogs.map((blog) => (
+        <TitleDescriptionMetaTile
+          key={blog.id}
+          title={blog.title}
+          description={blog.description}
+          tags={blog.tags}
+          published={blog.published}
+          updated={blog.updated}
+          url={homepageTabs.blogs.getSubpagePathname(blog.id)}
+          isUrlExternal={false}
+        />
+      ))}
+    </FeedList>
   );
 }
 
@@ -91,7 +81,7 @@ export default function BlogsClient({ blogs }: { blogs: BlogMeta[] }) {
   }
 
   return (
-    <VStack align={"stretch"}>
+    <VStack align="stretch" gap={0}>
       <Main />
       <Blogs blogs={blogs} />
     </VStack>

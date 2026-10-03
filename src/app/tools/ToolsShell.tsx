@@ -13,7 +13,7 @@ export default function ToolsShell({
   return (
     <WithBackground>
       <WithHeader>
-        <WithFooter>
+        <WithFooter hideFooterBottomPart>
           <WithBodyCard>{children}</WithBodyCard>
         </WithFooter>
       </WithHeader>

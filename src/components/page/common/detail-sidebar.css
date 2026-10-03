@@ -1,0 +1,29 @@
+.detail-desktop-extras {
+  display: none;
+  color: var(--site-ink);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.detail-desktop-extras h2 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 700;
+}
+.prose-content :is(h1, h2, h3, h4, h5, h6)[id] {
+  scroll-margin-top: 100px;
+}
+@media (min-width: 1280px) {
+  .detail-desktop-extras {
+    display: block;
+    padding: 16px;
+    border: 1px solid var(--site-line);
+    border-radius: 16px;
+    background: var(--chakra-colors-app-bg-default);
+  }
+  .detail-mobile-links {
+    display: none;
+  }
+  .prose-content :is(h1, h2, h3, h4, h5, h6)[id] {
+    scroll-margin-top: 24px;
+  }
+}

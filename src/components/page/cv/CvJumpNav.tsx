@@ -12,7 +12,11 @@ export function renderSectionAnchorLinks(sections: CvData["sections"]) {
   }));
 }
 
-export default function CvJumpNav({ sections }: { sections: CvData["sections"] }) {
+export default function CvJumpNav({
+  sections,
+}: {
+  sections: CvData["sections"];
+}) {
   const links = renderSectionAnchorLinks(sections);
   const separatorColor = "app.fg.subtle";
 
@@ -28,9 +32,9 @@ export default function CvJumpNav({ sections }: { sections: CvData["sections"] }
                 href={`#${link.id}`}
                 fontFamily={CV_BODY_FONT_FAMILY}
                 fontSize={CV_META_TEXT_SIZE}
-                color={`${link.accentColorPalette}.fg`}
+                color="var(--site-accent)"
                 _hover={{
-                  color: `${link.accentColorPalette}.emphasized`,
+                  textDecoration: "underline",
                 }}
               >
                 {link.title}

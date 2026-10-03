@@ -4,11 +4,11 @@ import { VStack } from "@chakra-ui/react";
 import { HtmlArticleRenderer } from "@components/article/Renderer";
 import {
   DetailDescription,
-  DetailExternalLinks,
   DetailMetaSection,
   DetailTitleBar,
 } from "@components/page/common/DetailPage";
 import type { ExternalLink } from "data/external-links";
+import DetailSidebar from "@components/page/common/DetailSidebar";
 
 type Project = {
   id: string;
@@ -28,7 +28,7 @@ function MetaRow({
   return (
     <DetailMetaSection>
       <DetailDescription description={description} />
-      <DetailExternalLinks links={externalLinks} />
+      <DetailSidebar links={externalLinks} />
     </DetailMetaSection>
   );
 }

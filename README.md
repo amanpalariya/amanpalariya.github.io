@@ -23,6 +23,10 @@ The main code lives in:
 - `src/data`: Website content (personal info, projects, blogs, etc.)
 - `src/utils`: Utility helpers
 
+## Design
+
+Pages use the shared column shell, `PageIntro` for titles, `FeedList` for edge-to-edge rows, and `ContentSection` for flat sections. Use the semantic colors in `src/config/chakra/semantic-tokens.ts` and the `--site-*` CSS variables for the site palette and dividers. The former rounded, tinted page cards and dotted section labels have been removed; new pages should follow the shared components.
+
 ## Testing
 
 Run static checks before opening a PR:

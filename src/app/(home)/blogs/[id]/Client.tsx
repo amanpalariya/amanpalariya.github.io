@@ -5,11 +5,9 @@ import { HtmlArticleRenderer } from "@components/article/Renderer";
 import { CategoryBadge } from "@components/core/Badges";
 import { useFeatureFlag } from "utils/features";
 import FeatureFlagsData from "data/features";
-import {
-  DetailExternalLinks,
-  DetailTitleBar,
-} from "@components/page/common/DetailPage";
+import { DetailTitleBar } from "@components/page/common/DetailPage";
 import type { ExternalLink } from "data/external-links";
+import DetailSidebar from "@components/page/common/DetailSidebar";
 type Blog = {
   id: string;
   title: string;
@@ -54,11 +52,9 @@ function DateRow({
     : null;
 
   return (
-    <HStack gap={3} px={[4, 6]} fontSize="sm" color="app.fg.muted">
+    <HStack gap={3} fontSize="sm" color="app.fg.muted">
       <Text as="p">
-        <time dateTime={publishedDate.toISOString()}>
-          {publishedLabel}
-        </time>
+        <time dateTime={publishedDate.toISOString()}>{publishedLabel}</time>
         {updatedDate && updatedLabel ? (
           <time dateTime={updatedDate.toISOString()}>
             {` (updated on ${updatedLabel})`}
@@ -72,7 +68,7 @@ function DateRow({
 function TagRow({ tags = [] as string[] }) {
   if (!tags || tags.length === 0) return null;
   return (
-    <HStack gap={3} wrap={"wrap"} align={"center"} px={[4, 6]} py={0}>
+    <HStack gap={3} wrap={"wrap"} align={"center"} py={0}>
       {tags.map((t, i) => (
         <CategoryBadge key={i}>{t}</CategoryBadge>
       ))}
@@ -80,17 +76,13 @@ function TagRow({ tags = [] as string[] }) {
   );
 }
 
-function ExternalLinksBlock({ links }: { links?: ExternalLink[] }) {
-  if (!links || links.length === 0) return null;
-
-  return (
-    <HStack gap={3} px={[4, 6]} wrap={"wrap"} align={"center"}>
-      <DetailExternalLinks links={links} />
-    </HStack>
-  );
-}
-
-export default function Client({ html, blog }: { html: string; blog: Blog }) {
+export default function Client({
+  html,
+  blog,
+}: {
+  html: string;
+  blog: Blog;
+}) {
   const [isBlogsFeatureEnabled] = useFeatureFlag(
     FeatureFlagsData.featuresIds.BLOGS,
   );
@@ -102,7 +94,7 @@ export default function Client({ html, blog }: { html: string; blog: Blog }) {
       <DetailTitleBar title={blog.title} />
       <DateRow published={blog.published} updated={blog.updated} />
       <TagRow tags={blog.tags} />
-      <ExternalLinksBlock links={blog.externalLinks} />
+      <DetailSidebar links={blog.externalLinks} />
       <HtmlArticleRenderer title={blog.title} html={html} showTitle={false} />
     </VStack>
   );

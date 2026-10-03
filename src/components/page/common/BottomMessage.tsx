@@ -5,7 +5,7 @@ import LinkedInButton from "./LinkedInPrimaryButton";
 
 export default function BottomMessage() {
   return (
-    <Box p={8}>
+    <Box py={8}>
       <VStack align={"center"} gap={6}>
         <VStack align={"center"}>
           <Heading1 centerAlign>{`Let's grow together.`}</Heading1>

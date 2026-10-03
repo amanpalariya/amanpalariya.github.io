@@ -9,7 +9,6 @@ import {
   Wrap,
   WrapItem,
 } from "@chakra-ui/react";
-import { HeaderCard } from "@components/core/Cards";
 import { Tooltip } from "@components/ui/tooltip";
 import { homepageTabs } from "app/route-info";
 import { PersonalData } from "data";
@@ -76,129 +75,125 @@ export default function Footer({
   ] as const;
 
   return (
-    <Box as="footer" p={[1, 4]} pt={[0, 0.5]} role="contentinfo">
-      <HeaderCard px={0} py={0} overflow={"hidden"}>
-        <VStack align="stretch" gap={0}>
-          <Box px={[7, 9]} py={[7, 8]}>
-            <Stack
-              direction={["column", "row"]}
-              justify="space-between"
-              align={["flex-start", "start"]}
-              gap={[6, 10]}
-            >
-              <VStack align="flex-start" gap={2} flex={1} minW={0}>
-                <Text
-                  fontSize="xs"
-                  fontWeight="semibold"
-                  textTransform="uppercase"
-                  letterSpacing="wide"
-                  color="app.fg.muted"
-                >
-                  Connect
-                </Text>
-                <Box as="address" fontStyle="normal" m={0}>
-                  <HStack gap={3}>
-                    {socialLinks.map((social) => (
-                      <Tooltip
-                        key={social.label}
-                        content={social.tooltip}
-                        showArrow
-                      >
-                        <Link
-                          href={social.href}
-                          target={social.isExternal ? "_blank" : undefined}
-                          rel={
-                            social.isExternal ? "noopener noreferrer" : undefined
-                          }
-                          aria-label={
-                            social.isExternal
-                              ? `${social.label} (opens in a new tab)`
-                              : social.label
-                          }
-                          color={social.color}
-                          _hover={{ opacity: 0.85 }}
-                        >
-                          <Icon as={social.icon} boxSize={5} />
-                        </Link>
-                      </Tooltip>
-                    ))}
-                  </HStack>
-                </Box>
-              </VStack>
-
-              <VStack align="flex-start" gap={2} flex={1} minW={0}>
-                <Text
-                  fontSize="xs"
-                  fontWeight="semibold"
-                  textTransform="uppercase"
-                  letterSpacing="wide"
-                  color="app.fg.muted"
-                >
-                  Navigate
-                </Text>
-                <Wrap gapX={4} gapY={2}>
-                  <WrapItem>
-                    <Link
-                      href={homepageTabs.home.pathname}
-                      {...footerLinkProps}
-                    >
-                      {homepageTabs.home.name}
-                    </Link>
-                  </WrapItem>
-                  <WrapItem>
-                    <Link
-                      href={homepageTabs.about.pathname}
-                      {...footerLinkProps}
-                    >
-                      {homepageTabs.about.name}
-                    </Link>
-                  </WrapItem>
-                  <WrapItem>
-                    <Link
-                      href={homepageTabs.projects.pathname}
-                      {...footerLinkProps}
-                    >
-                      {homepageTabs.projects.name}
-                    </Link>
-                  </WrapItem>
-                  <WrapItem>
-                    <Link
-                      href={homepageTabs.blogs.pathname}
-                      {...footerLinkProps}
-                    >
-                      {homepageTabs.blogs.name}
-                    </Link>
-                  </WrapItem>
-                  <WrapItem>
-                    <Link href={homepageTabs.cv.pathname} {...footerLinkProps}>
-                      {homepageTabs.cv.name}
-                    </Link>
-                  </WrapItem>
-                </Wrap>
-              </VStack>
-            </Stack>
-          </Box>
-
-          {hideBottomPart ? null : (
-            <Box
-              background={"app.bg.cardHeader"}
-              borderTopWidth={"2px"}
-              borderTopColor={"app.border.default"}
-              px={[7, 9]}
-              py={3}
-            >
+    <Box
+      as="footer"
+      className="site-footer"
+      px={4}
+      py={6}
+      role="contentinfo"
+    >
+      <VStack align="stretch" gap={0}>
+        <Box className="site-footer-links">
+          <Stack
+            className="site-footer-groups"
+            direction={["column", "row"]}
+            justify="space-between"
+            align={["flex-start", "start"]}
+            gap={6}
+          >
+            <VStack align="flex-start" gap={2} flex={1} minW={0}>
               <Text
-                fontSize={"sm"}
-                fontWeight={"normal"}
-                color={"app.fg.default"}
-                textAlign={"center"}
+                fontSize="xs"
+                fontWeight="semibold"
+                textTransform="uppercase"
+                letterSpacing="wide"
+                color="app.fg.muted"
               >
-                {PersonalData.name.full}
+                Connect
               </Text>
-            </Box>
-          )}
-        </VStack>
-      </HeaderCard>
+              <Box as="address" fontStyle="normal" m={0}>
+                <HStack gap={3}>
+                  {socialLinks.map((social) => (
+                    <Tooltip
+                      key={social.label}
+                      content={social.tooltip}
+                      showArrow
+                    >
+                      <Link
+                        href={social.href}
+                        target={social.isExternal ? "_blank" : undefined}
+                        rel={
+                          social.isExternal ? "noopener noreferrer" : undefined
+                        }
+                        aria-label={
+                          social.isExternal
+                            ? `${social.label} (opens in a new tab)`
+                            : social.label
+                        }
+                        color={social.color}
+                        _hover={{ opacity: 0.85 }}
+                      >
+                        <Icon as={social.icon} boxSize={5} />
+                      </Link>
+                    </Tooltip>
+                  ))}
+                </HStack>
+              </Box>
+            </VStack>
+
+            <VStack align="flex-start" gap={2} flex={1} minW={0}>
+              <Text
+                fontSize="xs"
+                fontWeight="semibold"
+                textTransform="uppercase"
+                letterSpacing="wide"
+                color="app.fg.muted"
+              >
+                Navigate
+              </Text>
+              <Wrap gapX={4} gapY={2}>
+                <WrapItem>
+                  <Link href={homepageTabs.home.pathname} {...footerLinkProps}>
+                    {homepageTabs.home.name}
+                  </Link>
+                </WrapItem>
+                <WrapItem>
+                  <Link href={homepageTabs.about.pathname} {...footerLinkProps}>
+                    {homepageTabs.about.name}
+                  </Link>
+                </WrapItem>
+                <WrapItem>
+                  <Link
+                    href={homepageTabs.projects.pathname}
+                    {...footerLinkProps}
+                  >
+                    {homepageTabs.projects.name}
+                  </Link>
+                </WrapItem>
+                <WrapItem>
+                  <Link href={homepageTabs.blogs.pathname} {...footerLinkProps}>
+                    {homepageTabs.blogs.name}
+                  </Link>
+                </WrapItem>
+                <WrapItem>
+                  <Link href={homepageTabs.cv.pathname} {...footerLinkProps}>
+                    {homepageTabs.cv.name}
+                  </Link>
+                </WrapItem>
+              </Wrap>
+            </VStack>
+          </Stack>
+        </Box>
+
+        {hideBottomPart ? null : (
+          <Box
+            className="site-footer-signature"
+            borderTopWidth={"2px"}
+            borderTopColor={"app.border.default"}
+            mt={6}
+            py={3}
+          >
+            <Text
+              fontSize={"sm"}
+              fontWeight={"normal"}
+              color={"app.fg.default"}
+              textAlign={"center"}
+            >
+              {PersonalData.name.full}
+            </Text>
+          </Box>
+        )}
+      </VStack>
     </Box>
   );
 }

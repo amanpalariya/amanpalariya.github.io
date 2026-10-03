@@ -4,7 +4,7 @@ type GlobalStyles = CSSObject;
 
 const HANDWRITTEN_BASE_STYLES: GlobalStyles = {
   ".handwritten": {
-    fontFamily: "'Caveat', cursive",
+    fontFamily: "var(--font-handwritten), cursive",
     fontWeight: 500,
     letterSpacing: "0.01em",
   },
@@ -56,6 +56,9 @@ const HANDWRITTEN_SQUIGGLE_STYLES: GlobalStyles = {
 
 export function getAppGlobalStyles(proseStyles: CSSObject): GlobalStyles {
   return {
+    body: {
+      backgroundColor: "var(--chakra-colors-app-bg-canvas)",
+    },
     ".skip-link": {
       position: "fixed",
       top: "12px",

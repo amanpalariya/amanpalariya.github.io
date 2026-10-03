@@ -1,17 +1,16 @@
-import { Box, Spacer } from "@chakra-ui/react";
 import Header from "../common/Header";
-import { HEADER_OFFSET_HEIGHT } from "../common/Header";
-
+import { DetailBackNavigation } from "./DetailBackNavigation";
 export default function WithHeader({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <Header />
-      <Spacer h={HEADER_OFFSET_HEIGHT} />
-      {children}
-    </>
+    <DetailBackNavigation>
+      <div className="site-layout">
+        <Header />
+        <div className="site-body">{children}</div>
+      </div>
+    </DetailBackNavigation>
   );
 }

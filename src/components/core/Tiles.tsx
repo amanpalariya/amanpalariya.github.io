@@ -2,7 +2,6 @@ import {
   HStack,
   VStack,
   Icon,
-  useBreakpointValue,
   Box,
   LinkBox,
   LinkOverlay,
@@ -15,7 +14,6 @@ import NextLink from "next/link";
 import { Children, Fragment, type ReactNode } from "react";
 import { FiChevronRight, FiArrowUpRight } from "react-icons/fi";
 import { CategoryBadge } from "./Badges";
-import { Avatar } from "@components/ui/avatar";
 import { Switch } from "@components/ui/switch";
 
 type SwitchCheckedChangeDetails = {
@@ -24,13 +22,12 @@ type SwitchCheckedChangeDetails = {
 
 function useTileColors() {
   return {
-    description: "app.fg.subtle",
-    avatarBorder: "app.border.default",
+    description: "app.prose.body",
     linkIcon: "app.fg.icon",
   };
 }
 
-function FlatTile({
+export function TileBody({
   children,
   compact = false,
 }: {
@@ -38,9 +35,18 @@ function FlatTile({
   compact?: boolean;
 }) {
   return (
-    <Box px={0} py={compact ? [2, 2] : [2, 3]}>
+    <Box className="tile-body" px={0} py={compact ? [2, 2] : [2, 3]}>
       {children}
     </Box>
+  );
+}
+
+/** A page list whose padded rows and separators reach the main column edges. */
+export function FeedList({ children }: { children: ReactNode }) {
+  return (
+    <TileList feed showDividerBeforeFirst showDividerAfterLast>
+      {children}
+    </TileList>
   );
 }
 
@@ -48,10 +54,12 @@ export function TileList({
   children,
   showDividerBeforeFirst = false,
   showDividerAfterLast = false,
+  feed = false,
 }: {
   children: React.ReactNode;
   showDividerBeforeFirst?: boolean;
   showDividerAfterLast?: boolean;
+  feed?: boolean;
 }) {
   const items = Children.toArray(children).filter(Boolean);
 
@@ -59,15 +67,41 @@ export function TileList({
     <VStack
       align={"stretch"}
       gap={0}
+      mx={feed ? -4 : undefined}
+      css={
+        feed
+          ? {
+              "& .tile-body": { padding: "16px" },
+              "& .chakra-linkbox:hover": {
+                background: "var(--site-nav-selected)",
+              },
+            }
+          : undefined
+      }
     >
-      {showDividerBeforeFirst ? <Separator size={"md"} /> : null}
+      {showDividerBeforeFirst ? (
+        <Separator
+          size={feed ? "sm" : "md"}
+          borderColor={feed ? "var(--site-line)" : undefined}
+        />
+      ) : null}
       {items.map((child, index) => (
         <Fragment key={index}>
           {child}
-          {index < items.length - 1 ? <Separator size={"md"} /> : null}
+          {index < items.length - 1 ? (
+            <Separator
+              size={feed ? "sm" : "md"}
+              borderColor={feed ? "var(--site-line)" : undefined}
+            />
+          ) : null}
         </Fragment>
       ))}
-      {showDividerAfterLast ? <Separator size={"md"} /> : null}
+      {showDividerAfterLast ? (
+        <Separator
+          size={feed ? "sm" : "md"}
+          borderColor={feed ? "var(--site-line)" : undefined}
+        />
+      ) : null}
     </VStack>
   );
 }
@@ -111,60 +145,6 @@ function LinkHelperIcon({ isExternal }: { isExternal: boolean }) {
     <Icon color={linkIcon} boxSize={5}>
       {isExternal ? <FiArrowUpRight /> : <FiChevronRight />}
     </Icon>
-  );
-}
-
-export function TitleDescriptionAvatarTile({
-  title,
-  description,
-  avatarSrc,
-  url,
-  compact = false,
-  isUrlExternal = false,
-}: {
-  title: string;
-  description: string;
-  avatarSrc?: string;
-  url?: string;
-  compact?: boolean;
-  isUrlExternal?: boolean;
-}) {
-  const showDescriptionBelow = useBreakpointValue([true, false]);
-  const { description: descriptionColor, avatarBorder } = useTileColors();
-
-  const descriptionJsx = <Text color={descriptionColor}>{description}</Text>;
-
-  return (
-    <TileLinkIfUrlPresent
-      url={url}
-      label={title}
-      isUrlExternal={isUrlExternal}
-    >
-      <FlatTile compact={compact}>
-        <VStack align={"stretch"} gap={compact ? 2 : 2}>
-          <HStack justify={"space-between"}>
-            <HStack gap={compact ? 4 : 4}>
-              <Box
-                rounded={"full"}
-                p={compact ? 1.5 : 1.5}
-                borderWidth={"medium"}
-                borderColor={avatarBorder}
-              >
-                <Avatar size={"md"} name={title} src={avatarSrc} />
-              </Box>
-              <VStack align={"start"} gap={compact ? 1 : 1}>
-                <Text fontSize={"lg"} fontWeight="medium" color={"app.fg.default"}>
-                  {title}
-                </Text>
-                {showDescriptionBelow ? null : descriptionJsx}
-              </VStack>
-            </HStack>
-            {url ? <LinkHelperIcon isExternal={isUrlExternal} /> : null}
-          </HStack>
-          {showDescriptionBelow ? descriptionJsx : null}
-        </VStack>
-      </FlatTile>
-    </TileLinkIfUrlPresent>
   );
 }
 
@@ -227,19 +207,19 @@ export function TitleDescriptionTile({
 }) {
   const { description: descriptionColor } = useTileColors();
 
-  const descriptionJsx = <Text color={descriptionColor}>{description}</Text>;
+  const descriptionJsx = (
+    <Text fontSize="15px" lineHeight="1.5" color={descriptionColor}>
+      {description}
+    </Text>
+  );
 
   return (
-    <TileLinkIfUrlPresent
-      url={url}
-      label={title}
-      isUrlExternal={isUrlExternal}
-    >
-      <FlatTile>
+    <TileLinkIfUrlPresent url={url} label={title} isUrlExternal={isUrlExternal}>
+      <TileBody>
         <VStack align={"stretch"}>
           <HStack justify={"space-between"} align={"start"}>
             <VStack align={"start"} gap={1}>
-              <Text fontSize={"lg"} fontWeight="medium" color={"app.fg.default"}>
+              <Text fontSize="16px" fontWeight={700} color={"app.fg.default"}>
                 {title}
               </Text>
               {descriptionJsx}
@@ -247,7 +227,7 @@ export function TitleDescriptionTile({
             {url ? <LinkHelperIcon isExternal={isUrlExternal} /> : null}
           </HStack>
         </VStack>
-      </FlatTile>
+      </TileBody>
     </TileLinkIfUrlPresent>
   );
 }
@@ -270,22 +250,22 @@ export function TitleDescriptionMetaTile({
   isUrlExternal?: boolean;
 }) {
   const { description: descriptionColor } = useTileColors();
-  const metadataColor = descriptionColor;
+  const metadataColor = "app.prose.subtle";
 
-  const descriptionJsx = <Text color={descriptionColor}>{description}</Text>;
+  const descriptionJsx = (
+    <Text fontSize="15px" lineHeight="1.5" color={descriptionColor}>
+      {description}
+    </Text>
+  );
   const metadataLabel = formatBlogDateLabel({ published, updated });
 
   return (
-    <TileLinkIfUrlPresent
-      url={url}
-      label={title}
-      isUrlExternal={isUrlExternal}
-    >
-      <FlatTile>
+    <TileLinkIfUrlPresent url={url} label={title} isUrlExternal={isUrlExternal}>
+      <TileBody>
         <VStack align={"stretch"} gap={2}>
           <HStack justify={"space-between"} align={"start"}>
             <VStack align={"start"} gap={0}>
-              <Text fontSize={"lg"} fontWeight="medium" color={"app.fg.default"}>
+              <Text fontSize="16px" fontWeight={700} color={"app.fg.default"}>
                 {title}
               </Text>
               {descriptionJsx}
@@ -294,9 +274,7 @@ export function TitleDescriptionMetaTile({
           </HStack>
 
           {metadataLabel ? (
-            <Text color={metadataColor}>
-              {metadataLabel}
-            </Text>
+            <Text color={metadataColor}>{metadataLabel}</Text>
           ) : null}
 
           {tags && tags.length > 0 ? (
@@ -309,97 +287,8 @@ export function TitleDescriptionMetaTile({
             </Wrap>
           ) : null}
         </VStack>
-      </FlatTile>
+      </TileBody>
     </TileLinkIfUrlPresent>
-  );
-}
-
-export function TitleCategoryAvatarTile({
-  title,
-  categories,
-  avatarSrc,
-  url,
-  isUrlExternal = false,
-}: {
-  title: string;
-  categories: string[];
-  avatarSrc?: string;
-  url?: string;
-  isUrlExternal?: boolean;
-}) {
-  const showBadgeBelow = useBreakpointValue([true, false]);
-  const { avatarBorder } = useTileColors();
-
-  const categoryRow = (
-    <HStack>
-      {categories.map((category, index) => (
-        <CategoryBadge key={index}>{category}</CategoryBadge>
-      ))}
-    </HStack>
-  );
-
-  return (
-    <TileLinkIfUrlPresent
-      url={url}
-      label={title}
-      isUrlExternal={isUrlExternal}
-    >
-      <FlatTile>
-        <VStack align={"stretch"}>
-          <HStack justify={"space-between"}>
-            <HStack gap={4}>
-              <Box
-                rounded={"full"}
-                p={1.5}
-                borderWidth={"medium"}
-                borderColor={avatarBorder}
-              >
-                <Avatar size={"sm"} name={title} src={avatarSrc} />
-              </Box>
-              <VStack align={"start"}>
-                <Text fontSize={"lg"} fontWeight="medium" color={"app.fg.default"}>
-                  {title}
-                </Text>
-              </VStack>
-            </HStack>
-            <HStack gap={4}>
-              {showBadgeBelow ? null : categoryRow}
-              {url ? <LinkHelperIcon isExternal={isUrlExternal} /> : null}
-            </HStack>
-          </HStack>
-          <Box>{showBadgeBelow ? categoryRow : null}</Box>
-        </VStack>
-      </FlatTile>
-    </TileLinkIfUrlPresent>
-  );
-}
-
-export function TitleDescriptionAvatarToggleTile({
-  title,
-  description,
-  avatarSrc,
-  url,
-  toggleValue,
-  onToggle,
-  isUrlExternal = false,
-}: {
-  title: string;
-  description: string;
-  avatarSrc?: string;
-  url?: string;
-  toggleValue?: boolean;
-  onToggle?: (checked: boolean) => void;
-  isUrlExternal?: boolean;
-}) {
-  return (
-    <TitleDescriptionToggleTile
-      title={title}
-      description={description}
-      url={url}
-      toggleValue={toggleValue}
-      onToggle={onToggle}
-      isUrlExternal={isUrlExternal}
-    />
   );
 }
 
@@ -420,19 +309,19 @@ export function TitleDescriptionToggleTile({
 }) {
   const { description: descriptionColor } = useTileColors();
 
-  const descriptionJsx = <Text color={descriptionColor}>{description}</Text>;
+  const descriptionJsx = (
+    <Text fontSize="15px" lineHeight="1.5" color={descriptionColor}>
+      {description}
+    </Text>
+  );
 
   return (
-    <TileLinkIfUrlPresent
-      url={url}
-      label={title}
-      isUrlExternal={isUrlExternal}
-    >
-      <FlatTile>
+    <TileLinkIfUrlPresent url={url} label={title} isUrlExternal={isUrlExternal}>
+      <TileBody>
         <VStack align={"stretch"}>
-          <HStack justify={"space-between"}>
-            <VStack align={"start"}>
-              <Text fontSize={"lg"} fontWeight="medium" color={"app.fg.default"}>
+          <HStack justify="space-between" align="start" gap={4}>
+            <VStack align="start" gap={1} minW={0}>
+              <Text fontSize="16px" fontWeight={700} color={"app.fg.default"}>
                 {title}
               </Text>
               {descriptionJsx}
@@ -442,11 +331,13 @@ export function TitleDescriptionToggleTile({
               onCheckedChange={(details: SwitchCheckedChangeDetails) =>
                 onToggle?.(details.checked)
               }
+              colorPalette="blue"
+              flexShrink={0}
               inputProps={{ "aria-label": title }}
             />
           </HStack>
         </VStack>
-      </FlatTile>
+      </TileBody>
     </TileLinkIfUrlPresent>
   );
 }

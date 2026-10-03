@@ -8,7 +8,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { Clipboard } from "@components/ui/clipboard";
-import { Heading2, ParagraphText } from "@components/core/Texts";
+import { Heading2, ParagraphText } from "./CvTypography";
 import type { CvProfile } from "data/cv";
 import {
   FiMail,
@@ -27,7 +27,7 @@ import { CV_BODY_FONT_FAMILY } from "./cvStyleTokens";
 
 export default function CvHero({ profile }: { profile: CvProfile }) {
   const secondaryColor = "app.fg.muted";
-  const contactTextSize = "19px";
+  const contactTextSize = "14px";
 
   function getSocialIcon(label: string) {
     const normalized = label.toLowerCase();
@@ -61,7 +61,7 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
       <VStack align={"stretch"} gap={2}>
         <Heading2>{profile.name}</Heading2>
         <Text
-          fontSize={"19px"}
+          fontSize={"16px"}
           color={"app.fg.subtle"}
           fontFamily={CV_BODY_FONT_FAMILY}
         >
@@ -77,7 +77,7 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
                 <Text
                   fontSize={contactTextSize}
                   fontFamily={CV_BODY_FONT_FAMILY}
-                  fontWeight="medium"
+                  fontWeight="normal"
                 >
                   {profile.location}
                 </Text>
@@ -94,7 +94,7 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
                 <Link
                   fontSize={contactTextSize}
                   fontFamily={CV_BODY_FONT_FAMILY}
-                  fontWeight="medium"
+                  fontWeight="normal"
                   href={`mailto:${profile.email}`}
                 >
                   {profile.email}
@@ -107,10 +107,10 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
                   <Clipboard.Trigger asChild>
                     <Link
                       as="button"
-                      fontSize="17px"
+                      fontSize="14px"
                       color={secondaryColor}
                       fontFamily={CV_BODY_FONT_FAMILY}
-                      fontWeight="medium"
+                      fontWeight="normal"
                     >
                       <HStack gap={1}>
                         <Clipboard.Indicator copied={<Icon as={FiCheck} />}>
@@ -145,7 +145,7 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
                       fontSize={contactTextSize}
                       color={secondaryColor}
                       fontFamily={CV_BODY_FONT_FAMILY}
-                      fontWeight="medium"
+                      fontWeight="normal"
                     >
                       {link.label}
                     </Link>

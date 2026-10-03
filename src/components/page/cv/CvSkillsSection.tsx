@@ -29,7 +29,12 @@ function SkillLevel({
   const inactiveColor = "app.border.default";
 
   return (
-    <HStack gap={1} role="img" aria-label={`${label} proficiency`} title={label}>
+    <HStack
+      gap={1}
+      role="img"
+      aria-label={`${label} proficiency`}
+      title={label}
+    >
       {Array.from({ length: 4 }).map((_, index) => {
         const isActive = index < activeCount;
         return (
@@ -77,7 +82,7 @@ export default function CvSkillsSection({
               fontSize={CV_META_TEXT_SIZE}
               fontWeight="bold"
               color="app.fg.muted"
-              letterSpacing="wider"
+              letterSpacing="normal"
               fontFamily={CV_BODY_FONT_FAMILY}
             >
               {group.group}
@@ -91,21 +96,7 @@ export default function CvSkillsSection({
                     }
                     showArrow
                   >
-                    <HStack
-                      gap={3}
-                      px={3}
-                      py={1.5}
-                      borderRadius="2xl"
-                      borderWidth={1}
-                      borderColor={"app.border.muted"}
-                      bg={"app.bg.card"}
-                      _hover={{
-                        borderColor: "app.border.strong",
-                        bg: "app.bg.surface",
-                        transform: "translateY(-1px)",
-                      }}
-                      transition="all 0.2s ease"
-                    >
+                    <HStack gap={3} pr={3} py={1}>
                       <Text
                         fontSize={CV_META_TEXT_SIZE}
                         fontWeight="normal"

@@ -7,19 +7,28 @@ import ExternalLinksRow from "@components/page/common/ExternalLinksRow";
 import type { ExternalLink } from "data/external-links";
 import type { ReactNode } from "react";
 
-export function DetailTitleBar({ title }: { title: string }) {
+export function DetailTitleBar({
+  title,
+}: {
+  title: string;
+}) {
   return (
     <Box
       as="header"
-      mx={[4, 6]}
-      mt={4}
-      letterSpacing={"wide"}
-      position={"relative"}
+      display="grid"
+      gridTemplateColumns="minmax(0, 1fr) 32px"
+      gap={3}
+      alignItems="start"
     >
-      <Box pr={12}>
-        <Heading1>{title}</Heading1>
-      </Box>
-      <Box position={"absolute"} top={0} right={0}>
+      <Heading1
+        fontSize={{ base: "xl", md: "2xl" }}
+        fontWeight={700}
+        lineHeight="1.3"
+        pt={1}
+      >
+        {title}
+      </Heading1>
+      <Box pt={1}>
         <CopyLinkSecondaryButton iconOnly />
       </Box>
     </Box>
@@ -28,7 +37,7 @@ export function DetailTitleBar({ title }: { title: string }) {
 
 export function DetailMetaSection({ children }: { children: ReactNode }) {
   return (
-    <VStack gap={3} px={[4, 6]} align={"stretch"}>
+    <VStack gap={3} align={"stretch"}>
       {children}
     </VStack>
   );

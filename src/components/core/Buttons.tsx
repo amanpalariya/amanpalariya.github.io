@@ -6,9 +6,12 @@ const actionButtonBaseProps = {
   fontFamily: "ui",
   fontSize: "sm",
   px: 2.5,
-  shadow: "xs",
-  rounded: "xl",
-} satisfies Pick<ButtonProps, "fontFamily" | "fontSize" | "px" | "shadow" | "rounded">;
+  shadow: "none",
+  rounded: "full",
+} satisfies Pick<
+  ButtonProps,
+  "fontFamily" | "fontSize" | "px" | "shadow" | "rounded"
+>;
 
 type ActionButtonProps = Omit<ButtonProps, "children"> & {
   children: React.ReactNode;
@@ -24,7 +27,7 @@ export function PrimaryActionButton({
   return (
     <Button
       {...actionButtonBaseProps}
-      background={backgroundColor ? backgroundColor : "dodgerblue"}
+      background={backgroundColor ? backgroundColor : "app.fg.link"}
       variant={"solid"}
       {...props}
     >

@@ -1,9 +1,9 @@
 "use client";
 
-import { Bleed, EmptyState, VStack, Spacer, Box, Icon } from "@chakra-ui/react";
-import { Heading1, SectionText, SubtitleText } from "@components/core/Texts";
-import { TileList, TitleDescriptionToggleTile } from "@components/core/Tiles";
-import HighlightedSection from "@components/page/common/HighlightedSection";
+import { EmptyState, VStack, Icon } from "@chakra-ui/react";
+import PageIntro from "@components/page/common/PageIntro";
+import { FeedList, TitleDescriptionToggleTile } from "@components/core/Tiles";
+import ContentSection from "@components/page/common/ContentSection";
 import WithBackground from "@components/page/wrapper/WithBackground";
 import WithBodyCard from "@components/page/wrapper/WithBodyCard";
 import WithHeader from "@components/page/wrapper/WithHeader";
@@ -13,33 +13,27 @@ import { useFeatureFlag } from "utils/features";
 
 function Main() {
   return (
-    <Box m={[4, 6]} letterSpacing={"wide"} lineHeight={"tall"}>
-      <VStack align={"stretch"} gap={5}>
-        <SectionText>{FeatureFlagsData.featuresPage.title}</SectionText>
-        <Spacer h={4} />
-        <Heading1>{FeatureFlagsData.featuresPage.title}</Heading1>
-        <SubtitleText>{FeatureFlagsData.featuresPage.subtitle}</SubtitleText>
-      </VStack>
-    </Box>
+    <PageIntro
+      title={FeatureFlagsData.featuresPage.title}
+      subtitle={FeatureFlagsData.featuresPage.subtitle}
+    />
   );
 }
 
 function NoFeatureFlagsElement() {
   return (
-    <Bleed inline={{ base: 1, md: 2 }}>
-      <HighlightedSection>
-        <EmptyState.Root>
-          <EmptyState.Content>
-            <EmptyState.Indicator>
-              <Icon as={FiTool} boxSize={12} color={"gray.500"} />
-            </EmptyState.Indicator>
-            <EmptyState.Title textAlign={"center"}>
-              {"There are no feature flags!"}
-            </EmptyState.Title>
-          </EmptyState.Content>
-        </EmptyState.Root>
-      </HighlightedSection>
-    </Bleed>
+    <ContentSection>
+      <EmptyState.Root>
+        <EmptyState.Content>
+          <EmptyState.Indicator>
+            <Icon as={FiTool} boxSize={12} color={"gray.500"} />
+          </EmptyState.Indicator>
+          <EmptyState.Title textAlign={"center"}>
+            {"There are no feature flags!"}
+          </EmptyState.Title>
+        </EmptyState.Content>
+      </EmptyState.Root>
+    </ContentSection>
   );
 }
 
@@ -58,15 +52,11 @@ function FeatureFlagTile({ featureFlag }: { featureFlag: FeatureFlagEntry }) {
 
 function FeatureFlagsListElement() {
   return (
-    <Bleed inline={{ base: 1, md: 2 }}>
-      <HighlightedSection>
-        <TileList>
-          {FeatureFlagsData.flags.map((flag) => (
-            <FeatureFlagTile key={flag.id} featureFlag={flag} />
-          ))}
-        </TileList>
-      </HighlightedSection>
-    </Bleed>
+    <FeedList>
+      {FeatureFlagsData.flags.map((flag) => (
+        <FeatureFlagTile key={flag.id} featureFlag={flag} />
+      ))}
+    </FeedList>
   );
 }
 
@@ -81,7 +71,7 @@ export default function Home() {
     <WithBackground>
       <WithHeader>
         <WithBodyCard>
-          <VStack align={"stretch"}>
+          <VStack align="stretch" gap={0}>
             <Main />
             <FeatureFlags />
           </VStack>

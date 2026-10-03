@@ -1,8 +1,8 @@
 import { HStack, VStack } from "@chakra-ui/react";
 import { FiArrowRight } from "react-icons/fi";
-import HighlightedSection from "@components/page/common/HighlightedSection";
+import ContentSection from "@components/page/common/ContentSection";
 import { PrimaryActionButton } from "@components/core/Buttons";
-import { Heading4, ParagraphText } from "@components/core/Texts";
+import { Heading4, ParagraphText } from "./CvTypography";
 import { homepageTabs } from "app/route-info";
 import NextLink from "next/link";
 
@@ -14,7 +14,7 @@ export default function CvCtaSection({
   description?: string;
 }) {
   return (
-    <HighlightedSection>
+    <ContentSection>
       <HStack justify="space-between" align="center" flexWrap="wrap" gap={4}>
         <VStack align="start" gap={2}>
           <Heading4>{title}</Heading4>
@@ -24,6 +24,6 @@ export default function CvCtaSection({
           <NextLink href={homepageTabs.cv.pathname}>View CV</NextLink>
         </PrimaryActionButton>
       </HStack>
-    </HighlightedSection>
+    </ContentSection>
   );
 }

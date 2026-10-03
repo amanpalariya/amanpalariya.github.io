@@ -1,3 +1,4 @@
+import FeatureFlagsData from "data/features";
 import { doPathnamesMatch, joinPathnames } from "utils/pathname";
 
 type HomepageTab = {
@@ -43,6 +44,30 @@ export function getHomepageTabByPathname(pathname: string) {
   return (
     Object.values(homepageTabs).find((tab) =>
       doPathnamesMatch(tab.pathname, pathname),
+    ) ?? null
+  );
+}
+
+/** Header routes include utility pages that are absent from sidebar navigation. */
+const headerPages = [
+  ...Object.values(homepageTabs).map((tab) => ({
+    pathname: tab.pathname,
+    title: tab === homepageTabs.cv ? "Curriculum Vitae" : tab.name,
+    includeSubpages: tab.pathname !== "/",
+  })),
+  {
+    pathname: "/features/",
+    title: FeatureFlagsData.featuresPage.title,
+    includeSubpages: false,
+  },
+];
+
+export function getHeaderPageByPathname(pathname: string) {
+  return (
+    headerPages.find(
+      (page) =>
+        doPathnamesMatch(page.pathname, pathname) ||
+        (page.includeSubpages && pathname.startsWith(page.pathname)),
     ) ?? null
   );
 }

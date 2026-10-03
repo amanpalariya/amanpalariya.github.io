@@ -1,46 +1,33 @@
-import {
-  Box,
-  useBreakpointValue,
-  Stack,
-  VStack,
-  HStack,
-} from "@chakra-ui/react";
-import { Heading1, SubtitleText } from "../../core/Texts";
-import HomepageAvatar from "./HomepageAvatar";
-import { PersonalData } from "data";
+import { Avatar } from "@components/ui/avatar";
+import { PersonalData, WorkData } from "data";
+import TimeBasedOnlineStatusBadge from "./TimeBasedOnlineStatusBadge";
 import CopyEmailButton from "../common/CopyEmailSecondaryButton";
 import LinkedInButton from "../common/LinkedInPrimaryButton";
 
 export default function Profile() {
-  const showVerticalProfile = useBreakpointValue({ base: true, md: false });
-
   return (
-    <Stack
-      direction={showVerticalProfile ? "column-reverse" : "row"}
-      align={"center"}
-      justify={"space-between"}
-      gap={showVerticalProfile ? 6 : 9}
-    >
-      <VStack align={showVerticalProfile ? "center" : "start"} gap={6}>
-        <VStack align={showVerticalProfile ? "center" : "start"} gap={3}>
-          <Heading1
-            centerAlign={showVerticalProfile}
-          >{`I'm ${PersonalData.name.full}`}</Heading1>
-          <SubtitleText centerAlign={showVerticalProfile}>
-            {PersonalData.intro.short}
-          </SubtitleText>
-        </VStack>
-        <HStack>
-          <LinkedInButton />
-          <CopyEmailButton />
-        </HStack>
-      </VStack>
-      <Box p={2}>
-        <HomepageAvatar
+    <section className="home-intro" aria-labelledby="home-name">
+      <div className="home-intro-label">
+        <span>{WorkData.current.role}</span>
+        <TimeBasedOnlineStatusBadge />
+      </div>
+      <div className="home-identity-row">
+        <div>
+          <h1 id="home-name">I&apos;m {PersonalData.name.full}</h1>
+          <p>{PersonalData.intro.short}</p>
+        </div>
+        <Avatar
+          className="home-portrait"
           src={PersonalData.avatar.url}
           name={PersonalData.name.full}
+          boxSize="88px"
+          flexShrink={0}
         />
-      </Box>
-    </Stack>
+      </div>
+      <div className="home-actions">
+        <LinkedInButton />
+        <CopyEmailButton />
+      </div>
+    </section>
   );
 }

@@ -1,3 +1,4 @@
+import CvList from "./CvList";
 import {
   VStack,
   HStack,
@@ -7,9 +8,8 @@ import {
   WrapItem,
   Icon,
   Box,
-  Separator,
 } from "@chakra-ui/react";
-import { Heading4 } from "@components/core/Texts";
+import { Heading4 } from "./CvTypography";
 import { CategoryBadge } from "@components/core/Badges";
 import type { CvSectionBase, CvTimelineItem } from "data/cv";
 import { FiLink } from "react-icons/fi";
@@ -68,7 +68,11 @@ function TimelineItem({
             <HStack gap={2} align="center" flexWrap="wrap">
               <Heading4>{item.title}</Heading4>
               <Text
-                color={emphasizeOrganization ? "app.fg.muted" : CV_SECONDARY_TEXT_COLOR}
+                color={
+                  emphasizeOrganization
+                    ? "app.fg.muted"
+                    : CV_SECONDARY_TEXT_COLOR
+                }
                 fontSize={CV_META_TEXT_SIZE}
                 fontWeight={emphasizeOrganization ? "medium" : "normal"}
                 fontFamily={CV_BODY_FONT_FAMILY}
@@ -121,7 +125,7 @@ function TimelineItem({
                   color={CV_BULLET_TEXT_COLOR}
                   fontFamily={CV_BULLET_FONT_FAMILY}
                   lineHeight={CV_BULLET_LINE_HEIGHT}
-                  textAlign="justify"
+                  textAlign="left"
                   hyphens="auto"
                   flex={1}
                   css={{ WebkitHyphens: "auto", textWrap: "pretty" }}
@@ -185,7 +189,8 @@ export default function CvTimelineSection({
       <VStack align="stretch" gap={4} position="relative">
         <Box
           position="absolute"
-          top={3}
+          // First row: divider (1px), padding (16px), dot offset (8px), radius (5px).
+          top="30px"
           bottom={2}
           left={0}
           w="2px"
@@ -203,22 +208,19 @@ export default function CvTimelineSection({
           bg={endCapColor}
           zIndex={0}
         />
-        {section.items.map((item, index) => (
-          <VStack key={`${item.title}-${index}`} align="stretch" gap={4}>
-            <TimelineItem
-              item={item}
-              accentColorPalette={resolvedAccentPalette}
-              tagColor={tagColor}
-              presentWhenEndMissing={presentWhenEndMissing}
-              emphasizeOrganization={emphasizeOrganization}
-            />
-            {index < section.items.length - 1 ? (
-              <Box pl={6}>
-                <Separator size="md" />
-              </Box>
-            ) : null}
-          </VStack>
-        ))}
+        <CvList insetStart>
+          {section.items.map((item, index) => (
+            <VStack key={`${item.title}-${index}`} align="stretch" gap={4}>
+              <TimelineItem
+                item={item}
+                accentColorPalette={resolvedAccentPalette}
+                tagColor={tagColor}
+                presentWhenEndMissing={presentWhenEndMissing}
+                emphasizeOrganization={emphasizeOrganization}
+              />
+            </VStack>
+          ))}
+        </CvList>
       </VStack>
     </CvSection>
   );

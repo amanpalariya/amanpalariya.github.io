@@ -15,10 +15,7 @@ export function ToolsFooter() {
   return (
     <Box px={[2, 4]} pb={[2, 4]} pt={1}>
       <Box
-        borderWidth={"2px"}
-        borderColor={"app.border.default"}
-        borderRadius={"2xl"}
-        background={"app.bg.cardHeader"}
+        borderTop="1px solid var(--site-line)"
         px={[4, 5]}
         py={4}
       >

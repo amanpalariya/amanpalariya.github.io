@@ -1,75 +1,28 @@
+"use client";
+import { Icon, IconButton } from "@chakra-ui/react";
+import { useColorMode } from "@components/ui/color-mode";
+import { Tooltip } from "@components/ui/tooltip";
 import {
-  Button,
-  Box,
-  HStack,
-  Icon,
-  IconButton,
-  Stack,
-  useBreakpointValue,
-} from "@chakra-ui/react";
-import {
-  FiBookOpen,
-  FiChevronLeft,
-  FiFileText,
-  FiGrid,
   FiHome,
+  FiUser,
+  FiCode,
+  FiFileText,
+  FiEdit3,
+  FiTool,
+  FiMenu,
   FiMoon,
   FiSun,
-  FiTool,
-  FiUser,
+  FiX,
 } from "react-icons/fi";
-import { HeaderCard } from "../../core/Cards";
 import { usePathname } from "next/navigation";
-import { getHomepageTabByPathname, homepageTabs } from "app/route-info";
-import { Heading2, Heading6 } from "@components/core/Texts";
-import * as pathnameUtil from "utils/pathname";
-import LinkedInButton, { LinkedInButtonSmall } from "./LinkedInPrimaryButton";
-import HeaderNavIconButton from "./header/HeaderNavIconButton";
-import HeaderMobileTrigger from "./header/HeaderMobileTrigger";
-import { useColorMode, useColorModeValue } from "@components/ui/color-mode";
-import { Tooltip } from "@components/ui/tooltip";
+import { homepageTabs } from "app/route-info";
 import NextLink from "next/link";
+import PageNavigation from "./PageNavigation";
 import { useFeatureFlag } from "utils/features";
 import FeatureFlagsData from "data/features";
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { IconType } from "react-icons";
+import { useEffect, useRef, useState } from "react";
 
 export const HEADER_OFFSET_HEIGHT = { base: 20, sm: 24 };
-
-type HeaderNavItem = {
-  icon: IconType;
-  tab: (typeof homepageTabs)[keyof typeof homepageTabs];
-  needsBlogsFeature?: boolean;
-};
-
-const HEADER_NAV_ITEMS: readonly HeaderNavItem[] = [
-  {
-    icon: FiHome,
-    tab: homepageTabs.home,
-  },
-  {
-    icon: FiUser,
-    tab: homepageTabs.about,
-  },
-  {
-    icon: FiGrid,
-    tab: homepageTabs.projects,
-  },
-  {
-    icon: FiFileText,
-    tab: homepageTabs.cv,
-  },
-  {
-    icon: FiBookOpen,
-    tab: homepageTabs.blogs,
-    needsBlogsFeature: true,
-  },
-  {
-    icon: FiTool,
-    tab: homepageTabs.tools,
-  },
-];
-
 export function ColorModeToggleIconButton() {
   const { colorMode, toggleColorMode } = useColorMode();
   const isDark = colorMode === "dark";
@@ -88,165 +41,100 @@ export function ColorModeToggleIconButton() {
   );
 }
 
+const navIcons = {
+  Home: FiHome,
+  About: FiUser,
+  Projects: FiCode,
+  CV: FiFileText,
+  Blogs: FiEdit3,
+  Tools: FiTool,
+};
 export default function Header() {
-  const showActionButton = useBreakpointValue({ base: false, sm: true });
-  const isMobile = useBreakpointValue({ base: true, sm: false }) ?? false;
-  const currentPathname = usePathname() ?? "";
-  const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const mobileMenuContainerRef = useRef<HTMLDivElement>(null);
-  const [isBlogsFeatureEnabled] = useFeatureFlag(
-    FeatureFlagsData.featuresIds.BLOGS,
+  const pathname = usePathname() ?? "/";
+  const [open, setOpen] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+  const menuRef = useRef<HTMLButtonElement>(null);
+  const [blogsEnabled] = useFeatureFlag(FeatureFlagsData.featuresIds.BLOGS);
+  const items = Object.values(homepageTabs).filter(
+    (tab) => tab !== homepageTabs.blogs || blogsEnabled,
   );
-
-  function isSelectedBasedOnUrl(relativeUrl: string) {
-    return pathnameUtil.doPathnamesMatch(relativeUrl, currentPathname);
-  }
-
-  const isPathnameDeep = pathnameUtil.getPathnameDepth(currentPathname) > 1;
-
-  const parentTabPathname = pathnameUtil.trimPathnameToDepth(
-    currentPathname,
-    1,
-  );
-
-  const topLevelPathname = pathnameUtil.trimPathnameToDepth(currentPathname, 1);
-
-  const topLevelTabIcon =
-    HEADER_NAV_ITEMS.find((item) => item.tab.pathname === topLevelPathname)
-      ?.icon ?? FiHome;
-
-  const navItems = useMemo(
-    () =>
-      HEADER_NAV_ITEMS.filter(
-        (item) => !item.needsBlogsFeature || isBlogsFeatureEnabled,
-      ),
-    [isBlogsFeatureEnabled],
-  );
-
   useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [currentPathname]);
-
+    setOpen(false);
+  }, [pathname]);
   useEffect(() => {
-    if (!isMobileMenuOpen) {
-      return;
-    }
-
-    function handleOutsideClick(event: MouseEvent | TouchEvent) {
-      const target = event.target;
-
-      if (!(target instanceof Node)) {
-        return;
-      }
-
-      if (!mobileMenuContainerRef.current?.contains(target)) {
-        setMobileMenuOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleOutsideClick);
-    document.addEventListener("touchstart", handleOutsideClick);
-
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-      document.removeEventListener("touchstart", handleOutsideClick);
+    if (!open) return;
+    const dismiss = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        !headerRef.current?.contains(event.target)
+      )
+        setOpen(false);
     };
-  }, [isMobileMenuOpen]);
-
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+        menuRef.current?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", dismiss);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", dismiss);
+      document.removeEventListener("keydown", escape);
+    };
+  }, [open]);
   return (
-    <Box
-      as="header"
-      role="banner"
-      position={"fixed"}
-      width={"100%"}
-      maxW={"3xl"}
-      left={"50%"}
-      transform={"translateX(-50%)"}
-      zIndex={10}
-    >
-      <Box p={[1, 4]} ref={mobileMenuContainerRef}>
-        <HeaderCard>
-          <HStack justify={"space-between"}>
-            {isPathnameDeep ? (
-              <HStack gap={4}>
-                <HeaderNavIconButton
-                  icon={FiChevronLeft}
-                  label="Back"
-                  isSelected={false}
-                  url={parentTabPathname}
-                />
-                <Heading2>
-                  {getHomepageTabByPathname(parentTabPathname)?.name ?? ""}
-                </Heading2>
-              </HStack>
-            ) : isMobile ? (
-              <HStack gap={1}>
-                <HeaderMobileTrigger
-                  isOpen={isMobileMenuOpen}
-                  onToggle={() => setMobileMenuOpen(!isMobileMenuOpen)}
-                  tabIcon={topLevelTabIcon}
-                />
-              </HStack>
-            ) : (
-              <HStack as={"nav"} aria-label={"Primary navigation"} gap={4}>
-                {navItems.map((item) => (
-                  <HeaderNavIconButton
-                    key={item.tab.pathname}
-                    icon={item.icon}
-                    label={item.tab.name}
-                    isSelected={isSelectedBasedOnUrl(item.tab.pathname)}
-                    url={item.tab.pathname}
-                  />
-                ))}
-              </HStack>
-            )}
-
-            <HStack as={"nav"} aria-label={"Primary actions"} gap={4}>
-              <ColorModeToggleIconButton />
-              {showActionButton ? <LinkedInButton /> : <LinkedInButtonSmall />}
-            </HStack>
-          </HStack>
-
-          {isMobile && !isPathnameDeep && isMobileMenuOpen ? (
-            <Stack
-              as={"nav"}
-              id={"mobile-navigation-menu"}
-              aria-label={"Mobile navigation menu"}
-              borderTopWidth={2}
-              borderColor={"app.border.default"}
-              mt={4}
-              pt={4}
-              gap={2}
+    <header className="site-header" ref={headerRef}>
+      <div className="site-identity">
+        <NextLink href="/" aria-label="Aman Palariya home">
+          <span className="site-monogram">
+            ap<span>.</span>
+          </span>
+        </NextLink>
+      </div>
+      <PageNavigation mobile />
+      <div className="site-mobile-actions">
+        <button
+          ref={menuRef}
+          className="site-menu-trigger"
+          aria-label={
+            open
+              ? "Close mobile navigation menu"
+              : "Open mobile navigation menu"
+          }
+          aria-expanded={open}
+          aria-controls="site-navigation"
+          onClick={() => setOpen(!open)}
+        >
+          {open ? <FiX /> : <FiMenu />}
+        </button>
+      </div>
+      <nav
+        id="site-navigation"
+        className={`site-navigation${open ? " is-open" : ""}`}
+        aria-label={open ? "Mobile navigation menu" : "Primary navigation"}
+      >
+        {items.map((tab) => {
+          const active =
+            tab.pathname === "/"
+              ? pathname === "/"
+              : pathname.startsWith(tab.pathname.replace(/\/$/, ""));
+          const NavIcon = navIcons[tab.name as keyof typeof navIcons];
+          return (
+            <NextLink
+              key={tab.pathname}
+              href={tab.pathname}
+              aria-current={active ? "page" : undefined}
+              aria-label={tab.name}
+              title={tab.name}
+              onClick={() => setOpen(false)}
             >
-              {navItems.map((item) => {
-                const isSelected = isSelectedBasedOnUrl(item.tab.pathname);
-
-                return (
-                  <Button
-                    key={item.tab.pathname}
-                    asChild
-                    onClick={() => setMobileMenuOpen(false)}
-                    justifyContent={"flex-start"}
-                    borderRadius={"xl"}
-                    variant={isSelected ? "surface" : "ghost"}
-                    color={isSelected ? "app.fg.default" : "app.fg.subtle"}
-                  >
-                    <NextLink
-                      href={item.tab.pathname}
-                      aria-current={isSelected ? "page" : undefined}
-                    >
-                      <HStack gap={2}>
-                        <Icon as={item.icon} boxSize={6} />
-                        <Heading6>{item.tab.name}</Heading6>
-                      </HStack>
-                    </NextLink>
-                  </Button>
-                );
-              })}
-            </Stack>
-          ) : undefined}
-        </HeaderCard>
-      </Box>
-    </Box>
+              <NavIcon aria-hidden="true" />
+              <span className="site-nav-label">{tab.name}</span>
+            </NextLink>
+          );
+        })}
+      </nav>
+    </header>
   );
 }

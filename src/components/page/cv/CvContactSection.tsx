@@ -1,4 +1,5 @@
-import { HStack, Icon, Link, Text, VStack } from "@chakra-ui/react";
+import CvList from "./CvList";
+import { HStack, Icon, Link, Text } from "@chakra-ui/react";
 import type { CvContactChannel, CvSectionBase } from "data/cv";
 import type { ElementType } from "react";
 import {
@@ -40,11 +41,8 @@ function ContactItem({ item }: { item: CvContactChannel }) {
     <HStack
       align="center"
       justify="space-between"
-      p={3}
-      borderRadius="lg"
-      borderWidth={1}
-      borderColor={"app.border.muted"}
-      bg={"app.bg.overlay"}
+      borderRadius={0}
+      bg="transparent"
       flexWrap="wrap"
       gap={2}
     >
@@ -105,11 +103,11 @@ export default function CvContactSection({
       primaryColorPalette={primaryColorPalette}
       accentColorPalette={accentColorPalette}
     >
-      <VStack align="stretch" gap={3}>
+      <CvList>
         {section.items.map((item) => (
           <ContactItem key={`${item.label}-${item.value}`} item={item} />
         ))}
-      </VStack>
+      </CvList>
     </CvSection>
   );
 }

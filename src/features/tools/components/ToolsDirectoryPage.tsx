@@ -1,8 +1,6 @@
 "use client";
 
 import {
-  Bleed,
-  Box,
   EmptyState,
   HStack,
   Icon,
@@ -12,9 +10,9 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { CategoryBadge, FeaturedIndicator } from "@components/core/Badges";
-import { Heading1, SubtitleText } from "@components/core/Texts";
-import { TileList } from "@components/core/Tiles";
-import HighlightedSection from "@components/page/common/HighlightedSection";
+import PageIntro from "@components/page/common/PageIntro";
+import { FeedList, TileBody } from "@components/core/Tiles";
+import ContentSection from "@components/page/common/ContentSection";
 import NextLink from "next/link";
 import { FiBookOpen, FiCalendar, FiChevronRight, FiTool } from "react-icons/fi";
 import FeatureFlagsData from "data/features";
@@ -41,15 +39,15 @@ function ToolListTile({ tool }: { tool: ToolDefinition }) {
 
   return (
     <LinkBox>
-      <Box px={[1, 2]} py={[2, 3]}>
+      <TileBody>
         <VStack align={"stretch"} gap={2}>
           <HStack justify={"space-between"} align={"start"}>
             <VStack align={"start"} gap={0}>
               <HStack gap={2} align={"center"}>
                 <Icon as={ToolIcon} boxSize={5} color={"app.fg.subtle"} />
                 <Text
-                  fontSize={"lg"}
-                  fontWeight={"medium"}
+                  fontSize="16px"
+                  fontWeight={700}
                   fontFamily={"heading"}
                   color={"app.fg.default"}
                 >
@@ -57,7 +55,12 @@ function ToolListTile({ tool }: { tool: ToolDefinition }) {
                 </Text>
                 {tool.isFeatured ? <FeaturedIndicator /> : null}
               </HStack>
-              <Text color={"app.fg.subtle"} fontFamily={"body"}>
+              <Text
+                color="app.prose.body"
+                fontFamily="body"
+                fontSize="15px"
+                lineHeight="1.5"
+              >
                 {tool.tagline}
               </Text>
             </VStack>
@@ -67,13 +70,15 @@ function ToolListTile({ tool }: { tool: ToolDefinition }) {
           </HStack>
 
           <HStack gap={2} wrap={"wrap"}>
-            {tool.status === "beta" ? <CategoryBadge color={"blue"}>Beta</CategoryBadge> : null}
+            {tool.status === "beta" ? (
+              <CategoryBadge color={"blue"}>Beta</CategoryBadge>
+            ) : null}
             {tool.tags.map((tag) => (
               <CategoryBadge key={tag.id}>{tag.label}</CategoryBadge>
             ))}
           </HStack>
         </VStack>
-      </Box>
+      </TileBody>
       <LinkOverlay as={NextLink} href={tool.path} aria-label={tool.name} />
     </LinkBox>
   );
@@ -95,22 +100,16 @@ function Main({
   searchPlaceholder: string;
 }) {
   return (
-    <Box m={[4, 6]} letterSpacing={"wide"} lineHeight={"tall"}>
-      <VStack align={"stretch"} gap={5}>
-        <Heading1>{title}</Heading1>
-        {subtitle ? <SubtitleText>{subtitle}</SubtitleText> : null}
-
-        {showSearch ? (
-          <ToolsSearchBar
-            value={filters.query}
-            placeholder={searchPlaceholder}
-            onChange={(query) => onFiltersChange({ ...filters, query })}
-            onClear={() => onFiltersChange({ ...filters, query: "" })}
-          />
-        ) : null}
-
-      </VStack>
-    </Box>
+    <PageIntro title={title} subtitle={subtitle}>
+      {showSearch ? (
+        <ToolsSearchBar
+          value={filters.query}
+          placeholder={searchPlaceholder}
+          onChange={(query) => onFiltersChange({ ...filters, query })}
+          onClear={() => onFiltersChange({ ...filters, query: "" })}
+        />
+      ) : null}
+    </PageIntro>
   );
 }
 
@@ -122,7 +121,10 @@ export function ToolsDirectoryPage() {
   );
   const [filters, setFilters] = useState<ToolFiltersState>(defaultFilters);
 
-  const filteredTools = useMemo(() => filterTools(tools, filters), [tools, filters]);
+  const filteredTools = useMemo(
+    () => filterTools(tools, filters),
+    [tools, filters],
+  );
   const visibleTools = forceEmptyStates ? [] : filteredTools;
   const showSearch = tools.length > 5;
 
@@ -138,28 +140,22 @@ export function ToolsDirectoryPage() {
       />
 
       {visibleTools.length === 0 ? (
-        <Bleed inline={{ base: 1, md: 2 }}>
-          <HighlightedSection>
-            <EmptyState.Root>
-              <EmptyState.Content>
-                <EmptyState.Indicator>
-                  <Icon as={FiTool} boxSize={10} color={"app.fg.icon"} />
-                </EmptyState.Indicator>
-                <EmptyState.Title>{content.emptyStateTitle}</EmptyState.Title>
-              </EmptyState.Content>
-            </EmptyState.Root>
-          </HighlightedSection>
-        </Bleed>
+        <ContentSection borderTop={0}>
+          <EmptyState.Root>
+            <EmptyState.Content>
+              <EmptyState.Indicator>
+                <Icon as={FiTool} boxSize={10} color={"app.fg.icon"} />
+              </EmptyState.Indicator>
+              <EmptyState.Title>{content.emptyStateTitle}</EmptyState.Title>
+            </EmptyState.Content>
+          </EmptyState.Root>
+        </ContentSection>
       ) : (
-        <Bleed inline={{ base: 1, md: 2 }}>
-          <HighlightedSection>
-            <TileList>
-              {visibleTools.map((tool) => (
-                <ToolListTile key={tool.id} tool={tool} />
-              ))}
-            </TileList>
-          </HighlightedSection>
-        </Bleed>
+        <FeedList>
+          {visibleTools.map((tool) => (
+            <ToolListTile key={tool.id} tool={tool} />
+          ))}
+        </FeedList>
       )}
     </VStack>
   );

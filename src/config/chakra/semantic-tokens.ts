@@ -23,7 +23,7 @@ const semanticColor = (
 export const APP_SEMANTIC_COLOR_TOKENS = {
   app: {
     bg: {
-      canvas: semanticColor("{colors.gray.100}", "{colors.gray.900}"),
+      canvas: semanticColor("#ffffff", "#000000"),
       surface: semanticColor("{colors.gray.200}", "{colors.gray.800}"),
       card: semanticColor("{colors.white}", "{colors.black}"),
       cardHeader: semanticColor("{colors.gray.50}", "{colors.gray.950}"),
@@ -33,8 +33,8 @@ export const APP_SEMANTIC_COLOR_TOKENS = {
       default: semanticColor("{colors.gray.800}", "{colors.gray.200}"),
       muted: semanticColor("{colors.gray.700}", "{colors.gray.300}"),
       subtle: semanticColor("{colors.gray.600}", "{colors.gray.400}"),
-      link: semanticColor("#007a8a", "{colors.teal.400}"),
-      linkHover: semanticColor("#006fd6", "{colors.teal.300}"),
+      link: semanticColor("#245ccc", "#91b5ff"),
+      linkHover: semanticColor("#1c49a3", "#b3cdff"),
       icon: semanticColor("{colors.gray.500}", "{colors.gray.500}"),
       inverse: semanticColor("{colors.gray.100}", "{colors.gray.900}"),
     },
@@ -70,8 +70,8 @@ export const APP_SEMANTIC_COLOR_TOKENS = {
       heading: semanticColor("{colors.gray.800}", "{colors.gray.200}"),
       body: semanticColor("{colors.gray.700}", "{colors.gray.300}"),
       subtle: semanticColor("{colors.gray.600}", "{colors.gray.400}"),
-      link: semanticColor("#007a8a", "{colors.teal.400}"),
-      linkHover: semanticColor("#006fd6", "{colors.teal.300}"),
+      link: semanticColor("#245ccc", "#91b5ff"),
+      linkHover: semanticColor("#1c49a3", "#b3cdff"),
       codeBg: semanticColor("{colors.gray.100}", "{colors.gray.900}"),
       preBg: semanticColor("{colors.gray.50}", "{colors.gray.950}"),
       inlineCodeBg: semanticColor(

@@ -1,5 +1,5 @@
 import { VStack } from "@chakra-ui/react";
-import { ParagraphText } from "@components/core/Texts";
+import { ParagraphText } from "./CvTypography";
 import type { CvSectionBase } from "data/cv";
 import type { ElementType } from "react";
 import type { AppAccentPalette, AppPalette } from "theme/colors/types";

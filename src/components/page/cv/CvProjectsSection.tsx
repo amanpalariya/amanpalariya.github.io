@@ -1,3 +1,4 @@
+import CvList from "./CvList";
 import {
   VStack,
   HStack,
@@ -6,9 +7,8 @@ import {
   Wrap,
   WrapItem,
   Icon,
-  Separator,
 } from "@chakra-ui/react";
-import { Heading4 } from "@components/core/Texts";
+import { Heading4 } from "./CvTypography";
 import { CategoryBadge, FeaturedIndicator } from "@components/core/Badges";
 import type { CvSectionBase, CvProjectItem } from "data/cv";
 import type { ElementType } from "react";
@@ -97,7 +97,7 @@ function ProjectCard({
                 color={CV_BULLET_TEXT_COLOR}
                 fontFamily={CV_BULLET_FONT_FAMILY}
                 lineHeight={CV_BULLET_LINE_HEIGHT}
-                textAlign="justify"
+                textAlign="left"
                 hyphens="auto"
                 flex={1}
                 css={{ WebkitHyphens: "auto", textWrap: "pretty" }}
@@ -142,14 +142,13 @@ export default function CvProjectsSection({
       primaryColorPalette={primaryColorPalette}
       accentColorPalette={accentColorPalette}
     >
-      <VStack align="stretch" gap={4}>
+      <CvList>
         {section.items.map((item, index) => (
           <VStack key={`${item.name}-${index}`} align="stretch" gap={4}>
             <ProjectCard item={item} accentColorPalette={accentColorPalette} />
-            {index < section.items.length - 1 ? <Separator size="md" /> : null}
           </VStack>
         ))}
-      </VStack>
+      </CvList>
     </CvSection>
   );
 }

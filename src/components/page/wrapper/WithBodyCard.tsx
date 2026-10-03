@@ -1,5 +1,5 @@
+import PageNavigation from "../common/PageNavigation";
 import { Box, VStack } from "@chakra-ui/react";
-import { MainCard } from "../../core/Cards";
 import type { BoxProps } from "@chakra-ui/react";
 
 export default function WithBodyCard({
@@ -12,17 +12,17 @@ export default function WithBodyCard({
   return (
     <Box
       as="main"
+      className="site-main"
       id="main-content"
       tabIndex={-1}
       scrollMarginTop={{ base: "6rem", sm: "7rem" }}
-      px={[1, 4]}
-      pt={[1, 2]}
-      pb={[1, 1]}
+      p={0}
       {...containerProps}
     >
-      <MainCard>
-        <VStack align={"stretch"}>{children}</VStack>
-      </MainCard>
+      <PageNavigation />
+      <VStack className="site-main-content" align={"stretch"} gap={0}>
+        {children}
+      </VStack>
     </Box>
   );
 }

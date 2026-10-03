@@ -16,10 +16,10 @@ const config = defineConfig({
   theme: {
     tokens: {
       fonts: {
-        heading: { value: "'Lexend', sans-serif" },
-        ui: { value: "'Lexend', sans-serif" },
-        body: { value: "'Noto Sans', sans-serif" },
-        handwritten: { value: "'Caveat', cursive" },
+        heading: { value: "var(--font-dm-sans), sans-serif" },
+        ui: { value: "var(--font-dm-sans), sans-serif" },
+        body: { value: "var(--font-dm-sans), sans-serif" },
+        handwritten: { value: "var(--font-handwritten), cursive" },
       },
     },
     semanticTokens: {

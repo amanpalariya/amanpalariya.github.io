@@ -1,5 +1,5 @@
-import { Bleed, Box, Icon, Text, VStack } from "@chakra-ui/react";
-import HighlightedSection from "@components/page/common/HighlightedSection";
+import { Box, Icon, Text, VStack } from "@chakra-ui/react";
+import ContentSection from "@components/page/common/ContentSection";
 import { useEffect, useState, type DragEvent } from "react";
 import { LuFilePlus } from "react-icons/lu";
 import type { UseEpubMakerReturn } from "../hooks/useEpubMaker";
@@ -183,56 +183,56 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
 
       <Box
         position={"relative"}
+        mx={-4}
         onDragEnter={handleFileDragEnter}
         onDragOver={handleFileDragOver}
         onDragLeave={handleFileDragLeave}
         onDrop={handleFileDrop}
       >
-        <Bleed inline={{ base: 1, md: 2 }}>
-          <HighlightedSection
-            contentPx={{ base: 2, sm: 3, md: 4, lg: 6 }}
-            contentPy={{ base: 2, sm: 3, md: 4, lg: 6 }}
-          >
-            <Box minH={"340px"} px={0} py={0}>
-              <PageDraftGrid
-                pages={props.pages}
-                previewBookTitle={props.normalizedBookTitle}
-                previewBookAuthor={props.normalizedBookAuthor}
-                coverPreviewHtml={props.coverPreviewHtml}
-                coverCustomHtml={props.coverCustomHtml}
-                hasCustomCover={props.hasCustomCover}
-                coverBackgroundId={props.coverBackgroundId}
-                coverBackgroundOptions={props.coverBackgroundOptions}
-                coverSizePresetId={props.coverSizePresetId}
-                coverSizePresetOptions={props.coverSizePresetOptions}
-                coverTextScalePercent={props.coverTextScalePercent}
-                coverTextPosition={props.coverTextPosition}
-                coverTextColorMode={props.coverTextColorMode}
-                hideCoverText={props.hideCoverText}
-                isCoverEnabled={props.isCoverEnabled}
-                isAdding={props.isAdding}
-                isGenerating={props.isGenerating}
-                generationChapterStatusByPageId={
-                  props.generationChapterStatusByPageId
-                }
-                activeGenerationPageId={props.activeGenerationPageId}
-                isGenerationStatusFading={props.isGenerationStatusFading}
-                pageFlashById={props.pageFlashById}
-                onRemove={props.removePage}
-                onRename={props.renamePage}
-                onReorder={props.reorderPages}
-                onApplyCoverSettings={props.applyCoverSettings}
-                onNotifyUser={props.notifyUser}
-                onAddFromClipboard={props.addPageFromClipboard}
-                onAddFromFiles={props.addPagesFromFiles}
-                pastedInput={props.pastedInput}
-                onPastedInputChange={props.setPastedInput}
-                onPaste={props.onPasteInput}
-                onAddFromFallback={props.addFromFallbackText}
-              />
-            </Box>
-          </HighlightedSection>
-        </Bleed>
+        <ContentSection
+          mx={0}
+          px={{ base: 2, sm: 3, md: 4, lg: 6 }}
+          py={{ base: 2, sm: 3, md: 4, lg: 6 }}
+        >
+          <Box minH={"340px"} px={0} py={0}>
+            <PageDraftGrid
+              pages={props.pages}
+              previewBookTitle={props.normalizedBookTitle}
+              previewBookAuthor={props.normalizedBookAuthor}
+              coverPreviewHtml={props.coverPreviewHtml}
+              coverCustomHtml={props.coverCustomHtml}
+              hasCustomCover={props.hasCustomCover}
+              coverBackgroundId={props.coverBackgroundId}
+              coverBackgroundOptions={props.coverBackgroundOptions}
+              coverSizePresetId={props.coverSizePresetId}
+              coverSizePresetOptions={props.coverSizePresetOptions}
+              coverTextScalePercent={props.coverTextScalePercent}
+              coverTextPosition={props.coverTextPosition}
+              coverTextColorMode={props.coverTextColorMode}
+              hideCoverText={props.hideCoverText}
+              isCoverEnabled={props.isCoverEnabled}
+              isAdding={props.isAdding}
+              isGenerating={props.isGenerating}
+              generationChapterStatusByPageId={
+                props.generationChapterStatusByPageId
+              }
+              activeGenerationPageId={props.activeGenerationPageId}
+              isGenerationStatusFading={props.isGenerationStatusFading}
+              pageFlashById={props.pageFlashById}
+              onRemove={props.removePage}
+              onRename={props.renamePage}
+              onReorder={props.reorderPages}
+              onApplyCoverSettings={props.applyCoverSettings}
+              onNotifyUser={props.notifyUser}
+              onAddFromClipboard={props.addPageFromClipboard}
+              onAddFromFiles={props.addPagesFromFiles}
+              pastedInput={props.pastedInput}
+              onPastedInputChange={props.setPastedInput}
+              onPaste={props.onPasteInput}
+              onAddFromFallback={props.addFromFallbackText}
+            />
+          </Box>
+        </ContentSection>
 
         {props.isGenerating ? (
           <Box

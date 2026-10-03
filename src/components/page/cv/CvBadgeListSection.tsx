@@ -32,7 +32,9 @@ export default function CvBadgeListSection({
       <Wrap gap={2}>
         {items.map((item) => (
           <WrapItem key={item}>
-            <CategoryBadge color={accentColorPalette ?? "gray"}>{item}</CategoryBadge>
+            <CategoryBadge color={accentColorPalette ?? "gray"}>
+              {item}
+            </CategoryBadge>
           </WrapItem>
         ))}
       </Wrap>

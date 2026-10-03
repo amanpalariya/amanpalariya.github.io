@@ -21,8 +21,8 @@ export function ToolDetailsSection({
   const ToolIcon = getToolIcon(tool.icon);
 
   return (
-    <VStack align={"stretch"} gap={4} pt={4}>
-      <Box mx={[4, 6]} letterSpacing={"wide"}>
+    <VStack align={"stretch"} gap={3} pb={6}>
+      <Box>
         <HStack justify={"space-between"} align={"center"} gap={3}>
           <HStack gap={3} align={"center"}>
             <Icon as={ToolIcon} color={"app.fg.subtle"} boxSize={6} />
@@ -32,15 +32,17 @@ export function ToolDetailsSection({
         </HStack>
       </Box>
 
-      <HStack gap={3} wrap={"wrap"} align={"center"} px={[4, 6]}>
-        {tool.status === "beta" ? <CategoryBadge color={"blue"}>Beta</CategoryBadge> : null}
+      <HStack gap={3} wrap={"wrap"} align={"center"}>
+        {tool.status === "beta" ? (
+          <CategoryBadge color={"blue"}>Beta</CategoryBadge>
+        ) : null}
         {tool.tags.map((tag) => (
           <CategoryBadge key={tag.id}>{tag.label}</CategoryBadge>
         ))}
       </HStack>
 
-      <VStack align={"start"} gap={2} px={[4, 6]}>
-        <Text color={"app.fg.muted"} fontSize={"md"} lineHeight={"1.6"}>
+      <VStack align={"start"} gap={2}>
+        <Text color={"app.prose.body"} fontSize={"md"} lineHeight={"1.6"}>
           {tool.description}
         </Text>
       </VStack>
