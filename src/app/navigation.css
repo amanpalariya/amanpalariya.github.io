@@ -1,3 +1,6 @@
+html {
+  scrollbar-gutter: stable both-edges;
+}
 .site-app {
   --site-ink: var(--chakra-colors-app-prose-heading);
   --site-body: var(--chakra-colors-app-prose-body);
@@ -10,7 +13,7 @@
   --site-nav-selected: #eff3f4;
   --site-column-padding: 24px;
   font-weight: 450;
-  max-width: 1171px;
+  max-width: 1254px;
   margin: auto;
   padding: 0;
 }
@@ -21,13 +24,13 @@
 }
 .site-layout {
   display: grid;
-  grid-template-columns: 244px minmax(0, 1fr);
+  grid-template-columns: minmax(244px, 1fr) minmax(0, 598px) minmax(244px, 1fr);
   gap: 0;
 }
 .site-body {
+  grid-column: 2;
   min-width: 0;
-  border-left: 1px solid var(--site-line);
-  border-right: 1px solid var(--site-line);
+  border-inline: 1px solid var(--site-line);
 }
 .site-main {
   min-height: 100dvh;
@@ -100,21 +103,17 @@
     border-bottom: 1px solid var(--site-line);
   }
 }
-@media (min-width: 1100px) {
-  .site-app:has(.site-body > .site-main) {
-    max-width: 842px;
-  }
-}
 @media (min-width: 1280px) {
   .site-body:has(.site-content-layout) {
-    border-right: 0;
+    grid-column: 2 / 4;
+    border-inline: 0;
   }
   .site-primary-content {
-    border-right: 1px solid var(--site-line);
+    border-inline: 1px solid var(--site-line);
   }
   .site-content-layout {
     display: grid;
-    grid-template-columns: minmax(0, 598px) 328px;
+    grid-template-columns: minmax(0, 598px) minmax(0, 1fr);
     gap: 0;
     min-height: 100dvh;
   }
@@ -157,13 +156,15 @@
 }
 @media (min-width: 1100px) and (max-width: 1279px) {
   .site-app {
-    max-width: 842px;
+    max-width: 1086px;
   }
   .site-layout {
-    grid-template-columns: 244px minmax(0, 1fr);
+    grid-template-columns: 244px minmax(0, 598px) 244px;
   }
 }
 .site-header {
+  width: 244px;
+  justify-self: end;
   position: sticky;
   top: 0;
   align-self: start;
@@ -264,12 +265,14 @@
 @media (min-width: 601px) and (max-width: 1099px) {
   .site-app {
     max-width: 686px;
+    margin-inline: auto;
   }
   .site-layout {
     grid-template-columns: 88px minmax(0, 1fr);
     gap: 0;
   }
   .site-header {
+    width: 88px;
     align-items: center;
     padding-inline: 16px;
   }
@@ -293,6 +296,9 @@
   }
 }
 @media (max-width: 600px) {
+  html {
+    scrollbar-gutter: auto;
+  }
   .site-main-content {
   color: var(--site-body);
     padding-block: 16px;
@@ -331,15 +337,16 @@
   }
   .site-body {
     padding-left: 0;
-    border-left: 0;
-    border-right: 0;
+    border-inline: 0;
   }
   .site-main {
     min-height: 0;
-    border-right: 0;
+    border-inline: 0;
     border-bottom: 1px solid var(--site-line);
   }
   .site-header {
+    width: 100%;
+    justify-self: stretch;
     height: auto;
     padding: 14px 12px;
     flex-direction: row;
