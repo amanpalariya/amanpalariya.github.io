@@ -1,14 +1,7 @@
 "use client";
 
-import {
-  Box,
-  Card,
-  HStack,
-  Icon,
-  Popover,
-  Text,
-  VStack,
-} from "@chakra-ui/react";
+import { Box, HStack, Icon, Popover, Text, VStack } from "@chakra-ui/react";
+import ContentSection from "@components/page/common/ContentSection";
 import { Heading1, Heading2 } from "@components/core/Texts";
 import { useState, type ElementType, type KeyboardEvent } from "react";
 import {
@@ -39,13 +32,6 @@ function StoryMetadataItem({
   return (
     <HStack
       as="span"
-      bg="app.bilingualStoryReader.metadata.bg"
-      borderColor={
-        tone === "warning"
-          ? "app.bilingualStoryReader.metadata.warningBorder"
-          : "app.bilingualStoryReader.metadata.border"
-      }
-      borderWidth="1px"
       color={
         tone === "warning"
           ? "app.bilingualStoryReader.metadata.warningFg"
@@ -53,8 +39,6 @@ function StoryMetadataItem({
       }
       gap={1.5}
       minH={8}
-      px={2.5}
-      rounded="full"
       whiteSpace="nowrap"
     >
       <Icon as={icon} boxSize={3.5} />
@@ -155,7 +139,11 @@ function StorySentence({
           aria-label={`${isOpen ? "Close" : "Open"} translation for sentence ${sentenceNumber}`}
           aria-pressed={isOpen}
           as="span"
-          bg={isOpen ? "app.bilingualStoryReader.bg.activeSentence" : "transparent"}
+          bg={
+            isOpen
+              ? "app.bilingualStoryReader.bg.activeSentence"
+              : "transparent"
+          }
           boxShadow={
             isOpen
               ? "inset 0 -2px 0 var(--chakra-colors-app-bilingual-story-reader-border-active-sentence)"
@@ -182,8 +170,8 @@ function StorySentence({
           maxW="min(420px, calc(100vw - 32px))"
           minW={0}
           p={0}
-          rounded="xl"
-          shadow="lg"
+          rounded="md"
+          shadow="none"
           w="max-content"
         >
           <Box p={4}>
@@ -236,9 +224,15 @@ export function RenderedStoryView({
         icon={LuLanguages}
         value={`${story.story.knownLanguage} → ${story.story.targetLanguage}`}
       />
-      <StoryMetadataItem icon={LuGraduationCap} value={getLevelLabel(story.story.level)} />
+      <StoryMetadataItem
+        icon={LuGraduationCap}
+        value={getLevelLabel(story.story.level)}
+      />
       {story.story.theme.trim() ? (
-        <StoryMetadataItem icon={LuClapperboard} value={story.story.theme.trim()} />
+        <StoryMetadataItem
+          icon={LuClapperboard}
+          value={story.story.theme.trim()}
+        />
       ) : null}
       <StoryMetadataItem
         icon={LuBookOpen}
@@ -311,43 +305,36 @@ export function RenderedStoryView({
 
   if (unframed) {
     return (
-      <VStack align="stretch" as="article" gap={4}>
+      <VStack align="stretch" as="article" gap={0}>
         {hideTitle ? null : (
-          <Box as="header" letterSpacing="wide" mt={4} mx={[4, 6]}>
+          <Box as="header" pb={4}>
             <Heading1>{story.story.title}</Heading1>
           </Box>
         )}
         {loadedLabel ? (
-          <HStack gap={3} px={[4, 6]} fontSize="sm" color="app.fg.muted">
+          <HStack gap={3} pb={3} fontSize="sm" color="app.fg.muted">
             <Text as="p">
               <time dateTime={loadedDate?.toISOString()}>
-                {loadedTimeLabel ? `${loadedLabel}, ${loadedTimeLabel}` : loadedLabel}
+                {loadedTimeLabel
+                  ? `${loadedLabel}, ${loadedTimeLabel}`
+                  : loadedLabel}
               </time>
             </Text>
           </HStack>
         ) : null}
-        <HStack gap={3} wrap="wrap" align="center" px={[4, 6]} py={0}>
-          {metadataPills}
-        </HStack>
-        <Box m={[4, 6]}>{storyBody}</Box>
+        <Box pb={4}>{metadataPills}</Box>
+        <ContentSection py={6}>{storyBody}</ContentSection>
       </VStack>
     );
   }
 
   return (
-    <Card.Root
-      bg="app.bilingualStoryReader.bg.card"
-      borderColor="app.bilingualStoryReader.border.default"
-      overflow="hidden"
-      rounded="2xl"
-    >
-      <Card.Header>
-        <VStack align="stretch" gap={3}>
-          {hideTitle ? null : <Heading2>{story.story.title}</Heading2>}
-          {metadataPills}
-        </VStack>
-      </Card.Header>
-      <Card.Body>{storyBody}</Card.Body>
-    </Card.Root>
+    <ContentSection>
+      <VStack align="stretch" gap={4}>
+        {hideTitle ? null : <Heading2>{story.story.title}</Heading2>}
+        {metadataPills}
+        {storyBody}
+      </VStack>
+    </ContentSection>
   );
 }

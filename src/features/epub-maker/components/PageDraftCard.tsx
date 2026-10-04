@@ -14,6 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { Field } from "@components/ui/field";
 import { Menu } from "@components/ui/menu";
+import { SiteDialogSection } from "@components/ui/site-dialog";
 import { NumberInput } from "@components/ui/number-input";
 import { Switch } from "@components/ui/switch";
 import { Tooltip } from "@components/ui/tooltip";
@@ -441,30 +442,29 @@ export function PageDraftCard({
     fontSize: "sm",
     rounded: "xl",
   } as const;
-  // Keep cover settings cards borderless, but preserve borders on controls.
   const dialogFieldProps = {
     fontFamily: "ui",
     fontSize: "sm",
     rounded: "lg",
-    bg: "app.epub.bg.card",
-    color: "app.epub.fg.default",
-    borderColor: "app.epub.border.default",
+    bg: "app.bg.canvas",
+    color: "app.fg.default",
+    borderColor: "app.border.default",
   } as const;
   const dialogFieldLabelProps = {
     fontSize: "sm",
-    color: "app.epub.fg.muted",
+    color: "app.fg.subtle",
     mb: 1,
   } as const;
   const dialogOutlineButtonProps = {
     size: "md",
     variant: "outline",
     rounded: "lg",
-    borderColor: "app.epub.border.default",
-    color: "app.epub.fg.default",
-    bg: "app.epub.bg.card",
+    borderColor: "app.border.default",
+    color: "app.fg.default",
+    bg: "app.bg.canvas",
     _hover: {
-      bg: "app.epub.bg.surface",
-      color: "app.epub.fg.default",
+      bg: "app.bg.overlay",
+      color: "app.fg.default",
     },
   } as const;
   const switchProps = {
@@ -478,10 +478,6 @@ export function PageDraftCard({
     labelProps: {
       color: "app.epub.switch.label",
     },
-  } as const;
-  const coverDialogSectionCardBg = {
-    base: "app.epub.bg.card",
-    _dark: "gray.950",
   } as const;
   const isRemoveDisabled = isInteractionDisabled || isCover;
   const isTitleDisabled = isInteractionDisabled || isCover;
@@ -806,14 +802,15 @@ export function PageDraftCard({
 
                     <Box
                       display={"grid"}
-                      gap={5}
+                      gap={0}
                       gridTemplateColumns={{
                         base: "minmax(0, 1fr)",
                         lg: "minmax(0, 1fr) minmax(0, 1fr)",
                       }}
-                      alignItems={"start"}
+                      alignItems={"stretch"}
                     >
-                      <VStack align={"stretch"} gap={3}>
+                      <VStack align={"stretch"} gap={0} minW={0}>
+                        <SiteDialogSection>
                         <HStack gap={2} wrap={"wrap"}>
                           <HStack gap={0} align={"stretch"}>
                             <Button
@@ -838,7 +835,7 @@ export function PageDraftCard({
                                 size={"sm"}
                                 roundedLeft={0}
                                 borderLeftWidth={"1px"}
-                                borderLeftColor={"app.epub.border.default"}
+                                borderLeftColor={"app.border.default"}
                                 onClick={redoCoverSettings}
                                 disabled={isInteractionDisabled || !canRedoCoverSettings}
                               >
@@ -852,8 +849,8 @@ export function PageDraftCard({
                             variant={"ghost"}
                             rounded={"lg"}
                             bg={"transparent"}
-                            color={"app.epub.fg.default"}
-                            _hover={{ bg: "app.status.info.bg" }}
+                            color={"app.fg.default"}
+                            _hover={{ bg: "app.bg.overlay" }}
                             onClick={() =>
                               commitCoverSettingsChange((previous) => ({
                                 ...previous,
@@ -905,18 +902,14 @@ export function PageDraftCard({
                             </HStack>
                           </Button>
                         </HStack>
+                        </SiteDialogSection>
 
-                        <Box
-                          p={4}
-                          rounded={"xl"}
-                          bg={coverDialogSectionCardBg}
-                          boxShadow={"sm"}
-                        >
+                        <SiteDialogSection>
                           <Text
                             fontFamily={"ui"}
                             fontSize={"sm"}
                             fontWeight={"semibold"}
-                            color={"app.epub.fg.default"}
+                            color={"app.fg.default"}
                             mb={3}
                           >
                             Background
@@ -970,8 +963,8 @@ export function PageDraftCard({
                                             h={"56px"}
                                             rounded={"sm"}
                                             borderWidth={"1px"}
-                                            borderColor={"app.epub.border.default"}
-                                            bg={"app.epub.bg.preview"}
+                                            borderColor={"app.border.default"}
+                                            bg={"app.bg.overlay"}
                                             style={{
                                               backgroundImage:
                                                 selectedCoverBackgroundPreviewSrc
@@ -986,7 +979,7 @@ export function PageDraftCard({
                                           <Text
                                             fontFamily={"ui"}
                                             fontSize={"sm"}
-                                            color={"app.epub.fg.default"}
+                                            color={"app.fg.default"}
                                             lineClamp={1}
                                             textAlign={"left"}
                                           >
@@ -994,7 +987,7 @@ export function PageDraftCard({
                                           </Text>
                                         </HStack>
                                         <Icon
-                                          color={"app.epub.fg.muted"}
+                                          color={"app.fg.subtle"}
                                           flexShrink={0}
                                         >
                                           <LuChevronDown />
@@ -1008,7 +1001,7 @@ export function PageDraftCard({
                                     roundedRight={0}
                                     borderLeftWidth={"1px"}
                                     borderRightWidth={"0"}
-                                    borderLeftColor={"app.epub.border.default"}
+                                    borderLeftColor={"app.border.default"}
                                     size={"md"}
                                     h={"64px"}
                                     minH={"64px"}
@@ -1035,7 +1028,7 @@ export function PageDraftCard({
                                       {...dialogOutlineButtonProps}
                                       roundedLeft={0}
                                       borderLeftWidth={"1px"}
-                                      borderLeftColor={"app.epub.border.default"}
+                                      borderLeftColor={"app.border.default"}
                                       size={"md"}
                                       h={"64px"}
                                       minH={"64px"}
@@ -1056,9 +1049,9 @@ export function PageDraftCard({
                                 </Box>
                                 <Menu.Positioner>
                                   <Menu.Content
-                                    bg={"app.epub.bg.card"}
+                                    bg={"app.bg.canvas"}
                                     borderWidth={"1px"}
-                                    borderColor={"app.epub.border.default"}
+                                    borderColor={"app.border.default"}
                                     minW={"220px"}
                                     p={2}
                                     rounded={"lg"}
@@ -1142,7 +1135,7 @@ export function PageDraftCard({
                                                       borderColor={
                                                         selectionFrameProps.borderColor
                                                       }
-                                                      bg={"app.epub.bg.preview"}
+                                                      bg={"app.bg.overlay"}
                                                       style={{
                                                         backgroundImage:
                                                           previewSrc
@@ -1242,9 +1235,9 @@ export function PageDraftCard({
                                               rounded={"sm"}
                                               borderWidth={"1px"}
                                               borderColor={
-                                                "app.epub.border.default"
+                                                "app.border.default"
                                               }
-                                              bg={"app.epub.bg.preview"}
+                                              bg={"app.bg.overlay"}
                                               position={"relative"}
                                               overflow={"hidden"}
                                             >
@@ -1264,7 +1257,7 @@ export function PageDraftCard({
                                                 borderWidth={"1px"}
                                                 borderStyle={"solid"}
                                                 borderColor={
-                                                  "app.epub.fg.default"
+                                                  "app.fg.default"
                                                 }
                                                 rounded={"xs"}
                                                 bg={"transparent"}
@@ -1281,7 +1274,7 @@ export function PageDraftCard({
                                           <Text
                                             fontFamily={"ui"}
                                             fontSize={"sm"}
-                                            color={"app.epub.fg.default"}
+                                            color={"app.fg.default"}
                                             lineClamp={1}
                                             textAlign={"left"}
                                           >
@@ -1291,7 +1284,7 @@ export function PageDraftCard({
                                           <Text
                                             fontFamily={"ui"}
                                             fontSize={"xs"}
-                                            color={"app.epub.fg.subtle"}
+                                            color={"app.fg.subtle"}
                                             lineClamp={1}
                                             textAlign={"left"}
                                           >
@@ -1301,7 +1294,7 @@ export function PageDraftCard({
                                         </VStack>
                                       </HStack>
                                       <Icon
-                                        color={"app.epub.fg.muted"}
+                                        color={"app.fg.subtle"}
                                         flexShrink={0}
                                       >
                                         <LuChevronDown />
@@ -1311,13 +1304,15 @@ export function PageDraftCard({
                                 </Menu.Trigger>
                                 <Menu.Positioner>
                                   <Menu.Content
-                                    bg={"app.epub.bg.card"}
+                                    bg={"app.bg.canvas"}
                                     borderWidth={"1px"}
-                                    borderColor={"app.epub.border.default"}
+                                    borderColor={"app.border.default"}
                                     minW={"220px"}
                                     p={2}
                                     rounded={"lg"}
-                                    overflow={"hidden"}
+                                    overflowX={"hidden"}
+                                    overflowY={"auto"}
+                                    overscrollBehaviorY={"contain"}
                                     display={"grid"}
                                     gridTemplateColumns={
                                       COVER_SIZE_LABEL_MODE === "side"
@@ -1391,7 +1386,7 @@ export function PageDraftCard({
                                                     borderColor={
                                                       selectionFrameProps.borderColor
                                                     }
-                                                    bg={"app.epub.bg.preview"}
+                                                    bg={"app.bg.overlay"}
                                                     position={"relative"}
                                                     overflow={"hidden"}
                                                     outline={
@@ -1418,7 +1413,7 @@ export function PageDraftCard({
                                                       borderWidth={"1px"}
                                                       borderStyle={"solid"}
                                                       borderColor={
-                                                        "app.epub.fg.default"
+                                                        "app.fg.default"
                                                       }
                                                       rounded={"xs"}
                                                       bg={"transparent"}
@@ -1465,14 +1460,9 @@ export function PageDraftCard({
 
                           </Box>
 
-                        </Box>
+                        </SiteDialogSection>
 
-                        <Box
-                          p={4}
-                          rounded={"xl"}
-                          bg={coverDialogSectionCardBg}
-                          boxShadow={"sm"}
-                        >
+                        <SiteDialogSection>
                           <HStack gap={2} mb={3}>
                             <Switch
                               {...switchProps}
@@ -1494,7 +1484,7 @@ export function PageDraftCard({
                               fontFamily={"ui"}
                               fontSize={"sm"}
                               fontWeight={"semibold"}
-                              color={"app.epub.fg.default"}
+                              color={"app.fg.default"}
                             >
                               Text
                             </Text>
@@ -1533,8 +1523,8 @@ export function PageDraftCard({
                                     fontFamily={"ui"}
                                     fontSize={"sm"}
                                     rounded={"lg"}
-                                    bg={"app.epub.bg.card"}
-                                    color={"app.epub.fg.default"}
+                                    bg={"app.bg.canvas"}
+                                    color={"app.fg.default"}
                                   />
                                 </NumberInput.Root>
                               </Field>
@@ -1604,8 +1594,8 @@ export function PageDraftCard({
                                       h={"56px"}
                                       rounded={"sm"}
                                       borderWidth={"1px"}
-                                      borderColor={"app.epub.border.default"}
-                                      bg={"app.epub.bg.preview"}
+                                      borderColor={"app.border.default"}
+                                      bg={"app.bg.overlay"}
                                       position={"relative"}
                                       overflow={"hidden"}
                                     >
@@ -1621,7 +1611,7 @@ export function PageDraftCard({
                                         }
                                         w={COVER_PREVIEW_TITLE_WIDTH}
                                         h={COVER_PREVIEW_TITLE_HEIGHT}
-                                        bg={"app.epub.fg.default"}
+                                        bg={"app.fg.default"}
                                         rounded={"full"}
                                         opacity={COVER_PREVIEW_TITLE_OPACITY}
                                       />
@@ -1637,21 +1627,21 @@ export function PageDraftCard({
                                         }
                                         w={COVER_PREVIEW_AUTHOR_WIDTH}
                                         h={COVER_PREVIEW_AUTHOR_HEIGHT}
-                                        bg={"app.epub.fg.muted"}
+                                        bg={"app.fg.subtle"}
                                         rounded={"full"}
                                         opacity={COVER_PREVIEW_AUTHOR_OPACITY}
                                       />
                                     </Box>
-                                    <Icon color={"app.epub.fg.muted"}>
+                                    <Icon color={"app.fg.subtle"}>
                                       <LuChevronDown />
                                     </Icon>
                                   </Button>
                                 </Menu.Trigger>
                                 <Menu.Positioner>
                                   <Menu.Content
-                                    bg={"app.epub.bg.card"}
+                                    bg={"app.bg.canvas"}
                                     borderWidth={"1px"}
-                                    borderColor={"app.epub.border.default"}
+                                    borderColor={"app.border.default"}
                                     minW={"220px"}
                                     p={2}
                                     rounded={"lg"}
@@ -1702,7 +1692,7 @@ export function PageDraftCard({
                                               borderColor={
                                                 selectionFrameProps.borderColor
                                               }
-                                              bg={"app.epub.bg.preview"}
+                                              bg={"app.bg.overlay"}
                                               position={"relative"}
                                               overflow={"hidden"}
                                               outline={
@@ -1721,7 +1711,7 @@ export function PageDraftCard({
                                                 left={previewLines.title.left}
                                                 w={COVER_PREVIEW_TITLE_WIDTH}
                                                 h={COVER_PREVIEW_TITLE_HEIGHT}
-                                                bg={"app.epub.fg.default"}
+                                                bg={"app.fg.default"}
                                                 rounded={"full"}
                                                 opacity={
                                                   COVER_PREVIEW_TITLE_OPACITY
@@ -1733,7 +1723,7 @@ export function PageDraftCard({
                                                 left={previewLines.author.left}
                                                 w={COVER_PREVIEW_AUTHOR_WIDTH}
                                                 h={COVER_PREVIEW_AUTHOR_HEIGHT}
-                                                bg={"app.epub.fg.muted"}
+                                                bg={"app.fg.subtle"}
                                                 rounded={"full"}
                                                 opacity={
                                                   COVER_PREVIEW_AUTHOR_OPACITY
@@ -1752,14 +1742,22 @@ export function PageDraftCard({
                               </Menu.Root>
                             </Field>
                           </VStack>
-                        </Box>
+                        </SiteDialogSection>
                       </VStack>
 
-                      <Box
-                        display={"flex"}
-                        justifyContent={"center"}
+                      <VStack
+                        align={"stretch"}
+                        gap={3}
                         w={"full"}
+                        minW={0}
+                        px={{ base: 4, md: 6 }}
+                        py={5}
+                        borderTopWidth={{ base: "1px", lg: "0" }}
+                        borderStartWidth={{ base: "0", lg: "1px" }}
+                        borderColor={"app.border.default"}
                       >
+                        <Box display={"flex"} justifyContent={"center"}>
+
                         <AspectRatio
                           ratio={dialogPreviewRatio}
                           w={"full"}
@@ -1767,14 +1765,14 @@ export function PageDraftCard({
                             base: "64",
                             md: "72",
                             lg: "80",
-                            xl: "96",
+                            xl: "80",
                           }}
                         >
                           <Box
                             position={"relative"}
                             rounded={"lg"}
                             overflow={"hidden"}
-                            bg={"app.epub.bg.preview"}
+                            bg={"app.bg.overlay"}
                           >
                             <BufferedCoverPreview
                               title={`cover-dialog-preview-${page.id}`}
@@ -1834,16 +1832,16 @@ export function PageDraftCard({
                                 >
                                   <HStack
                                     gap={1.5}
-                                    bg={"app.epub.bg.card"}
+                                    bg={"app.bg.canvas"}
                                     borderWidth={"1px"}
-                                    borderColor={"app.epub.border.default"}
+                                    borderColor={"app.border.default"}
                                     rounded={"full"}
                                     px={3}
                                     py={1.5}
                                   >
                                     <Icon
                                       boxSize={3.5}
-                                      color={"app.epub.fg.default"}
+                                      color={"app.fg.default"}
                                     >
                                       <LuEyeOff />
                                     </Icon>
@@ -1851,7 +1849,7 @@ export function PageDraftCard({
                                       fontFamily={"ui"}
                                       fontSize={"xs"}
                                       fontWeight={"semibold"}
-                                      color={"app.epub.fg.default"}
+                                      color={"app.fg.default"}
                                       lineHeight={1.1}
                                     >
                                       Enable cover
@@ -1862,7 +1860,8 @@ export function PageDraftCard({
                             ) : null}
                           </Box>
                         </AspectRatio>
-                      </Box>
+                        </Box>
+                      </VStack>
                     </Box>
               </CoverSettingsDialog>
             </HStack>

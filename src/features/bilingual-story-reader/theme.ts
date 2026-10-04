@@ -21,9 +21,9 @@ export const SEMANTIC_TOKENS = {
     contrastFg: semanticColor("{colors.white}", "{colors.white}"),
   },
   bg: {
-    card: semanticColor("{colors.white}", "{colors.gray.800}"),
-    control: semanticColor("{colors.white}", "{colors.gray.900}"),
-    popover: semanticColor("{colors.white}", "{colors.gray.800}"),
+    card: semanticColor("{colors.app.bg.canvas}", "{colors.app.bg.canvas}"),
+    control: semanticColor("{colors.app.bg.canvas}", "{colors.app.bg.canvas}"),
+    popover: semanticColor("{colors.app.bg.canvas}", "{colors.app.bg.canvas}"),
     subtle: semanticColor("{colors.gray.50}", "{colors.gray.900}"),
     activeSentence: semanticColor("#e7eef5", "#24384a"),
   },
@@ -35,23 +35,50 @@ export const SEMANTIC_TOKENS = {
     warning: semanticColor("{colors.orange.600}", "{colors.orange.300}"),
   },
   border: {
-    default: semanticColor("{colors.gray.300}", "{colors.gray.600}"),
+    default: semanticColor(
+      "{colors.app.border.default}",
+      "{colors.app.border.default}",
+    ),
     muted: semanticColor("{colors.gray.200}", "{colors.gray.700}"),
     activeSentence: semanticColor("#6f96b6", "#5f82a0"),
     warning: semanticColor("{colors.orange.300}", "{colors.orange.600}"),
   },
   button: {
     primary: {
-      bg: semanticColor("{colors.app.bilingualStoryReader.accent.solid}", "{colors.app.bilingualStoryReader.accent.solid}"),
-      hoverBg: semanticColor("{colors.app.bilingualStoryReader.accent.solidHover}", "{colors.app.bilingualStoryReader.accent.solidHover}"),
-      fg: semanticColor("{colors.app.bilingualStoryReader.accent.contrastFg}", "{colors.app.bilingualStoryReader.accent.contrastFg}"),
-      divider: semanticColor("{colors.app.bilingualStoryReader.accent.solidDivider}", "{colors.app.bilingualStoryReader.accent.solidDivider}"),
+      bg: semanticColor(
+        "{colors.app.bilingualStoryReader.accent.solid}",
+        "{colors.app.bilingualStoryReader.accent.solid}",
+      ),
+      hoverBg: semanticColor(
+        "{colors.app.bilingualStoryReader.accent.solidHover}",
+        "{colors.app.bilingualStoryReader.accent.solidHover}",
+      ),
+      fg: semanticColor(
+        "{colors.app.bilingualStoryReader.accent.contrastFg}",
+        "{colors.app.bilingualStoryReader.accent.contrastFg}",
+      ),
+      divider: semanticColor(
+        "{colors.app.bilingualStoryReader.accent.solidDivider}",
+        "{colors.app.bilingualStoryReader.accent.solidDivider}",
+      ),
     },
     subtle: {
-      bg: semanticColor("{colors.app.bilingualStoryReader.accent.soft}", "{colors.app.bilingualStoryReader.accent.soft}"),
-      hoverBg: semanticColor("{colors.app.bilingualStoryReader.accent.softHover}", "{colors.app.bilingualStoryReader.accent.softHover}"),
-      fg: semanticColor("{colors.app.bilingualStoryReader.accent.fg}", "{colors.app.bilingualStoryReader.accent.fg}"),
-      divider: semanticColor("{colors.app.bilingualStoryReader.accent.softDivider}", "{colors.app.bilingualStoryReader.accent.softDivider}"),
+      bg: semanticColor(
+        "{colors.app.bilingualStoryReader.accent.soft}",
+        "{colors.app.bilingualStoryReader.accent.soft}",
+      ),
+      hoverBg: semanticColor(
+        "{colors.app.bilingualStoryReader.accent.softHover}",
+        "{colors.app.bilingualStoryReader.accent.softHover}",
+      ),
+      fg: semanticColor(
+        "{colors.app.bilingualStoryReader.accent.fg}",
+        "{colors.app.bilingualStoryReader.accent.fg}",
+      ),
+      divider: semanticColor(
+        "{colors.app.bilingualStoryReader.accent.softDivider}",
+        "{colors.app.bilingualStoryReader.accent.softDivider}",
+      ),
     },
   },
   metadata: {

@@ -54,6 +54,15 @@
 .site-mobile-page-title {
   display: none;
 }
+.story-reader-main {
+  max-width: 598px;
+  min-height: 100dvh;
+  margin-inline: auto;
+  border-inline: 1px solid var(--site-line);
+}
+.site-page-navigation.story-reader-navigation {
+  display: flex;
+}
 .site-back-button {
   display: inline-flex;
   align-items: center;
@@ -119,9 +128,22 @@
     margin-top: 48px;
     padding-inline: var(--site-column-padding);
   }
+  .site-right-sidebar:has(.bilingual-story-history) {
+    top: 0;
+    margin-top: 0;
+    gap: 0;
+  }
   .site-right-sidebar .site-footer,
   .site-right-sidebar .site-footer-links {
     padding: 0;
+  }
+  .site-sidebar-slot:has(.epub-book-settings, .bilingual-story-history) + .site-footer {
+    border-top: 1px solid var(--site-line);
+    margin-inline: calc(-1 * var(--site-column-padding));
+    padding: 24px var(--site-column-padding) 0;
+  }
+  .site-sidebar-slot:has(.bilingual-story-history[data-history-open="false"]) + .site-footer {
+    border-top: 0;
   }
   .site-right-sidebar .site-footer-groups {
     flex-direction: column;

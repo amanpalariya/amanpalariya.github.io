@@ -192,6 +192,22 @@ test.describe("Bilingual Story Reader shell", () => {
     await expect(page.locator("article").getByText("Lina entra.", { exact: true })).toBeVisible();
   });
 
+  test("back links follow the story, setup, and tools hierarchy", async ({ page }) => {
+    await page.goto("/tools/bilingual-story-reader/");
+    await page.getByRole("button", { name: "Show manual paste" }).click();
+    await page.getByLabel("AI response").fill(JSON.stringify(validStory()));
+    await page.getByRole("button", { name: "Load Story", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "El tren" })).toBeVisible();
+
+    await page.getByRole("link", { name: "Prompt Editor", exact: true }).click();
+    await expect(page).toHaveURL(/\/tools\/bilingual-story-reader\/$/);
+    await expect(page.getByText("Story Setup", { exact: true })).toBeVisible();
+
+    await page.getByRole("link", { name: "Go back", exact: true }).click();
+    await expect(page).toHaveURL(/\/tools\/$/);
+    await expect(page.getByRole("heading", { name: "Tools", exact: true })).toBeVisible();
+  });
+
   test("deletes the current story from story reader", async ({ page }) => {
     await page.goto("/tools/bilingual-story-reader");
 

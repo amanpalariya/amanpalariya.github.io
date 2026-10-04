@@ -26,6 +26,7 @@ export default function PageNavigation({
           aria-label="Go back"
           onClick={(event) => {
             if (
+              page.pathname === "/tools/" ||
               !goBack ||
               event.metaKey ||
               event.ctrlKey ||

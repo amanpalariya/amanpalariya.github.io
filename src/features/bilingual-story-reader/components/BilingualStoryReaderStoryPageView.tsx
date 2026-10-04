@@ -2,27 +2,18 @@
 
 import {
   Box,
-  Button,
   EmptyState,
-  HStack,
   Icon,
   IconButton,
-  Spacer,
   Text,
+  VStack,
 } from "@chakra-ui/react";
-import ContentSection from "@components/page/common/ContentSection";
-import { Heading1, Heading2 } from "@components/core/Texts";
-import {
-  ColorModeToggleIconButton,
-  HEADER_OFFSET_HEIGHT,
-} from "@components/page/common/Header";
-import HeaderNavIconButton from "@components/page/common/header/HeaderNavIconButton";
+import { Heading1 } from "@components/core/Texts";
 import WithBackground from "@components/page/wrapper/WithBackground";
-import WithBodyCard from "@components/page/wrapper/WithBodyCard";
 import { Tooltip } from "@components/ui/tooltip";
 import { useRouter, useSearchParams } from "next/navigation";
 import NextLink from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { FiChevronLeft } from "react-icons/fi";
 import { LuBookOpen, LuTrash2 } from "react-icons/lu";
 import {
@@ -35,6 +26,39 @@ import { RenderedStoryView } from "./RenderedStoryView";
 
 const PROMPT_EDITOR_PATH = "/tools/bilingual-story-reader/";
 
+function StoryReaderShell({
+  children,
+  backLabel = "Prompt Editor",
+}: {
+  children: ReactNode;
+  backLabel?: string;
+}) {
+  return (
+    <WithBackground>
+      <Box
+        as="main"
+        id="main-content"
+        tabIndex={-1}
+        className="story-reader-main"
+      >
+        <header className="site-page-navigation story-reader-navigation">
+          <NextLink
+            href={PROMPT_EDITOR_PATH}
+            className="site-back-button"
+            aria-label={backLabel}
+          >
+            <FiChevronLeft size={22} aria-hidden="true" />
+          </NextLink>
+          <span>Story Reader</span>
+        </header>
+        <VStack className="site-main-content" align="stretch" gap={0}>
+          {children}
+        </VStack>
+      </Box>
+    </WithBackground>
+  );
+}
+
 function MissingStoryState({
   message,
   title,
@@ -43,33 +67,26 @@ function MissingStoryState({
   title: string;
 }) {
   return (
-    <WithBackground>
-      <WithBodyCard>
-        <EmptyState.Root>
-          <EmptyState.Content>
-            <EmptyState.Indicator>
-              <Icon boxSize={9} color="app.bilingualStoryReader.fg.muted">
-                <LuBookOpen />
-              </Icon>
-            </EmptyState.Indicator>
-            <EmptyState.Title textAlign="center">{title}</EmptyState.Title>
-            <Text
-              color="app.bilingualStoryReader.fg.muted"
-              fontFamily="ui"
-              fontSize="sm"
-              textAlign="center"
-            >
-              {message}
-            </Text>
-            <HeaderNavIconButton
-              icon={FiChevronLeft}
-              label="Prompt Editor"
-              url={PROMPT_EDITOR_PATH}
-            />
-          </EmptyState.Content>
-        </EmptyState.Root>
-      </WithBodyCard>
-    </WithBackground>
+    <StoryReaderShell>
+      <EmptyState.Root>
+        <EmptyState.Content>
+          <EmptyState.Indicator>
+            <Icon boxSize={9} color="app.bilingualStoryReader.fg.muted">
+              <LuBookOpen />
+            </Icon>
+          </EmptyState.Indicator>
+          <EmptyState.Title textAlign="center">{title}</EmptyState.Title>
+          <Text
+            color="app.bilingualStoryReader.fg.muted"
+            fontFamily="ui"
+            fontSize="sm"
+            textAlign="center"
+          >
+            {message}
+          </Text>
+        </EmptyState.Content>
+      </EmptyState.Root>
+    </StoryReaderShell>
   );
 }
 
@@ -81,7 +98,9 @@ export function BilingualStoryReaderStoryPageView({
   const router = useRouter();
   const [entry, setEntry] = useState<StoryHistoryEntry | null>(null);
   const [hasLoadedHistory, setHasLoadedHistory] = useState(false);
-  const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
+  const [redirectCountdown, setRedirectCountdown] = useState<number | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!storyId) {
@@ -91,7 +110,8 @@ export function BilingualStoryReaderStoryPageView({
     }
 
     const matchingEntry =
-      readStoryHistory().find((historyEntry) => historyEntry.id === storyId) ?? null;
+      readStoryHistory().find((historyEntry) => historyEntry.id === storyId) ??
+      null;
     setEntry(matchingEntry);
     setHasLoadedHistory(true);
   }, [storyId]);
@@ -136,55 +156,23 @@ export function BilingualStoryReaderStoryPageView({
     const backLabel = `Go back (${redirectCountdown ?? 5}s)`;
 
     return (
-      <WithBackground>
-        <>
-          <Box
-            as="header"
-            role="banner"
-            position="fixed"
-            width="100%"
-            maxW="3xl"
-            left="50%"
-            transform="translateX(-50%)"
-            zIndex={10}
-          >
-            <Box p={[1, 4]}>
-              <ContentSection mx={0} px={4}>
-                <HStack align="center" justify="space-between">
-                  <HStack gap={4} minW={0}>
-                    <HeaderNavIconButton
-                      icon={FiChevronLeft}
-                      label="Prompt Editor"
-                      url={PROMPT_EDITOR_PATH}
-                    />
-                    <Heading2 lineClamp={1}>Story Reader</Heading2>
-                  </HStack>
-                  <ColorModeToggleIconButton />
-                </HStack>
-              </ContentSection>
-            </Box>
-          </Box>
-          <Spacer h={HEADER_OFFSET_HEIGHT} />
-          <WithBodyCard containerProps={{ pt: { base: 4, sm: 2 } }}>
-            <EmptyState.Root>
-              <EmptyState.Content>
-                <EmptyState.Indicator>
-                  <Icon boxSize={9} color="app.bilingualStoryReader.fg.muted">
-                    <LuBookOpen />
-                  </Icon>
-                </EmptyState.Indicator>
-                <EmptyState.Title textAlign="center">Story not found</EmptyState.Title>
-                <Button asChild variant="ghost" rounded="xl" fontFamily="ui">
-                  <NextLink href={PROMPT_EDITOR_PATH}>
-                    <Icon as={FiChevronLeft} />
-                    {backLabel}
-                  </NextLink>
-                </Button>
-              </EmptyState.Content>
-            </EmptyState.Root>
-          </WithBodyCard>
-        </>
-      </WithBackground>
+      <StoryReaderShell backLabel={backLabel}>
+        <EmptyState.Root>
+          <EmptyState.Content>
+            <EmptyState.Indicator>
+              <Icon boxSize={9} color="app.bilingualStoryReader.fg.muted">
+                <LuBookOpen />
+              </Icon>
+            </EmptyState.Indicator>
+            <EmptyState.Title textAlign="center">
+              Story not found
+            </EmptyState.Title>
+            <Text color="app.fg.subtle" fontSize="sm">
+              Returning to the prompt editor in {redirectCountdown ?? 5}s.
+            </Text>
+          </EmptyState.Content>
+        </EmptyState.Root>
+      </StoryReaderShell>
     );
   }
 
@@ -196,69 +184,33 @@ export function BilingualStoryReaderStoryPageView({
   }
 
   return (
-    <WithBackground>
-      <>
-        <Box
-          as="header"
-          role="banner"
-          position="fixed"
-          width="100%"
-          maxW="3xl"
-          left="50%"
-          transform="translateX(-50%)"
-          zIndex={10}
-        >
-          <Box p={[1, 4]}>
-            <ContentSection mx={0} px={4}>
-              <HStack align="center" justify="space-between">
-                <HStack gap={4} minW={0}>
-                  <HeaderNavIconButton
-                    icon={FiChevronLeft}
-                    label="Prompt Editor"
-                    url={PROMPT_EDITOR_PATH}
-                  />
-                  <Heading2 lineClamp={1}>Story Reader</Heading2>
-                </HStack>
-                <ColorModeToggleIconButton />
-              </HStack>
-            </ContentSection>
-          </Box>
+    <StoryReaderShell>
+      <Box as="header" letterSpacing="wide" mb={4} position="relative">
+        <Box pr={12}>
+          <Heading1>{entry.story.story.title}</Heading1>
         </Box>
-        <Spacer h={HEADER_OFFSET_HEIGHT} />
-        <WithBodyCard containerProps={{ pt: { base: 4, sm: 2 } }}>
-          <Box
-            as="header"
-            letterSpacing="wide"
-            mt={4}
-            mx={[4, 6]}
-            position="relative"
-          >
-            <Box pr={12}>
-              <Heading1>{entry.story.story.title}</Heading1>
-            </Box>
-            <Box position="absolute" right={0} top={0}>
-              <Tooltip content="Delete this story">
-                <IconButton
-                  aria-label="Delete story"
-                  colorPalette="red"
-                  onClick={deleteCurrentStory}
-                  variant="ghost"
-                >
-                  <LuTrash2 />
-                </IconButton>
-              </Tooltip>
-            </Box>
-          </Box>
-          <RenderedStoryView
-            hideTitle
-            loadedAt={entry.loadedAt}
-            unframed
-            story={entry.story}
-            warnings={[]}
-          />
-        </WithBodyCard>
-      </>
-    </WithBackground>
+        <Box position="absolute" right={0} top={0}>
+          <Tooltip content="Delete this story">
+            <IconButton
+              aria-label="Delete story"
+              rounded="full"
+              colorPalette="red"
+              onClick={deleteCurrentStory}
+              variant="ghost"
+            >
+              <LuTrash2 />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      </Box>
+      <RenderedStoryView
+        hideTitle
+        loadedAt={entry.loadedAt}
+        unframed
+        story={entry.story}
+        warnings={[]}
+      />
+    </StoryReaderShell>
   );
 }
 

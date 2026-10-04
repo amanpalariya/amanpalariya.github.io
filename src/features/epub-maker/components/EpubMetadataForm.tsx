@@ -2,6 +2,8 @@ import {
   Box,
   Button,
   Group,
+  Grid,
+  VStack,
   HStack,
   Icon,
   Input,
@@ -52,7 +54,7 @@ export function EpubMetadataForm({
   const fieldLabelProps = {
     fontSize: "sm",
     color: "app.epub.fg.muted",
-    mb: 1,
+    mb: 0,
   } as const;
 
   const switchProps = {
@@ -70,12 +72,20 @@ export function EpubMetadataForm({
 
   return (
     <>
-      <HStack gap={3} wrap={"wrap"} align={"stretch"}>
+      <Grid
+        gap={3}
+        templateColumns={{
+          base: "minmax(0, 1fr)",
+          sm: "repeat(2, minmax(0, 1fr))",
+          xl: "minmax(0, 1fr)",
+        }}
+      >
         <Field
           label={"Title"}
           optionalText={"(optional)"}
           labelProps={fieldLabelProps}
-          minW={["full", "320px"]}
+          minW={0}
+          gap={1}
           flex={1}
         >
           <Input
@@ -93,7 +103,8 @@ export function EpubMetadataForm({
           label={"Author"}
           optionalText={"(optional)"}
           labelProps={fieldLabelProps}
-          minW={["full", "260px"]}
+          minW={0}
+          gap={1}
           flex={1}
         >
           <Input
@@ -109,14 +120,17 @@ export function EpubMetadataForm({
         </Field>
         <Field
           label={"File name"}
+          gridColumn="1 / -1"
           labelProps={fieldLabelProps}
-          minW={["full", "320px"]}
+          minW={0}
+          gap={1}
           flex={1}
         >
           <Group attached w={"full"}>
             <Input
               {...controlInputProps}
               flex={1}
+              minW={0}
               roundedRight={0}
               size={"md"}
               placeholder={"my-book.epub"}
@@ -149,9 +163,9 @@ export function EpubMetadataForm({
             </Button>
           </Group>
         </Field>
-      </HStack>
+      </Grid>
 
-      <HStack gap={6} wrap={"wrap"} align={"center"}>
+      <VStack gap={3} align={"start"}>
         <HStack gap={2}>
           <Icon color={"app.epub.fg.muted"}>
             <LuSettings2 />
@@ -216,8 +230,7 @@ export function EpubMetadataForm({
             </Box>
           </Tooltip>
         </HStack>
-
-      </HStack>
+      </VStack>
     </>
   );
 }

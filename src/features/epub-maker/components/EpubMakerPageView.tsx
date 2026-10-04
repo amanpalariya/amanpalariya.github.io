@@ -1,6 +1,10 @@
 import { Box, Icon, Text, VStack } from "@chakra-ui/react";
+import {
+  RightSidebarSlot,
+  RightSidebarTarget,
+} from "@components/page/wrapper/RightSidebarSlot";
 import ContentSection from "@components/page/common/ContentSection";
-import { useEffect, useState, type DragEvent } from "react";
+import { useContext, useEffect, useState, type DragEvent } from "react";
 import { LuFilePlus } from "react-icons/lu";
 import type { UseEpubMakerReturn } from "../hooks/useEpubMaker";
 import { EpubToolbar } from "./EpubToolbar";
@@ -23,13 +27,28 @@ function isEditableTarget(target: EventTarget | null): boolean {
 }
 
 export function EpubMakerPageView(props: UseEpubMakerReturn) {
-  const {
-    canRedo,
-    canUndo,
-    onGlobalPaste,
-    redoPages,
-    undoPages,
-  } = props;
+  const { canRedo, canUndo, onGlobalPaste, redoPages, undoPages } = props;
+  const sidebarTarget = useContext(RightSidebarTarget);
+  const [hasSidebar, setHasSidebar] = useState(false);
+
+  useEffect(() => {
+    const sidebar = sidebarTarget?.closest(".site-right-sidebar");
+    if (!sidebar) return;
+
+    // Follow the shell's actual layout so controls and sidebar always agree.
+    const updateSidebar = () => {
+      setHasSidebar(getComputedStyle(sidebar).position === "sticky");
+    };
+    updateSidebar();
+    const observer = new ResizeObserver(updateSidebar);
+    observer.observe(sidebar);
+    window.addEventListener("resize", updateSidebar);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updateSidebar);
+    };
+  }, [sidebarTarget]);
+
   const [isFileDragOver, setIsFileDragOver] = useState(false);
   const [dragDepth, setDragDepth] = useState(0);
 
@@ -124,6 +143,36 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
     void props.addPagesFromFiles(event.dataTransfer.files);
   }
 
+  const metadataForm = (
+    <VStack
+      as="section"
+      className="epub-book-settings"
+      aria-label="Book settings"
+      align="stretch"
+      gap={4}
+    >
+      <Text
+        as="h2"
+        fontFamily="ui"
+        fontSize="sm"
+        fontWeight="semibold"
+        color="app.epub.fg.muted"
+      >
+        Book settings
+      </Text>
+      <EpubMetadataForm
+        prefs={props.prefs}
+        autoEpubFileName={props.autoEpubFileName}
+        onTitleChange={props.setTitle}
+        onAuthorChange={props.setAuthor}
+        onManualFileNameChange={props.setManualFileName}
+        onToggleFileNameMode={props.toggleFileNameMode}
+        onEmbedRemoteImagesChange={props.setEmbedRemoteImages}
+        onAllowExternalLinksChange={props.setAllowExternalLinks}
+      />
+    </VStack>
+  );
+
   return (
     <VStack align={"stretch"} gap={4} pt={4}>
       <TopRightNotifications
@@ -145,7 +194,7 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
         onRegenerate={props.regenerateEpubWithManualImages}
       />
 
-      <Box w={"full"} px={[4, 6]}>
+      <Box w={"full"}>
         <VStack align={"stretch"} gap={4}>
           <EpubToolbar
             isAdding={props.isAdding}
@@ -168,16 +217,11 @@ export function EpubMakerPageView(props: UseEpubMakerReturn) {
             onAddFromFallback={props.addFromFallbackText}
           />
 
-          <EpubMetadataForm
-            prefs={props.prefs}
-            autoEpubFileName={props.autoEpubFileName}
-            onTitleChange={props.setTitle}
-            onAuthorChange={props.setAuthor}
-            onManualFileNameChange={props.setManualFileName}
-            onToggleFileNameMode={props.toggleFileNameMode}
-            onEmbedRemoteImagesChange={props.setEmbedRemoteImages}
-            onAllowExternalLinksChange={props.setAllowExternalLinks}
-          />
+          {hasSidebar && sidebarTarget ? (
+            <RightSidebarSlot>{metadataForm}</RightSidebarSlot>
+          ) : (
+            metadataForm
+          )}
         </VStack>
       </Box>
 

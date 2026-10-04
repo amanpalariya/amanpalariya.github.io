@@ -24,8 +24,8 @@ export const SHOW_BACKGROUND_DESCRIPTIONS = false;
 export const COVER_SIZE_LABEL_MODE: CoverGridLabelMode = "side";
 export const SHOW_SIZE_DESCRIPTIONS = true;
 
-const COVER_GRID_HOVER_BG = "app.status.info.bg" as const;
-const COVER_GRID_SELECTED_BORDER_COLOR = "app.epub.button.primary.border" as const;
+const COVER_GRID_HOVER_BG = "app.bg.overlay" as const;
+const COVER_GRID_SELECTED_BORDER_COLOR = "app.fg.link" as const;
 
 export type CoverGridLabelMode = "none" | "bottom" | "side";
 
@@ -63,7 +63,7 @@ export function resolveGridSelectionFrameProps(isSelected: boolean): {
 
   return {
     borderWidth: "1px",
-    borderColor: "app.epub.border.default",
+    borderColor: "app.border.default",
     outline: "none",
     outlineColor: "transparent",
   };
@@ -80,12 +80,12 @@ export function renderGridSelectionBadge(isSelected: boolean): ReactNode {
       w={"16px"}
       h={"16px"}
       rounded={"full"}
-      bg={"app.epub.button.primary.bg"}
-      color={"app.epub.button.primary.fg"}
+      bg={"app.fg.link"}
+      color={"app.fg.inverse"}
       display={"grid"}
       placeItems={"center"}
       borderWidth={"1px"}
-      borderColor={"app.epub.bg.card"}
+      borderColor={"app.bg.canvas"}
     >
       <Icon boxSize={2.5}>
         <LuCheck />
@@ -152,7 +152,7 @@ export function renderGridOptionMeta({
         fontFamily={"ui"}
         fontSize={labelMode === "side" ? "xs" : "2xs"}
         lineHeight={"shorter"}
-        color={"app.epub.fg.subtle"}
+        color={"app.fg.subtle"}
       >
         {description}
       </Text>
@@ -164,7 +164,7 @@ export function renderGridOptionMeta({
         <Text
           fontFamily={"ui"}
           fontSize={"sm"}
-          color={"app.epub.fg.default"}
+          color={"app.fg.default"}
           lineClamp={1}
         >
           {label}
@@ -179,7 +179,7 @@ export function renderGridOptionMeta({
       <Text
         fontFamily={"ui"}
         fontSize={"xs"}
-        color={"app.epub.fg.default"}
+        color={"app.fg.default"}
         lineClamp={1}
       >
         {label}

@@ -1,13 +1,6 @@
 import { IconButton } from "@chakra-ui/react";
-import {
-  DialogBody,
-  DialogCloseTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogRoot,
-  DialogTitle,
-  DialogTrigger,
-} from "@components/ui/dialog";
+import { DialogTrigger } from "@components/ui/dialog";
+import { SiteDialogContent, SiteDialogRoot } from "@components/ui/site-dialog";
 import { Tooltip } from "@components/ui/tooltip";
 import { LuSettings2 } from "react-icons/lu";
 import type { ReactNode } from "react";
@@ -30,12 +23,15 @@ export function CoverSettingsDialog({
   children: ReactNode;
 }) {
   return (
-    <DialogRoot open={open} onOpenChange={onOpenChange}>
+    <SiteDialogRoot open={open} onOpenChange={onOpenChange}>
       <Tooltip content={"Cover settings"}>
         <DialogTrigger asChild>
           <IconButton
             size={"xs"}
             variant={"ghost"}
+            rounded={"full"}
+            color={"app.fg.subtle"}
+            _hover={{ bg: "app.bg.overlay", color: "app.fg.default" }}
             aria-label={`Open cover settings (${activeCoverMode === "custom" ? "custom image" : "auto-generated"})`}
             disabled={isInteractionDisabled}
           >
@@ -44,23 +40,9 @@ export function CoverSettingsDialog({
         </DialogTrigger>
       </Tooltip>
 
-      <DialogContent
-        bg={"app.epub.bg.surface"}
-        color={"app.epub.fg.default"}
-        rounded={"2xl"}
-        boxShadow={"lg"}
-        maxW={"1120px"}
-      >
-        <DialogHeader display={"flex"} alignItems={"center"} justifyContent={"flex-start"}>
-          <DialogTitle fontFamily={"ui"}>Cover settings</DialogTitle>
-        </DialogHeader>
-
-        <DialogBody>
-          {children}
-        </DialogBody>
-
-        <DialogCloseTrigger />
-      </DialogContent>
-    </DialogRoot>
+      <SiteDialogContent title="Cover settings" maxWidth="960px">
+        {children}
+      </SiteDialogContent>
+    </SiteDialogRoot>
   );
 }

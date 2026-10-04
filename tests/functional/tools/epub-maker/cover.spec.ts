@@ -26,6 +26,23 @@ async function expectCoverImageDimensions(
 }
 
 test.describe("EPUB Maker cover", () => {
+  test("scrolls the size dropdown to reach the last preset", async ({ page, epubMaker }) => {
+    await page.setViewportSize({
+      width: page.viewportSize()?.width ?? 1280,
+      height: 600,
+    });
+    await epubMaker.goto();
+    await epubMaker.openCoverSettings();
+    await epubMaker.coverSizePresetButton.click();
+
+    const menu = page.getByRole("menu");
+    await menu.hover();
+    await page.mouse.wheel(0, 600);
+    await expect.poll(() => menu.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+    await page.getByRole("menuitem", { name: /Square 1:1/ }).click();
+    await expect(epubMaker.coverSizePresetButton).toContainText("Square 1:1");
+  });
+
   test("includes generated cover XHTML and cover image in the EPUB", async ({ epubMaker }) => {
     await epubMaker.goto();
 
