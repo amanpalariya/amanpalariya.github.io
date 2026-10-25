@@ -11,6 +11,7 @@ import {
   Separator,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
+import Image from "next/image";
 import { Children, Fragment, type ReactNode } from "react";
 import { FiChevronRight, FiArrowUpRight } from "react-icons/fi";
 import { CategoryBadge } from "./Badges";
@@ -199,11 +200,13 @@ export function TitleDescriptionTile({
   description,
   url,
   isUrlExternal = false,
+  iconSrc,
 }: {
   title: string;
   description: string;
   url?: string;
   isUrlExternal?: boolean;
+  iconSrc?: string;
 }) {
   const { description: descriptionColor } = useTileColors();
 
@@ -218,7 +221,20 @@ export function TitleDescriptionTile({
       <TileBody>
         <VStack align={"stretch"}>
           <HStack justify={"space-between"} align={"start"}>
-            <VStack align={"start"} gap={1}>
+            {iconSrc ? (
+              <Image
+                src={iconSrc}
+                alt=""
+                width={40}
+                height={40}
+                style={{
+                  alignSelf: "center",
+                  flexShrink: 0,
+                  objectFit: "contain",
+                }}
+              />
+            ) : null}
+            <VStack align={"start"} gap={1} flex={1} minW={0}>
               <Text fontSize="16px" fontWeight={700} color={"app.fg.default"}>
                 {title}
               </Text>

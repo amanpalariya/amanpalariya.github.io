@@ -57,6 +57,7 @@ function ProjectsListElement({
             key={project.id}
             title={project.title}
             description={project.description}
+            iconSrc={project.iconSrc}
             url={
               hasDetails
                 ? homepageTabs.projects.getSubpagePathname(project.id)

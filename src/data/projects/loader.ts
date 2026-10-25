@@ -13,6 +13,7 @@ export type ProjectMeta = {
   title: string;
   description: string;
   url?: string;
+  iconSrc?: string;
   externalLinks?: ExternalLink[];
 };
 

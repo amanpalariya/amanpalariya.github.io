@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import NextLink from "next/link";
+import Image from "next/image";
 import { Avatar } from "@components/ui/avatar";
 import Profile from "@components/page/home/Profile";
 import LinkedInButton from "@components/page/common/LinkedInPrimaryButton";
@@ -142,9 +143,19 @@ export default function Home() {
                     project.url && !project.url.startsWith("/"),
                   )}
                 >
-                  <span className="home-project-index" aria-hidden="true">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
+                  {project.iconSrc ? (
+                    <Image
+                      className="home-project-icon"
+                      src={project.iconSrc}
+                      alt=""
+                      width={40}
+                      height={40}
+                    />
+                  ) : (
+                    <span className="home-project-index" aria-hidden="true">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                  )}
                   <div className="home-row-content">
                     <div className="home-row-title">{project.title}</div>
                     <p>{project.description}</p>

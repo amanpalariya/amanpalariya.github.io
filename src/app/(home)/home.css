@@ -110,6 +110,12 @@ a.home-feed-row:hover {
   line-height: 1.5;
   margin-top: 5px;
 }
+.home-project-icon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
 .home-project-index {
   width: 40px;
   flex-shrink: 0;

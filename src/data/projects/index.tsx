@@ -5,22 +5,24 @@ interface Project {
   title: string;
   description: string;
   url?: string;
+  iconSrc?: string;
   externalLinks?: ExternalLink[];
 }
 
 const allProjects: Project[] = [
+  {
+    id: "keymouse",
+    title: "KeyMouse",
+    description: "Control your Mac’s cursor with your keyboard",
+    url: "https://amanpalariya.github.io/keymouse/",
+    iconSrc: "https://amanpalariya.github.io/keymouse/assets/icon.png",
+  },
   {
     id: "sampan-app",
     title: "SAMPAN",
     description:
       "App that helps CDPOs and 1200+ Anganwadi workers collect data",
     url: "https://sites.google.com/view/goyalpuneet/sampan",
-  },
-  {
-    id: "os-components",
-    title: "OS Components",
-    description: "Simulation and analysis of different OS services in C",
-    url: "https://github.com/amanpalariya/os-components",
   },
   {
     id: "console-game-language",
@@ -45,6 +47,12 @@ const allProjects: Project[] = [
         kind: "code",
       },
     ],
+  },
+  {
+    id: "os-components",
+    title: "OS Components",
+    description: "Simulation and analysis of different OS services in C",
+    url: "https://github.com/amanpalariya/os-components",
   },
   {
     id: "rain-and-snow-removal",

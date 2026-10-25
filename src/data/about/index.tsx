@@ -4,7 +4,7 @@ const AboutData = {
   aboutPage: {
     title: "It's me, Aman!",
   },
-  markdown: `I'm a software engineer at Rippling. Previously, I worked at Oracle until, focusing on backend systems for Oracle Integrations (OIC).
+  markdown: `I'm a software engineer at Rippling. Previously, I worked at Oracle, focusing on backend systems for Oracle Integrations (OIC).
 During my time at Oracle, I worked on features ranging from Kubernetes cost-saving designs to low-level protocols like SSH/FTP, and have also gained experience in CI/CD, DevOps, and development engineering.
 I've also worked with healthcare standards like HL7 FHIR, driven by product demand in that industry.
 
