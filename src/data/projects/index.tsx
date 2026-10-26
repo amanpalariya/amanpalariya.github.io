@@ -30,6 +30,8 @@ const allProjects: Project[] = [
     description:
       "A new programming language (compiler & runtime) for retro console games",
     url: "/projects/console-game-language",
+    iconSrc:
+      "https://raw.githubusercontent.com/amanpalariya/console-game/main/doc/assets/logo.png",
     externalLinks: [
       {
         label: "Source Code",
