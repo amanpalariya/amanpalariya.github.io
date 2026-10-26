@@ -123,17 +123,25 @@ html {
     min-height: 100dvh;
   }
   .site-right-sidebar {
+    --site-sidebar-top: 48px;
     position: sticky;
-    top: 48px;
+    top: var(--site-sidebar-top);
+    max-height: calc(100dvh - var(--site-sidebar-top));
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
     align-self: start;
     display: flex;
     flex-direction: column;
     gap: 32px;
     margin-top: 48px;
     padding-inline: var(--site-column-padding);
+    padding-bottom: 24px;
+  }
+  .site-right-sidebar > * {
+    flex-shrink: 0;
   }
   .site-right-sidebar:has(.bilingual-story-history) {
-    top: 0;
+    --site-sidebar-top: 0px;
     margin-top: 0;
     gap: 0;
   }
@@ -174,9 +182,15 @@ html {
   top: 0;
   align-self: start;
   height: 100dvh;
+  max-height: 100dvh;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
   display: flex;
   flex-direction: column;
   padding: 48px var(--site-column-padding) 26px;
+}
+.site-header > * {
+  flex-shrink: 0;
 }
 .site-identity {
   padding-left: 16px;
