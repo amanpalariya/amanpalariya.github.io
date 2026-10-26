@@ -1,7 +1,4 @@
 "use client";
-import { Icon, IconButton } from "@chakra-ui/react";
-import { useColorMode } from "@components/ui/color-mode";
-import { Tooltip } from "@components/ui/tooltip";
 import {
   FiHome,
   FiUser,
@@ -10,8 +7,6 @@ import {
   FiEdit3,
   FiTool,
   FiMenu,
-  FiMoon,
-  FiSun,
   FiX,
 } from "react-icons/fi";
 import { usePathname } from "next/navigation";
@@ -23,24 +18,6 @@ import FeatureFlagsData from "data/features";
 import { useEffect, useRef, useState } from "react";
 
 export const HEADER_OFFSET_HEIGHT = { base: 20, sm: 24 };
-export function ColorModeToggleIconButton() {
-  const { colorMode, toggleColorMode } = useColorMode();
-  const isDark = colorMode === "dark";
-
-  return (
-    <Tooltip content={"Toggle theme"} closeOnScroll>
-      <IconButton
-        onClick={toggleColorMode}
-        borderRadius={"full"}
-        variant={"surface"}
-        aria-label={"Change color mode (dark/light)"}
-      >
-        <Icon boxSize={6}>{isDark ? <FiSun /> : <FiMoon />}</Icon>
-      </IconButton>
-    </Tooltip>
-  );
-}
-
 const navIcons = {
   Home: FiHome,
   About: FiUser,
@@ -93,22 +70,6 @@ export default function Header() {
         </NextLink>
       </div>
       <PageNavigation mobile />
-      <div className="site-mobile-actions">
-        <button
-          ref={menuRef}
-          className="site-menu-trigger"
-          aria-label={
-            open
-              ? "Close mobile navigation menu"
-              : "Open mobile navigation menu"
-          }
-          aria-expanded={open}
-          aria-controls="site-navigation"
-          onClick={() => setOpen(!open)}
-        >
-          {open ? <FiX /> : <FiMenu />}
-        </button>
-      </div>
       <nav
         id="site-navigation"
         className={`site-navigation${open ? " is-open" : ""}`}
@@ -135,6 +96,22 @@ export default function Header() {
           );
         })}
       </nav>
+      <div className="site-header-actions">
+        <button
+          ref={menuRef}
+          className="site-menu-trigger"
+          aria-label={
+            open
+              ? "Close mobile navigation menu"
+              : "Open mobile navigation menu"
+          }
+          aria-expanded={open}
+          aria-controls="site-navigation"
+          onClick={() => setOpen(!open)}
+        >
+          {open ? <FiX /> : <FiMenu />}
+        </button>
+      </div>
     </header>
   );
 }

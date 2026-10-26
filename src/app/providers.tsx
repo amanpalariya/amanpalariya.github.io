@@ -13,7 +13,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ChakraProvider value={system}>
       <Global styles={globalStyles} />
-      <ThemeProvider attribute="class">{children}</ThemeProvider>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        {children}
+      </ThemeProvider>
     </ChakraProvider>
   );
 }

@@ -10,6 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { Heading1 } from "@components/core/Texts";
 import WithBackground from "@components/page/wrapper/WithBackground";
+import ThemeMenu from "@components/page/common/header/ThemeMenu";
 import { Tooltip } from "@components/ui/tooltip";
 import { useRouter, useSearchParams } from "next/navigation";
 import NextLink from "next/link";
@@ -50,6 +51,7 @@ function StoryReaderShell({
             <FiChevronLeft size={22} aria-hidden="true" />
           </NextLink>
           <span>Story Reader</span>
+          <ThemeMenu />
         </header>
         <VStack className="site-main-content" align="stretch" gap={0}>
           {children}

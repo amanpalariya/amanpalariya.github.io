@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { FiChevronLeft } from "react-icons/fi";
 import { getHeaderPageByPathname } from "app/route-info";
 import { useDetailBackNavigation } from "@components/page/wrapper/DetailBackNavigation";
+import ThemeMenu from "./header/ThemeMenu";
 
 export default function PageNavigation({
   mobile = false,
@@ -42,6 +43,7 @@ export default function PageNavigation({
         </NextLink>
       )}
       <span>{page.title}</span>
+      <ThemeMenu />
     </div>
   );
 }
