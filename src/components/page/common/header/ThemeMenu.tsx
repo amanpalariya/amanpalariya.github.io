@@ -27,7 +27,11 @@ export default function ThemeMenu() {
         </button>
       }
     >
-      <Menu.Root unstyled positioning={{ placement: "bottom-end", gutter: 8 }}>
+      <Menu.Root
+        immediate
+        unstyled
+        positioning={{ placement: "bottom-end", gutter: 8 }}
+      >
         <Menu.Trigger asChild>
           <button
             className="site-theme-trigger"

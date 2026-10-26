@@ -118,7 +118,7 @@ test.describe("Bilingual Story Reader shell", () => {
     await page.goto("/tools/bilingual-story-reader");
 
     await page.getByLabel("Level").selectOption("B2");
-    await page.getByLabel("Theme").fill("festival mystery");
+    await page.getByLabel("Theme", { exact: true }).fill("festival mystery");
     await page.getByRole("textbox", { name: "Extra instructions" }).fill("Use short dialogue.");
     await expect
       .poll(() =>
@@ -133,7 +133,7 @@ test.describe("Bilingual Story Reader shell", () => {
     await expect(page.getByLabel("Known language")).toHaveValue("English");
     await expect(page.getByLabel("Target language")).toHaveValue("Spanish");
     await expect(page.getByLabel("Level")).toHaveValue("B2");
-    await expect(page.getByLabel("Theme")).toHaveValue("festival mystery");
+    await expect(page.getByLabel("Theme", { exact: true })).toHaveValue("festival mystery");
     await expect(page.getByRole("textbox", { name: "Extra instructions" })).toHaveValue(
       "Use short dialogue.",
     );

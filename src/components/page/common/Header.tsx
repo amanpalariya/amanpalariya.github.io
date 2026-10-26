@@ -63,7 +63,7 @@ export default function Header() {
   return (
     <header className="site-header" ref={headerRef}>
       <div className="site-identity">
-        <NextLink href="/" aria-label="Aman Palariya home">
+        <NextLink href="/" aria-label="ap. — Aman Palariya home">
           <span className="site-monogram">
             ap<span>.</span>
           </span>

@@ -47,11 +47,11 @@ test.describe("EPUB Maker generated content", () => {
       archive,
       embeddedIconPath,
       {
-        width: 32,
-        height: 32,
+        width: 128,
+        height: 128,
       },
     );
-    expect(dimensions).toEqual({ width: 32, height: 32 });
+    expect(dimensions).toEqual({ width: 128, height: 128 });
     expectBytesEqual(embeddedIconBytes, await fs.readFile("src/app/icon.png"));
   });
 
@@ -150,8 +150,8 @@ test.describe("EPUB Maker generated content", () => {
       archive,
       embeddedReplacementPath,
       {
-        width: 32,
-        height: 32,
+        width: 128,
+        height: 128,
       },
     );
     expectBytesEqual(embeddedReplacementBytes, replacementBytes);

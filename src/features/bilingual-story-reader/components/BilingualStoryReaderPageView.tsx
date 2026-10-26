@@ -766,11 +766,6 @@ export function BilingualStoryReaderPageView() {
           <Collapsible.Trigger asChild>
             <Button
               aria-describedby="story-history-count"
-              aria-label={
-                isHistoryOpen
-                  ? "Collapse story history"
-                  : "Expand story history"
-              }
               color="app.prose.heading"
               fontFamily="ui"
               fontSize="lg"
