@@ -11,6 +11,13 @@ interface Project {
 
 const allProjects: Project[] = [
   {
+    id: "phone-check",
+    title: "Phone Check",
+    description: "Android notifications in the Mac menu bar",
+    url: "https://amanpalariya.github.io/phone-check/",
+    iconSrc: "https://amanpalariya.github.io/phone-check/assets/app-icon.png",
+  },
+  {
     id: "keymouse",
     title: "KeyMouse",
     description: "Control your Mac’s cursor with your keyboard",
