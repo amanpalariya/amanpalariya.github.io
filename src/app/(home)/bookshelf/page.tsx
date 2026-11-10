@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { getPageTitle } from "app/metadata";
 import { homepageTabs } from "app/route-info";
 import { bookshelf } from "data/bookshelf";
+import ReviewPopover from "./ReviewPopover";
 import styles from "./bookshelf.module.css";
 
 const { name } = homepageTabs.bookshelf;
@@ -62,14 +63,7 @@ export default function BookshelfPage() {
                     )}
                   </p>
                 )}
-                {review && (
-                  <details className={styles.review}>
-                    <summary aria-label={`My review of ${title}`}>
-                      My review
-                    </summary>
-                    <p>{review}</p>
-                  </details>
-                )}
+                {review && <ReviewPopover title={title} review={review} />}
               </li>
             ),
           )}
