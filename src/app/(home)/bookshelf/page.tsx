@@ -24,17 +24,10 @@ function formatReadDate(value: string) {
 }
 
 function BookCard({ book }: { book: Book }) {
-  const { title, author, cover, status, readOn, rating, review } = book;
-  const hasRating = rating !== undefined;
-  const displayStatus = status === "Reading" ? undefined : status;
-  const detailStatus =
-    hasRating && (displayStatus !== "Read" || !readOn)
-      ? displayStatus
-      : undefined;
-
-  return (
-    <li>
-      <div className={styles.cover}>
+  const { title, author, cover, readOn, rating, review } = book;
+  const face = (
+    <span className={styles.face}>
+      <span className={styles.cover}>
         <Image
           src={cover}
           alt=""
@@ -43,32 +36,34 @@ function BookCard({ book }: { book: Book }) {
           unoptimized
           className={styles.coverArt}
         />
-        {(hasRating || displayStatus) && (
+        {rating !== undefined && (
           <span className={styles.coverBadge}>
-            {hasRating ? (
-              <>
-                <VisuallyHidden>My rating </VisuallyHidden>
-                <span aria-hidden="true">★</span> {rating}/5
-              </>
-            ) : (
-              displayStatus
-            )}
+            <VisuallyHidden>My rating </VisuallyHidden>
+            <span aria-hidden="true">★</span> {rating}/5
           </span>
         )}
-        {(readOn || review || detailStatus) && (
-          <CoverDetails title={title}>
-            {detailStatus && <p>{detailStatus}</p>}
-            {readOn && (
-              <p>
-                Read <time dateTime={readOn}>{formatReadDate(readOn)}</time>
-              </p>
-            )}
-            {review && <p className={styles.review}>{review}</p>}
-          </CoverDetails>
-        )}
-      </div>
-      <p className={styles.title}>{title}</p>
-      <p className={styles.author}>{author}</p>
+      </span>
+      <span>
+        <span className={styles.title}>{title}</span>
+        <span className={styles.author}>{author}</span>
+      </span>
+    </span>
+  );
+
+  return (
+    <li>
+      {readOn || review ? (
+        <CoverDetails title={title} face={face}>
+          {readOn && (
+            <p>
+              Read <time dateTime={readOn}>{formatReadDate(readOn)}</time>
+            </p>
+          )}
+          {review && <p className={styles.review}>{review}</p>}
+        </CoverDetails>
+      ) : (
+        face
+      )}
     </li>
   );
 }
@@ -77,10 +72,12 @@ function BookSection({
   id,
   title,
   books,
+  compact = false,
 }: {
   id: string;
   title: string;
   books: Book[];
+  compact?: boolean;
 }) {
   if (books.length === 0) return null;
 
@@ -89,7 +86,7 @@ function BookSection({
       <Heading2 id={id} mb={3}>
         {title}
       </Heading2>
-      <ul className={styles.grid} role="list">
+      <ul className={compact ? styles.readingGrid : styles.grid} role="list">
         {books.map((book) => (
           <BookCard key={book.id} book={book} />
         ))}
@@ -101,8 +98,9 @@ function BookSection({
 export default function BookshelfPage() {
   const { isSample, books } = bookshelf;
   const currentlyReading = books.filter((book) => book.status === "Reading");
-  const collection = books
-    .filter((book) => book.status !== "Reading")
+  const wantToRead = books.filter((book) => book.status === "Want to read");
+  const finished = books
+    .filter((book) => book.status === "Read" || book.status === undefined)
     .sort((a, b) => (b.readOn ?? "").localeCompare(a.readOn ?? ""));
 
   return (
@@ -115,11 +113,13 @@ export default function BookshelfPage() {
             id="currently-reading"
             title="Currently reading"
             books={currentlyReading}
+            compact
           />
+          <BookSection id="finished" title="Finished" books={finished} />
           <BookSection
-            id="collection"
-            title="The collection"
-            books={collection}
+            id="want-to-read"
+            title="Want to read"
+            books={wantToRead}
           />
         </div>
       </section>

@@ -6,6 +6,7 @@ export type Book = {
   author: string;
   /** A base64 image data URL, ready to use as the image source. */
   cover: string;
+  /** An omitted status denotes a finished book. */
   status?: "Reading" | "Read" | "Want to read";
   /** When the book was finished, as YYYY, YYYY-MM, or YYYY-MM-DD. */
   readOn?: string;

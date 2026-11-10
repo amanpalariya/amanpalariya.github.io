@@ -10,9 +10,11 @@ function closeDetails(details: HTMLDetailsElement) {
 
 export default function CoverDetails({
   title,
+  face,
   children,
 }: {
   title: string;
+  face: ReactNode;
   children: ReactNode;
 }) {
   const label = `Reading details for ${title}`;
@@ -38,7 +40,12 @@ export default function CoverDetails({
         }
       }}
     >
-      <summary className={styles.coverTrigger} aria-label={label} />
+      <summary
+        className={styles.coverTrigger}
+        aria-description="Toggle reading details"
+      >
+        {face}
+      </summary>
       <div className={styles.coverOverlay}>
         <div
           className={styles.detailText}
