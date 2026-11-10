@@ -3,18 +3,23 @@
 import { Heading2 } from "@components/core/Texts";
 import ContentSection from "@components/page/common/ContentSection";
 import {
+  Button,
   EmptyState,
   Icon,
   Skeleton,
   SkeletonText,
+  Spinner,
   VisuallyHidden,
 } from "@chakra-ui/react";
 import Image from "next/image";
 import { useState } from "react";
-import { FiBookOpen, FiChevronDown } from "react-icons/fi";
+import { FiBookOpen, FiChevronDown, FiRefreshCw } from "react-icons/fi";
 import type { Book, BookGroups } from "data/bookshelf";
 import FeatureFlagsData from "data/features";
-import { useBookshelf } from "@features/bookshelf/hooks/useBookshelf";
+import {
+  useBookshelf,
+  type BookshelfErrorReason,
+} from "@features/bookshelf/hooks/useBookshelf";
 import { useFeatureFlag } from "utils/features";
 import CoverDetails from "./CoverDetails";
 import styles from "./bookshelf.module.css";
@@ -220,51 +225,153 @@ export default function Bookshelf({
 
 function BookshelfLoading() {
   return (
-    <>
-      <VisuallyHidden role="status">Loading books…</VisuallyHidden>
-      <div className={styles.sections} aria-hidden="true">
-        <div>
-          <Skeleton width="9rem" height="26px" mb={3} />
-          <div className={styles.featuredBook}>
-            <div className={styles.face}>
-              <div className={styles.cover}>
-                <Skeleton position="absolute" inset={0} />
-              </div>
-              <div className={styles.caption}>
-                <Skeleton width="full" maxW="13rem" height="7" mb={2} />
-                <Skeleton width="6rem" maxW="full" height="3" />
-              </div>
+    <div className={styles.sections} aria-hidden="true">
+      <div>
+        <Skeleton width="9rem" height="26px" mb={3} />
+        <div className={styles.featuredBook}>
+          <div className={styles.face}>
+            <div className={styles.cover}>
+              <Skeleton position="absolute" inset={0} />
+            </div>
+            <div className={styles.caption}>
+              <Skeleton width="full" maxW="13rem" height="7" mb={2} />
+              <Skeleton width="6rem" maxW="full" height="3" />
             </div>
           </div>
         </div>
-        <ContentSection>
-          <Skeleton width="5rem" height="26px" mb={3} />
-          <div className={`${styles.grid} ${styles.loadingGrid}`}>
-            {Array.from({ length: 4 }, (_, index) => (
-              <div key={index}>
-                <div className={styles.cover}>
-                  <Skeleton position="absolute" inset={0} />
-                </div>
-                <SkeletonText
-                  noOfLines={2}
-                  gap="1"
-                  height="3"
-                  rootProps={{ mt: 2 }}
-                />
-              </div>
-            ))}
-          </div>
-        </ContentSection>
       </div>
-    </>
+      <ContentSection>
+        <Skeleton width="5rem" height="26px" mb={3} />
+        <div className={`${styles.grid} ${styles.loadingGrid}`}>
+          {Array.from({ length: 4 }, (_, index) => (
+            <div key={index}>
+              <div className={styles.cover}>
+                <Skeleton position="absolute" inset={0} />
+              </div>
+              <SkeletonText
+                noOfLines={2}
+                gap="1"
+                height="3"
+                rootProps={{ mt: 2 }}
+              />
+            </div>
+          ))}
+        </div>
+      </ContentSection>
+    </div>
+  );
+}
+
+const bookshelfErrorMessages: Record<BookshelfErrorReason, string> = {
+  timeout: "The request for the book list timed out.",
+  connection:
+    "The book list couldn’t be reached. Check your internet connection or try again in a moment.",
+  unavailable: "The service that provides the book list returned an error.",
+  "invalid-response":
+    "The service responded, but this page couldn’t read the book list it sent.",
+  unknown: "Something went wrong while fetching the book list.",
+};
+
+function BookshelfLoadError({
+  message,
+  retrying,
+  onRetry,
+}: {
+  message: string;
+  retrying: boolean;
+  onRetry: () => void;
+}) {
+  return (
+    <EmptyState.Root as="section" aria-labelledby="bookshelf-load-title" px={0}>
+      <EmptyState.Content gap={5}>
+        <svg
+          className={styles.errorIllustration}
+          viewBox="0 0 104 72"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <g className={styles.errorBooks}>
+            <rect x="20" y="21" width="13" height="38" rx="2" />
+            <rect x="36" y="12" width="15" height="47" rx="2" />
+            <g transform="rotate(-14 62.5 39.5)">
+              <rect x="56" y="20" width="13" height="39" rx="2" />
+              <path d="M56 28h13m-13 22h13" />
+            </g>
+          </g>
+          <path d="M12 59h80M20 29h13m-13 21h13M36 21h15m-15 29h15" />
+          <g className={styles.errorBadge}>
+            <circle cx="81" cy="21" r="12" />
+            <path d="M81 16v6m0 4h.01" />
+          </g>
+        </svg>
+        <div>
+          <Heading2 id="bookshelf-load-title" centerAlign>
+            {retrying ? "Loading the bookshelf" : "Couldn’t load the bookshelf"}
+          </Heading2>
+          <EmptyState.Description
+            mt={2}
+            mx="auto"
+            maxW="36ch"
+            textAlign="center"
+            color="app.fg.subtle"
+          >
+            {message}
+          </EmptyState.Description>
+        </div>
+        <Button
+          type="button"
+          fontFamily="ui"
+          fontSize="sm"
+          px={2.5}
+          shadow="none"
+          rounded="full"
+          variant="outline"
+          background="transparent"
+          minW="32"
+          aria-disabled={retrying || undefined}
+          onClick={onRetry}
+        >
+          {retrying ? (
+            <Spinner size="xs" aria-hidden="true" />
+          ) : (
+            <FiRefreshCw aria-hidden="true" />
+          )}
+          {retrying ? "Retrying…" : "Try again"}
+        </Button>
+      </EmptyState.Content>
+    </EmptyState.Root>
   );
 }
 
 export function LiveBookshelf() {
-  const state = useBookshelf();
+  const { state, retry } = useBookshelf();
+  const message =
+    state.status === "error"
+      ? bookshelfErrorMessages[state.reason]
+      : state.status === "retrying"
+        ? "Requesting the book list again…"
+        : state.status === "loading"
+          ? "Loading books…"
+          : "Books loaded.";
 
-  if (state.status === "loading") return <BookshelfLoading />;
-  if (state.status === "ready") return <Bookshelf groups={state.groups} />;
-
-  return <p role="status">The bookshelf couldn’t load. Try again later.</p>;
+  return (
+    <>
+      <VisuallyHidden role="status">{message}</VisuallyHidden>
+      {state.status === "loading" ? (
+        <BookshelfLoading />
+      ) : state.status === "ready" ? (
+        <Bookshelf groups={state.groups} />
+      ) : (
+        <BookshelfLoadError
+          message={message}
+          retrying={state.status === "retrying"}
+          onRetry={retry}
+        />
+      )}
+    </>
+  );
 }

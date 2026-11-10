@@ -55,6 +55,24 @@
   overflow: hidden;
 }
 
+.errorIllustration {
+  width: 104px;
+  height: 72px;
+  color: var(--site-muted);
+}
+
+.errorBooks {
+  fill: var(--site-soft);
+}
+
+.errorBadge {
+  stroke: var(--chakra-colors-app-status-warning-fg);
+}
+
+.errorBadge circle {
+  fill: var(--chakra-colors-app-status-warning-bg);
+}
+
 .face {
   display: block;
 }

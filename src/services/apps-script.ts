@@ -2,6 +2,16 @@ const deploymentUrl = process.env.NEXT_PUBLIC_APPS_SCRIPT_URL?.trim();
 
 export const hasAppsScriptUrl = Boolean(deploymentUrl);
 
+export class AppsScriptRequestError extends Error {
+  constructor(
+    readonly reason: "connection" | "unavailable" | "invalid-response",
+    message: string,
+    options?: ErrorOptions,
+  ) {
+    super(message, options);
+  }
+}
+
 export async function requestAppsScript<T>(
   route: string,
   parse: (data: unknown) => T,
@@ -14,11 +24,36 @@ export async function requestAppsScript<T>(
   const url = new URL(deploymentUrl);
   url.searchParams.set("route", route);
 
-  const response = await fetch(url, { credentials: "omit", signal });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      cache: "no-store",
+      credentials: "omit",
+      signal,
+    });
+  } catch (cause) {
+    if (signal?.aborted) throw cause;
+    throw new AppsScriptRequestError(
+      "connection",
+      "Apps Script could not be reached.",
+      { cause },
+    );
+  }
   if (!response.ok) {
-    throw new Error(`Apps Script request failed (${response.status}).`);
+    throw new AppsScriptRequestError(
+      "unavailable",
+      `Apps Script request failed (${response.status}).`,
+    );
   }
 
-  const data: unknown = await response.json();
-  return parse(data);
+  try {
+    return parse(await response.json());
+  } catch (cause) {
+    if (signal?.aborted) throw cause;
+    throw new AppsScriptRequestError(
+      "invalid-response",
+      "Invalid Apps Script response.",
+      { cause },
+    );
+  }
 }

@@ -2,14 +2,20 @@
 
 import { useEffect, useState } from "react";
 import type { BookGroups } from "data/bookshelf";
+import { AppsScriptRequestError } from "../../../services/apps-script";
 import { getBookshelf } from "../services/bookshelf";
 
+export type BookshelfErrorReason =
+  AppsScriptRequestError["reason"] | "timeout" | "unknown";
+
 type BookshelfState =
-  | { status: "loading" | "error" }
+  | { status: "loading" | "retrying" }
+  | { status: "error"; reason: BookshelfErrorReason }
   | { status: "ready"; groups: BookGroups };
 
 export function useBookshelf() {
   const [state, setState] = useState<BookshelfState>({ status: "loading" });
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -20,8 +26,12 @@ export function useBookshelf() {
       .then((groups) => {
         if (active) setState({ status: "ready", groups });
       })
-      .catch(() => {
-        if (active) setState({ status: "error" });
+      .catch((error: unknown) => {
+        if (!active) return;
+        let reason: BookshelfErrorReason = "unknown";
+        if (controller.signal.aborted) reason = "timeout";
+        else if (error instanceof AppsScriptRequestError) reason = error.reason;
+        setState({ status: "error", reason });
       })
       .finally(() => window.clearTimeout(timeout));
 
@@ -30,7 +40,13 @@ export function useBookshelf() {
       window.clearTimeout(timeout);
       controller.abort();
     };
-  }, []);
+  }, [attempt]);
 
-  return state;
+  function retry() {
+    if (state.status !== "error") return;
+    setState({ status: "retrying" });
+    setAttempt((previous) => previous + 1);
+  }
+
+  return { state, retry };
 }
