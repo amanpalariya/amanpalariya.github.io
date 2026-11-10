@@ -83,10 +83,10 @@ test("Bookshelf preview counts exercise empty and populated sections", async ({
   await expect(finished).toHaveCSS("border-top-width", "0px");
 });
 
-test("Bookshelf puts current reads before books ordered by finish date", async ({
+test("Bookshelf sample puts current reads before books ordered by finish date", async ({
   page,
 }) => {
-  await page.goto("/bookshelf/");
+  await page.goto("/bookshelf/?preview=1");
 
   const shelf = page.getByRole("region", { name: "Books", exact: true });
   await expect(shelf.getByRole("heading", { level: 2 })).toHaveText([
@@ -109,7 +109,7 @@ test("Bookshelf puts current reads before books ordered by finish date", async (
 test("Bookshelf cover details open and close without moving the covers", async ({
   page,
 }) => {
-  await page.goto("/bookshelf/");
+  await page.goto("/bookshelf/?preview=1");
   await expect(
     page.getByRole("button", { name: /^Change theme/ }),
   ).toBeEnabled();

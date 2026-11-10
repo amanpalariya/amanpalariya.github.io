@@ -74,6 +74,8 @@ jobs:
       - name: Unit tests
         run: ${{ steps.detect-package-manager.outputs.manager }} test:unit
       - name: Build with Next.js
+        env:
+          NEXT_PUBLIC_APPS_SCRIPT_URL: ${{ vars.NEXT_PUBLIC_APPS_SCRIPT_URL }}
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

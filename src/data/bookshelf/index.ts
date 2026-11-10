@@ -3,11 +3,8 @@ import covers from "./covers.json";
 export type Book = {
   id: string;
   title: string;
-  author: string;
-  /** A base64 image data URL, ready to use as the image source. */
-  cover: string;
-  /** An omitted status denotes a finished book. */
-  status?: "Reading" | "Read" | "Want to read";
+  author?: string;
+  cover?: string;
   /** When the book was finished, as YYYY, YYYY-MM, or YYYY-MM-DD. */
   readOn?: string;
   /** Rating out of five. */
@@ -15,8 +12,10 @@ export type Book = {
   review?: string;
 };
 
+export type BookGroups = Record<"reading" | "wantToRead" | "read", Book[]>;
+
 // Sample reading records with covers from https://standardebooks.org/.
-const books: Book[] = [
+export const sampleBooks: (Book & { section?: keyof BookGroups })[] = [
   {
     id: "the-time-machine",
     title: "The Time Machine",
@@ -47,7 +46,7 @@ const books: Book[] = [
     title: "Pride and Prejudice",
     author: "Jane Austen",
     cover: covers["pride-and-prejudice"],
-    status: "Reading",
+    section: "reading",
   },
   {
     id: "the-picture-of-dorian-gray",
@@ -75,7 +74,10 @@ const books: Book[] = [
   },
 ];
 
-export const bookshelf = {
-  isSample: true,
-  books,
+export const sampleBookshelf: BookGroups = {
+  reading: sampleBooks.filter((book) => book.section === "reading"),
+  wantToRead: [],
+  read: sampleBooks
+    .filter((book) => !book.section)
+    .sort((a, b) => (b.readOn ?? "").localeCompare(a.readOn ?? "")),
 };

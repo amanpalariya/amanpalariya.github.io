@@ -3,12 +3,11 @@
 import { Box, chakra, Grid, NativeSelect } from "@chakra-ui/react";
 import { useSearchParams } from "next/navigation";
 import { useState, type ReactNode } from "react";
-import { bookshelf } from "data/bookshelf";
-import Bookshelf, { bookshelfSections, groupBooks } from "./Bookshelf";
+import { sampleBooks, sampleBookshelf, type BookGroups } from "data/bookshelf";
+import Bookshelf, { bookshelfSections } from "./Bookshelf";
 
-const originalGroups = groupBooks(bookshelf.books);
 const countOptions = Array.from(
-  { length: bookshelf.books.length + 1 },
+  { length: sampleBooks.length + 1 },
   (_, count) => count,
 );
 
@@ -19,20 +18,24 @@ export default function BookshelfPreview({
 }) {
   const searchParams = useSearchParams();
   const [counts, setCounts] = useState({
-    Reading: originalGroups.Reading.length,
-    Read: originalGroups.Read.length,
-    "Want to read": originalGroups["Want to read"].length,
+    reading: sampleBookshelf.reading.length,
+    read: sampleBookshelf.read.length,
+    wantToRead: sampleBookshelf.wantToRead.length,
   });
 
   if (!searchParams.has("preview")) return children;
 
-  const previewBooks = bookshelfSections.flatMap(({ status }) => {
-    const original = originalGroups[status];
-    const extras = bookshelf.books.filter((book) => !original.includes(book));
-    return [...original, ...extras]
-      .slice(0, counts[status])
-      .map((book) => ({ ...book, status }));
-  });
+  function previewBooks(section: keyof BookGroups) {
+    const original = sampleBookshelf[section];
+    const extras = sampleBooks.filter((book) => !original.includes(book));
+    return [...original, ...extras].slice(0, counts[section]);
+  }
+
+  const groups = {
+    reading: previewBooks("reading"),
+    wantToRead: previewBooks("wantToRead"),
+    read: previewBooks("read"),
+  };
 
   return (
     <>
@@ -41,21 +44,21 @@ export default function BookshelfPreview({
           Preview book counts
         </Box>
         <Grid templateColumns="repeat(3, minmax(0, 1fr))" gap={2}>
-          {bookshelfSections.map(({ status, id, title }) => {
+          {bookshelfSections.map(({ section, id, title }) => {
             const controlId = `preview-${id}`;
             return (
-              <Box key={status} display="flex" flexDirection="column" gap={1}>
+              <Box key={section} display="flex" flexDirection="column" gap={1}>
                 <chakra.label htmlFor={controlId} fontSize="sm" flex={1}>
                   {title}
                 </chakra.label>
                 <NativeSelect.Root size="sm">
                   <NativeSelect.Field
                     id={controlId}
-                    value={counts[status]}
+                    value={counts[section]}
                     onChange={(event) =>
                       setCounts({
                         ...counts,
-                        [status]: Number(event.target.value),
+                        [section]: Number(event.target.value),
                       })
                     }
                   >
@@ -72,7 +75,7 @@ export default function BookshelfPreview({
           })}
         </Grid>
       </Box>
-      <Bookshelf books={previewBooks} isSample preview />
+      <Bookshelf groups={groups} isSample preview />
     </>
   );
 }

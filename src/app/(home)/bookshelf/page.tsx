@@ -3,8 +3,9 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { getPageTitle } from "app/metadata";
 import { homepageTabs } from "app/route-info";
-import { bookshelf } from "data/bookshelf";
-import Bookshelf from "./Bookshelf";
+import { sampleBookshelf } from "data/bookshelf";
+import { hasAppsScriptUrl } from "../../../services/apps-script";
+import Bookshelf, { LiveBookshelf } from "./Bookshelf";
 import BookshelfPreview from "./BookshelfPreview";
 
 const { name } = homepageTabs.bookshelf;
@@ -14,7 +15,11 @@ export const metadata: Metadata = {
 };
 
 export default function BookshelfPage() {
-  const shelf = <Bookshelf {...bookshelf} />;
+  const shelf = hasAppsScriptUrl ? (
+    <LiveBookshelf />
+  ) : (
+    <Bookshelf groups={sampleBookshelf} isSample />
+  );
 
   return (
     <>

@@ -89,6 +89,14 @@
   object-fit: contain;
 }
 
+.coverPlaceholder {
+  display: grid;
+  height: 100%;
+  place-items: center;
+  color: var(--site-muted);
+  font-size: 24px;
+}
+
 .coverBadge {
   position: absolute;
   top: 6px;
