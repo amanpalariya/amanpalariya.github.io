@@ -2,14 +2,15 @@ import { Heading2 } from "@components/core/Texts";
 import ContentSection from "@components/page/common/ContentSection";
 import { VisuallyHidden } from "@chakra-ui/react";
 import Image from "next/image";
+import { FiChevronDown } from "react-icons/fi";
 import type { Book } from "data/bookshelf";
 import CoverDetails from "./CoverDetails";
 import styles from "./bookshelf.module.css";
 
 export const bookshelfSections = [
   { status: "Reading", id: "currently-reading", title: "Currently reading" },
-  { status: "Read", id: "finished", title: "Finished" },
   { status: "Want to read", id: "want-to-read", title: "Want to read" },
+  { status: "Read", id: "finished", title: "Finished" },
 ] as const;
 
 export function groupBooks(books: Book[]) {
@@ -82,25 +83,45 @@ function BookSection({
   books,
   compact = false,
   divided = false,
+  collapsible = false,
 }: {
   id: string;
   title: string;
   books: Book[];
   compact?: boolean;
   divided?: boolean;
+  collapsible?: boolean;
 }) {
-  if (books.length === 0) return null;
+  const list = (
+    <ul className={compact ? styles.readingGrid : styles.grid} role="list">
+      {books.map((book) => (
+        <BookCard key={book.id} book={book} />
+      ))}
+    </ul>
+  );
 
-  const content = (
+  const content = collapsible ? (
+    <details className={styles.sectionDisclosure}>
+      <summary className={styles.sectionToggle}>
+        <Heading2
+          id={id}
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          minH={8}
+        >
+          {title}
+          <FiChevronDown className={styles.sectionChevron} aria-hidden="true" />
+        </Heading2>
+      </summary>
+      {list}
+    </details>
+  ) : (
     <>
       <Heading2 id={id} mb={3}>
         {title}
       </Heading2>
-      <ul className={compact ? styles.readingGrid : styles.grid} role="list">
-        {books.map((book) => (
-          <BookCard key={book.id} book={book} />
-        ))}
-      </ul>
+      {list}
     </>
   );
 
@@ -121,6 +142,9 @@ export default function Bookshelf({
   isSample: boolean;
 }) {
   const groups = groupBooks(books);
+  const visibleSections = bookshelfSections.filter(
+    ({ status }) => groups[status].length > 0,
+  );
 
   return (
     <section aria-label="Books">
@@ -130,14 +154,15 @@ export default function Bookshelf({
         <>
           {isSample && <p className={styles.sampleLabel}>Sample entries</p>}
           <div className={styles.sections}>
-            {bookshelfSections.map(({ status, id, title }) => (
+            {visibleSections.map(({ status, id, title }, index) => (
               <BookSection
                 key={id}
                 id={id}
                 title={title}
                 books={groups[status]}
                 compact={status === "Reading"}
-                divided={status === "Read" && groups.Reading.length > 0}
+                divided={index > 0}
+                collapsible={status === "Want to read"}
               />
             ))}
           </div>
