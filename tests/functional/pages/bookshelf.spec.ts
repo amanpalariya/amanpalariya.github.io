@@ -23,6 +23,17 @@ test("Bookshelf preview counts exercise empty and populated sections", async ({
   await finishedCount.selectOption("1");
   await wantCount.selectOption("2");
   await expect(reading.getByRole("listitem")).toHaveCount(3);
+  await expect(reading.getByRole("listitem").first()).toContainText(
+    "Pride and Prejudice",
+  );
+  await expect(reading.getByText("The Time Machine")).toHaveCSS(
+    "font-size",
+    "14px",
+  );
+  const featuredFontSize = await reading
+    .getByText("Pride and Prejudice")
+    .evaluate((title) => parseFloat(getComputedStyle(title).fontSize));
+  expect(featuredFontSize).toBeGreaterThan(14);
   await expect(finished.getByRole("listitem")).toHaveCount(1);
   const sectionOrder = page.getByRole("region", {
     name: /^(Currently reading|Want to read|Finished)$/,

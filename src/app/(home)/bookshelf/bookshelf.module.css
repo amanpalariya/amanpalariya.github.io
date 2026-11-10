@@ -38,41 +38,37 @@
   margin-top: 12px;
 }
 
-.grid,
-.readingGrid {
+.grid {
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 104px), 1fr));
   gap: 24px 16px;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.grid {
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 104px), 1fr));
-}
-
-.readingGrid {
-  --reading-cover-width: 104px;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
-}
-
 .face {
   display: block;
 }
 
-.readingGrid .face {
+.featuredBook {
+  --featured-cover-width: clamp(84px, 24vw, 120px);
+  grid-column: 1 / -1;
+}
+
+.featuredBook .face {
   display: grid;
-  grid-template-columns: var(--reading-cover-width) minmax(0, 1fr);
-  align-items: center;
-  gap: 12px;
+  grid-template-columns: var(--featured-cover-width) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(12px, 3vw, 24px);
 }
 
-.readingGrid .title {
-  margin-top: 0;
+.featuredBook .caption {
+  align-self: center;
 }
 
-.readingGrid .coverOverlay {
-  width: var(--reading-cover-width);
+.featuredBook .coverOverlay {
+  width: var(--featured-cover-width);
   inset-inline-end: auto;
 }
 
@@ -192,4 +188,17 @@
   color: var(--site-muted);
   font-size: 13px;
   line-height: 1.4;
+}
+
+.featuredBook .title {
+  margin-top: 0;
+  font-size: clamp(24px, 5vw, 40px);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  overflow-wrap: anywhere;
+}
+
+.featuredBook .author {
+  margin-top: 4px;
+  font-size: 14px;
 }

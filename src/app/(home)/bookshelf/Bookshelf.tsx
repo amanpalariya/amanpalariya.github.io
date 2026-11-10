@@ -36,7 +36,13 @@ function formatReadDate(value: string) {
   });
 }
 
-function BookCard({ book }: { book: Book }) {
+function BookCard({
+  book,
+  featured = false,
+}: {
+  book: Book;
+  featured?: boolean;
+}) {
   const { title, author, cover, readOn, rating, review } = book;
   const face = (
     <span className={styles.face}>
@@ -56,7 +62,7 @@ function BookCard({ book }: { book: Book }) {
           </span>
         )}
       </span>
-      <span>
+      <span className={styles.caption}>
         <span className={styles.title}>{title}</span>
         <span className={styles.author}>{author}</span>
       </span>
@@ -64,7 +70,7 @@ function BookCard({ book }: { book: Book }) {
   );
 
   return (
-    <li>
+    <li className={featured ? styles.featuredBook : undefined}>
       {readOn || review ? (
         <CoverDetails title={title} face={face}>
           {readOn && (
@@ -85,7 +91,7 @@ function BookSection({
   id,
   title,
   books,
-  compact = false,
+  featureFirst = false,
   divided = false,
   collapsible = false,
   startExpanded = false,
@@ -93,15 +99,19 @@ function BookSection({
   id: string;
   title: string;
   books: Book[];
-  compact?: boolean;
+  featureFirst?: boolean;
   divided?: boolean;
   collapsible?: boolean;
   startExpanded?: boolean;
 }) {
   const list = (
-    <ul className={compact ? styles.readingGrid : styles.grid} role="list">
-      {books.map((book) => (
-        <BookCard key={book.id} book={book} />
+    <ul className={styles.grid} role="list">
+      {books.map((book, index) => (
+        <BookCard
+          key={book.id}
+          book={book}
+          featured={featureFirst && index === 0}
+        />
       ))}
     </ul>
   );
@@ -166,7 +176,11 @@ export default function Bookshelf({
               <FiBookOpen />
             </Icon>
           </EmptyState.Indicator>
-          <EmptyState.Title as="h2" color="app.prose.heading" textAlign="center">
+          <EmptyState.Title
+            as="h2"
+            color="app.prose.heading"
+            textAlign="center"
+          >
             The bookshelf is empty
           </EmptyState.Title>
         </EmptyState.Content>
@@ -189,7 +203,7 @@ export default function Bookshelf({
             id={id}
             title={title}
             books={groups[status]}
-            compact={status === "Reading"}
+            featureFirst={status === "Reading"}
             divided={
               index > 0 && visibleSections[index - 1].status !== "Want to read"
             }
