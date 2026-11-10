@@ -106,11 +106,6 @@
   }
 }
 
-.coverTrigger .title {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
 .coverOverlay {
   position: absolute;
   inset: 0 0 auto;
