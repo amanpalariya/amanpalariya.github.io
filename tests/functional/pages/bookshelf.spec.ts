@@ -1,19 +1,69 @@
+import type { Page } from "@playwright/test";
 import { expect, test } from "../support/fixtures";
 
-test("Bookshelf preview counts exercise empty and populated sections", async ({
-  page,
-}) => {
-  await page.goto("/bookshelf/?preview=1");
-  await expect(
-    page.getByRole("button", { name: /^Change theme/ }),
-  ).toBeEnabled();
+const coverUrl = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2 3"><path fill="navy" d="M0 0h2v3H0z"/></svg>',
+)}`;
 
-  const controls = page.getByRole("group", { name: "Preview book counts" });
-  const readingCount = controls.getByRole("combobox", {
-    name: "Currently reading",
-  });
-  const finishedCount = controls.getByRole("combobox", { name: "Finished" });
-  const wantCount = controls.getByRole("combobox", { name: "Want to read" });
+function book(
+  title: string,
+  {
+    firstReadOn = null,
+    ratingOutOf10 = null,
+    review = null,
+  }: {
+    firstReadOn?: string | null;
+    ratingOutOf10?: number | null;
+    review?: string | null;
+  } = {},
+) {
+  return {
+    title,
+    author: null,
+    coverUrl,
+    firstReadOn,
+    rereadDates: [],
+    ratingOutOf10,
+    review,
+  };
+}
+
+const prideAndPrejudice = book("Pride and Prejudice");
+const finishedBooks = [
+  book("The Great Gatsby", {
+    firstReadOn: "2025-11",
+    ratingOutOf10: 8,
+    review:
+      "Gatsby’s parties are dazzling, but the quiet moments are what linger.",
+  }),
+  book("Frankenstein", { firstReadOn: "2025-10-27" }),
+  book("The Time Machine"),
+];
+
+type BookshelfResponse = Record<
+  "reading" | "wantToRead" | "read",
+  ReturnType<typeof book>[]
+>;
+
+async function mockBookshelf(page: Page, groups: Partial<BookshelfResponse>) {
+  await page.route(
+    (url) => url.searchParams.get("route") === "v1/bookshelf",
+    (route) =>
+      route.fulfill({
+        json: { reading: [], wantToRead: [], read: [], ...groups },
+      }),
+  );
+}
+
+test("Bookshelf adapts to populated and empty sections", async ({ page }) => {
+  const groups = {
+    reading: [prideAndPrejudice],
+    wantToRead: [book("Meditations"), book("Anne of Green Gables")],
+    read: [finishedBooks[0]],
+  };
+  await mockBookshelf(page, groups);
+  await page.goto("/bookshelf/");
+
   const reading = page.getByRole("region", { name: "Currently reading" });
   const finished = page.getByRole("region", { name: "Finished" });
   const want = page.getByRole("region", { name: "Want to read" });
@@ -21,37 +71,25 @@ test("Bookshelf preview counts exercise empty and populated sections", async ({
   const firstReadingTitle = reading.getByText("Pride and Prejudice");
 
   await expect(firstReadingTitle).not.toHaveCSS("font-size", "14px");
-  await readingCount.selectOption("2");
-  await expect(firstReadingTitle).toHaveCSS("font-size", "14px");
-  await readingCount.selectOption("3");
-  await finishedCount.selectOption("1");
-  await wantCount.selectOption("2");
-  await expect(reading.getByRole("listitem")).toHaveCount(3);
-  await expect(reading.getByRole("listitem").first()).toContainText(
-    "Pride and Prejudice",
-  );
-  await expect(firstReadingTitle).toHaveCSS("font-size", "14px");
-  await expect(reading.getByText("The Time Machine")).toHaveCSS(
-    "font-size",
-    "14px",
-  );
+  for (const title of ["The Time Machine", "The Call of the Wild"]) {
+    groups.reading.push(book(title));
+    await page.reload();
+    await expect(reading.getByRole("listitem")).toHaveCount(
+      groups.reading.length,
+    );
+    await expect(reading.getByRole("listitem").first()).toContainText(
+      "Pride and Prejudice",
+    );
+    await expect(firstReadingTitle).toHaveCSS("font-size", "14px");
+  }
+
   await expect(finished.getByRole("listitem")).toHaveCount(1);
-  const sectionOrder = page.getByRole("region", {
-    name: /^(Currently reading|Want to read|Finished)$/,
-  });
-  await expect(sectionOrder).toHaveCount(3);
-  await expect(sectionOrder.nth(0)).toHaveAttribute(
-    "aria-labelledby",
-    "currently-reading",
-  );
-  await expect(sectionOrder.nth(1)).toHaveAttribute(
-    "aria-labelledby",
-    "want-to-read",
-  );
-  await expect(sectionOrder.nth(2)).toHaveAttribute(
-    "aria-labelledby",
-    "finished",
-  );
+  await expect(
+    page.getByRole("heading", {
+      level: 2,
+      name: /^(Currently reading|Want to read|Finished)$/,
+    }),
+  ).toHaveText(["Currently reading", "Want to read", "Finished"]);
   await expect(want.getByRole("list")).toBeHidden();
   await wantToggle.press("Enter");
   await expect(want.getByRole("listitem")).toHaveCount(2);
@@ -62,31 +100,40 @@ test("Bookshelf preview counts exercise empty and populated sections", async ({
   await expect(want).toHaveCSS("border-bottom-width", "1px");
   await expect(finished).toHaveCSS("border-top-width", "0px");
 
-  await finishedCount.selectOption("0");
-  await expect(finished).toHaveCount(0);
+  groups.read = [];
+  await page.reload();
   await expect(want.getByRole("list")).toBeHidden();
   await expect(want).toHaveCSS("border-bottom-width", "1px");
-  await readingCount.selectOption("0");
-  await expect(reading).toHaveCount(0);
+  await expect(finished).toHaveCount(0);
+
+  groups.reading = [];
+  await page.reload();
   await expect(want).toHaveCSS("border-top-width", "1px");
   await expect(want).toHaveCSS("border-bottom-width", "1px");
   await expect(want.getByRole("listitem")).toHaveCount(2);
+  await expect(reading).toHaveCount(0);
   await wantToggle.press("Enter");
   await expect(want.getByRole("list")).toBeHidden();
-  await wantCount.selectOption("0");
+
+  groups.wantToRead = [];
+  await page.reload();
   await expect(
     page.getByRole("heading", { name: "The bookshelf is empty" }),
   ).toBeVisible();
-  await expect(page.getByText("Sample entries")).toHaveCount(0);
 
-  await finishedCount.selectOption("1");
+  groups.read = [finishedBooks[0]];
+  await page.reload();
   await expect(finished).toHaveCSS("border-top-width", "0px");
 });
 
-test("Bookshelf sample puts current reads before books ordered by finish date", async ({
+test("Bookshelf puts current reads before finished books and preserves their API order", async ({
   page,
 }) => {
-  await page.goto("/bookshelf/?preview=1");
+  await mockBookshelf(page, {
+    reading: [prideAndPrejudice],
+    read: finishedBooks,
+  });
+  await page.goto("/bookshelf/");
 
   const shelf = page.getByRole("region", { name: "Books", exact: true });
   await expect(shelf.getByRole("heading", { level: 2 })).toHaveText([
@@ -109,7 +156,11 @@ test("Bookshelf sample puts current reads before books ordered by finish date", 
 test("Bookshelf cover details open and close without moving the covers", async ({
   page,
 }) => {
-  await page.goto("/bookshelf/?preview=1");
+  await mockBookshelf(page, {
+    reading: [prideAndPrejudice],
+    read: finishedBooks,
+  });
+  await page.goto("/bookshelf/");
   await expect(
     page.getByRole("button", { name: /^Change theme/ }),
   ).toBeEnabled();

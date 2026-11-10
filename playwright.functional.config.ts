@@ -30,6 +30,7 @@ export default defineConfig({
   ],
   webServer: {
     command: "yarn dev -p 3000",
+    env: { NEXT_PUBLIC_APPS_SCRIPT_URL: "https://apps-script.test/exec" },
     url: baseURL,
     reuseExistingServer: true,
     timeout: 120_000,

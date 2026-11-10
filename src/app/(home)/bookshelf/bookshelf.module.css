@@ -1,9 +1,3 @@
-.sampleLabel {
-  margin: 0 0 12px;
-  color: var(--site-muted);
-  font-size: 13px;
-}
-
 .sections {
   display: grid;
   gap: 16px;

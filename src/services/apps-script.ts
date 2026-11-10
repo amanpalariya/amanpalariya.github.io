@@ -1,7 +1,5 @@
 const deploymentUrl = process.env.NEXT_PUBLIC_APPS_SCRIPT_URL?.trim();
 
-export const hasAppsScriptUrl = Boolean(deploymentUrl);
-
 export class AppsScriptRequestError extends Error {
   constructor(
     readonly reason: "connection" | "unavailable" | "invalid-response",

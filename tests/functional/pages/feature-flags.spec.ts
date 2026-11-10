@@ -117,6 +117,10 @@ test.describe("Feature Flags page", () => {
       await expect(page.getByText(toolName)).toHaveCount(0);
     }
 
+    await page.route(
+      (url) => url.searchParams.get("route") === "v1/bookshelf",
+      (route) => route.abort(),
+    );
     await page.goto("/bookshelf/");
     await expect(
       page.getByRole("heading", { name: "The bookshelf is empty" }),

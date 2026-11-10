@@ -24,7 +24,7 @@ import { useFeatureFlag } from "utils/features";
 import CoverDetails from "./CoverDetails";
 import styles from "./bookshelf.module.css";
 
-export const bookshelfSections = [
+const bookshelfSections = [
   { section: "reading", id: "currently-reading", title: "Currently reading" },
   { section: "wantToRead", id: "want-to-read", title: "Want to read" },
   { section: "read", id: "finished", title: "Finished" },
@@ -162,47 +162,34 @@ function BookSection({
   );
 }
 
-export default function Bookshelf({
-  groups,
-  isSample = false,
-  preview = false,
-}: {
-  groups: BookGroups;
-  isSample?: boolean;
-  preview?: boolean;
-}) {
-  const [forceEmpty] = useFeatureFlag(
-    FeatureFlagsData.featuresIds.FORCE_EMPTY_STATES,
+function EmptyBookshelf() {
+  return (
+    <EmptyState.Root as="section" aria-label="Books" px={0}>
+      <EmptyState.Content gap={4}>
+        <EmptyState.Indicator color="app.fg.subtle" aria-hidden="true">
+          <Icon boxSize={10}>
+            <FiBookOpen />
+          </Icon>
+        </EmptyState.Indicator>
+        <EmptyState.Title as="h2" color="app.prose.heading" textAlign="center">
+          The bookshelf is empty
+        </EmptyState.Title>
+      </EmptyState.Content>
+    </EmptyState.Root>
   );
+}
 
+function BookSections({ groups }: { groups: BookGroups }) {
   const visibleSections = bookshelfSections.filter(
     ({ section }) => groups[section].length > 0,
   );
 
-  if (visibleSections.length === 0 || (forceEmpty && !preview)) {
-    return (
-      <EmptyState.Root as="section" aria-label="Books" px={0}>
-        <EmptyState.Content gap={4}>
-          <EmptyState.Indicator color="app.fg.subtle" aria-hidden="true">
-            <Icon boxSize={10}>
-              <FiBookOpen />
-            </Icon>
-          </EmptyState.Indicator>
-          <EmptyState.Title
-            as="h2"
-            color="app.prose.heading"
-            textAlign="center"
-          >
-            The bookshelf is empty
-          </EmptyState.Title>
-        </EmptyState.Content>
-      </EmptyState.Root>
-    );
+  if (visibleSections.length === 0) {
+    return <EmptyBookshelf />;
   }
 
   return (
     <section aria-label="Books">
-      {isSample && <p className={styles.sampleLabel}>Sample entries</p>}
       <div className={styles.sections}>
         {visibleSections.map(({ section, id, title }, index) => (
           <BookSection
@@ -347,7 +334,7 @@ function BookshelfLoadError({
   );
 }
 
-export function LiveBookshelf() {
+function LiveBookshelf() {
   const { state, retry } = useBookshelf();
   const message =
     state.status === "error"
@@ -364,7 +351,7 @@ export function LiveBookshelf() {
       {state.status === "loading" ? (
         <BookshelfLoading />
       ) : state.status === "ready" ? (
-        <Bookshelf groups={state.groups} />
+        <BookSections groups={state.groups} />
       ) : (
         <BookshelfLoadError
           message={message}
@@ -374,4 +361,12 @@ export function LiveBookshelf() {
       )}
     </>
   );
+}
+
+export default function Bookshelf() {
+  const [forceEmpty] = useFeatureFlag(
+    FeatureFlagsData.featuresIds.FORCE_EMPTY_STATES,
+  );
+
+  return forceEmpty ? <EmptyBookshelf /> : <LiveBookshelf />;
 }
