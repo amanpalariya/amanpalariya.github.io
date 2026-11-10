@@ -18,7 +18,11 @@ test("Bookshelf preview counts exercise empty and populated sections", async ({
   const finished = page.getByRole("region", { name: "Finished" });
   const want = page.getByRole("region", { name: "Want to read" });
   const wantToggle = want.locator(":scope > details > summary");
+  const firstReadingTitle = reading.getByText("Pride and Prejudice");
 
+  await expect(firstReadingTitle).not.toHaveCSS("font-size", "14px");
+  await readingCount.selectOption("2");
+  await expect(firstReadingTitle).toHaveCSS("font-size", "14px");
   await readingCount.selectOption("3");
   await finishedCount.selectOption("1");
   await wantCount.selectOption("2");
@@ -26,14 +30,11 @@ test("Bookshelf preview counts exercise empty and populated sections", async ({
   await expect(reading.getByRole("listitem").first()).toContainText(
     "Pride and Prejudice",
   );
+  await expect(firstReadingTitle).toHaveCSS("font-size", "14px");
   await expect(reading.getByText("The Time Machine")).toHaveCSS(
     "font-size",
     "14px",
   );
-  const featuredFontSize = await reading
-    .getByText("Pride and Prejudice")
-    .evaluate((title) => parseFloat(getComputedStyle(title).fontSize));
-  expect(featuredFontSize).toBeGreaterThan(14);
   await expect(finished.getByRole("listitem")).toHaveCount(1);
   const sectionOrder = page.getByRole("region", {
     name: /^(Currently reading|Want to read|Finished)$/,

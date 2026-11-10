@@ -91,7 +91,7 @@ function BookSection({
   id,
   title,
   books,
-  featureFirst = false,
+  featureSingle = false,
   divided = false,
   collapsible = false,
   startExpanded = false,
@@ -99,23 +99,16 @@ function BookSection({
   id: string;
   title: string;
   books: Book[];
-  featureFirst?: boolean;
+  featureSingle?: boolean;
   divided?: boolean;
   collapsible?: boolean;
   startExpanded?: boolean;
 }) {
+  const featured = featureSingle && books.length === 1;
   const list = (
-    <ul
-      className={styles.grid}
-      role="list"
-      data-current-count={featureFirst ? books.length : undefined}
-    >
-      {books.map((book, index) => (
-        <BookCard
-          key={book.id}
-          book={book}
-          featured={featureFirst && index === 0}
-        />
+    <ul className={styles.grid} role="list">
+      {books.map((book) => (
+        <BookCard key={book.id} book={book} featured={featured} />
       ))}
     </ul>
   );
@@ -207,7 +200,7 @@ export default function Bookshelf({
             id={id}
             title={title}
             books={groups[status]}
-            featureFirst={status === "Reading"}
+            featureSingle={status === "Reading"}
             divided={
               index > 0 && visibleSections[index - 1].status !== "Want to read"
             }
