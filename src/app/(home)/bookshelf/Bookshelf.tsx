@@ -125,8 +125,12 @@ function BookSection({
     </>
   );
 
-  return divided ? (
-    <ContentSection aria-labelledby={id} pb={0}>
+  return divided || collapsible ? (
+    <ContentSection
+      aria-labelledby={id}
+      borderBottom={collapsible ? "1px solid var(--site-line)" : undefined}
+      pb={collapsible ? 4 : 0}
+    >
       {content}
     </ContentSection>
   ) : (
@@ -161,7 +165,10 @@ export default function Bookshelf({
                 title={title}
                 books={groups[status]}
                 compact={status === "Reading"}
-                divided={index > 0}
+                divided={
+                  index > 0 &&
+                  visibleSections[index - 1].status !== "Want to read"
+                }
                 collapsible={status === "Want to read"}
               />
             ))}

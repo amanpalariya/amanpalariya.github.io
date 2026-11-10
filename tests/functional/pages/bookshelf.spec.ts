@@ -47,16 +47,22 @@ test("Bookshelf preview counts exercise empty and populated sections", async ({
   await expect(want.getByRole("list")).toBeHidden();
   await expect(reading).toHaveCSS("border-top-width", "0px");
   await expect(want).toHaveCSS("border-top-width", "1px");
-  await expect(finished).toHaveCSS("border-top-width", "1px");
+  await expect(want).toHaveCSS("border-bottom-width", "1px");
+  await expect(finished).toHaveCSS("border-top-width", "0px");
 
+  await finishedCount.selectOption("0");
+  await expect(finished).toHaveCount(0);
+  await expect(want.getByRole("list")).toBeHidden();
+  await expect(want).toHaveCSS("border-bottom-width", "1px");
   await readingCount.selectOption("0");
   await expect(reading).toHaveCount(0);
-  await expect(want).toHaveCSS("border-top-width", "0px");
-  await expect(finished).toHaveCSS("border-top-width", "1px");
+  await expect(want).toHaveCSS("border-top-width", "1px");
+  await expect(want).toHaveCSS("border-bottom-width", "1px");
   await wantCount.selectOption("0");
-  await expect(finished).toHaveCSS("border-top-width", "0px");
-  await finishedCount.selectOption("0");
   await expect(page.getByText("No books yet.")).toBeVisible();
+
+  await finishedCount.selectOption("1");
+  await expect(finished).toHaveCSS("border-top-width", "0px");
 });
 
 test("Bookshelf puts current reads before books ordered by finish date", async ({
@@ -74,6 +80,7 @@ test("Bookshelf puts current reads before books ordered by finish date", async (
   await expect(reading.getByText("Reading", { exact: true })).toHaveCount(0);
 
   const finished = shelf.getByRole("region", { name: "Finished" });
+  await expect(finished).toHaveCSS("border-top-width", "1px");
   const books = finished.getByRole("listitem");
   await expect(books.nth(0)).toContainText("The Great Gatsby");
   await expect(books.nth(1)).toContainText("Frankenstein");
