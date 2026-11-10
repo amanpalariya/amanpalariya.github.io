@@ -5,6 +5,7 @@
 }
 
 .sections {
+  container-type: inline-size;
   display: grid;
   gap: 16px;
 }
@@ -201,4 +202,51 @@
 .featuredBook .author {
   margin-top: 4px;
   font-size: 14px;
+}
+
+.grid[data-current-count="2"] {
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  max-inline-size: 330px;
+}
+
+.grid[data-current-count="3"] {
+  grid-template-columns: minmax(0, 1.3fr) repeat(2, minmax(0, 1fr));
+  max-inline-size: 464px;
+}
+
+.grid:is([data-current-count="2"], [data-current-count="3"]) .featuredBook {
+  --featured-cover-width: 100%;
+  grid-column: auto;
+}
+
+.grid:is([data-current-count="2"], [data-current-count="3"])
+  .featuredBook
+  .face {
+  display: block;
+}
+
+.grid:is([data-current-count="2"], [data-current-count="3"])
+  .featuredBook
+  .title {
+  margin-top: 8px;
+  font-size: clamp(24px, 4vw, 32px);
+}
+
+@container (width < 330px) {
+  .grid[data-current-count="3"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .grid[data-current-count="3"] .featuredBook {
+    --featured-cover-width: 104px;
+    grid-column: 1 / -1;
+  }
+
+  .grid[data-current-count="3"] .featuredBook .face {
+    display: grid;
+  }
+
+  .grid[data-current-count="3"] .featuredBook .title {
+    margin-top: 0;
+  }
 }

@@ -105,7 +105,11 @@ function BookSection({
   startExpanded?: boolean;
 }) {
   const list = (
-    <ul className={styles.grid} role="list">
+    <ul
+      className={styles.grid}
+      role="list"
+      data-current-count={featureFirst ? books.length : undefined}
+    >
       {books.map((book, index) => (
         <BookCard
           key={book.id}
