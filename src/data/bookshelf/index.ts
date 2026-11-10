@@ -7,28 +7,40 @@ type Book = {
   /** A base64 image data URL, ready to use as the image source. */
   cover: string;
   status?: "Reading" | "Read" | "Want to read";
-  note?: string;
+  /** When the book was finished, as YYYY, YYYY-MM, or YYYY-MM-DD. */
+  readOn?: string;
+  /** Rating out of five. */
+  rating?: number;
+  review?: string;
 };
 
-// Sample books with covers from https://standardebooks.org/.
+// Sample reading records with covers from https://standardebooks.org/.
 const books: Book[] = [
   {
     id: "the-great-gatsby",
     title: "The Great Gatsby",
     author: "F. Scott Fitzgerald",
     cover: covers["the-great-gatsby"],
+    readOn: "2025-11",
+    rating: 4,
+    review:
+      "Gatsby’s parties are dazzling, but the quiet moments are what linger.",
   },
   {
     id: "pride-and-prejudice",
     title: "Pride and Prejudice",
     author: "Jane Austen",
     cover: covers["pride-and-prejudice"],
+    status: "Reading",
   },
   {
     id: "frankenstein",
     title: "Frankenstein",
     author: "Mary Shelley",
     cover: covers.frankenstein,
+    readOn: "2025-10-27",
+    rating: 4.5,
+    review: "The creature’s own account is the part that stayed with me.",
   },
   {
     id: "the-time-machine",
@@ -63,7 +75,6 @@ const books: Book[] = [
 ];
 
 export const bookshelf = {
-  intro: "A place to keep track of what I’m reading and jot down what stays with me.",
   isSample: true,
   books,
 };
