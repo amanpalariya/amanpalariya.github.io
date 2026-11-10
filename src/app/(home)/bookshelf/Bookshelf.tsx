@@ -1,4 +1,4 @@
-import { Heading2 } from "@components/core/Texts";
+import { Heading2, SubtitleText } from "@components/core/Texts";
 import ContentSection from "@components/page/common/ContentSection";
 import { VisuallyHidden } from "@chakra-ui/react";
 import Image from "next/image";
@@ -84,6 +84,7 @@ function BookSection({
   compact = false,
   divided = false,
   collapsible = false,
+  startExpanded = false,
 }: {
   id: string;
   title: string;
@@ -91,6 +92,7 @@ function BookSection({
   compact?: boolean;
   divided?: boolean;
   collapsible?: boolean;
+  startExpanded?: boolean;
 }) {
   const list = (
     <ul className={compact ? styles.readingGrid : styles.grid} role="list">
@@ -101,7 +103,7 @@ function BookSection({
   );
 
   const content = collapsible ? (
-    <details className={styles.sectionDisclosure}>
+    <details className={styles.sectionDisclosure} open={startExpanded}>
       <summary className={styles.sectionToggle}>
         <Heading2
           id={id}
@@ -153,7 +155,7 @@ export default function Bookshelf({
   return (
     <section aria-label="Books">
       {books.length === 0 ? (
-        <p className={styles.sampleLabel}>No books yet.</p>
+        <SubtitleText>No books yet.</SubtitleText>
       ) : (
         <>
           {isSample && <p className={styles.sampleLabel}>Sample entries</p>}
@@ -170,6 +172,7 @@ export default function Bookshelf({
                   visibleSections[index - 1].status !== "Want to read"
                 }
                 collapsible={status === "Want to read"}
+                startExpanded={visibleSections.length === 1}
               />
             ))}
           </div>

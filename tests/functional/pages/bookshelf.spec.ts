@@ -58,8 +58,12 @@ test("Bookshelf preview counts exercise empty and populated sections", async ({
   await expect(reading).toHaveCount(0);
   await expect(want).toHaveCSS("border-top-width", "1px");
   await expect(want).toHaveCSS("border-bottom-width", "1px");
+  await expect(want.getByRole("listitem")).toHaveCount(2);
+  await wantToggle.press("Enter");
+  await expect(want.getByRole("list")).toBeHidden();
   await wantCount.selectOption("0");
   await expect(page.getByText("No books yet.")).toBeVisible();
+  await expect(page.getByText("Sample entries")).toHaveCount(0);
 
   await finishedCount.selectOption("1");
   await expect(finished).toHaveCSS("border-top-width", "0px");
