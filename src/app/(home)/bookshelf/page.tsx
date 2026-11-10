@@ -1,4 +1,5 @@
 import { VisuallyHidden } from "@chakra-ui/react";
+import { Heading2 } from "@components/core/Texts";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { getPageTitle } from "app/metadata";
@@ -69,19 +70,55 @@ function BookCard({ book }: { book: Book }) {
   );
 }
 
+function BookSection({
+  id,
+  title,
+  books,
+}: {
+  id: string;
+  title: string;
+  books: Book[];
+}) {
+  if (books.length === 0) return null;
+
+  return (
+    <section aria-labelledby={id}>
+      <Heading2 id={id} mb={3}>
+        {title}
+      </Heading2>
+      <ul className={styles.grid} role="list">
+        {books.map((book) => (
+          <BookCard key={book.id} book={book} />
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export default function BookshelfPage() {
   const { isSample, books } = bookshelf;
+  const currentlyReading = books.filter((book) => book.status === "Reading");
+  const otherBooks = books
+    .filter((book) => book.status !== "Reading")
+    .sort((a, b) => (b.readOn ?? "").localeCompare(a.readOn ?? ""));
 
   return (
     <>
       <VisuallyHidden as="h1">{name}</VisuallyHidden>
       <section aria-label="Books">
         {isSample && <p className={styles.sampleLabel}>Sample entries</p>}
-        <ul className={styles.grid} role="list">
-          {books.map((book) => (
-            <BookCard key={book.id} book={book} />
-          ))}
-        </ul>
+        <div className={styles.sections}>
+          <BookSection
+            id="currently-reading"
+            title="Currently reading"
+            books={currentlyReading}
+          />
+          <BookSection
+            id="other-books"
+            title="Other books"
+            books={otherBooks}
+          />
+        </div>
       </section>
     </>
   );

@@ -4,6 +4,11 @@
   font-size: 13px;
 }
 
+.sections {
+  display: grid;
+  gap: 28px;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 104px), 1fr));

@@ -1,5 +1,26 @@
 import { expect, test } from "../support/fixtures";
 
+test("Bookshelf puts current reads before books ordered by finish date", async ({
+  page,
+}) => {
+  await page.goto("/bookshelf/");
+
+  const shelf = page.getByRole("region", { name: "Books", exact: true });
+  await expect(shelf.getByRole("heading", { level: 2 })).toHaveText([
+    "Currently reading",
+    "Other books",
+  ]);
+  const reading = shelf.getByRole("region", { name: "Currently reading" });
+  await expect(reading.getByRole("listitem")).toHaveText(/Pride and Prejudice/);
+
+  const others = shelf.getByRole("region", { name: "Other books" });
+  const books = others.getByRole("listitem");
+  await expect(books.nth(0)).toContainText("The Great Gatsby");
+  await expect(books.nth(1)).toContainText("Frankenstein");
+  await expect(books.nth(2)).toContainText("The Time Machine");
+  await expect(others.getByText("Pride and Prejudice")).toHaveCount(0);
+});
+
 test("Bookshelf cover details open and close without moving the covers", async ({
   page,
 }) => {
@@ -12,7 +33,9 @@ test("Bookshelf cover details open and close without moving the covers", async (
   const label = "Reading details for The Great Gatsby";
   const trigger = page.locator("summary").and(page.getByLabel(label));
   const details = page.getByRole("region", { name: label });
-  const covers = page.getByRole("region", { name: "Books" }).locator("img");
+  const covers = page
+    .getByRole("region", { name: "Books", exact: true })
+    .locator("img");
   const coverPositions = () =>
     covers.evaluateAll((images) =>
       images.map((image) => image.getBoundingClientRect().toJSON()),

@@ -17,6 +17,21 @@ export type Book = {
 // Sample reading records with covers from https://standardebooks.org/.
 const books: Book[] = [
   {
+    id: "the-time-machine",
+    title: "The Time Machine",
+    author: "H. G. Wells",
+    cover: covers["the-time-machine"],
+  },
+  {
+    id: "frankenstein",
+    title: "Frankenstein",
+    author: "Mary Shelley",
+    cover: covers.frankenstein,
+    readOn: "2025-10-27",
+    rating: 4.5,
+    review: "The creature’s own account is the part that stayed with me.",
+  },
+  {
     id: "the-great-gatsby",
     title: "The Great Gatsby",
     author: "F. Scott Fitzgerald",
@@ -32,21 +47,6 @@ const books: Book[] = [
     author: "Jane Austen",
     cover: covers["pride-and-prejudice"],
     status: "Reading",
-  },
-  {
-    id: "frankenstein",
-    title: "Frankenstein",
-    author: "Mary Shelley",
-    cover: covers.frankenstein,
-    readOn: "2025-10-27",
-    rating: 4.5,
-    review: "The creature’s own account is the part that stayed with me.",
-  },
-  {
-    id: "the-time-machine",
-    title: "The Time Machine",
-    author: "H. G. Wells",
-    cover: covers["the-time-machine"],
   },
   {
     id: "the-picture-of-dorian-gray",
