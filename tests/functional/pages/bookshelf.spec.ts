@@ -8,17 +8,18 @@ test("Bookshelf puts current reads before books ordered by finish date", async (
   const shelf = page.getByRole("region", { name: "Books", exact: true });
   await expect(shelf.getByRole("heading", { level: 2 })).toHaveText([
     "Currently reading",
-    "Other books",
+    "The collection",
   ]);
   const reading = shelf.getByRole("region", { name: "Currently reading" });
   await expect(reading.getByRole("listitem")).toHaveText(/Pride and Prejudice/);
+  await expect(reading.getByText("Reading", { exact: true })).toHaveCount(0);
 
-  const others = shelf.getByRole("region", { name: "Other books" });
-  const books = others.getByRole("listitem");
+  const collection = shelf.getByRole("region", { name: "The collection" });
+  const books = collection.getByRole("listitem");
   await expect(books.nth(0)).toContainText("The Great Gatsby");
   await expect(books.nth(1)).toContainText("Frankenstein");
   await expect(books.nth(2)).toContainText("The Time Machine");
-  await expect(others.getByText("Pride and Prejudice")).toHaveCount(0);
+  await expect(collection.getByText("Pride and Prejudice")).toHaveCount(0);
 });
 
 test("Bookshelf cover details open and close without moving the covers", async ({

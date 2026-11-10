@@ -26,8 +26,11 @@ function formatReadDate(value: string) {
 function BookCard({ book }: { book: Book }) {
   const { title, author, cover, status, readOn, rating, review } = book;
   const hasRating = rating !== undefined;
+  const displayStatus = status === "Reading" ? undefined : status;
   const detailStatus =
-    hasRating && (status !== "Read" || !readOn) ? status : undefined;
+    hasRating && (displayStatus !== "Read" || !readOn)
+      ? displayStatus
+      : undefined;
 
   return (
     <li>
@@ -40,7 +43,7 @@ function BookCard({ book }: { book: Book }) {
           unoptimized
           className={styles.coverArt}
         />
-        {(hasRating || status) && (
+        {(hasRating || displayStatus) && (
           <span className={styles.coverBadge}>
             {hasRating ? (
               <>
@@ -48,7 +51,7 @@ function BookCard({ book }: { book: Book }) {
                 <span aria-hidden="true">★</span> {rating}/5
               </>
             ) : (
-              status
+              displayStatus
             )}
           </span>
         )}
@@ -98,7 +101,7 @@ function BookSection({
 export default function BookshelfPage() {
   const { isSample, books } = bookshelf;
   const currentlyReading = books.filter((book) => book.status === "Reading");
-  const otherBooks = books
+  const collection = books
     .filter((book) => book.status !== "Reading")
     .sort((a, b) => (b.readOn ?? "").localeCompare(a.readOn ?? ""));
 
@@ -114,9 +117,9 @@ export default function BookshelfPage() {
             books={currentlyReading}
           />
           <BookSection
-            id="other-books"
-            title="Other books"
-            books={otherBooks}
+            id="collection"
+            title="The collection"
+            books={collection}
           />
         </div>
       </section>
