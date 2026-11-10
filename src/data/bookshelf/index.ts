@@ -6,10 +6,12 @@ type Book = {
   author: string;
   /** A base64 image data URL, ready to use as the image source. */
   cover: string;
+  status?: "Reading" | "Read" | "Want to read";
+  note?: string;
 };
 
 // Sample books with covers from https://standardebooks.org/.
-export const books: Book[] = [
+const books: Book[] = [
   {
     id: "the-great-gatsby",
     title: "The Great Gatsby",
@@ -59,3 +61,9 @@ export const books: Book[] = [
     cover: covers["the-call-of-the-wild"],
   },
 ];
+
+export const bookshelf = {
+  intro: "A place to keep track of what I’m reading and jot down what stays with me.",
+  isSample: true,
+  books,
+};

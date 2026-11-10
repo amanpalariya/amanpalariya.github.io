@@ -1,10 +1,11 @@
+import { VisuallyHidden } from "@chakra-ui/react";
 import Image from "next/image";
 import type { Metadata } from "next";
 import ContentSection from "@components/page/common/ContentSection";
-import PageIntro from "@components/page/common/PageIntro";
+import { SubtitleText } from "@components/core/Texts";
 import { getPageTitle } from "app/metadata";
 import { homepageTabs } from "app/route-info";
-import { books } from "data/bookshelf";
+import { bookshelf } from "data/bookshelf";
 import styles from "./bookshelf.module.css";
 
 const { name } = homepageTabs.bookshelf;
@@ -14,12 +15,18 @@ export const metadata: Metadata = {
 };
 
 export default function BookshelfPage() {
+  const { intro, isSample, books } = bookshelf;
+
   return (
     <>
-      <PageIntro title={name} />
+      <header className={styles.intro}>
+        <VisuallyHidden as="h1">{name}</VisuallyHidden>
+        <SubtitleText>{intro}</SubtitleText>
+      </header>
       <ContentSection aria-label="Books">
+        {isSample && <p className={styles.sampleLabel}>Sample books</p>}
         <ul className={styles.grid} role="list">
-          {books.map(({ id, title, author, cover }) => (
+          {books.map(({ id, title, author, cover, status, note }) => (
             <li key={id}>
               <Image
                 src={cover}
@@ -31,6 +38,13 @@ export default function BookshelfPage() {
               />
               <p className={styles.title}>{title}</p>
               <p className={styles.author}>{author}</p>
+              {status && <p className={styles.status}>{status}</p>}
+              {note && (
+                <details className={styles.note}>
+                  <summary aria-label={`My note on ${title}`}>My note</summary>
+                  <p>{note}</p>
+                </details>
+              )}
             </li>
           ))}
         </ul>

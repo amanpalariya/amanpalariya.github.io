@@ -1,3 +1,13 @@
+.intro {
+  padding-bottom: 16px;
+}
+
+.sampleLabel {
+  margin: 0 0 12px;
+  color: var(--site-muted);
+  font-size: 13px;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 104px), 1fr));
@@ -31,4 +41,29 @@
   color: var(--site-muted);
   font-size: 13px;
   line-height: 1.4;
+}
+
+.status,
+.note {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.status {
+  color: var(--site-muted);
+}
+
+.note summary {
+  color: var(--site-accent);
+  cursor: pointer;
+}
+
+.note summary:focus-visible {
+  outline: 2px solid var(--site-accent);
+  outline-offset: 2px;
+}
+
+.note p {
+  margin: 4px 0 0;
 }
