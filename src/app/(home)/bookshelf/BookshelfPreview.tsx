@@ -72,7 +72,7 @@ export default function BookshelfPreview({
           })}
         </Grid>
       </Box>
-      <Bookshelf books={previewBooks} isSample />
+      <Bookshelf books={previewBooks} isSample preview />
     </>
   );
 }

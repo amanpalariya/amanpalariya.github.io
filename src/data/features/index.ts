@@ -14,7 +14,7 @@ const allFeatureFlags: FeatureFlagEntry[] = [
   },
   {
     name: "Force empty states",
-    desc: "Show empty states for projects, work experience, and blogs",
+    desc: "Show empty states for projects, work experience, blogs, tools, and the bookshelf",
     id: "dev.force-empty-states",
     defaultValue: false,
   },

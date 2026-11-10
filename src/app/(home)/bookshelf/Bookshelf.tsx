@@ -1,9 +1,13 @@
-import { Heading2, SubtitleText } from "@components/core/Texts";
+"use client";
+
+import { Heading2 } from "@components/core/Texts";
 import ContentSection from "@components/page/common/ContentSection";
-import { VisuallyHidden } from "@chakra-ui/react";
+import { EmptyState, Icon, VisuallyHidden } from "@chakra-ui/react";
 import Image from "next/image";
-import { FiChevronDown } from "react-icons/fi";
+import { FiBookOpen, FiChevronDown } from "react-icons/fi";
 import type { Book } from "data/bookshelf";
+import FeatureFlagsData from "data/features";
+import { useFeatureFlag } from "utils/features";
 import CoverDetails from "./CoverDetails";
 import styles from "./bookshelf.module.css";
 
@@ -143,10 +147,33 @@ function BookSection({
 export default function Bookshelf({
   books,
   isSample,
+  preview = false,
 }: {
   books: Book[];
   isSample: boolean;
+  preview?: boolean;
 }) {
+  const [forceEmpty] = useFeatureFlag(
+    FeatureFlagsData.featuresIds.FORCE_EMPTY_STATES,
+  );
+
+  if (books.length === 0 || (forceEmpty && !preview)) {
+    return (
+      <EmptyState.Root as="section" aria-label="Books" px={0}>
+        <EmptyState.Content gap={4}>
+          <EmptyState.Indicator color="app.fg.subtle" aria-hidden="true">
+            <Icon boxSize={10}>
+              <FiBookOpen />
+            </Icon>
+          </EmptyState.Indicator>
+          <EmptyState.Title as="h2" color="app.prose.heading" textAlign="center">
+            The bookshelf is empty
+          </EmptyState.Title>
+        </EmptyState.Content>
+      </EmptyState.Root>
+    );
+  }
+
   const groups = groupBooks(books);
   const visibleSections = bookshelfSections.filter(
     ({ status }) => groups[status].length > 0,
@@ -154,30 +181,23 @@ export default function Bookshelf({
 
   return (
     <section aria-label="Books">
-      {books.length === 0 ? (
-        <SubtitleText>No books yet.</SubtitleText>
-      ) : (
-        <>
-          {isSample && <p className={styles.sampleLabel}>Sample entries</p>}
-          <div className={styles.sections}>
-            {visibleSections.map(({ status, id, title }, index) => (
-              <BookSection
-                key={id}
-                id={id}
-                title={title}
-                books={groups[status]}
-                compact={status === "Reading"}
-                divided={
-                  index > 0 &&
-                  visibleSections[index - 1].status !== "Want to read"
-                }
-                collapsible={status === "Want to read"}
-                startExpanded={visibleSections.length === 1}
-              />
-            ))}
-          </div>
-        </>
-      )}
+      {isSample && <p className={styles.sampleLabel}>Sample entries</p>}
+      <div className={styles.sections}>
+        {visibleSections.map(({ status, id, title }, index) => (
+          <BookSection
+            key={id}
+            id={id}
+            title={title}
+            books={groups[status]}
+            compact={status === "Reading"}
+            divided={
+              index > 0 && visibleSections[index - 1].status !== "Want to read"
+            }
+            collapsible={status === "Want to read"}
+            startExpanded={visibleSections.length === 1}
+          />
+        ))}
+      </div>
     </section>
   );
 }
