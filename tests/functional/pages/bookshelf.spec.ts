@@ -1,5 +1,39 @@
 import { expect, test } from "../support/fixtures";
 
+test("Bookshelf preview counts exercise empty and populated sections", async ({
+  page,
+}) => {
+  await page.goto("/bookshelf/?preview=1");
+  await expect(
+    page.getByRole("button", { name: /^Change theme/ }),
+  ).toBeEnabled();
+
+  const controls = page.getByRole("group", { name: "Preview book counts" });
+  const readingCount = controls.getByRole("combobox", {
+    name: "Currently reading",
+  });
+  const finishedCount = controls.getByRole("combobox", { name: "Finished" });
+  const wantCount = controls.getByRole("combobox", { name: "Want to read" });
+  const reading = page.getByRole("region", { name: "Currently reading" });
+  const finished = page.getByRole("region", { name: "Finished" });
+  const want = page.getByRole("region", { name: "Want to read" });
+
+  await readingCount.selectOption("3");
+  await finishedCount.selectOption("1");
+  await wantCount.selectOption("2");
+  await expect(reading.getByRole("listitem")).toHaveCount(3);
+  await expect(finished.getByRole("listitem")).toHaveCount(1);
+  await expect(want.getByRole("listitem")).toHaveCount(2);
+  await expect(finished).toHaveCSS("border-top-width", "1px");
+
+  await readingCount.selectOption("0");
+  await expect(reading).toHaveCount(0);
+  await expect(finished).toHaveCSS("border-top-width", "0px");
+  await finishedCount.selectOption("0");
+  await wantCount.selectOption("0");
+  await expect(page.getByText("No books yet.")).toBeVisible();
+});
+
 test("Bookshelf puts current reads before books ordered by finish date", async ({
   page,
 }) => {

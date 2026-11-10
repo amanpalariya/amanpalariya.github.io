@@ -5,20 +5,8 @@
 }
 
 .sections {
-  --section-gap: 28px;
   display: grid;
-  gap: var(--section-gap);
-}
-
-.sections > section + [aria-labelledby="finished"] {
-  position: relative;
-}
-
-.sections > section + [aria-labelledby="finished"]::before {
-  content: "";
-  position: absolute;
-  inset: calc(var(--section-gap) / -2) 0 auto;
-  border-top: 1px solid var(--site-line);
+  gap: 16px;
 }
 
 .grid,
