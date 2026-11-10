@@ -2,7 +2,13 @@
 
 import { Heading2 } from "@components/core/Texts";
 import ContentSection from "@components/page/common/ContentSection";
-import { EmptyState, Icon, VisuallyHidden } from "@chakra-ui/react";
+import {
+  EmptyState,
+  Icon,
+  Skeleton,
+  SkeletonText,
+  VisuallyHidden,
+} from "@chakra-ui/react";
 import Image from "next/image";
 import { useState } from "react";
 import { FiBookOpen, FiChevronDown } from "react-icons/fi";
@@ -212,16 +218,53 @@ export default function Bookshelf({
   );
 }
 
+function BookshelfLoading() {
+  return (
+    <>
+      <VisuallyHidden role="status">Loading books…</VisuallyHidden>
+      <div className={styles.sections} aria-hidden="true">
+        <div>
+          <Skeleton width="9rem" height="26px" mb={3} />
+          <div className={styles.featuredBook}>
+            <div className={styles.face}>
+              <div className={styles.cover}>
+                <Skeleton position="absolute" inset={0} />
+              </div>
+              <div className={styles.caption}>
+                <Skeleton width="full" maxW="13rem" height="7" mb={2} />
+                <Skeleton width="6rem" maxW="full" height="3" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <ContentSection>
+          <Skeleton width="5rem" height="26px" mb={3} />
+          <div className={`${styles.grid} ${styles.loadingGrid}`}>
+            {Array.from({ length: 4 }, (_, index) => (
+              <div key={index}>
+                <div className={styles.cover}>
+                  <Skeleton position="absolute" inset={0} />
+                </div>
+                <SkeletonText
+                  noOfLines={2}
+                  gap="1"
+                  height="3"
+                  rootProps={{ mt: 2 }}
+                />
+              </div>
+            ))}
+          </div>
+        </ContentSection>
+      </div>
+    </>
+  );
+}
+
 export function LiveBookshelf() {
   const state = useBookshelf();
 
+  if (state.status === "loading") return <BookshelfLoading />;
   if (state.status === "ready") return <Bookshelf groups={state.groups} />;
 
-  return (
-    <p role="status">
-      {state.status === "loading"
-        ? "Loading books…"
-        : "The bookshelf couldn’t load. Try again later."}
-    </p>
-  );
+  return <p role="status">The bookshelf couldn’t load. Try again later.</p>;
 }

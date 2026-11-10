@@ -47,6 +47,14 @@
   padding: 0;
 }
 
+.loadingGrid {
+  /* Show one row of placeholders at any column count. */
+  grid-template-rows: auto;
+  grid-auto-rows: 0;
+  row-gap: 0;
+  overflow: hidden;
+}
+
 .face {
   display: block;
 }
