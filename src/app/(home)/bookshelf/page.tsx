@@ -3,8 +3,8 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { getPageTitle } from "app/metadata";
 import { homepageTabs } from "app/route-info";
-import { bookshelf } from "data/bookshelf";
-import ReviewPopover from "./ReviewPopover";
+import { bookshelf, type Book } from "data/bookshelf";
+import CoverDetails from "./CoverDetails";
 import styles from "./bookshelf.module.css";
 
 const { name } = homepageTabs.bookshelf;
@@ -22,6 +22,53 @@ function formatReadDate(value: string) {
   });
 }
 
+function BookCard({ book }: { book: Book }) {
+  const { title, author, cover, status, readOn, rating, review } = book;
+  const hasRating = rating !== undefined;
+  const detailStatus =
+    hasRating && (status !== "Read" || !readOn) ? status : undefined;
+
+  return (
+    <li>
+      <div className={styles.cover}>
+        <Image
+          src={cover}
+          alt=""
+          width={240}
+          height={360}
+          unoptimized
+          className={styles.coverArt}
+        />
+        {(hasRating || status) && (
+          <span className={styles.coverBadge}>
+            {hasRating ? (
+              <>
+                <VisuallyHidden>My rating </VisuallyHidden>
+                <span aria-hidden="true">★</span> {rating}/5
+              </>
+            ) : (
+              status
+            )}
+          </span>
+        )}
+        {(readOn || review || detailStatus) && (
+          <CoverDetails title={title}>
+            {detailStatus && <p>{detailStatus}</p>}
+            {readOn && (
+              <p>
+                Read <time dateTime={readOn}>{formatReadDate(readOn)}</time>
+              </p>
+            )}
+            {review && <p className={styles.review}>{review}</p>}
+          </CoverDetails>
+        )}
+      </div>
+      <p className={styles.title}>{title}</p>
+      <p className={styles.author}>{author}</p>
+    </li>
+  );
+}
+
 export default function BookshelfPage() {
   const { isSample, books } = bookshelf;
 
@@ -31,42 +78,9 @@ export default function BookshelfPage() {
       <section aria-label="Books">
         {isSample && <p className={styles.sampleLabel}>Sample entries</p>}
         <ul className={styles.grid} role="list">
-          {books.map(
-            ({ id, title, author, cover, status, readOn, rating, review }) => (
-              <li key={id}>
-                <Image
-                  src={cover}
-                  alt=""
-                  width={240}
-                  height={360}
-                  unoptimized
-                  className={styles.cover}
-                />
-                <p className={styles.title}>{title}</p>
-                <p className={styles.author}>{author}</p>
-                {(status || readOn || rating !== undefined) && (
-                  <p className={styles.meta}>
-                    {status && (status !== "Read" || !readOn) && (
-                      <span>{status}</span>
-                    )}
-                    {readOn && (
-                      <span>
-                        Read{" "}
-                        <time dateTime={readOn}>{formatReadDate(readOn)}</time>
-                      </span>
-                    )}
-                    {rating !== undefined && (
-                      <span className={styles.rating}>
-                        <VisuallyHidden>My rating </VisuallyHidden>
-                        <span aria-hidden="true">★</span> {rating}/5
-                      </span>
-                    )}
-                  </p>
-                )}
-                {review && <ReviewPopover title={title} review={review} />}
-              </li>
-            ),
-          )}
+          {books.map((book) => (
+            <BookCard key={book.id} book={book} />
+          ))}
         </ul>
       </section>
     </>
