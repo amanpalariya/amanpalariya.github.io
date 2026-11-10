@@ -79,6 +79,11 @@ export const nonToolPageCases: FunctionalPageCase[] = [
   },
   ...detailedBlogCases,
   {
+    name: "Bookshelf",
+    path: "/bookshelf",
+    heading: "Bookshelf",
+  },
+  {
     name: "Feature Flags",
     path: "/features",
     heading: "Feature Flags",

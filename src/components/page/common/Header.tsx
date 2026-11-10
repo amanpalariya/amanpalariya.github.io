@@ -5,6 +5,7 @@ import {
   FiCode,
   FiFileText,
   FiEdit3,
+  FiBookOpen,
   FiTool,
   FiMenu,
   FiX,
@@ -24,6 +25,7 @@ const navIcons = {
   Projects: FiCode,
   CV: FiFileText,
   Blogs: FiEdit3,
+  Bookshelf: FiBookOpen,
   Tools: FiTool,
 };
 export default function Header() {

@@ -34,6 +34,10 @@ export const homepageTabs = {
     name: "Blogs",
     getSubpagePathname: createSubpagePathnameGetter("/blogs/"),
   },
+  bookshelf: {
+    pathname: "/bookshelf/",
+    name: "Bookshelf",
+  },
   tools: {
     pathname: "/tools/",
     name: "Tools",
