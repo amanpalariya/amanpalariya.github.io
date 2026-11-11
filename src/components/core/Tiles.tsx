@@ -227,7 +227,7 @@ export function FeaturedTile({
 
   return (
     <Box as="article" mx={-4} mt={{ base: -4, sm: -6 }}>
-      <VStack align="stretch" gap={5} px={4} py={{ base: 7, sm: 10 }}>
+      <VStack align="stretch" gap={4} px={4} py={{ base: 5, sm: 6 }}>
         {iconSrc ? (
           <Image
             src={iconSrc}
@@ -244,7 +244,7 @@ export function FeaturedTile({
             {icon}
           </Box>
         ) : null}
-        <VStack align="stretch" gap={3}>
+        <VStack align="stretch" gap={2}>
           <Heading
             as="h1"
             fontFamily="heading"
