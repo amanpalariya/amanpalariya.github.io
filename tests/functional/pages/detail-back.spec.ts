@@ -21,7 +21,7 @@ test("project back button returns to the homepage it was opened from", async ({ 
 
 test("blog back button returns to the blog listing", async ({ page }) => {
   await page.goto("/blogs/");
-  await page.getByRole("link", { name: "Room for Thought", exact: true }).press("Enter");
+  await page.getByRole("link", { name: "Read article: Room for Thought", exact: true }).press("Enter");
   await expect(page).toHaveURL(/\/blogs\/room-for-thought\/$/);
   await page.getByRole("link", { name: "Go back", exact: true }).click();
   await expect(page).toHaveURL(/\/blogs\/$/);
