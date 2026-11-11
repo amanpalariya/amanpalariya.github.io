@@ -166,6 +166,14 @@ export default function Footer({
                   </Link>
                 </WrapItem>
                 <WrapItem>
+                  <Link
+                    href={homepageTabs.bookshelf.pathname}
+                    {...footerLinkProps}
+                  >
+                    {homepageTabs.bookshelf.name}
+                  </Link>
+                </WrapItem>
+                <WrapItem>
                   <Link href={homepageTabs.cv.pathname} {...footerLinkProps}>
                     {homepageTabs.cv.name}
                   </Link>

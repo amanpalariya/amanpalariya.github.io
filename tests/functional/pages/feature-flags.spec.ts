@@ -116,6 +116,16 @@ test.describe("Feature Flags page", () => {
     for (const toolName of toolNames) {
       await expect(page.getByText(toolName)).toHaveCount(0);
     }
+
+    await page.route(
+      (url) => url.searchParams.get("route") === "v1/bookshelf",
+      (route) => route.abort(),
+    );
+    await page.goto("/bookshelf/");
+    await expect(
+      page.getByRole("heading", { name: "The bookshelf is empty" }),
+    ).toBeVisible();
+    await expect(page.getByRole("region", { name: "Finished" })).toHaveCount(0);
   });
 
   test("blogs flag controls blog navigation and blog page access", async ({ page, featureFlags }) => {
