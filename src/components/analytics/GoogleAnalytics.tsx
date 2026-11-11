@@ -1,10 +1,8 @@
 import Script from "next/script";
+import { analyticsEnabled, measurementId } from "@utils/analytics";
 
 export default function GoogleAnalytics() {
-  const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim() ?? "";
-  if (process.env.NODE_ENV !== "production" || !/^G-[A-Z0-9]+$/.test(measurementId)) {
-    return null;
-  }
+  if (!analyticsEnabled) return null;
 
   return (
     <>

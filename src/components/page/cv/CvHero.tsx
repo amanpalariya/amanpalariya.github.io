@@ -8,6 +8,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { Clipboard } from "@components/ui/clipboard";
+import { trackEvent } from "@utils/analytics";
 import { Heading2, ParagraphText } from "./CvTypography";
 import type { CvProfile } from "data/cv";
 import {
@@ -103,7 +104,13 @@ export default function CvHero({ profile }: { profile: CvProfile }) {
             </WrapItem>
             <WrapItem>
               <Tooltip content={"Copy email"} showArrow>
-                <Clipboard.Root value={profile.email} timeout={1200}>
+                <Clipboard.Root
+                  value={profile.email}
+                  timeout={1200}
+                  onStatusChange={({ copied }) => {
+                    if (copied) trackEvent("copy_email");
+                  }}
+                >
                   <Clipboard.Trigger asChild>
                     <Link
                       as="button"
