@@ -1,4 +1,5 @@
 import { expect, test } from "../../support/fixtures";
+import { getAllTools } from "../../../../src/features/tools/data/tools-registry";
 
 async function dispatchPasteOnFocusedElement(page: import("@playwright/test").Page, text: string) {
   await page.evaluate((pastedText) => {
@@ -205,7 +206,9 @@ test.describe("Bilingual Story Reader shell", () => {
 
     await page.getByRole("link", { name: "Go back", exact: true }).click();
     await expect(page).toHaveURL(/\/tools\/$/);
-    await expect(page.getByRole("heading", { name: "Tools", exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: getAllTools()[0].name, exact: true }),
+    ).toBeVisible();
   });
 
   test("deletes the current story from story reader", async ({ page }) => {

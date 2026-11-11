@@ -13,6 +13,7 @@ import { CategoryBadge, FeaturedIndicator } from "@components/core/Badges";
 import { FeaturedTile, FeedList, TileBody } from "@components/core/Tiles";
 import ContentSection from "@components/page/common/ContentSection";
 import NextLink from "next/link";
+import type { IconType } from "react-icons";
 import { FiBookOpen, FiCalendar, FiChevronRight, FiTool } from "react-icons/fi";
 import FeatureFlagsData from "data/features";
 import { useFeatureFlag } from "utils/features";
@@ -27,14 +28,13 @@ const defaultFilters: ToolFiltersState = {
   query: "",
 };
 
-function getToolIcon(icon?: string) {
-  if (icon === "book") return FiBookOpen;
-  if (icon === "calendar") return FiCalendar;
-  return FiTool;
-}
+const toolIcons: Record<string, IconType> = {
+  book: FiBookOpen,
+  calendar: FiCalendar,
+};
 
 function ToolListTile({ tool }: { tool: ToolDefinition }) {
-  const ToolIcon = getToolIcon(tool.icon);
+  const ToolIcon = toolIcons[tool.icon ?? ""] ?? FiTool;
 
   return (
     <LinkBox>
@@ -84,7 +84,7 @@ function ToolListTile({ tool }: { tool: ToolDefinition }) {
 }
 
 function FeaturedTool({ tool }: { tool: ToolDefinition }) {
-  const ToolIcon = getToolIcon(tool.icon);
+  const ToolIcon = toolIcons[tool.icon ?? ""] ?? FiTool;
 
   return (
     <FeaturedTile

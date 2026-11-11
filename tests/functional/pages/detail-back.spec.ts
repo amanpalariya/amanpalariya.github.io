@@ -11,11 +11,15 @@ for (const detail of [
   });
 }
 
-test("project back button returns to the homepage it was opened from", async ({ page }) => {
+test("project back button preserves the history from homepage through project listing", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("link", { name: /^Console Game Language/ }).click();
+  await page.getByRole("link", { name: "View All", exact: true }).click();
+  await expect(page).toHaveURL(/\/projects\/$/);
+  await page.getByRole("link", { name: "Console Game Language", exact: true }).press("Enter");
   await expect(page).toHaveURL(/\/projects\/console-game-language\/$/);
   await page.getByRole("link", { name: "Go back", exact: true }).click();
+  await expect(page).toHaveURL(/\/projects\/$/);
+  await page.goBack();
   await expect(page).toHaveURL(/:\d+\/$/);
 });
 
