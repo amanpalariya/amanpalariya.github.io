@@ -289,7 +289,7 @@ export function FeaturedTile({
             px={4}
             rounded="full"
             shadow="none"
-            background="app.fg.link"
+            background="app.fg.default"
             color="app.bg.canvas"
             _hover={{ opacity: 0.9 }}
           >
