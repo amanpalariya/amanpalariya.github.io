@@ -5,11 +5,11 @@ import {
   FiCode,
   FiFileText,
   FiEdit3,
-  FiBookOpen,
   FiTool,
   FiMenu,
   FiX,
 } from "react-icons/fi";
+import { LuLibraryBig } from "react-icons/lu";
 import { usePathname } from "next/navigation";
 import { homepageTabs } from "app/route-info";
 import NextLink from "next/link";
@@ -25,7 +25,7 @@ const navIcons = {
   Projects: FiCode,
   CV: FiFileText,
   Blogs: FiEdit3,
-  Bookshelf: FiBookOpen,
+  Bookshelf: LuLibraryBig,
   Tools: FiTool,
 };
 export default function Header() {

@@ -5,7 +5,6 @@ import ContentSection from "@components/page/common/ContentSection";
 import {
   Button,
   EmptyState,
-  Icon,
   Skeleton,
   SkeletonText,
   Spinner,
@@ -14,6 +13,7 @@ import {
 import Image from "next/image";
 import { useState } from "react";
 import { FiBookOpen, FiChevronDown, FiRefreshCw } from "react-icons/fi";
+import { LuCircleAlert, LuLibraryBig } from "react-icons/lu";
 import type { Book, BookGroups } from "data/bookshelf";
 import FeatureFlagsData from "data/features";
 import {
@@ -162,14 +162,21 @@ function BookSection({
   );
 }
 
+function BookshelfStateIcon({ error = false }: { error?: boolean }) {
+  return (
+    <span className={styles.stateIcon} aria-hidden="true">
+      <LuLibraryBig />
+      {error && <LuCircleAlert className={styles.stateBadge} />}
+    </span>
+  );
+}
+
 function EmptyBookshelf() {
   return (
     <EmptyState.Root as="section" aria-label="Books" px={0}>
       <EmptyState.Content gap={4}>
         <EmptyState.Indicator color="app.fg.subtle" aria-hidden="true">
-          <Icon boxSize={10}>
-            <FiBookOpen />
-          </Icon>
+          <BookshelfStateIcon />
         </EmptyState.Indicator>
         <EmptyState.Title as="h2" color="app.prose.heading" textAlign="center">
           The bookshelf is empty
@@ -271,30 +278,7 @@ function BookshelfLoadError({
   return (
     <EmptyState.Root as="section" aria-labelledby="bookshelf-load-title" px={0}>
       <EmptyState.Content gap={5}>
-        <svg
-          className={styles.errorIllustration}
-          viewBox="0 0 104 72"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <g className={styles.errorBooks}>
-            <rect x="20" y="21" width="13" height="38" rx="2" />
-            <rect x="36" y="12" width="15" height="47" rx="2" />
-            <g transform="rotate(-14 62.5 39.5)">
-              <rect x="56" y="20" width="13" height="39" rx="2" />
-              <path d="M56 28h13m-13 22h13" />
-            </g>
-          </g>
-          <path d="M12 59h80M20 29h13m-13 21h13M36 21h15m-15 29h15" />
-          <g className={styles.errorBadge}>
-            <circle cx="81" cy="21" r="12" />
-            <path d="M81 16v6m0 4h.01" />
-          </g>
-        </svg>
+        <BookshelfStateIcon error={!retrying} />
         <div>
           <Heading2 id="bookshelf-load-title" centerAlign>
             {retrying ? "Loading the bookshelf" : "Couldn’t load the bookshelf"}
