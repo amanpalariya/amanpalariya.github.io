@@ -1,8 +1,11 @@
 "use client";
 
 import { EmptyState, VStack, Icon } from "@chakra-ui/react";
-import PageIntro from "@components/page/common/PageIntro";
-import { FeedList, TitleDescriptionTile } from "@components/core/Tiles";
+import {
+  FeaturedTile,
+  FeedList,
+  TitleDescriptionTile,
+} from "@components/core/Tiles";
 import ContentSection from "@components/page/common/ContentSection";
 import { homepageTabs } from "app/route-info";
 import ProjectsData from "data/projects";
@@ -10,15 +13,6 @@ import type { ProjectMeta } from "data/projects/loader";
 import { FiTool } from "react-icons/fi";
 import { useFeatureFlag } from "utils/features";
 import FeatureFlagsData from "data/features";
-
-function Main() {
-  return (
-    <PageIntro
-      title={ProjectsData.projectsPage.title}
-      subtitle={ProjectsData.projectsPage.subtitle}
-    />
-  );
-}
 
 function NoProjectsElement() {
   return (
@@ -30,7 +24,7 @@ function NoProjectsElement() {
               <FiTool />
             </Icon>
           </EmptyState.Indicator>
-          <EmptyState.Title textAlign={"center"}>
+          <EmptyState.Title as="h1" textAlign={"center"}>
             {ProjectsData.projectsPage.emptyStateTitle}
           </EmptyState.Title>
         </EmptyState.Content>
@@ -48,26 +42,46 @@ function ProjectsListElement({
 }) {
   const projectDetailsIdsSet = new Set(projectIdsWithDetails);
 
+  const [featured, ...remainingProjects] = projects;
+  if (!featured) return null;
+  const featuredHasDetails = projectDetailsIdsSet.has(featured.id);
+
   return (
-    <FeedList>
-      {projects.map((project) => {
-        const hasDetails = projectDetailsIdsSet.has(project.id);
-        return (
-          <TitleDescriptionTile
-            key={project.id}
-            title={project.title}
-            description={project.description}
-            iconSrc={project.iconSrc}
-            url={
-              hasDetails
-                ? homepageTabs.projects.getSubpagePathname(project.id)
-                : project.url
-            }
-            isUrlExternal={!hasDetails}
-          />
-        );
-      })}
-    </FeedList>
+    <>
+      <FeaturedTile
+        title={featured.title}
+        description={featured.description}
+        iconSrc={featured.iconSrc}
+        url={
+          featuredHasDetails
+            ? homepageTabs.projects.getSubpagePathname(featured.id)
+            : featured.url
+        }
+        isUrlExternal={!featuredHasDetails}
+        actionLabel="View project"
+      />
+      {remainingProjects.length > 0 ? (
+        <FeedList>
+          {remainingProjects.map((project) => {
+            const hasDetails = projectDetailsIdsSet.has(project.id);
+            return (
+              <TitleDescriptionTile
+                key={project.id}
+                title={project.title}
+                description={project.description}
+                iconSrc={project.iconSrc}
+                url={
+                  hasDetails
+                    ? homepageTabs.projects.getSubpagePathname(project.id)
+                    : project.url
+                }
+                isUrlExternal={!hasDetails}
+              />
+            );
+          })}
+        </FeedList>
+      ) : null}
+    </>
   );
 }
 
@@ -101,7 +115,6 @@ export default function ProjectsClient({
 }) {
   return (
     <VStack align="stretch" gap={0}>
-      <Main />
       <Projects
         projects={projects}
         projectIdsWithDetails={projectIdsWithDetails}

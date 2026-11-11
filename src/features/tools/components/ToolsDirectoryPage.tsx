@@ -10,8 +10,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { CategoryBadge, FeaturedIndicator } from "@components/core/Badges";
-import PageIntro from "@components/page/common/PageIntro";
-import { FeedList, TileBody } from "@components/core/Tiles";
+import { FeaturedTile, FeedList, TileBody } from "@components/core/Tiles";
 import ContentSection from "@components/page/common/ContentSection";
 import NextLink from "next/link";
 import { FiBookOpen, FiCalendar, FiChevronRight, FiTool } from "react-icons/fi";
@@ -84,32 +83,26 @@ function ToolListTile({ tool }: { tool: ToolDefinition }) {
   );
 }
 
-function Main({
-  title,
-  subtitle,
-  showSearch,
-  filters,
-  onFiltersChange,
-  searchPlaceholder,
-}: {
-  title: string;
-  subtitle: string;
-  showSearch: boolean;
-  filters: ToolFiltersState;
-  onFiltersChange: (next: ToolFiltersState) => void;
-  searchPlaceholder: string;
-}) {
+function FeaturedTool({ tool }: { tool: ToolDefinition }) {
+  const ToolIcon = getToolIcon(tool.icon);
+
   return (
-    <PageIntro title={title} subtitle={subtitle}>
-      {showSearch ? (
-        <ToolsSearchBar
-          value={filters.query}
-          placeholder={searchPlaceholder}
-          onChange={(query) => onFiltersChange({ ...filters, query })}
-          onClear={() => onFiltersChange({ ...filters, query: "" })}
-        />
-      ) : null}
-    </PageIntro>
+    <FeaturedTile
+      title={tool.name}
+      description={tool.tagline}
+      url={tool.path}
+      icon={<ToolIcon aria-hidden="true" />}
+      actionLabel="Open tool"
+    >
+      <HStack gap={2} wrap="wrap">
+        {tool.status === "beta" ? (
+          <CategoryBadge color="blue">Beta</CategoryBadge>
+        ) : null}
+        {tool.tags.map((tag) => (
+          <CategoryBadge key={tag.id}>{tag.label}</CategoryBadge>
+        ))}
+      </HStack>
+    </FeaturedTile>
   );
 }
 
@@ -127,35 +120,43 @@ export function ToolsDirectoryPage() {
   );
   const visibleTools = forceEmptyStates ? [] : filteredTools;
   const showSearch = tools.length > 5;
+  const [featured, ...remainingTools] = visibleTools;
 
   return (
     <VStack align={"stretch"} gap={0}>
-      <Main
-        title={content.title}
-        subtitle={content.subtitle}
-        showSearch={showSearch}
-        filters={filters}
-        onFiltersChange={setFilters}
-        searchPlaceholder={content.searchPlaceholder}
-      />
+      {showSearch ? (
+        <ToolsSearchBar
+          value={filters.query}
+          placeholder={content.searchPlaceholder}
+          onChange={(query) => setFilters({ ...filters, query })}
+          onClear={() => setFilters({ ...filters, query: "" })}
+        />
+      ) : null}
 
-      {visibleTools.length === 0 ? (
+      {!featured ? (
         <ContentSection borderTop={0}>
           <EmptyState.Root>
             <EmptyState.Content>
               <EmptyState.Indicator>
                 <Icon as={FiTool} boxSize={10} color={"app.fg.icon"} />
               </EmptyState.Indicator>
-              <EmptyState.Title>{content.emptyStateTitle}</EmptyState.Title>
+              <EmptyState.Title as="h1">
+                {content.emptyStateTitle}
+              </EmptyState.Title>
             </EmptyState.Content>
           </EmptyState.Root>
         </ContentSection>
       ) : (
-        <FeedList>
-          {visibleTools.map((tool) => (
-            <ToolListTile key={tool.id} tool={tool} />
-          ))}
-        </FeedList>
+        <>
+          <FeaturedTool tool={featured} />
+          {remainingTools.length > 0 ? (
+            <FeedList>
+              {remainingTools.map((tool) => (
+                <ToolListTile key={tool.id} tool={tool} />
+              ))}
+            </FeedList>
+          ) : null}
+        </>
       )}
     </VStack>
   );

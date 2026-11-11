@@ -1,10 +1,8 @@
 import { PersonalData, CvData } from "../../../src/data";
 import AboutData from "../../../src/data/about";
-import BlogsData from "../../../src/data/blogs";
 import { getAllBlogs } from "../../../src/data/blogs/loader";
-import { getProjectById, getProjectIdsWithDetails } from "../../../src/data/projects/loader";
-import ProjectsData from "../../../src/data/projects";
-import { getToolsPageContent } from "../../../src/features/tools/data/content";
+import { getAllProjects, getProjectById, getProjectIdsWithDetails } from "../../../src/data/projects/loader";
+import { getAllTools } from "../../../src/features/tools/data/tools-registry";
 
 export type FunctionalPageCase = {
   name: string;
@@ -31,7 +29,7 @@ export const toolPageCases: FunctionalPageCase[] = [
   {
     name: "Tools",
     path: "/tools",
-    heading: getToolsPageContent().title,
+    heading: getAllTools()[0].name,
   },
   {
     name: "Calendar Drill",
@@ -69,13 +67,13 @@ export const nonToolPageCases: FunctionalPageCase[] = [
   {
     name: "Projects",
     path: "/projects",
-    heading: ProjectsData.projectsPage.title,
+    heading: getAllProjects()[0].title,
   },
   ...detailedProjectCases,
   {
     name: "Blogs",
     path: "/blogs",
-    heading: BlogsData.blogsPage.title,
+    heading: getAllBlogs()[0].title,
   },
   ...detailedBlogCases,
   {

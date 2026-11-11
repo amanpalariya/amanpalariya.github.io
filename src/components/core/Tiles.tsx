@@ -9,6 +9,7 @@ import {
   Wrap,
   WrapItem,
   Separator,
+  Heading,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 import Image from "next/image";
@@ -192,6 +193,121 @@ function formatBlogDateLabel({
       {" · Updated "}
       <time dateTime={updatedDate.toISOString()}>{updatedLabel}</time>
     </Text>
+  );
+}
+
+/** The first entry leads a directory; the remaining entries use compact rows. */
+export function FeaturedTile({
+  title,
+  description,
+  url,
+  isUrlExternal = false,
+  iconSrc,
+  icon,
+  published,
+  updated,
+  tags,
+  actionLabel,
+  children,
+}: {
+  title: string;
+  description: string;
+  url?: string;
+  isUrlExternal?: boolean;
+  iconSrc?: string;
+  icon?: ReactNode;
+  published?: string;
+  updated?: string;
+  tags?: string[];
+  actionLabel: string;
+  children?: ReactNode;
+}) {
+  const metadataLabel = formatBlogDateLabel({ published, updated });
+
+  return (
+    <Box
+      as="article"
+      mx={-4}
+      mt={{ base: -4, sm: -6 }}
+      css={{
+        "& .chakra-linkbox:hover": {
+          background: "var(--site-nav-selected)",
+        },
+      }}
+    >
+      <TileLinkIfUrlPresent
+        url={url}
+        label={title}
+        isUrlExternal={isUrlExternal}
+      >
+        <VStack align="stretch" gap={5} px={4} py={{ base: 7, sm: 10 }}>
+          {iconSrc ? (
+            <Image
+              src={iconSrc}
+              alt=""
+              width={64}
+              height={64}
+              style={{ objectFit: "contain", alignSelf: "start" }}
+            />
+          ) : icon ? (
+            <Box
+              color="app.fg.subtle"
+              css={{ "& svg": { width: "40px", height: "40px" } }}
+            >
+              {icon}
+            </Box>
+          ) : null}
+          <VStack align="stretch" gap={3}>
+            <Heading
+              as="h1"
+              fontFamily="heading"
+              fontSize={{ base: "32px", sm: "40px" }}
+              fontWeight={750}
+              lineHeight="1.12"
+              letterSpacing="-0.035em"
+              color="app.prose.heading"
+              overflowWrap="anywhere"
+            >
+              {title}
+            </Heading>
+            <Text
+              fontSize={{ base: "17px", sm: "18px" }}
+              lineHeight="1.5"
+              color="app.prose.body"
+            >
+              {description}
+            </Text>
+          </VStack>
+          {metadataLabel ? (
+            <Text color="app.prose.subtle">{metadataLabel}</Text>
+          ) : null}
+          {tags?.length ? (
+            <Wrap gap={2}>
+              {tags.map((tag) => (
+                <WrapItem key={tag}>
+                  <CategoryBadge>{tag}</CategoryBadge>
+                </WrapItem>
+              ))}
+            </Wrap>
+          ) : null}
+          {children}
+          {url ? (
+            <HStack
+              gap={1}
+              color="app.fg.link"
+              fontSize="sm"
+              fontWeight={600}
+              aria-hidden="true"
+            >
+              <span>{actionLabel}</span>
+              <Icon boxSize={4}>
+                {isUrlExternal ? <FiArrowUpRight /> : <FiChevronRight />}
+              </Icon>
+            </HStack>
+          ) : null}
+        </VStack>
+      </TileLinkIfUrlPresent>
+    </Box>
   );
 }
 

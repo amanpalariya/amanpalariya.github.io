@@ -151,7 +151,7 @@ test.describe("Feature Flags page", () => {
     await expectBlogsNavigationLinkVisible(page);
 
     await page.goto("/blogs");
-    await expect(page.getByRole("heading", { name: "My Blogs" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: blogs[0].title })).toBeVisible();
     for (const blog of blogs) {
       await expect(page.getByText(blog.title)).toBeVisible();
     }

@@ -1,8 +1,11 @@
 "use client";
 
 import { EmptyState, VStack, Icon } from "@chakra-ui/react";
-import PageIntro from "@components/page/common/PageIntro";
-import { FeedList, TitleDescriptionMetaTile } from "@components/core/Tiles";
+import {
+  FeaturedTile,
+  FeedList,
+  TitleDescriptionMetaTile,
+} from "@components/core/Tiles";
 import ContentSection from "@components/page/common/ContentSection";
 import { homepageTabs } from "app/route-info";
 import BlogsData from "data/blogs";
@@ -11,15 +14,6 @@ import { FiBookmark } from "react-icons/fi";
 import { useFeatureFlag } from "utils/features";
 import FeatureFlagsData from "data/features";
 import { notFound } from "next/navigation";
-
-function Main() {
-  return (
-    <PageIntro
-      title={BlogsData.blogsPage.title}
-      subtitle={BlogsData.blogsPage.subtitle}
-    />
-  );
-}
 
 function NoBlogsElement() {
   return (
@@ -31,7 +25,7 @@ function NoBlogsElement() {
               <FiBookmark />
             </Icon>
           </EmptyState.Indicator>
-          <EmptyState.Title textAlign={"center"}>
+          <EmptyState.Title as="h1" textAlign={"center"}>
             {BlogsData.blogsPage.emptyStateTitle}
           </EmptyState.Title>
         </EmptyState.Content>
@@ -41,21 +35,37 @@ function NoBlogsElement() {
 }
 
 function BlogsListElement({ blogs }: { blogs: BlogMeta[] }) {
+  const [featured, ...remainingBlogs] = blogs;
+  if (!featured) return null;
+
   return (
-    <FeedList>
-      {blogs.map((blog) => (
-        <TitleDescriptionMetaTile
-          key={blog.id}
-          title={blog.title}
-          description={blog.description}
-          tags={blog.tags}
-          published={blog.published}
-          updated={blog.updated}
-          url={homepageTabs.blogs.getSubpagePathname(blog.id)}
-          isUrlExternal={false}
-        />
-      ))}
-    </FeedList>
+    <>
+      <FeaturedTile
+        title={featured.title}
+        description={featured.description}
+        published={featured.published}
+        updated={featured.updated}
+        tags={featured.tags}
+        url={homepageTabs.blogs.getSubpagePathname(featured.id)}
+        actionLabel="Read article"
+      />
+      {remainingBlogs.length > 0 ? (
+        <FeedList>
+          {remainingBlogs.map((blog) => (
+            <TitleDescriptionMetaTile
+              key={blog.id}
+              title={blog.title}
+              description={blog.description}
+              tags={blog.tags}
+              published={blog.published}
+              updated={blog.updated}
+              url={homepageTabs.blogs.getSubpagePathname(blog.id)}
+              isUrlExternal={false}
+            />
+          ))}
+        </FeedList>
+      ) : null}
+    </>
   );
 }
 
@@ -82,7 +92,6 @@ export default function BlogsClient({ blogs }: { blogs: BlogMeta[] }) {
 
   return (
     <VStack align="stretch" gap={0}>
-      <Main />
       <Blogs blogs={blogs} />
     </VStack>
   );

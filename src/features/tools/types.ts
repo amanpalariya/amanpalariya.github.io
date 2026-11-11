@@ -22,7 +22,6 @@ export interface ToolDefinition {
 
 export interface ToolsPageContent {
   title: string;
-  subtitle: string;
   emptyStateTitle: string;
   emptyStateDescription: string;
   searchPlaceholder: string;
