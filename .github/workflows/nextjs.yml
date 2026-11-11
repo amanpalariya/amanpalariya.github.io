@@ -75,6 +75,7 @@ jobs:
         run: ${{ steps.detect-package-manager.outputs.manager }} test:unit
       - name: Build with Next.js
         env:
+          NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ vars.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
           NEXT_PUBLIC_APPS_SCRIPT_URL: ${{ vars.NEXT_PUBLIC_APPS_SCRIPT_URL }}
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
       - name: Upload artifact

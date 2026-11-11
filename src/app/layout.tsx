@@ -2,6 +2,7 @@ import { Providers } from "./providers";
 import { Metadata } from "next";
 import { SITE_OWNER_NAME } from "./metadata";
 import { Caveat, DM_Sans } from "next/font/google";
+import GoogleAnalytics from "@components/analytics/GoogleAnalytics";
 import "katex/dist/katex.min.css";
 import "./navigation.css";
 
@@ -41,6 +42,7 @@ export default function RootLayout({
           Skip to main content
         </a>
         <Providers>{children}</Providers>
+        <GoogleAnalytics />
       </body>
     </html>
   );

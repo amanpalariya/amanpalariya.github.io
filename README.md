@@ -83,6 +83,14 @@ This repo deploys to GitHub Pages via GitHub Actions (`.github/workflows/nextjs.
 - Build: install dependencies and run `next build`
 - Publish: upload `./out` as Pages artifact and deploy with `actions/deploy-pages`
 
+## Analytics
+
+Set `NEXT_PUBLIC_GA_MEASUREMENT_ID` to the GA4 Web stream's measurement ID
+under **GitHub Settings → Secrets and variables → Actions → Variables**, then
+redeploy. The tag loads only in production builds with an ID. In the stream's
+**Enhanced measurement** settings, enable page views based on browser history
+changes to count navigation between pages.
+
 ## Design
 
 The design is inspired by [SubtleFolio](https://subtle.framer.website/) with custom tweaks.
