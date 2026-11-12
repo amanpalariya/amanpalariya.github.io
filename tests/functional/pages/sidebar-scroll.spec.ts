@@ -60,17 +60,42 @@ test.describe("Sidebars on short screens", () => {
     });
   }
 
-  test("expanded mobile navigation fits a short screen", async ({ page }) => {
-    await page.setViewportSize({ width: 568, height: 280 });
+  test("expanded mobile navigation adapts to the available width", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 320, height: 280 });
     await page.goto("/");
     await page
       .getByRole("button", { name: "Open mobile navigation menu" })
       .click();
+    const navigation = page.getByRole("navigation", {
+      name: "Mobile navigation menu",
+    });
+    const links = navigation.getByRole("link");
+    await expect(links).toHaveCount(7);
     await expectScrollableWithinViewport(page.locator(".site-header"));
-    await page
-      .getByRole("navigation", { name: "Mobile navigation menu" })
-      .getByRole("link", { name: "Tools", exact: true })
-      .click();
+
+    const layouts = [
+      { width: 320, height: 360, columns: 3 },
+      { width: 390, height: 280, columns: 4 },
+      { width: 480, height: 280, columns: 5 },
+      { width: 568, height: 280, columns: 6 },
+    ];
+    for (const { width, height, columns } of layouts) {
+      await page.setViewportSize({ width, height });
+      const rowPositions = await links.evaluateAll((items) =>
+        items.map((item) => item.getBoundingClientRect().top),
+      );
+      expect(
+        rowPositions.filter((position) => position === rowPositions[0]),
+      ).toHaveLength(columns);
+      expect(new Set(rowPositions).size).toBe(Math.ceil(7 / columns));
+      for (const link of await links.all()) {
+        await expect(link).toBeInViewport({ ratio: 1 });
+      }
+    }
+
+    await navigation.getByRole("link", { name: "Tools", exact: true }).click();
     await expect(page).toHaveURL(/\/tools\/?$/);
     await expect(
       page.getByRole("button", { name: "Open mobile navigation menu" }),
